@@ -3,7 +3,7 @@ import { STANDARD_PRODUCTS } from '../stack-registry.js';
 export const STANDARD_USAGE = `Anhedral Application Stack & Delivery Standard
 
 anhedral new <directory> [products...] [--hosting cloudflare|vercel] [--skip-install] [--no-git] [--dry-run] [--json]
-anhedral add <directory> <items...> [--registry <file|https-url>] [--integrity sha256-...] [--dry-run] [--skip-install] [--json]
+anhedral add <directory> <items...> [--dry-run] [--skip-install] [--json]
 anhedral init [products...] [--hosting cloudflare|vercel] [--skip-install] [--git] [--dry-run] [--json]
 
 Default: Vinext on Cloudflare Workers, from the official shadcn pnpm/Turborepo monorepo.
@@ -16,8 +16,7 @@ Examples:
   anhedral new website --next --stripe --resend
   anhedral init --wxt
   anhedral cloud register|stage|save|deploy|status [directory] (managed service API required)
-  anhedral registry build <manifest> --output <registry.json>
-  anhedral registry list|view [item] [--registry <file|https-url>] [--json]
+  anhedral registry list|view [item] [--json]
   anhedral doctor [directory] [--providers] --json
   anhedral repository [directory] [--owner <github-account>] [--name <repo>] [--visibility private|public] [--create]
   anhedral register [directory]

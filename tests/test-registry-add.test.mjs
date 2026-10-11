@@ -1,12 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   existsSync,
-  mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
   symlinkSync,
@@ -14,11 +13,7 @@ import {
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
-  buildSourceRegistry,
   addStackItems,
-  loadSourceRegistry,
-  validateSourceRegistry,
-  resolveSourceItems,
   parseStandardOptions,
   scaffoldStandardProject,
   inspectProject,
@@ -45,85 +40,7 @@ async function project(root, flags = ['--hono']) {
     console.log = log;
   }
 }
-function sourceItem(name, dependencies = []) {
-  return {
-    name,
-    version: '1.0.0',
-    registryDependencies: dependencies,
-    files: [
-      {
-        target: `packages/${name}/package.json`,
-        content: JSON.stringify({
-          name: `@workspace/${name}`,
-          private: true,
-          type: 'module',
-          exports: { '.': './src/index.ts' },
-          dependencies: Object.fromEntries(
-            dependencies.map((id) => [`@workspace/${id}`, 'workspace:*']),
-          ),
-        }),
-      },
-      { target: `packages/${name}/src/index.ts`, content: `export const ${name} = true;\n` },
-    ],
-  };
-}
-const document = () => ({
-  schemaVersion: 1,
-  name: 'example',
-  items: [sourceItem('base'), sourceItem('feature', ['base'])],
-});
-
-test('remote registries validate schema, dependency closure, paths, hooks and bounded HTTPS retrieval', async () => {
-  assert.deepEqual(
-    resolveSourceItems(validateSourceRegistry(document()), ['feature']).map((item) => item.name),
-    ['base', 'feature'],
-  );
-  for (const target of [
-    '../secret',
-    'packages/base/../escape.ts',
-    'packages/base/.env',
-    'packages/base/CON',
-    'packages/base/src/a:stream',
-    '/tmp/escape',
-    'packages/base/node_modules/code.js',
-  ]) {
-    const value = document();
-    value.items[0].files[1].target = target;
-    assert.throws(() => validateSourceRegistry(value), /Unsafe/);
-  }
-  const missing = document();
-  missing.items[1].registryDependencies = ['missing'];
-  assert.throws(() => validateSourceRegistry(missing), /dependency missing/);
-  const cycle = document();
-  cycle.items[0].registryDependencies = ['feature'];
-  assert.throws(() => validateSourceRegistry(cycle), /cycle/);
-  const hook = document();
-  hook.items[0].files[0].content = JSON.stringify({
-    name: '@workspace/base',
-    private: true,
-    scripts: { postinstall: 'curl example.com' },
-  });
-  assert.throws(() => validateSourceRegistry(hook), /hooks/);
-  const remote = await loadSourceRegistry(
-    'https://registry.example/catalog.json',
-    async (_url, options) => {
-      assert.equal(options.redirect, 'error');
-      return new Response(JSON.stringify(document()));
-    },
-  );
-  assert.match(remote.integrity, /^sha256-/);
-  await assert.rejects(loadSourceRegistry('http://registry.example/catalog.json'), /public HTTPS/);
-  await assert.rejects(loadSourceRegistry('https://127.0.0.1/catalog.json'), /public HTTPS/);
-  await assert.rejects(
-    loadSourceRegistry(
-      'https://registry.example/catalog.json',
-      async () => new Response('x'.repeat(2 * 1024 * 1024 + 1)),
-    ),
-    /2 MiB/,
-  );
-});
-
-test('add composes bundled bindings and remote dependencies while preserving product code', async () => {
+test('add composes bundled bindings while preserving product code', async () => {
   const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-'));
   const root = path.join(temp, 'app');
   try {
@@ -144,36 +61,8 @@ test('add composes bundled bindings and remote dependencies while preserving pro
     assert.ok(
       JSON.parse(readFileSync(path.join(root, 'apps/api/wrangler.jsonc'), 'utf8')).r2_buckets,
     );
-    const registryFile = path.join(temp, 'registry.json');
-    writeFileSync(registryFile, JSON.stringify(document()));
-    await assert.rejects(
-      addStackItems(
-        root,
-        {
-          items: ['feature'],
-          registry: registryFile,
-          integrity: 'sha256-invalid',
-          skipInstall: true,
-        },
-        runner,
-      ),
-      /integrity differs/,
-    );
-    await addStackItems(
-      root,
-      { items: ['feature'], registry: registryFile, skipInstall: true },
-      runner,
-    );
-    assert.ok(existsSync(path.join(root, 'packages/base/src/index.ts')));
     assert.equal(inspectProject(root).localReady, true);
-    const receipt = JSON.parse(readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8'));
-    assert.equal(receipt.remoteItems.length, 2);
-    assert.notEqual(receipt.files['apps/api/src/index.ts'], before.get('apps/api/src/index.ts'));
-    const again = await addStackItems(
-      root,
-      { items: ['feature'], registry: registryFile, skipInstall: true },
-      runner,
-    );
+    const again = await addStackItems(root, { items: ['r2'], skipInstall: true }, runner);
     assert.deepEqual(again.conflicts, []);
     assert.equal(readFileSync(file, 'utf8'), source);
   } finally {
@@ -186,27 +75,7 @@ test('add refuses edited source and symlink targets and rolls back failed depend
   const root = path.join(temp, 'app');
   try {
     await project(root, ['--hono', '--styling']);
-    const registryFile = path.join(temp, 'registry.json');
-    const value = document();
-    value.items = [sourceItem('styling')];
-    writeFileSync(registryFile, JSON.stringify(value));
-    writeFileSync(path.join(root, 'packages/styling/src/index.ts'), '// My custom theme\n');
     const before = sourceFiles(root);
-    const preview = await addStackItems(
-      root,
-      { items: ['styling'], registry: registryFile, dryRun: true, skipInstall: true },
-      runner,
-    );
-    assert.ok(preview.conflicts.includes('packages/styling/src/index.ts'));
-    await assert.rejects(
-      addStackItems(
-        root,
-        { items: ['styling'], registry: registryFile, skipInstall: true },
-        runner,
-      ),
-      /conflicts/,
-    );
-    assert.deepEqual(sourceFiles(root), before);
     await assert.rejects(
       addStackItems(root, { items: ['resend'], skipInstall: true }, () => {
         throw new Error('Dependency resolution failed');
@@ -214,6 +83,19 @@ test('add refuses edited source and symlink targets and rolls back failed depend
       /Dependency resolution failed/,
     );
     assert.deepEqual(sourceFiles(root), before);
+    const turbo = path.join(root, 'turbo.json');
+    writeFileSync(
+      turbo,
+      readFileSync(turbo, 'utf8').replace('"tasks":', '"globalEnv": ["CUSTOM"], "tasks":'),
+    );
+    const edited = sourceFiles(root);
+    const preview = await addStackItems(root, { items: ['resend'], dryRun: true }, runner);
+    assert.ok(preview.conflicts.includes('turbo.json'));
+    await assert.rejects(
+      addStackItems(root, { items: ['resend'], skipInstall: true }, runner),
+      /conflicts/,
+    );
+    assert.deepEqual(sourceFiles(root), edited);
     if (process.platform !== 'win32') {
       symlinkSync(temp, path.join(root, 'packages/unsafe'));
       await assert.rejects(
@@ -252,60 +134,97 @@ test('add introduces native and web applications using the shared shadcn foundat
   }
 });
 
-test('registry build compiles confined local source files before writing a payload', () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-registry-build-'));
+test('external registry entry points are absent and removed CLI flags fail clearly', async () => {
+  const api = await import('../dist/index.js');
+  for (const name of [
+    'buildSourceRegistry',
+    'loadSourceRegistry',
+    'validateSourceRegistry',
+    'resolveSourceItems',
+  ])
+    assert.equal(name in api, false);
+  assert.equal(existsSync('dist/registry/remote.js'), false);
+  for (const args of [
+    ['add', '.', 'r2', '--registry', 'https://example.com/registry.json'],
+    ['add', '.', 'r2', '--integrity', 'sha256-invalid'],
+    ['registry', 'list', '--registry', 'catalog.json'],
+    ['registry', 'build', 'manifest.json', '--output', 'catalog.json'],
+  ]) {
+    const result = spawnSync(process.execPath, ['dist/bin.js', ...args, '--json'], {
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 1);
+    const error = JSON.parse(result.stderr);
+    assert.notEqual(error.code, 'UNKNOWN_COMMAND');
+    assert.match(error.error, /Unknown .* option|Use registry/);
+  }
+  await assert.rejects(
+    addStackItems('.', { items: ['r2'], registry: 'catalog.json' }),
+    /Only bundled/,
+  );
+});
+
+test('doctor rejects receipts with external content instead of accepting it as bundled', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-external-receipt-'));
+  const root = path.join(temp, 'app');
   try {
-    bootstrap(root);
-    const manifest = document();
-    manifest.items = [sourceItem('base')];
-    manifest.items[0].files[1] = {
-      target: 'packages/base/src/index.ts',
-      path: 'apps/web/next.config.ts',
-    };
-    const file = path.join(root, 'registry.source.json');
-    writeFileSync(file, JSON.stringify(manifest));
-    assert.equal(buildSourceRegistry(file).items[0].files[1].content, 'export default {};\n');
-    manifest.items[0].files[1].path = '../private.txt';
-    writeFileSync(file, JSON.stringify(manifest));
-    assert.throws(() => buildSourceRegistry(file), /Unsafe/);
+    await project(root);
+    const file = path.join(root, 'anhedral.registry.json');
+    const receipt = JSON.parse(readFileSync(file, 'utf8'));
+    receipt.remoteItems = [{ name: 'external' }];
+    writeFileSync(file, JSON.stringify(receipt));
+    assert.equal(inspectProject(root).localReady, false);
+    await assert.rejects(addStackItems(root, { items: ['r2'] }, runner), /doctor/);
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(temp, { recursive: true, force: true });
   }
 });
 
-test('local registry inputs reject nonregular and oversized files without hanging', () => {
-  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-registry-input-'));
-  const moduleUrl = pathToFileURL(path.resolve('dist/registry/remote.js')).href;
+test('web additions preview without running the upstream generator or changing source', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-preview-'));
+  const root = path.join(temp, 'app');
   try {
-    for (const kind of [
-      'directory',
-      'oversized',
-      ...(process.platform === 'win32' ? [] : ['fifo']),
-    ]) {
-      const file = path.join(temporary, kind);
-      if (kind === 'directory') mkdirSync(file);
-      if (kind === 'oversized') writeFileSync(file, ' '.repeat(2 * 1024 * 1024 + 1));
-      if (kind === 'fifo') assert.equal(spawnSync('mkfifo', [file]).status, 0);
-      const result = spawnSync(
-        process.execPath,
-        [
-          '--input-type=module',
-          '--eval',
-          `
-        import { loadSourceRegistry, buildSourceRegistry } from ${JSON.stringify(moduleUrl)};
-        for (const read of [loadSourceRegistry, buildSourceRegistry]) {
-          try { await read(${JSON.stringify(file)}); process.exitCode = 2; }
-          catch (error) { console.log(error.message); }
-        }
-      `,
-        ],
-        { encoding: 'utf8', timeout: 3000 },
-      );
-      assert.equal(result.error, undefined);
-      assert.equal(result.status, 0, result.stderr);
-      assert.match(result.stdout, /regular file|size limit/);
-    }
+    await project(root, ['--expo']);
+    const before = sourceFiles(root);
+    const receipt = readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8');
+    const preview = await addStackItems(root, { items: ['vinext'], dryRun: true }, () => {
+      assert.fail('A dry run must not execute a command');
+    });
+    assert.equal(preview.bootstrapRequired, true);
+    assert.equal(preview.filesChecked, false);
+    assert.ok(preview.targets.includes('apps/web'));
+    assert.deepEqual(sourceFiles(root), before);
+    assert.equal(readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8'), receipt);
   } finally {
-    rmSync(temporary, { recursive: true, force: true });
+    rmSync(temp, { recursive: true, force: true });
   }
+});
+
+test('bundled addition prepares dependencies after script-free staged lock resolution', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-hooks-'));
+  const root = path.join(temp, 'app');
+  try {
+    await project(root);
+    const commands = [];
+    await addStackItems(root, { items: ['wxt'] }, (command, args, cwd) => {
+      commands.push({ command, args, cwd });
+      if (args.includes('--lockfile-only')) runner(command, args, cwd);
+    });
+    assert.ok(commands.slice(0, -1).every(({ args }) => args.includes('--ignore-scripts')));
+    assert.deepEqual(commands.at(-1), {
+      command: 'pnpm',
+      args: ['install', '--frozen-lockfile'],
+      cwd: realpathSync(root),
+    });
+    assert.equal(inspectProject(root).localReady, true);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('the shared bootstrap blocks native Windows for the default runner', async () => {
+  const { assertBootstrapPlatform } = await import('../dist/scaffold/bootstrap.js');
+  const { execFile } = await import('../dist/util.js');
+  assert.throws(() => assertBootstrapPlatform(execFile, 'win32'), /inside WSL/);
+  assert.doesNotThrow(() => assertBootstrapPlatform(execFile, 'linux'));
 });

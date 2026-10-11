@@ -1,8 +1,15 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
-import { appendGitignore } from '../util.js';
+import { execFile, appendGitignore } from '../util.js';
 import { bootstrapArguments } from '../registry/bootstrap.js';
 import type { StandardRunner } from '../registry/types.js';
+
+export function assertBootstrapPlatform(run: StandardRunner, platform = process.platform): void {
+  if (platform === 'win32' && run === execFile)
+    throw new Error(
+      'Native Windows initialization is blocked because the upstream shadcn monorepo bootstrap writes component files outside the project. Run Anhedral inside WSL. Planning and doctor remain available on Windows.',
+    );
+}
 
 export function bootstrapWorkspace(
   root: string,
@@ -10,6 +17,7 @@ export function bootstrapWorkspace(
   run: StandardRunner,
   webOnly = false,
 ): void {
+  assertBootstrapPlatform(run);
   const temporary = path.join(root, '.bootstrap');
   mkdirSync(temporary);
   try {

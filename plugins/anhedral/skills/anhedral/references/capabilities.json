@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cliVersion": "0.9.0",
+  "cliVersion": "0.10.0",
   "capabilities": {
     "vinext": {
       "purpose": "Web application on Cloudflare",

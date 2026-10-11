@@ -139,7 +139,7 @@ async function main(): Promise<void> {
   }
   if (command !== 'new' && command !== 'init') {
     throw new Error(
-      `Unknown command: ${command}. Use new, init, registry, doctor, repository, cloud, register, connect, provision, ship, status, manage, verify, rollback, adopt, recover, --help, or --version.`,
+      `Unknown command: ${command}. Use new, init, add, registry, doctor, repository, cloud, register, connect, provision, ship, status, manage, verify, rollback, adopt, recover, --help, or --version.`,
     );
   }
   if (args.some((arg) => ['--help', '-h'].includes(arg))) {
@@ -411,7 +411,11 @@ try {
             ? 'INVALID_ARGUMENT'
             : command === 'new' || command === 'init'
               ? 'GENERATION_FAILED'
-              : 'UNKNOWN_COMMAND';
+              : command === 'add'
+                ? 'ADDITION_FAILED'
+                : command === 'registry'
+                  ? 'REGISTRY_FAILED'
+                  : 'UNKNOWN_COMMAND';
   console.error(json ? JSON.stringify({ error: message, code }) : `Error: ${message}`);
   process.exitCode = 1;
 }

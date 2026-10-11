@@ -1,4 +1,3 @@
-import { assertSafeTarget } from './registry/receipt.js';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -33,7 +32,6 @@ export function inspectProject(root: string) {
         status,
         workspaces: _workspaces,
         files: _files,
-        remoteItems,
         resourcesProvisioned,
         ...snapshot
       } = installed;
@@ -48,23 +46,6 @@ export function inspectProject(root: string) {
           if (!existsSync(path.join(root, target)))
             throw new Error(`Registry target missing: ${item.name}.`);
         }
-      if (remoteItems !== undefined) {
-        if (!Array.isArray(remoteItems)) throw new Error('Invalid remote registry receipt.');
-        for (const item of remoteItems) {
-          if (
-            !item ||
-            typeof item.source !== 'string' ||
-            typeof item.integrity !== 'string' ||
-            !Array.isArray(item.targets)
-          )
-            throw new Error('Invalid remote registry provenance.');
-          for (const target of item.targets) {
-            assertSafeTarget(root, target);
-            if (!existsSync(path.join(root, target)))
-              throw new Error('Missing remote registry target.');
-          }
-        }
-      }
       record(
         'stack-registry',
         true,

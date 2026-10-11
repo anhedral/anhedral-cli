@@ -8,7 +8,7 @@ import { registerVercelApplication } from './vercel.js';
 import { registerApplication } from './delivery.js';
 import { runStagedTransaction } from './transaction.js';
 import { createSetupPlan } from './capabilities.js';
-import { bootstrapWorkspace } from './scaffold/bootstrap.js';
+import { bootstrapWorkspace, assertBootstrapPlatform } from './scaffold/bootstrap.js';
 import { composeStack } from './scaffold/compose.js';
 import { parseStandardOptions } from './registry/options.js';
 import { STANDARD_USAGE } from './registry/usage.js';
@@ -17,17 +17,9 @@ export { parseStandardOptions, STANDARD_USAGE };
 export { STANDARD_PRODUCTS } from './stack-registry.js';
 export type { StandardOptions, StandardProduct, StandardRunner } from './registry/types.js';
 
-const defaultRunner: StandardRunner = (command, args, cwd) => execFile(command, args, cwd);
-function assertBootstrapPlatform(run: StandardRunner): void {
-  if (process.platform === 'win32' && run === defaultRunner) {
-    throw new Error(
-      'Native Windows initialization is blocked because the upstream shadcn monorepo bootstrap writes component files outside the project. Run Anhedral inside WSL. Planning and doctor remain available on Windows.',
-    );
-  }
-}
 export async function scaffoldStandardProject(
   options: StandardOptions,
-  run: StandardRunner = defaultRunner,
+  run: StandardRunner = execFile,
 ): Promise<void> {
   const plan = createSetupPlan(options);
   if (options.dryRun) {
