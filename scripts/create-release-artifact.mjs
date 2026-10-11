@@ -1,6 +1,14 @@
 import { packagePlugin } from './package-plugin.mjs';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,7 +58,9 @@ try {
   );
 
   if (result.status !== 0) {
-    throw new Error(`npm pack failed\nstdout:\n${result.stdout ?? ''}\nstderr:\n${result.stderr ?? ''}`);
+    throw new Error(
+      `npm pack failed\nstdout:\n${result.stdout ?? ''}\nstderr:\n${result.stderr ?? ''}`,
+    );
   }
 
   const packed = parsePackJson(String(result.stdout ?? ''));
@@ -62,7 +72,7 @@ try {
   if (packageResult.name !== packageJson.name || packageResult.version !== packageJson.version) {
     throw new Error(
       `Packed identity ${packageResult.name}@${packageResult.version} does not match package.json ` +
-      `${packageJson.name}@${packageJson.version}`,
+        `${packageJson.name}@${packageJson.version}`,
     );
   }
 

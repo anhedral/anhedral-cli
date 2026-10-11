@@ -1,703 +1,102 @@
 # Anhedral Application Stack & Delivery Standard
 
-## 1. Standard
+Anhedral builds client-owned applications using established frameworks and provider tools. Default web apps use Vinext, React, TypeScript, Tailwind, shadcn/ui and Lucide on Cloudflare Workers. Native Next.js on Vercel is the established alternative. React is the UI layer within these full-stack frameworks, not a standalone web-app recipe. Add components only when the product needs them, prefer free-first plans where suitable, and keep source, accounts, data, billing and recovery customer-owned.
 
-Anhedral builds **client-owned, monorepo-first applications** using established frameworks, services, APIs, CLIs, plugins, and agent tooling.
+Respect existing account, budget, audience and release authorization. Request only missing approval for paid activation, material spending, architecture changes or release.
 
-The standard is:
+## Stack selection
 
-- **Cloudflare-first** for hosted application infrastructure.
-- **Free-first** where suitable.
-- **OpenAI/Codex-operated** for development and operations.
-- **Computer Use and Control Chrome throughout development.**
-- **GitHub-first** for source control and delivery.
-- **Next.js-first** for web applications.
-- **pnpm + Turborepo** for TypeScript/JavaScript monorepos.
-- **shadcn monorepo initialization for every new project.**
-- **macOS** as the Anhedral development environment.
-- Add applications, packages, providers, and infrastructure only when required.
-- Keep client accounts, source, infrastructure, billing, and recovery client-owned.
+Cloudflare first. **Default** = preferred when needed; **Option** = choose for the stated requirement. Alternatives are grouped beside their defaults. Preserve justified existing stacks.
 
-Human approval is required for paid activation, material spending, architecture exceptions, and production releases.
+### Foundation and clients
 
----
+| Capability | Default — when | Options — when |
+| --- | --- | --- |
+| Shared source | **Default:** [TypeScript](https://www.typescriptlang.org/docs/), [pnpm](https://pnpm.io/), [Turborepo](https://turborepo.dev/docs), [Zod](https://zod.dev/) — shared code, builds and validation. | — |
+| Web | **Default:** [Vinext + React](https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/) — full-stack web on Workers. | **Option:** [Next.js + OpenNext](https://opennext.js.org/cloudflare) — existing Next app on Workers; [Next.js + Vercel](https://vercel.com/docs/frameworks/nextjs) — native Next hosting. |
+| UI | **Default:** [Tailwind](https://tailwindcss.com/docs/), [shadcn/ui](https://ui.shadcn.com/docs) — web styling/components. | **Option:** [CSS Modules](https://nextjs.org/docs/app/getting-started/css) — bespoke styling or existing CSS. |
+| Mobile | **Default:** [Expo](https://docs.expo.dev/) — React Native iOS/Android. | **Option:** [SwiftUI](https://developer.apple.com/documentation/swiftui) / [Compose](https://developer.android.com/compose) — platform-specific UI; [Flutter](https://docs.flutter.dev/) — Dart shared UI; [Capacitor](https://capacitorjs.com/docs) — package web UI with native access. |
+| Desktop | **Default:** [Electron](https://www.electronjs.org/docs/latest/) — reuse web UI with Chromium/Node. | **Option:** [Tauri](https://v2.tauri.app/) — smaller system-webview packages; [GPUI](https://github.com/zed-industries/zed/blob/main/crates/gpui/README.md) — GPU-rendered Rust UI, separate UI code and pre-1.0 APIs; [SwiftUI/AppKit](https://developer.apple.com/documentation/appkit) — Apple-specific desktop experience. |
+| Extensions | **Default:** [WXT](https://wxt.dev/guide/introduction.html) — browser extensions. | **Option:** [Chrome extension APIs](https://developer.chrome.com/docs/extensions) — direct implementation or existing extension. |
 
-# 2. Tooling selection chart
+### Backend and data
 
-|Need|Default|Option|When to use|
-|---|---|---|---|
-|**Repository foundation**|**shadcn monorepo initializer + pnpm + Turborepo**|Native language workspaces alongside it|Every new project, including mobile-only, desktop-only, extensions, or projects using another app template.|
-|**Web**|**Next.js + React + TypeScript + Tailwind + shadcn/ui**|Vinext|Next.js by default. Vinext only when its Vite/Workers architecture provides a demonstrated benefit.|
-|**Mobile**|**Expo + React Native Reusables**|—|iOS/Android applications.|
-|**Desktop**|**Electron** + **React** + **TypeScript** + **Tailwind** + **shadcn/ui**|GPUI + Rust|Electron for React/TS reuse. GPUI for deliberately Rust-first applications.|
-|**Extension**|**WXT + Chrome Side Panel API**|—|Browser-integrated products. Side Panel is the primary UI.|
-|**API**|**Hono + OpenAPI on Workers**|Next.js route handlers|Hono for shared/mobile/external APIs. Next.js handlers when only the web application needs them.|
-|**Next.js hosting**|**Cloudflare Workers + OpenNext**|Vercel|Cloudflare by default. Vercel when native Next.js hosting materially simplifies the project and its applicable plan is appropriate.|
-|**General compute**|**Cloudflare Workers**|Containers|Containers for Linux/native dependencies or workloads that do not fit Workers.|
-|**PostgreSQL**|**Neon + Drizzle + Hyperdrive**|—|Relational PostgreSQL persistence.|
-|**Cloudflare SQL**|**D1 + Drizzle**|Neon|D1 when SQLite semantics are sufficient.|
-|**Local data**|**SQLite + filesystem**|—|Offline/device-local applications.|
-|**Authentication**|**Clerk or Better Auth**|No auth|Clerk for managed identity; Better Auth for application-managed auth; no auth when unnecessary.|
-|**Files**|**Private R2 + Worker binding**|Local filesystem|R2 for remote files; filesystem for local files.|
-|**Cache/config**|**KV**|—|Eventually consistent configuration/cache, never authoritative transactional state.|
-|**Realtime**|**Durable Objects + WebSockets**|—|Presence, rooms, collaboration, and stateful realtime coordination.|
-|**Jobs**|**Queues**|—|Deferred/asynchronous processing.|
-|**Scheduled work**|**Cron Triggers**|—|Recurring scheduled work.|
-|**Durable workflows**|**Workflows**|—|Resumable multi-step processes.|
-|**AI**|**OpenAI SDK or AI SDK**|Workers AI|OpenAI SDK for direct OpenAI use; AI SDK for streaming/tools/provider abstraction; Workers AI when Cloudflare inference is advantageous.|
-|**Domain**|**GoDaddy broker + Cloudflare nameservers**|—|Use GoDaddy for domain registration/brokerage and Cloudflare for authoritative DNS.|
-|**Inbound Mail**|**Cloudflare Email Routing**|—|Incoming domain-email routing for business and application mail.|
-|**Outbound Mail**|**Cloudflare Email Sending**|Resend|Business and application mail; use Resend when selected as the alternative sending provider.|
-|**Payments**|**Stripe**|RevenueCat + Stripe|Add RevenueCat when web/App Store/Play Store entitlements need unified management.|
-|**Operational telemetry**|**Cloudflare Observability**|Sentry|Add Sentry when additional crash/runtime diagnostics are required.|
-|**Product analytics**|**Basin**|PostHog|PostHog when replay, experiments, funnels, or other required capabilities justify it.|
-|**TS/JS auditing**|**Fallow**|—|Standard static/codebase audit for TypeScript and JavaScript. Use in development and PR checks.|
-|**Source**|**Git + GitHub**|Cloudflare Artifacts|GitHub by default. Artifacts when it provides a concrete advantage and required controls are supported.|
-|**CI/CD**|**GitHub Actions**|Workers Builds|Workers Builds when equivalent controls are available and useful.|
-|**Development agent**|**OpenAI / Codex**|—|Primary implementation, reasoning, testing, and operational agent.|
-|**Interactive development**|**Computer Use + Control Chrome**|—|Used heavily throughout implementation, iteration, setup, automation, and verification.|
-|**Cloudflare operations**|**Cloudflare plugin + `cf` + API/MCP**|Dashboard when useful|Provisioning, deployment, configuration, analytics, observability, and operations.|
+| Capability | Default — when | Options — when |
+| --- | --- | --- |
+| API/runtime | **Default:** [Workers](https://developers.cloudflare.com/workers/) + [Hono](https://hono.dev/docs/getting-started/cloudflare-workers) — APIs, webhooks and services. | **Option:** framework server routes — integrated web backend; [Containers](https://developers.cloudflare.com/containers/) — Linux/native dependencies. |
+| Database | **Default:** [Neon serverless driver](https://neon.com/docs/serverless/serverless-driver) + [Drizzle](https://orm.drizzle.team/docs/connect-neon) — direct HTTP for CRUD and independent queries; no Hyperdrive required. | **Option:** [Hyperdrive + Neon](https://developers.cloudflare.com/hyperdrive/examples/connect-to-postgres/postgres-database-providers/neon/) — pg/postgres.js, connection reuse or optional caching, justified by workload/latency measurements; Neon WebSocket driver — session/interactive transactions; [D1 + Drizzle](https://orm.drizzle.team/docs/sqlite/connect-cloudflare-d1) — Worker-native SQLite; [SQLite](https://www.sqlite.org/docs.html) / [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) — local/offline data. |
+| Authentication | **Default:** [Better Auth](https://better-auth.com/docs/adapters/drizzle) — own identities, sessions and organizations. | **Option:** [Clerk](https://clerk.com/docs) — managed authentication and identity features. |
+| Files | **Default:** [R2](https://developers.cloudflare.com/r2/) — uploads, attachments and archives. | **Option:** local files — device-only apps; existing S3-compatible storage — migration has no benefit. |
+| Realtime/state | **Default:** [Durable Objects + hibernating WebSockets](https://developers.cloudflare.com/durable-objects/best-practices/websockets/) — rooms, presence and coordinated events. | **Option:** [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) — one-way updates; polling — infrequent changes; [KV](https://developers.cloudflare.com/kv/) — read-heavy, eventually consistent cache/config. |
+| Background work | **Default:** [Queues](https://developers.cloudflare.com/queues/) — jobs/retries; [Workflows](https://developers.cloudflare.com/workflows/) — durable multi-step work; [Cron](https://developers.cloudflare.com/workers/configuration/cron-triggers/) — schedules. | **Option:** [DO alarms](https://developers.cloudflare.com/durable-objects/api/alarms/) — entity timers; [K2](https://developers.cloudflare.com/k2/) — retained replayable streams, beta acceptable. |
+| Placement | **Default:** standard Workers placement — request-proximate execution. | **Option:** [Placement](https://developers.cloudflare.com/workers/configuration/placement/) — database/backend round trips dominate. |
 
-Do not activate every option simply because it appears in the table.
+Start with direct Neon HTTP; use non-interactive transaction batches where suitable, or WebSocket/standard-driver transactions when interactive sessions are needed. Benchmark before adding Hyperdrive. Its pooling operates on Cloudflare infrastructure; Neon PgBouncer operates near Postgres. With Hyperdrive use pg/postgres.js against Neon’s non-pooled endpoint, not the Neon serverless driver or stacked poolers. Disable result caching for authoritative auth, permissions, entitlements and balances. Neither Neon nor D1 is universally faster/cheaper; offline sync remains application work.
 
----
+### AI, media and communication
 
-# 3. Repository foundation
+| Capability | Default — when | Options — when |
+| --- | --- | --- |
+| Inference | **Default:** [Workers AI](https://developers.cloudflare.com/workers-ai/) — supported models fit; [AI Gateway](https://developers.cloudflare.com/ai-gateway/) — routing/controls/telemetry. | **Option:** [OpenAI/other providers through Gateway](https://developers.cloudflare.com/ai-gateway/usage/providers/) — required models; [AI SDK](https://ai-sdk.dev/docs/introduction) — shared model interfaces and streaming UI. |
+| Retrieval/agents | **Default:** [AI Search](https://developers.cloudflare.com/ai-search/) — managed RAG. | **Option:** [Vectorize](https://developers.cloudflare.com/vectorize/) — custom vector pipeline; [Agents SDK](https://developers.cloudflare.com/agents/) — stateful agents. |
+| Isolated execution | — | **Option:** [Sandboxes](https://developers.cloudflare.com/sandbox/) — user/agent code; [Browser Run](https://developers.cloudflare.com/browser-run/) — automation, screenshots/PDFs; [Containers](https://developers.cloudflare.com/containers/) — custom runtime. |
+| Calls | **Default:** [RealtimeKit](https://developers.cloudflare.com/realtime/realtimekit/) — audio/video/screensharing. | **Option:** [Realtime SFU + TURN](https://developers.cloudflare.com/realtime/) — custom WebRTC; [LiveKit](https://docs.livekit.io/) — existing ecosystem or voice-agent requirements. |
+| Images/video | **Default:** [Images](https://developers.cloudflare.com/images/) — transforms/delivery; [Stream](https://developers.cloudflare.com/stream/) — encoding/playback/live video. | **Option:** [R2](https://developers.cloudflare.com/r2/) — originals/downloads without managed processing; [Media over QUIC](https://developers.cloudflare.com/moq/) — specialized low-latency transport. |
+| Email | **Default:** [Email Service](https://developers.cloudflare.com/email-service/) — email workflows, sending beta acceptable. | **Option:** [Resend](https://resend.com/docs) — established transactional email provider. |
+| Notifications | **Default:** [Expo Push](https://docs.expo.dev/push-notifications/overview/) — Expo mobile notifications. | **Option:** [APNs](https://developer.apple.com/documentation/usernotifications) / [FCM](https://firebase.google.com/docs/cloud-messaging) — direct native delivery; [Web Push](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) — browser notifications. |
 
-## Every project starts with shadcn
+Durable Objects coordinate calls/events; SFU/TURN handle media. WebSockets do not replace background push.
 
-Every new Anhedral project starts from the **shadcn-generated pnpm/Turborepo monorepo**, regardless of initial application type.
+### Commerce and access
 
-Initialize:
+| Capability | Default — when | Options — when |
+| --- | --- | --- |
+| Web billing | **Default:** [Stripe Checkout](https://docs.stripe.com/payments/checkout) + [Billing](https://docs.stripe.com/billing) — payments, subscriptions and usage billing. | **Option:** [Connect](https://docs.stripe.com/connect) — marketplaces/payouts; [Tax](https://docs.stripe.com/tax) — tax calculation. |
+| Cross-store purchases | **Default:** [RevenueCat](https://www.revenuecat.com/docs/web/integrations/stripe) — supported store/web subscriptions and entitlements. | **Option:** [StoreKit](https://developer.apple.com/documentation/storekit) / [Play Billing](https://developer.android.com/google/play/billing) — own purchase lifecycle integrations. |
+| Access enforcement | **Default:** Workers + chosen database — entitlement projections, seats, grants and credit/usage ledger. | **Option:** [Monetization Gateway](https://developers.cloudflare.com/monetization-gateway/) — eligible x402 requests, closed beta acceptable. |
 
-```
-pnpm dlx shadcn@latest init --monorepo --template next
-```
+Stripe/stores remain purchase authorities; RevenueCat does not cover every Stripe pricing model. Verify webhooks, process idempotently and reconcile refunds/restores. Cloudflare hosts enforcement; it does not replace payment processing.
 
-This is the **repository bootstrap**, not a requirement that every project remain a Next.js application.
+### Security, analytics and operations
 
-After initialization:
+| Capability | Default — when | Options — when |
+| --- | --- | --- |
+| Public protection | **Default:** [DNS/TLS](https://developers.cloudflare.com/directory/), [WAF](https://developers.cloudflare.com/waf/), [Turnstile](https://developers.cloudflare.com/turnstile/) — domains, HTTPS and abuse controls. | **Option:** [API Shield](https://developers.cloudflare.com/api-shield/) — additional API protection; [Access + Tunnel](https://developers.cloudflare.com/cloudflare-one/) — staff tools/private origins. |
+| Specialized security/networking | — | **Option:** [Load Balancing](https://developers.cloudflare.com/load-balancing/) — multiple origins; [Spectrum](https://developers.cloudflare.com/spectrum/) — TCP/UDP proxying; [Data Localization](https://developers.cloudflare.com/data-localization/) — regional processing requirements. |
+| Credentials | **Default:** [Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/) — server credentials. | **Option:** [Secrets Store](https://developers.cloudflare.com/secrets-store/) — shared account secrets, beta acceptable. |
+| Website analytics | **Default:** [free Web Analytics](https://www.cloudflare.com/web-analytics/) — traffic/performance. | **Option:** [PostHog](https://posthog.com/docs) — product funnels, cohorts and replay. |
+| Operational telemetry | **Default:** [Workers Observability](https://developers.cloudflare.com/workers/observability/) — logs/traces/errors. | **Option:** [Sentry](https://docs.sentry.io/platforms/javascript/) — cross-client error monitoring; [Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) — custom telemetry; [Basin](https://developers.cloudflare.com/basin/) — event ingestion and analytical SQL on R2/Iceberg. |
+| Feature delivery | — | **Option:** [Flagship](https://developers.cloudflare.com/flagship/) — targeted exposure; [PostHog](https://posthog.com/docs/feature-flags) — existing flags/experiments. |
+| Content/source tooling | — | **Option:** [Artifacts](https://developers.cloudflare.com/artifacts/) — durable versioned source/artifacts, beta acceptable; [GitHub](https://docs.github.com/) — customer-owned Git source. |
+| Customer platforms | — | **Option:** [Cloudflare for SaaS](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/) — customer domains; [Workers for Platforms](https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/) — customer code. |
 
-- Preserve the generated pnpm/Turborepo structure and conventions.
-- Use `apps/*` for applications/services.
-- Use `packages/*` for reusable packages.
-- Keep the generated Next.js app when Next.js is required.
-- Remove or replace the starter app when the project is mobile-only, desktop-only, extension-only, or uses another explicitly selected application template.
-- Never retain an unused Next.js application solely because it initialized the repository.
-- Add application-specific templates inside the established monorepo.
+### Development, releases and accounts
 
-Examples:
+| Capability | Default — when | Options — when |
+| --- | --- | --- |
+| Agent tooling | **Default:** [Cloudflare Codex plugin](https://developers.cloudflare.com/agent-setup/codex/) — Cloudflare Skills/MCP and agent operations. | **Option:** [cf CLI](https://developers.cloudflare.com/cf/) — broad API/project operations, beta acceptable. |
+| Cloud releases | **Default:** [Wrangler](https://developers.cloudflare.com/workers/wrangler/) + [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) — Worker development/releases. | **Option:** [GitHub Actions](https://docs.github.com/en/actions) — custom CI; [Vercel](https://vercel.com/docs/deployments) — selected native Next stack. |
+| Native builds | **Default:** [EAS](https://docs.expo.dev/build/introduction/) — hosted Expo builds. | **Option:** [local Expo builds](https://docs.expo.dev/build-reference/local-builds/) — local CI; platform toolchains — GPUI/Tauri/native clients. |
+| Distribution/accounts | **Default:** customer-owned [Apple](https://developer.apple.com/programs/), [Play](https://play.google.com/console/about/), [Chrome](https://developer.chrome.com/docs/webstore/register) accounts — selected stores. | **Option:** direct desktop distribution — signed/notarized packages; [free Cloudflare account creation](https://developers.cloudflare.com/changelog/post/2026-08-04-free-dashboard-button/) — eligible separate customer accounts. |
 
-```
-Mobile-only
+Use customer-owned resources. Implement backup/recovery, authorization, replay, offline sync and ledger correctness explicitly. Select specialized capabilities as needed; alternatives are choices, not dependencies to install together.
 
-apps/
-└── mobile/
-```
+The CLI generates Vinext, Next.js, Expo, Electron, WXT and Hono applications plus selected provider starters. Neon starters use the direct serverless HTTP driver with Drizzle. Alternatives in the table require deliberate project implementation. A starter does not establish configured infrastructure or working product behavior. The bundled capability registry and `new --dry-run --json` describe generated requirements.
 
-```
-Extension-only
+The bundled stack registry in `src/stack-registry.ts` owns each item’s identity, version, source recipe, setup requirements, environment variables, bindings, destinations and composition constraints. Product IDs and capability views derive from that catalog. Foundations include pnpm/Turborepo, TypeScript, ESLint and shared UI; the official shadcn bootstrap is pinned in `src/dependencies.ts`. The resolver validates selections and orders dependencies; focused modules under `src/scaffold/` install the resolved recipes inside the staging transaction. `registry list|view` exposes the catalog, dry-run plans expose concrete destinations, and `anhedral.registry.json` records installed recipes and local workspace references. Package names must be unique, workspace references must resolve, and dependency cycles fail before commit. `doctor` verifies the installed receipt and workspace graph against the setup plan. To add a supported part, declare one catalog entry with its recipe and composition policy, then exercise composition and rollback in the registry tests. Build and release tooling regenerate matching plugin catalogs. Incremental `add` stages bundled or declarative local/HTTPS registry items, resolves dependencies, rejects unsafe paths and installation hooks, and refuses to replace edited source. Receipts record source integrity and generated-file hashes. Runtime relocation and older projects without fingerprints require explicit migration. This is an Anhedral recipe schema; shadcn JSON interoperability is not supported. Stack alternatives without generator recipes remain deliberate implementation choices.
 
-apps/
-└── extension/
-```
+## Implementation rules
 
-```
-Full product
+- Start new projects with the official shadcn pnpm/Turborepo monorepo; use `apps/*` and genuinely shared `packages/*`. Web/Electron use React, TypeScript, Tailwind, shadcn/ui and Lucide; Expo uses React Native Reusables; WXT uses Chrome Side Panel. Preserve suitable existing architecture.
+- Vinext is the default Worker framework; verify its actual compatibility. Native Next.js uses Vercel; explicit Next.js on Workers uses OpenNext. Shared/mobile APIs use Hono/OpenAPI; web-only endpoints can use framework routes.
+- Select one database and one identity provider. Generator alternatives remain deliberate flags, not automatic migrations. Better Auth requires a database; authentication is optional. Configure origins/sessions and enforce tenant/resource authorization server-side. Hosting privacy is separate from product identity.
+- Keep R2 private and authorize file operations in Workers. Keep secrets server-side, environments separate and migrations reviewed. KV is not authoritative transactional state. Bound retries, concurrency, AI usage and paid consumption; implement idempotency, quotas and recovery.
+- Use customer-owned source, accounts, billing and recovery. Domain registration/brokerage uses GoDaddy and Cloudflare DNS; preserve existing mail/DNSSEC. Configure actual sender domains and inbound destinations; routing does not migrate mailboxes.
+- Codex and browser/native tools implement and verify product flows; Fallow audits TS/JS. A starter, installed package or successful deployment does not prove a configured integration or working application.
+- Record decisions and connections in the application's `docs/architecture.md`; keep tested behavior, environment, release/source identity and unresolved gaps in `docs/verification.md`. Update these existing files after relevant changes.
 
-apps/
-├── web/
-├── mobile/
-├── desktop/
-├── extension/
-├── api/
-├── jobs/
-└── realtime/
-```
+Follow the [delivery workflow](delivery-workflow.md) for release, acceptance and recovery. The [managed-hosting contract](https://github.com/anhedral/anhedral-init/blob/main/docs/managed-hosting-architecture.md) describes an undeployed client/backend boundary, not an available service. Installed versions, publication and live acceptance require separate evidence.
 
-## Additional initialization
+## Maintenance
 
-Mobile:
-
-```
-pnpm dlx @react-native-reusables/cli@latest init
-```
-
-Extension:
-
-```
-pnpm dlx wxt@latest init
-```
-
-Standard commands where applicable:
-
-```
-dev
-build
-lint
-typecheck
-test
-audit
-check
-```
-
-Other languages retain their native toolchains. Turborepo coordinates them where useful but does not replace Cargo, Python tooling, Expo tooling, or other native systems.
-
-Commit lockfiles and record important toolchain versions.
-
----
-
-# 4. Application conventions
-
-## Web
-
-Default:
-
-**Next.js + React + TypeScript + Tailwind CSS + shadcn/ui**
-
-Keep the App Router product-driven:
-
-```
-app/
-├── page.tsx
-├── dashboard/
-├── projects/
-├── settings/
-└── (admin)/
-```
-
-Use route groups such as `(admin)` and `(auth)` when they provide a meaningful layout, authorization, or organizational boundary.
-
-### Vinext
-
-Vinext is an explicit project choice, not an automatic Next.js replacement.
-
-Use it only when its Vite/Workers architecture provides a concrete benefit and the project's dependencies and framework behavior have been verified.
-
-## Mobile
-
-Use:
-
-**Expo + React Native + React Native Reusables + TypeScript**
-
-Follow the same general package, styling, naming, and domain conventions as web.
-
-Share appropriate business logic, contracts, validation, styling, and utilities.
-
-Do not force React and React Native to share rendered components when separate implementations are cleaner.
-
-## Desktop
-
-Use **Electron** when React/TypeScript reuse is useful.
-
-Use **GPUI + Rust** when a deliberately Rust-first architecture, native integration, or performance requirement justifies a separate implementation.
-
-## Browser extensions
-
-Use:
-
-**WXT + Chrome Side Panel API**
-
-The Chrome Side Panel is the primary extension interface.
-
-Use WXT for:
-
-- side panel
-- service worker/background logic
-- content scripts
-- browser messaging
-- permissions
-- packaging
-
-Do not default to popup-first extension architecture.
-
----
-
-# 5. Shared packages
-
-Create packages only when genuine reusable behavior exists.
-
-Typical options:
-
-```
-packages/
-├── ui/                 # React / shadcn
-├── ui-native/          # React Native Reusables
-├── styling/            # colors, typography, spacing, themes
-├── contracts/          # schemas, types, API/event contracts
-├── api-client/
-├── domain/             # portable business logic
-├── server/             # server-only logic
-├── auth/
-├── db/
-├── local-data/
-├── storage/
-├── billing/
-├── email/
-├── ai/
-├── analytics/
-├── observability/
-├── i18n/
-├── eslint-config/
-├── typescript-config/
-└── test-config/
-```
-
-Use **`styling`**, not `tokens`, for shared styling definitions.
-
-Share:
-
-- styling
-- schemas
-- validation
-- contracts
-- API types
-- event definitions
-- portable business logic
-
-Keep platform-specific UI separate where appropriate.
-
-Keep privileged/server integrations out of client-safe packages.
-
-Never expose server credentials through shared client code.
-
----
-
-# 6. Cloudflare hosting
-
-Cloudflare is the preferred hosted application platform.
-
-Typical architecture:
-
-```
-Web / Mobile / Desktop / Extension
-                  │
-                  ▼
-          Cloudflare Workers
-            Hono / Next.js
-                  │
-       ┌──────────┼──────────┐
-       ▼          ▼          ▼
-   Hyperdrive    R2      Durable Objects
-       │                     │
-       ▼                  WebSockets
-     Neon
-
-Workers
-├── Queues
-├── Cron
-├── Workflows
-├── KV
-├── Observability
-└── Basin
-```
-
-Use only required services.
-
-## Next.js hosting
-
-Default:
-
-```
-Next.js
-   ↓
-OpenNext
-   ↓
-Cloudflare Workers
-```
-
-Alternative:
-
-```
-Next.js
-   ↓
-Vercel
-   │
-   └─────────────→ Cloudflare infrastructure
-```
-
-Vercel may host only the Next.js application while Cloudflare continues to provide:
-
-- APIs
-- R2
-- Hyperdrive
-- Durable Objects
-- Queues
-- Workflows
-- analytics
-- other infrastructure
-
-Use Vercel when its native Next.js integration, previews, deployment experience, or framework support materially simplifies the project and its applicable plan/cost is appropriate.
-
-Cloudflare remains the default.
-
----
-
-# 7. APIs
-
-Use:
-
-**Hono + OpenAPI on Cloudflare Workers**
-
-when a shared network API is required by:
-
-- mobile
-- desktop
-- extensions
-- integrations
-- external consumers
-- multiple application interfaces
-
-Use **Next.js route handlers** when endpoints belong only to the web application and a separate service adds no useful boundary.
-
-Do not create `apps/api` automatically.
-
----
-
-# 8. Data
-
-## PostgreSQL
-
-Default:
-
-```
-Worker
-  ↓
-Drizzle
-  ↓
-Hyperdrive
-  ↓
-Neon PostgreSQL
-```
-
-Use PostgreSQL when relational requirements justify it.
-
-Neon remains independently managed.
-
-Avoid inappropriate Hyperdrive query caching for correctness-sensitive operations such as:
-
-- authentication
-- permissions
-- entitlements
-- balances
-- quotas
-- financial records
-- paid-unit consumption
-
-## D1
-
-Use:
-
-**D1 + Drizzle**
-
-when SQLite semantics are sufficient and Cloudflare-native persistence is preferable.
-
-D1 is an alternative database choice, not an automatic PostgreSQL replacement.
-
-## Local data
-
-Use:
-
-**SQLite + filesystem**
-
-for local/device-resident data.
-
-Do not add cloud persistence merely because other applications use it.
-
-Offline synchronization requires explicit design for:
-
-- identity
-- offline writes
-- conflicts
-- reconciliation
-- authoritative state
-
----
-
-# 9. Private files
-
-Remote application files use:
-
-**private Cloudflare R2 buckets accessed through Worker bindings.**
-
-```
-web / mobile / desktop / extension
-                 ↓
-              Worker
-                 ↓
-       authenticate + authorize
-                 ↓
-         private R2 binding
-```
-
-Clients never receive R2 credentials.
-
-The Worker enforces file-level authorization.
-
-Do not make private application buckets public for convenience.
-
-Use the local filesystem when files are intentionally device-local.
-
----
-
-# 10. Authentication
-
-Choose per project.
-
-### Clerk
-
-Use when managed identity reduces implementation and maintenance.
-
-### Better Auth
-
-Use when application-managed authentication is preferred.
-
-### No authentication
-
-Use when accounts are unnecessary.
-
-Do not add authentication merely because other projects use it.
-
-Cloudflare Access may separately protect internal applications or staging environments.
-
----
-
-# 11. Realtime and asynchronous work
-
-Use **Durable Objects + WebSockets** for:
-
-- rooms
-- presence
-- collaboration
-- connection coordination
-- stateful realtime behavior
-
-Use **Queues** for asynchronous jobs.
-
-Use **Cron Triggers** for scheduled work.
-
-Use **Workflows** for durable, resumable multi-step processes.
-
-Use **Containers** when suitable workloads require:
-
-- Linux binaries
-- native dependencies
-- heavier compute
-- isolated processing
-
-Define retries, idempotency, concurrency, and failure handling where applicable.
-
----
-
-# 12. AI
-
-Normal choices:
-
-### OpenAI SDK
-
-Use when directly integrating OpenAI.
-
-### AI SDK
-
-Use when the application benefits from:
-
-- streaming
-- tool calling
-- provider abstraction
-- structured AI UI patterns
-- established templates/examples
-
-Prefer official examples and suitable Next.js templates over unnecessary custom infrastructure.
-
-### Workers AI
-
-Optional.
-
-Use when Cloudflare-hosted inference provides a concrete project advantage.
-
-AI Gateway and related Cloudflare AI services may be selected when their routing, observability, control, or cost features justify them.
-
----
-
-# 13. Domain and mail
-
-Use:
-
-```
-Domain        → GoDaddy broker + Cloudflare nameservers
-Inbound Mail  → Cloudflare Email Routing
-Outbound Mail → Cloudflare Email Sending (default) / Resend (alternative)
-```
-
-Purchase the domain through GoDaddy registration/brokerage in the client's account. The client owns registration, renewal, billing, and recovery access.
-
-Then add the domain as a zone in the client's Cloudflare account, verify its DNS records, and set the registrar's nameservers to those assigned by Cloudflare. Verify the zone is active before connecting application domains and mail. Registration remains with the registrar; Cloudflare manages authoritative DNS.
-
-Use Cloudflare Email Routing for inbound mail and Cloudflare Email Sending for outbound business and application mail. Resend is an alternative outbound sending provider when selected for the project.
-
-Configure domain verification, routing destinations, sender authentication, and environment-specific sending credentials or bindings for the selected provider.
-
----
-
-# 14. Payments
-
-Use **Stripe** for web payments and subscriptions.
-
-Add **RevenueCat** when subscriptions span web, App Store, and Play Store ecosystems and unified entitlement management is useful.
-
-Keep separate concepts for:
-
-- billing
-- subscriptions
-- entitlements
-- credits
-- quotas
-- seats
-- consumption
-
-Paid-unit consumption must be transactional and idempotent.
-
----
-
-# 15. Analytics and observability
-
-## Operations
-
-Use **Cloudflare Observability** for:
-
-- logs
-- errors
-- traces
-- latency
-- deployments
-- request behavior
-- operational investigation
-
-Add **Sentry** when additional runtime or crash diagnostics are required.
-
-## Product analytics
-
-Use **Basin** for:
-
-- application events
-- analytical datasets
-- analytical queries
-
-Add **PostHog** when requirements such as:
-
-- session replay
-- funnels
-- experiments
-- specialized product analytics
-
-justify it.
-
-Do not install every analytics platform by default.
-
-Operational telemetry and product analytics are separate concerns.
-
----
-
-# 16. TypeScript/JavaScript auditing
-
-Use **Fallow** as the standard TypeScript/JavaScript codebase auditing tool.
-
-Fallow complements linting, typechecking, testing, builds, and runtime verification.
-
-Use it for:
-
-- unused code
-- unused dependencies
-- circular dependencies
-- duplication
-- complexity
-- architecture-boundary problems
-- dependency issues
-- styling/design-system drift
-
-During development:
-
-```
-pnpm exec fallow
-```
-
-For PR/change auditing:
-
-```
-pnpm exec fallow audit
-```
-
-Use `fallow audit` in PR checks where applicable to identify problems introduced by the change.
-
-The deterministic gate should generally include:
-
-```
-format / lint
-      ↓
-typecheck
-      ↓
-Fallow audit
-      ↓
-tests
-      ↓
-build
-      ↓
-integration checks
-```
-
-`pnpm check` should run the project's required deterministic gate.
-
-Fix legitimate findings. Use narrow documented exceptions for intentional behavior rather than broad ignores.
-
----
-
-# 17. Anhedral developers
-
-Anhedral development is **agent-driven on macOS**.
-
-The core environment is:
-
-```
-macOS
-├── OpenAI / Codex
-├── Computer Use
-├── Control Chrome
-├── terminal + development servers
-├── native apps / simulators
-├── provider plugins
-├── APIs / MCP
-└── CLIs
-```
-
-## Developer tooling
-
-|Tool|Primary use|
-|---|---|
-|**OpenAI / Codex**|Primary coding and reasoning agent: planning, implementation, debugging, review, testing, and operations.|
-|**Computer Use**|Dynamic testing, fast iteration, macOS interaction, application testing, setup automation, task automation, debugging, and cross-application workflows.|
-|**Control Chrome**|Browser development, rapid UI iteration, authentication flows, integrations, console/network inspection, dashboards, and deployed-app verification.|
-|**Cloudflare plugin + `cf` + API/MCP**|Cloudflare provisioning, configuration, deployments, logs, observability, analytics, and operations.|
-|**GitHub plugin**|Repositories, branches, worktrees, PRs, issues, checks, reviews, and releases.|
-|**Neon integration/API**|PostgreSQL projects, branches, databases, migrations, and operations.|
-|**Stripe plugin**|Products, prices, payments, subscriptions, test transactions, and billing operations.|
-|**RevenueCat integration**|Products, offerings, subscriptions, and entitlements.|
-|**Email integrations**|Application email and supported mailbox/email workflows.|
-|**Slack plugin**|Project context, communication, decisions, notifications, and workflows.|
-|**[Cloudflare security audit](https://github.com/cloudflare/security-audit-skill)**|Repository security reviews and verified vulnerability findings.|
-|**Next.js skills/tools**|Framework conventions, implementation, routing, rendering, debugging, and optimization.|
-|**Vercel plugin**|Projects, deployments, environments, logs, and operations when Vercel is selected.|
-
----
-
-# 18. Accounts and access
-
-Configure only the services selected by the project.
-
-- **Cloudflare:** client-owned account, account ID, authorized plugin/OAuth or scoped API token, and a plan supporting the selected services. Add billing or DNS access only when required.
-- **Domain and mail:** client-owned GoDaddy domain access, Cloudflare nameservers/DNS access, Email Routing destinations, and Cloudflare Email Sending setup or Resend credentials when selected.
-- **Neon / Hyperdrive:** authorized Neon project access, database connection credentials, separate migration/runtime roles, and Hyperdrive origin configuration.
-- **Private R2 / Pipelines:** Worker bindings for application storage; authorized sink writes to the selected private bucket. Cloudflare's managed setup requires the Workers Pipelines app's **Pipelines Setup** grant. Keep ingestion private unless an authorized public endpoint is required.
-- **Auth and optional providers:** Better Auth secret/URL or Clerk keys; selected AI, email, payments, analytics, and observability credentials, domains, and webhooks.
-- **GitHub / CI:** repository access, protected deployment secrets, and environment-specific resource identifiers.
-
-Keep secrets server-side and out of source control. Obtain approval for paid activation, broader access, and required terms. Configure resource bindings, verify selected integrations in the deployed application, and record remaining setup before production approval.
+This file owns stack choices; the delivery guide owns lifecycle/acceptance; the managed contract owns its API; sponsorship owns support information. Update the owning file in the same change when behavior or provider requirements change. Remove stale claims and unused options. Verify current official guidance when selecting a provider; beta availability is not guaranteed. Do not add catalogs, duplicated analyses or progress reports to `docs`. The plugin's bundled stack/delivery files are generated copies, never separate sources of truth.

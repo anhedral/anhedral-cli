@@ -23,7 +23,11 @@ function run(command, args, cwd) {
   });
   const stdout = String(result.stdout ?? '');
   const stderr = String(result.stderr ?? '');
-  assert.equal(result.status, 0, `${command} ${args.join(' ')} failed\nstdout:\n${stdout}\nstderr:\n${stderr}`);
+  assert.equal(
+    result.status,
+    0,
+    `${command} ${args.join(' ')} failed\nstdout:\n${stdout}\nstderr:\n${stderr}`,
+  );
   return { stdout, stderr };
 }
 
@@ -39,10 +43,21 @@ function runInstalledScaffold(installRoot) {
   const binRoot = path.join(installRoot, 'node_modules', '.bin');
   const binPath = path.join(binRoot, process.platform === 'win32' ? 'anhedral.cmd' : 'anhedral');
   const projectRoot = path.join(installRoot, 'packed-project');
-  const plan = run(binPath, ['new', projectRoot, '--hono', '--neon', '--r2', '--dry-run', '--json'], installRoot);
-  assert.deepEqual(JSON.parse(plan.stdout).products, ['hono', 'neon', 'r2']);
+  const plan = run(
+    binPath,
+    ['new', projectRoot, '--hono', '--neon', '--r2', '--dry-run', '--json'],
+    installRoot,
+  );
+  const resolved = JSON.parse(plan.stdout);
+  assert.deepEqual(resolved.products, ['hono', 'neon', 'r2']);
+  assert.ok(resolved.registry.items.some((item) => item.name === 'hono'));
+  const catalog = JSON.parse(run(binPath, ['registry', 'list', '--json'], installRoot).stdout);
+  assert.ok(catalog.items.some((item) => item.name === 'workspace'));
+  assert.equal(
+    JSON.parse(run(binPath, ['registry', 'view', 'neon', '--json'], installRoot).stdout).name,
+    'neon',
+  );
   assert.equal(existsSync(projectRoot), false);
-
 }
 
 function resolveProvidedTarball(argument) {
@@ -50,7 +65,11 @@ function resolveProvidedTarball(argument) {
   if (!providedPath.endsWith('.json')) return providedPath;
 
   const metadata = JSON.parse(readFileSync(providedPath, 'utf8'));
-  assert.equal(metadata.filename, path.basename(metadata.filename), 'artifact filename must be a basename');
+  assert.equal(
+    metadata.filename,
+    path.basename(metadata.filename),
+    'artifact filename must be a basename',
+  );
   return path.join(path.dirname(providedPath), metadata.filename);
 }
 
@@ -72,17 +91,31 @@ if (process.argv[2]) {
 const installRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-packed-cli-'));
 
 try {
-  run(npmCommand, ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarballPath], installRoot);
-  const packageJson = JSON.parse(readFileSync(path.join(installRoot, 'node_modules/anhedral/package.json'), 'utf8'));
+  run(
+    npmCommand,
+    ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarballPath],
+    installRoot,
+  );
+  const packageJson = JSON.parse(
+    readFileSync(path.join(installRoot, 'node_modules/anhedral/package.json'), 'utf8'),
+  );
   assert.equal(packageJson.bin.anhedral, 'dist/bin.js');
   assert.equal(packageJson.types, './dist/index.d.ts');
   assert.match(runInstalledCli(installRoot).stdout, /anhedral init/);
   runInstalledScaffold(installRoot);
-  const imported = run(process.execPath, ['--input-type=module', '--eval', [
-    "const packageApi = await import('anhedral');",
-    "if (typeof packageApi.scaffoldStandardProject !== 'function') throw new Error('missing scaffoldStandardProject export');",
-    "if (typeof packageApi.parseStandardOptions !== 'function') throw new Error('missing parseStandardOptions export');",
-  ].join('\n')], installRoot);
+  const imported = run(
+    process.execPath,
+    [
+      '--input-type=module',
+      '--eval',
+      [
+        "const packageApi = await import('anhedral');",
+        "if (typeof packageApi.scaffoldStandardProject !== 'function') throw new Error('missing scaffoldStandardProject export');",
+        "if (typeof packageApi.parseStandardOptions !== 'function') throw new Error('missing parseStandardOptions export');",
+      ].join('\n'),
+    ],
+    installRoot,
+  );
   assert.equal(imported.stdout, '');
 } finally {
   rmSync(installRoot, { recursive: true, force: true });

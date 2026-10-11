@@ -34,7 +34,13 @@ export function appendGitignore(root: string, lines: string[]): void {
   const additions = [...new Set(lines)].filter((line) => !existingLines.has(line));
   if (additions.length === 0) return;
 
-  const newline = existing.includes('\r\n') ? '\r\n' : existing.includes('\n') ? '\n' : existing.includes('\r') ? '\r' : '\n';
+  const newline = existing.includes('\r\n')
+    ? '\r\n'
+    : existing.includes('\n')
+      ? '\n'
+      : existing.includes('\r')
+        ? '\r'
+        : '\n';
   const separator = existing.length > 0 && !/(?:\r\n|\n|\r)$/.test(existing) ? newline : '';
   writeFile(filePath, `${existing}${separator}${additions.join(newline)}${newline}`);
 }
@@ -66,7 +72,10 @@ function dumpFailure(
     if (stdoutText) process.stderr.write(stdoutText);
     if (stderrText) process.stderr.write(stderrText);
   }
-  throw new Error(`Command failed (exit ${status ?? '?'}): ${cmd}`, spawnError ? { cause: spawnError } : undefined);
+  throw new Error(
+    `Command failed (exit ${status ?? '?'}): ${cmd}`,
+    spawnError ? { cause: spawnError } : undefined,
+  );
 }
 
 export function execFile(executable: string, args: readonly string[], cwd: string): void {
@@ -75,9 +84,16 @@ export function execFile(executable: string, args: readonly string[], cwd: strin
   const display = [executable, ...args].join(' ');
   if (process.env.ANHEDRAL_VERBOSE === '1' && !quiet) {
     console.log(`  $ ${display}`);
-    const result = spawnSync(invocation.command, invocation.args, { cwd, stdio: 'inherit', shell: false });
+    const result = spawnSync(invocation.command, invocation.args, {
+      cwd,
+      stdio: 'inherit',
+      shell: false,
+    });
     if (result.error || result.status !== 0) {
-      throw new Error(`Command failed (exit ${result.status ?? '?'}): ${display}`, result.error ? { cause: result.error } : undefined);
+      throw new Error(
+        `Command failed (exit ${result.status ?? '?'}): ${display}`,
+        result.error ? { cause: result.error } : undefined,
+      );
     }
     return;
   }
@@ -99,8 +115,12 @@ export function execFile(executable: string, args: readonly string[], cwd: strin
       dumpFailure(display, result.status, stdoutPath, stderrPath, result.error);
     }
   } finally {
-    try { closeSync(stdout); } catch {}
-    try { closeSync(stderr); } catch {}
+    try {
+      closeSync(stdout);
+    } catch {}
+    try {
+      closeSync(stderr);
+    } catch {}
     rmSync(captureRoot, { recursive: true, force: true });
   }
 }

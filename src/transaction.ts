@@ -22,7 +22,8 @@ const LOCK_FILE = '.anhedral.lock';
 const JOURNAL_FILE = '.anhedral-journal.json';
 const TRANSACTION_DIRECTORY = '.anhedral-txn';
 const JOURNAL_VERSION = 2 as const;
-const LOCAL_TRANSACTION_ROOT_PATTERN = /^(?:stage|backup)-\d+-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const LOCAL_TRANSACTION_ROOT_PATTERN =
+  /^(?:stage|backup)-\d+-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type JournalEntry = {
   relativePath: string;
@@ -64,10 +65,10 @@ function assertRelativePath(relativePath: string): void {
     normalized === '.' ||
     normalized === '..' ||
     normalized.startsWith(`..${path.sep}`) ||
-    normalized.split(path.sep).includes('..')
-    || rawSegments[0] === TRANSACTION_DIRECTORY
-    || rawSegments[0] === LOCK_FILE
-    || rawSegments[0] === JOURNAL_FILE
+    normalized.split(path.sep).includes('..') ||
+    rawSegments[0] === TRANSACTION_DIRECTORY ||
+    rawSegments[0] === LOCK_FILE ||
+    rawSegments[0] === JOURNAL_FILE
   ) {
     throw new Error(`Unsafe transaction path: ${relativePath}`);
   }
@@ -94,13 +95,16 @@ function ancestorInSet(relativePath: string, candidates: ReadonlySet<string>): s
 
 function assertNoPathAncestry(paths: readonly string[], context: string): void {
   const seen = new Set<string>();
-  const ordered = [...paths].sort((left, right) =>
-    left.split('/').length - right.split('/').length || left.localeCompare(right));
+  const ordered = [...paths].sort(
+    (left, right) => left.split('/').length - right.split('/').length || left.localeCompare(right),
+  );
   for (const relativePath of ordered) {
     assertRelativePath(relativePath);
     const ancestor = ancestorInSet(relativePath, seen);
     if (ancestor) {
-      throw new Error(`Ambiguous transaction ${context}: ${ancestor} is an ancestor of ${relativePath}.`);
+      throw new Error(
+        `Ambiguous transaction ${context}: ${ancestor} is an ancestor of ${relativePath}.`,
+      );
     }
     seen.add(relativePath);
   }
@@ -116,8 +120,9 @@ function normalizeTransactionPaths(
 
   const deleteCandidates = [...new Set(rawDeletePaths)];
   for (const relativePath of deleteCandidates) assertRelativePath(relativePath);
-  deleteCandidates.sort((left, right) =>
-    left.split('/').length - right.split('/').length || left.localeCompare(right));
+  deleteCandidates.sort(
+    (left, right) => left.split('/').length - right.split('/').length || left.localeCompare(right),
+  );
   const deleteSet = new Set<string>();
   const deletePaths = deleteCandidates.filter((candidate) => {
     if (ancestorInSet(candidate, deleteSet)) return false;
@@ -136,8 +141,8 @@ function normalizeTransactionPaths(
     const deletedAncestor = ancestorInSet(written, deleteSet);
     if (deleteSet.has(written) || deletedAncestor || deleteAncestorPaths.has(written)) {
       throw new Error(
-        `Ambiguous transaction write/delete paths include ${written}`
-        + (deletedAncestor ? ` below ${deletedAncestor}` : ''),
+        `Ambiguous transaction write/delete paths include ${written}` +
+          (deletedAncestor ? ` below ${deletedAncestor}` : ''),
       );
     }
   }
@@ -150,7 +155,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function assertExactObjectKeys(value: Record<string, unknown>, expected: readonly string[], context: string): void {
+function assertExactObjectKeys(
+  value: Record<string, unknown>,
+  expected: readonly string[],
+  context: string,
+): void {
   const expectedKeys = new Set(expected);
   const missing = expected.filter((key) => !Object.hasOwn(value, key));
   const unknown = Object.keys(value).filter((key) => !expectedKeys.has(key));
@@ -158,7 +167,9 @@ function assertExactObjectKeys(value: Record<string, unknown>, expected: readonl
   const details = [
     missing.length > 0 ? `missing ${missing.join(', ')}` : null,
     unknown.length > 0 ? `unknown ${unknown.join(', ')}` : null,
-  ].filter((entry): entry is string => entry !== null).join('; ');
+  ]
+    .filter((entry): entry is string => entry !== null)
+    .join('; ');
   throw new Error(`Invalid ${context} fields (${details}).`);
 }
 
@@ -183,7 +194,10 @@ function fingerprintEntry(target: string): string {
     if (stat.isDirectory()) {
       hash.update(`directory\0${relativePath}\0${mode}\0`);
       for (const entry of readdirSync(absolutePath).sort()) {
-        visit(path.join(absolutePath, entry), relativePath === '.' ? entry : `${relativePath}/${entry}`);
+        visit(
+          path.join(absolutePath, entry),
+          relativePath === '.' ? entry : `${relativePath}/${entry}`,
+        );
       }
       return;
     }
@@ -200,10 +214,7 @@ function fingerprintEntry(target: string): string {
 
 type DirectorySyncOperation = 'open' | 'fsync';
 
-function isUnsupportedDirectorySync(
-  error: unknown,
-  operation: DirectorySyncOperation,
-): boolean {
+function isUnsupportedDirectorySync(error: unknown, operation: DirectorySyncOperation): boolean {
   const code = (error as NodeJS.ErrnoException).code;
   if (['ENOTSUP', 'EOPNOTSUPP'].includes(code ?? '')) return true;
 
@@ -302,7 +313,10 @@ function parseLockOwner(lockPath: string): LockOwner {
   try {
     value = JSON.parse(readFileSync(lockPath, 'utf8'));
   } catch (error) {
-    throw new Error(`Cannot read transaction lock owner at ${lockPath}; remove it only after confirming no Anhedral process is running.`, { cause: error });
+    throw new Error(
+      `Cannot read transaction lock owner at ${lockPath}; remove it only after confirming no Anhedral process is running.`,
+      { cause: error },
+    );
   }
   if (
     !isRecord(value) ||
@@ -313,7 +327,9 @@ function parseLockOwner(lockPath: string): LockOwner {
     typeof value.token !== 'string' ||
     typeof value.createdAt !== 'string'
   ) {
-    throw new Error(`Invalid transaction lock owner at ${lockPath}; remove it only after confirming no Anhedral process is running.`);
+    throw new Error(
+      `Invalid transaction lock owner at ${lockPath}; remove it only after confirming no Anhedral process is running.`,
+    );
   }
   return value as LockOwner;
 }
@@ -349,10 +365,15 @@ function cleanupTemporaryLocks(root: string, owner: LockOwner, temporaryPath: st
     try {
       temporaryOwner = parseLockOwner(staleTemporaryPath);
     } catch (error) {
-      throw new Error(`Cannot safely classify transaction lock artifact at ${staleTemporaryPath}; inspect it manually before retrying.`, { cause: error });
+      throw new Error(
+        `Cannot safely classify transaction lock artifact at ${staleTemporaryPath}; inspect it manually before retrying.`,
+        { cause: error },
+      );
     }
     if (temporaryOwner.hostname !== owner.hostname) {
-      throw new Error(`Transaction lock artifact at ${staleTemporaryPath} belongs to another host; inspect it manually before retrying.`);
+      throw new Error(
+        `Transaction lock artifact at ${staleTemporaryPath} belongs to another host; inspect it manually before retrying.`,
+      );
     }
     if (!isProcessAlive(temporaryOwner.pid)) {
       unlinkSync(staleTemporaryPath);
@@ -360,7 +381,12 @@ function cleanupTemporaryLocks(root: string, owner: LockOwner, temporaryPath: st
   }
 }
 
-function claimReclamation(lockPath: string, reclaimPath: string, temporaryPath: string, owner: LockOwner): boolean {
+function claimReclamation(
+  lockPath: string,
+  reclaimPath: string,
+  temporaryPath: string,
+  owner: LockOwner,
+): boolean {
   try {
     linkSync(temporaryPath, reclaimPath);
   } catch (error) {
@@ -373,7 +399,9 @@ function claimReclamation(lockPath: string, reclaimPath: string, temporaryPath: 
         unlinkSync(reclaimPath);
         return false;
       }
-      throw new Error(`A stale Anhedral lock is being recovered (${lockPath}, pid ${reclaimer.pid} on ${reclaimer.hostname}); retry the command.`);
+      throw new Error(
+        `A stale Anhedral lock is being recovered (${lockPath}, pid ${reclaimer.pid} on ${reclaimer.hostname}); retry the command.`,
+      );
     }
     throw error;
   }
@@ -381,13 +409,20 @@ function claimReclamation(lockPath: string, reclaimPath: string, temporaryPath: 
   return true;
 }
 
-function reclaimTransactionLock(lockPath: string, reclaimPath: string, temporaryPath: string, owner: LockOwner): 'retry' | 'next' {
+function reclaimTransactionLock(
+  lockPath: string,
+  reclaimPath: string,
+  temporaryPath: string,
+  owner: LockOwner,
+): 'retry' | 'next' {
   const existing = readLockOwnerIfPresent(lockPath);
   if (!existing) {
     return 'retry';
   }
   if (existing.hostname !== owner.hostname || isProcessAlive(existing.pid)) {
-    throw new Error(`Another Anhedral operation is already running (${lockPath}, pid ${existing.pid} on ${existing.hostname}).`);
+    throw new Error(
+      `Another Anhedral operation is already running (${lockPath}, pid ${existing.pid} on ${existing.hostname}).`,
+    );
   }
 
   if (!claimReclamation(lockPath, reclaimPath, temporaryPath, owner)) return 'retry';
@@ -397,7 +432,9 @@ function reclaimTransactionLock(lockPath: string, reclaimPath: string, temporary
     const current = parseLockOwner(lockPath);
     if (current.token !== existing.token) return 'next';
     if (current.hostname !== owner.hostname || isProcessAlive(current.pid)) {
-      throw new Error(`Another Anhedral operation is already running (${lockPath}, pid ${current.pid} on ${current.hostname}).`);
+      throw new Error(
+        `Another Anhedral operation is already running (${lockPath}, pid ${current.pid} on ${current.hostname}).`,
+      );
     }
     unlinkSync(lockPath);
   } finally {
@@ -429,14 +466,22 @@ function clearDeadReclaimer(lockPath: string, reclaimPath: string, owner: LockOw
       }
       return true;
     }
-    throw new Error(`An Anhedral lock is being recovered (${lockPath}, pid ${activeReclaimer.pid} on ${activeReclaimer.hostname}); retry the command.`);
+    throw new Error(
+      `An Anhedral lock is being recovered (${lockPath}, pid ${activeReclaimer.pid} on ${activeReclaimer.hostname}); retry the command.`,
+    );
   }
   return false;
 }
 
-function cleanupAcquiredLock(root: string, lockPath: string, owner: LockOwner, temporaryPath: string): void {
-  try { cleanupTemporaryLocks(root, owner, temporaryPath); }
-  catch (error) {
+function cleanupAcquiredLock(
+  root: string,
+  lockPath: string,
+  owner: LockOwner,
+  temporaryPath: string,
+): void {
+  try {
+    cleanupTemporaryLocks(root, owner, temporaryPath);
+  } catch (error) {
     const current = readLockOwnerIfPresent(lockPath);
     if (current?.token === owner.token) unlinkSync(lockPath);
     throw error;
@@ -455,7 +500,11 @@ function acquireTransactionLock(root: string): TransactionLock {
     createdAt: new Date().toISOString(),
   };
   const temporaryPath = `${lockPath}.${owner.token}.tmp`;
-  writeFileSync(temporaryPath, JSON.stringify(owner) + '\n', { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+  writeFileSync(temporaryPath, JSON.stringify(owner) + '\n', {
+    encoding: 'utf8',
+    flag: 'wx',
+    mode: 0o600,
+  });
 
   try {
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -472,7 +521,8 @@ function acquireTransactionLock(root: string): TransactionLock {
         if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
       }
 
-      if (reclaimTransactionLock(lockPath, reclaimPath, temporaryPath, owner) === 'retry') attempt -= 1;
+      if (reclaimTransactionLock(lockPath, reclaimPath, temporaryPath, owner) === 'retry')
+        attempt -= 1;
     }
   } finally {
     rmSync(temporaryPath, { force: true });
@@ -497,7 +547,8 @@ function assertExpectedTempRoot(
   kind: 'stage' | 'backup',
 ): TemporaryRootIdentity {
   const resolved = path.resolve(candidate);
-  const tokenPattern = '(\\d+-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})';
+  const tokenPattern =
+    '(\\d+-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})';
   const localParent = path.join(path.resolve(root), TRANSACTION_DIRECTORY);
   const localMatch = new RegExp(`^${kind}-${tokenPattern}$`, 'i').exec(path.basename(resolved));
   if (path.dirname(resolved) === localParent && localMatch) {
@@ -550,20 +601,30 @@ function assertJournalRoots(root: string, backupRoot: string, stageRoot: string)
 
 function validateJournal(root: string, value: unknown): TransactionJournal {
   if (!isRecord(value) || value.version !== JOURNAL_VERSION) {
-    throw new Error(`Cannot recover unsupported transaction journal at ${path.join(root, JOURNAL_FILE)}`);
+    throw new Error(
+      `Cannot recover unsupported transaction journal at ${path.join(root, JOURNAL_FILE)}`,
+    );
   }
   assertExactObjectKeys(
     value,
     ['version', 'backupRoot', 'stageRoot', 'entries', 'createdDirectories'],
     'transaction journal',
   );
-  if (typeof value.backupRoot !== 'string' || typeof value.stageRoot !== 'string' || !Array.isArray(value.entries)) {
+  if (
+    typeof value.backupRoot !== 'string' ||
+    typeof value.stageRoot !== 'string' ||
+    !Array.isArray(value.entries)
+  ) {
     throw new Error(`Invalid transaction journal at ${path.join(root, JOURNAL_FILE)}`);
   }
   assertJournalRoots(root, value.backupRoot, value.stageRoot);
   const seen = new Set<string>();
   const entries = value.entries.map((entry, index): JournalEntry => {
-    if (!isRecord(entry) || typeof entry.relativePath !== 'string' || typeof entry.installed !== 'boolean') {
+    if (
+      !isRecord(entry) ||
+      typeof entry.relativePath !== 'string' ||
+      typeof entry.installed !== 'boolean'
+    ) {
       throw new Error(`Invalid transaction journal entry at index ${index}`);
     }
     assertExactObjectKeys(
@@ -572,23 +633,29 @@ function validateJournal(root: string, value: unknown): TransactionJournal {
       `transaction journal entry at index ${index}`,
     );
     assertRelativePath(entry.relativePath);
-    if (seen.has(entry.relativePath)) throw new Error(`Duplicate transaction journal path: ${entry.relativePath}`);
+    if (seen.has(entry.relativePath))
+      throw new Error(`Duplicate transaction journal path: ${entry.relativePath}`);
     seen.add(entry.relativePath);
     if (entry.backupPath !== null && typeof entry.backupPath !== 'string') {
       throw new Error(`Invalid transaction backup path at index ${index}`);
     }
     const installedFingerprint = entry.installedFingerprint;
     if (
-      installedFingerprint !== null
-      && (typeof installedFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(installedFingerprint))
+      installedFingerprint !== null &&
+      (typeof installedFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(installedFingerprint))
     ) {
       throw new Error(`Invalid installed transaction fingerprint at index ${index}`);
     }
     if (entry.installed ? installedFingerprint === null : installedFingerprint !== null) {
-      throw new Error(`Transaction journal entry fingerprint state is inconsistent at index ${index}`);
+      throw new Error(
+        `Transaction journal entry fingerprint state is inconsistent at index ${index}`,
+      );
     }
     const expectedBackup = resolveTransactionPath(value.backupRoot as string, entry.relativePath);
-    if (entry.backupPath !== null && path.resolve(entry.backupPath) !== path.resolve(expectedBackup)) {
+    if (
+      entry.backupPath !== null &&
+      path.resolve(entry.backupPath) !== path.resolve(expectedBackup)
+    ) {
       throw new Error(`Unsafe transaction backup path: ${entry.backupPath}`);
     }
     return {
@@ -598,13 +665,19 @@ function validateJournal(root: string, value: unknown): TransactionJournal {
       installedFingerprint,
     };
   });
-  assertNoPathAncestry(entries.map((entry) => entry.relativePath), 'journal paths');
+  assertNoPathAncestry(
+    entries.map((entry) => entry.relativePath),
+    'journal paths',
+  );
   const rawCreatedDirectories = value.createdDirectories;
   if (!Array.isArray(rawCreatedDirectories)) {
-    throw new Error(`Invalid transaction created-directory inventory at ${path.join(root, JOURNAL_FILE)}`);
+    throw new Error(
+      `Invalid transaction created-directory inventory at ${path.join(root, JOURNAL_FILE)}`,
+    );
   }
   const createdDirectories = rawCreatedDirectories.map((entry, index) => {
-    if (typeof entry !== 'string') throw new Error(`Invalid transaction created directory at index ${index}`);
+    if (typeof entry !== 'string')
+      throw new Error(`Invalid transaction created directory at index ${index}`);
     assertRelativePath(entry);
     return entry;
   });
@@ -613,10 +686,18 @@ function validateJournal(root: string, value: unknown): TransactionJournal {
   }
   for (const directory of createdDirectories) {
     if (!entries.some((entry) => entry.relativePath.startsWith(`${directory}/`))) {
-      throw new Error(`Transaction created directory is not a parent of any journal entry: ${directory}`);
+      throw new Error(
+        `Transaction created directory is not a parent of any journal entry: ${directory}`,
+      );
     }
   }
-  return { version: JOURNAL_VERSION, backupRoot: value.backupRoot, stageRoot: value.stageRoot, entries, createdDirectories };
+  return {
+    version: JOURNAL_VERSION,
+    backupRoot: value.backupRoot,
+    stageRoot: value.stageRoot,
+    entries,
+    createdDirectories,
+  };
 }
 
 function writeJournal(root: string, journal: TransactionJournal): void {
@@ -665,11 +746,15 @@ function cleanupOrphanTransactionRoots(root: string): void {
   const namespaceStat = lstatIfPresent(transactionDirectory);
   if (!namespaceStat) return;
   if (namespaceStat.isSymbolicLink() || !namespaceStat.isDirectory()) {
-    throw new Error(`Unsafe reserved transaction namespace requires manual inspection: ${transactionDirectory}`);
+    throw new Error(
+      `Unsafe reserved transaction namespace requires manual inspection: ${transactionDirectory}`,
+    );
   }
   for (const entry of readdirSync(transactionDirectory)) {
     if (!LOCAL_TRANSACTION_ROOT_PATTERN.test(entry)) {
-      throw new Error(`Unknown artifact in reserved transaction namespace requires manual inspection: ${path.join(transactionDirectory, entry)}`);
+      throw new Error(
+        `Unknown artifact in reserved transaction namespace requires manual inspection: ${path.join(transactionDirectory, entry)}`,
+      );
     }
     const candidate = path.join(transactionDirectory, entry);
     const stat = lstatIfPresent(candidate);
@@ -682,20 +767,25 @@ function cleanupOrphanTransactionRoots(root: string): void {
   removeEmptyTransactionDirectory(root);
 }
 
-function restoreInstalledEntry(root: string, journal: TransactionJournal, entry: JournalEntry, target: string): void {
+function restoreInstalledEntry(
+  root: string,
+  journal: TransactionJournal,
+  entry: JournalEntry,
+  target: string,
+): void {
   if (entry.installed) {
     if (pathEntryExists(target)) {
       if (entry.installedFingerprint === null) {
         throw new Error(
-          `Installed transaction path has no trusted fingerprint: ${entry.relativePath}. `
-          + 'Recovery stopped without modifying it; inspect the journal, target, and backup manually.',
+          `Installed transaction path has no trusted fingerprint: ${entry.relativePath}. ` +
+            'Recovery stopped without modifying it; inspect the journal, target, and backup manually.',
         );
       }
       const actualFingerprint = fingerprintEntry(target);
       if (actualFingerprint !== entry.installedFingerprint) {
         throw new Error(
-          `Installed transaction path changed after an interrupted commit: ${entry.relativePath}. `
-          + 'Recovery stopped without modifying it; inspect the journal, target, and backup manually.',
+          `Installed transaction path changed after an interrupted commit: ${entry.relativePath}. ` +
+            'Recovery stopped without modifying it; inspect the journal, target, and backup manually.',
         );
       }
     }
@@ -723,8 +813,9 @@ function restoreJournal(root: string, journal: TransactionJournal): void {
       writeJournal(root, journal);
     }
   }
-  for (const relativePath of [...journal.createdDirectories]
-    .sort((left, right) => right.split('/').length - left.split('/').length || right.localeCompare(left))) {
+  for (const relativePath of [...journal.createdDirectories].sort(
+    (left, right) => right.split('/').length - left.split('/').length || right.localeCompare(left),
+  )) {
     assertNoSymlinkComponents(root, relativePath);
     const target = resolveTransactionPath(root, relativePath);
     try {
@@ -772,8 +863,8 @@ export class PostCommitError extends Error {
   constructor(committedPaths: readonly string[], cause: unknown) {
     const causeMessage = cause instanceof Error ? cause.message : String(cause);
     super(
-      `Changes were committed successfully, but the post-commit action failed: ${causeMessage}. `
-      + 'The generated files were kept; resolve the failure and rerun the post-commit command.',
+      `Changes were committed successfully, but the post-commit action failed: ${causeMessage}. ` +
+        'The generated files were kept; resolve the failure and rerun the post-commit command.',
       { cause },
     );
     this.name = 'PostCommitError';
@@ -784,14 +875,23 @@ export class PostCommitError extends Error {
 function assertTransactionNamespace(transactionDirectory: string): void {
   const namespaceStat = lstatIfPresent(transactionDirectory);
   if (namespaceStat && (namespaceStat.isSymbolicLink() || !namespaceStat.isDirectory())) {
-    throw new Error(`Unsafe reserved transaction namespace requires manual inspection: ${transactionDirectory}`);
+    throw new Error(
+      `Unsafe reserved transaction namespace requires manual inspection: ${transactionDirectory}`,
+    );
   }
   if (!namespaceStat) return;
   for (const entry of readdirSync(transactionDirectory)) {
     const candidate = path.join(transactionDirectory, entry);
     const stat = lstatIfPresent(candidate);
-    if (!LOCAL_TRANSACTION_ROOT_PATTERN.test(entry) || !stat || stat.isSymbolicLink() || !stat.isDirectory()) {
-      throw new Error(`Unknown or unsafe artifact in reserved transaction namespace requires manual inspection: ${candidate}`);
+    if (
+      !LOCAL_TRANSACTION_ROOT_PATTERN.test(entry) ||
+      !stat ||
+      stat.isSymbolicLink() ||
+      !stat.isDirectory()
+    ) {
+      throw new Error(
+        `Unknown or unsafe artifact in reserved transaction namespace requires manual inspection: ${candidate}`,
+      );
     }
   }
 }
@@ -809,7 +909,12 @@ function seedTransaction(root: string, stageRoot: string, seedPaths: readonly st
   }
 }
 
-function ensureTransactionParents(root: string, entry: JournalEntry, journal: TransactionJournal, createdDirectorySet: Set<string>): void {
+function ensureTransactionParents(
+  root: string,
+  entry: JournalEntry,
+  journal: TransactionJournal,
+  createdDirectorySet: Set<string>,
+): void {
   const segments = entry.relativePath.split('/').slice(0, -1);
   let cursor = root;
   let relativeDirectory = '';
@@ -822,7 +927,9 @@ function ensureTransactionParents(root: string, entry: JournalEntry, journal: Tr
       throw new Error(`Transaction parent is not a directory: ${relativeDirectory}`);
     }
   }
-  const newDirectories = missingDirectories.filter((directory) => !createdDirectorySet.has(directory));
+  const newDirectories = missingDirectories.filter(
+    (directory) => !createdDirectorySet.has(directory),
+  );
   if (newDirectories.length > 0) {
     journal.createdDirectories.push(...newDirectories);
     for (const directory of newDirectories) createdDirectorySet.add(directory);
@@ -830,7 +937,11 @@ function ensureTransactionParents(root: string, entry: JournalEntry, journal: Tr
   }
 }
 
-function commitJournal(root: string, journal: TransactionJournal, deletePaths: ReadonlySet<string>): void {
+function commitJournal(
+  root: string,
+  journal: TransactionJournal,
+  deletePaths: ReadonlySet<string>,
+): void {
   const { stageRoot, backupRoot } = journal;
   const createdDirectorySet = new Set(journal.createdDirectories);
   for (const entry of journal.entries) {
@@ -839,7 +950,8 @@ function commitJournal(root: string, journal: TransactionJournal, deletePaths: R
     if (!deleting && !pathEntryExists(source)) {
       throw new Error(`Staged output is missing declared path: ${entry.relativePath}`);
     }
-    if (deleting && pathEntryExists(source)) throw new Error(`Deleted transaction path still exists in staging: ${entry.relativePath}`);
+    if (deleting && pathEntryExists(source))
+      throw new Error(`Deleted transaction path still exists in staging: ${entry.relativePath}`);
     assertNoSymlinkComponents(root, entry.relativePath);
     if (!deleting) {
       assertNoSymlinksRecursively(source);
@@ -893,11 +1005,13 @@ export async function runStagedTransaction(
 
   try {
     if (options.dryRun && pathEntryExists(path.join(root, JOURNAL_FILE))) {
-      throw new Error('Dry-run cannot recover an interrupted transaction. Re-run the original command without --dry-run first.');
+      throw new Error(
+        'Dry-run cannot recover an interrupted transaction. Re-run the original command without --dry-run first.',
+      );
     }
     recoverInterruptedTransactionUnlocked(root);
     if (!options.dryRun) cleanupOrphanTransactionRoots(root);
-    if (await options.prepare?.() === false) return Object.freeze([]);
+    if ((await options.prepare?.()) === false) return Object.freeze([]);
 
     assertTransactionNamespace(transactionDirectory);
     namespaceValidated = true;
@@ -908,7 +1022,10 @@ export async function runStagedTransaction(
 
     await options.build(stageRoot);
 
-    const normalizedPaths = normalizeTransactionPaths(options.commitPaths, options.deletePaths ?? []);
+    const normalizedPaths = normalizeTransactionPaths(
+      options.commitPaths,
+      options.deletePaths ?? [],
+    );
     const deletePaths = new Set(normalizedPaths.deletePaths);
     const uniquePaths = normalizedPaths.uniquePaths;
     options.onPlan?.(Object.freeze([...uniquePaths]));

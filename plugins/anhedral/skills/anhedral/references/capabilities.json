@@ -1,7 +1,27 @@
 {
   "schemaVersion": 1,
-  "cliVersion": "0.8.4",
+  "cliVersion": "0.9.0",
   "capabilities": {
+    "vinext": {
+      "purpose": "Web application on Cloudflare",
+      "tools": [
+        "Browser control",
+        "Wrangler"
+      ],
+      "access": [],
+      "credentials": [],
+      "resources": [
+        "Vinext React application and Cloudflare Worker"
+      ],
+      "verify": [
+        "Web flows, accessibility, production Worker build and deployed preview"
+      ],
+      "selection": {
+        "conflicts": [
+          "next"
+        ]
+      }
+    },
     "next": {
       "purpose": "Web application",
       "tools": [
@@ -16,7 +36,9 @@
         "Web flows, accessibility, production hosting build and deployed preview"
       ],
       "selection": {
-        "app": true
+        "conflicts": [
+          "vinext"
+        ]
       }
     },
     "expo": {
@@ -37,9 +59,7 @@
       "verify": [
         "Native simulator/device flows and signed native build; web export alone is insufficient"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "electron": {
       "purpose": "Desktop application",
@@ -59,9 +79,7 @@
       "verify": [
         "Packaged desktop app, permissions, update/recovery behavior"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "wxt": {
       "purpose": "Chrome side-panel extension",
@@ -81,9 +99,7 @@
       "verify": [
         "Installed side panel, background/content messaging and permission behavior"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "hono": {
       "purpose": "Shared OpenAPI backend",
@@ -100,33 +116,29 @@
       "verify": [
         "Contract validation, unauthenticated rejection and resource ownership"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "neon": {
-      "purpose": "PostgreSQL persistence through Drizzle and Hyperdrive",
+      "purpose": "PostgreSQL persistence through direct Neon HTTP and Drizzle",
       "tools": [
-        "Neon integration or API",
-        "Wrangler"
+        "Neon integration or API"
       ],
       "access": [
-        "Neon project/branch access; Cloudflare Hyperdrive configuration access"
+        "Client-owned Neon project/branch access"
       ],
       "credentials": [
-        "DATABASE_URL for migrations; separate least-privilege Hyperdrive origin credentials"
+        "Server-side DATABASE_URL; separate environment roles"
       ],
       "resources": [
-        "Neon project/branches, database roles, migrations, HYPERDRIVE binding"
+        "Neon project/branches, database roles and reviewed migrations"
       ],
       "verify": [
-        "Migration and runtime connectivity; disable query caching for correctness-sensitive reads"
+        "Migration, runtime connectivity and authorization; HTTP has no interactive transactions"
       ],
       "selection": {
         "conflicts": [
           "d1"
-        ],
-        "workerBinding": true
+        ]
       }
     },
     "d1": {
@@ -147,8 +159,7 @@
       "selection": {
         "conflicts": [
           "neon"
-        ],
-        "workerBinding": true
+        ]
       }
     },
     "local-data": {
@@ -188,6 +199,7 @@
           "better-auth"
         ],
         "requiresAny": [
+          "vinext",
           "next",
           "hono"
         ]
@@ -217,8 +229,7 @@
         "requiresAny": [
           "neon",
           "d1"
-        ],
-        "workerBinding": true
+        ]
       }
     },
     "r2": {
@@ -236,9 +247,7 @@
       "verify": [
         "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "kv": {
       "purpose": "Eventually consistent cache/configuration",
@@ -255,9 +264,7 @@
       "verify": [
         "TTL and propagation behavior; never use KV as transactional authority"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "realtime": {
       "purpose": "Rooms and collaboration",
@@ -389,9 +396,7 @@
       "verify": [
         "Supported model behavior, authorization and usage limits"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "resend": {
       "purpose": "Outbound application email",
@@ -490,9 +495,7 @@
       "verify": [
         "Private ingestion, event delivery, query results and archive retrieval when selected"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "posthog": {
       "purpose": "Specialized product analytics",

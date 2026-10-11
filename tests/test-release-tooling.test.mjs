@@ -1,14 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import {
-  chmodSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -88,7 +81,10 @@ function makeTarEntry(name, contents) {
 try {
   for (const extension of ['jsonc', 'toml', 'svg']) {
     const credential = `gh${'p_'}${'x'.repeat(36)}`;
-    assert.equal(scanText(`config.${extension}`, Buffer.from(credential))[0]?.pattern, 'github-token');
+    assert.equal(
+      scanText(`config.${extension}`, Buffer.from(credential))[0]?.pattern,
+      'github-token',
+    );
   }
   assert.deepEqual(resolveSpawnCommand('npm', ['pack'], { platform: 'linux' }), {
     command: 'npm',
@@ -100,18 +96,29 @@ try {
     mkdirSync(path.dirname(npmEntry), { recursive: true });
     writeFileSync(npmEntry, '');
     const args = ['pack', 'literal&argument'];
-    assert.deepEqual(resolveSpawnCommand('npm.cmd', args, { platform: 'win32', searchPath: nodeTools }), {
-      command: process.execPath,
-      args: [npmEntry, ...args],
-    });
+    assert.deepEqual(
+      resolveSpawnCommand('npm.cmd', args, { platform: 'win32', searchPath: nodeTools }),
+      {
+        command: process.execPath,
+        args: [npmEntry, ...args],
+      },
+    );
     const cliEntry = path.join(nodeTools, 'node_modules/anhedral/dist/bin.js');
     mkdirSync(path.dirname(cliEntry), { recursive: true });
     writeFileSync(cliEntry, '');
-    assert.deepEqual(resolveSpawnCommand(path.join(nodeTools, 'node_modules/.bin/anhedral.cmd'), args, { platform: 'win32' }), {
-      command: process.execPath,
-      args: [cliEntry, ...args],
-    });
-    assert.throws(() => resolveSpawnCommand('unknown.cmd', args, { platform: 'win32' }), /No direct Node entry/);
+    assert.deepEqual(
+      resolveSpawnCommand(path.join(nodeTools, 'node_modules/.bin/anhedral.cmd'), args, {
+        platform: 'win32',
+      }),
+      {
+        command: process.execPath,
+        args: [cliEntry, ...args],
+      },
+    );
+    assert.throws(
+      () => resolveSpawnCommand('unknown.cmd', args, { platform: 'win32' }),
+      /No direct Node entry/,
+    );
   } finally {
     rmSync(nodeTools, { recursive: true, force: true });
   }
@@ -135,41 +142,91 @@ try {
     version: '0.4.0',
     automatic: false,
   });
-  assert.throws(
-    () => resolveReleaseVersion('0.3.0', '0.4.0'),
-    /behind npm version/,
-  );
+  assert.throws(() => resolveReleaseVersion('0.3.0', '0.4.0'), /behind npm version/);
   assert.deepEqual(validateReleaseDeclaration({ version: '2.3.4' }), []);
   assert.match(validateReleaseDeclaration({ version: '2.3' }).join('\n'), /SemVer/);
-  assert.deepEqual(validateGeneratorVersion(
-    { version: '2.3.4' },
-    "export const GENERATOR_VERSION = '2.3.4';\n",
-  ), []);
-  assert.match(validateGeneratorVersion(
-    { version: '2.3.4' },
-    "export const GENERATOR_VERSION = '2.3.3';\n",
-  ).join('\n'), /does not match package\.json/);
+  assert.deepEqual(
+    validateGeneratorVersion({ version: '2.3.4' }, "export const GENERATOR_VERSION = '2.3.4';\n"),
+    [],
+  );
+  assert.match(
+    validateGeneratorVersion(
+      { version: '2.3.4' },
+      "export const GENERATOR_VERSION = '2.3.3';\n",
+    ).join('\n'),
+    /does not match package\.json/,
+  );
   const preparationRoot = path.join(temporaryRoot, 'preparation');
   mkdirSync(path.join(preparationRoot, 'src'), { recursive: true });
   writeFileSync(path.join(preparationRoot, 'package.json'), JSON.stringify({ version: '0.4.0' }));
-  writeFileSync(path.join(preparationRoot, 'src/version.ts'), "export const GENERATOR_VERSION = '0.4.0';\n");
-  mkdirSync(path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references'), { recursive: true });
-  writeFileSync(path.join(preparationRoot, 'plugins/anhedral/plugin.json'), JSON.stringify({ version: '0.4.0' }));
-  writeFileSync(path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/capabilities.json'), JSON.stringify({ cliVersion: '0.4.0' }));
-  assert.deepEqual(prepareAutomaticRelease(preparationRoot, '0.4.0'), { version: '0.4.1', automatic: true });
-  assert.equal(JSON.parse(readFileSync(path.join(preparationRoot, 'package.json'), 'utf8')).version, '0.4.1');
-  assert.equal(JSON.parse(readFileSync(path.join(preparationRoot, 'plugins/anhedral/plugin.json'), 'utf8')).version, '0.4.1');
-  assert.equal(JSON.parse(readFileSync(path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/capabilities.json'), 'utf8')).cliVersion, '0.4.1');
-  assert.deepEqual(validateGeneratorVersion(
-    { version: '0.4.1' }, readFileSync(path.join(preparationRoot, 'src/version.ts'), 'utf8'),
-  ), []);
+  writeFileSync(
+    path.join(preparationRoot, 'src/version.ts'),
+    "export const GENERATOR_VERSION = '0.4.0';\n",
+  );
+  mkdirSync(path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references'), {
+    recursive: true,
+  });
+  writeFileSync(
+    path.join(preparationRoot, 'plugins/anhedral/plugin.json'),
+    JSON.stringify({ version: '0.4.0' }),
+  );
+  writeFileSync(
+    path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/capabilities.json'),
+    JSON.stringify({ cliVersion: '0.4.0' }),
+  );
+  writeFileSync(
+    path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/stack-registry.json'),
+    JSON.stringify({ cliVersion: '0.4.0', items: [{ name: 'workspace', version: '0.4.0' }] }),
+  );
+  assert.deepEqual(prepareAutomaticRelease(preparationRoot, '0.4.0'), {
+    version: '0.4.1',
+    automatic: true,
+  });
+  assert.equal(
+    JSON.parse(readFileSync(path.join(preparationRoot, 'package.json'), 'utf8')).version,
+    '0.4.1',
+  );
+  assert.equal(
+    JSON.parse(readFileSync(path.join(preparationRoot, 'plugins/anhedral/plugin.json'), 'utf8'))
+      .version,
+    '0.4.1',
+  );
+  assert.equal(
+    JSON.parse(
+      readFileSync(
+        path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/capabilities.json'),
+        'utf8',
+      ),
+    ).cliVersion,
+    '0.4.1',
+  );
+  const preparedStack = JSON.parse(
+    readFileSync(
+      path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/stack-registry.json'),
+    ),
+  );
+  assert.equal(preparedStack.cliVersion, '0.4.1');
+  assert.equal(preparedStack.items[0].version, '0.4.1');
+  assert.deepEqual(
+    validateGeneratorVersion(
+      { version: '0.4.1' },
+      readFileSync(path.join(preparationRoot, 'src/version.ts'), 'utf8'),
+    ),
+    [],
+  );
   assert.deepEqual(checkReleasePolicy(repoRoot), []);
 
   const workflowPolicyRoot = path.join(temporaryRoot, 'workflow-policy');
   const workflowPolicyDirectory = path.join(workflowPolicyRoot, '.github', 'workflows');
   mkdirSync(workflowPolicyDirectory, { recursive: true });
-  const releaseWorkflow = readFileSync(path.join(repoRoot, '.github', 'workflows', 'release.yml'), 'utf8');
-  const releaseOnMainWorkflow = readFileSync(path.join(repoRoot, '.github', 'workflows', 'release-on-main.yml'), 'utf8');
+  const releaseWorkflow = readFileSync(
+    path.join(repoRoot, '.github', 'workflows', 'release.yml'),
+    'utf8',
+  );
+  const releaseOnMainWorkflow = readFileSync(
+    path.join(repoRoot, '.github', 'workflows', 'release-on-main.yml'),
+    'utf8',
+  );
   writeFileSync(path.join(workflowPolicyDirectory, 'release-on-main.yml'), releaseOnMainWorkflow);
   writeFileSync(
     path.join(workflowPolicyDirectory, 'ci.yml'),
@@ -177,37 +234,61 @@ try {
   );
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replace('npm publish "./.artifacts/release/$TARBALL"', 'npm publish ".artifacts/release/$TARBALL"'),
+    releaseWorkflow.replace(
+      'npm publish "./.artifacts/release/$TARBALL"',
+      'npm publish ".artifacts/release/$TARBALL"',
+    ),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /explicit local \.artifacts\/release tarball path/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /explicit local \.artifacts\/release tarball path/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace('      id-token: write\n', '      id-token: read\n'),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /publish job must grant id-token=write/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /publish job must grant id-token=write/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace('          registry-url: https://registry.npmjs.org\n', ''),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /configure the npm registry for OIDC/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /configure the npm registry for OIDC/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replace('          TARBALL: ${{ needs.verify.outputs.tarball }}', '          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}\n          TARBALL: ${{ needs.verify.outputs.tarball }}'),
+    releaseWorkflow.replace(
+      '          TARBALL: ${{ needs.verify.outputs.tarball }}',
+      '          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}\n          TARBALL: ${{ needs.verify.outputs.tarball }}',
+    ),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /without long-lived npm credentials/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /without long-lived npm credentials/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace('  workflow_call:\n', '  workflow_call:\n  workflow_dispatch:\n'),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /dispatched through release-on-main\.yml/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /dispatched through release-on-main\.yml/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replace("  RELEASE_NODE_VERSION: '24.18.0'", "  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true\n  RELEASE_NODE_VERSION: '24.18.0'"),
+    releaseWorkflow.replace(
+      "  RELEASE_NODE_VERSION: '24.18.0'",
+      "  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true\n  RELEASE_NODE_VERSION: '24.18.0'",
+    ),
   );
   assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /temporary force override/);
 
@@ -218,7 +299,10 @@ try {
       'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02',
     ),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /upload-artifact must use the reviewed Node\.js 24 pin/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /upload-artifact must use the reviewed Node\.js 24 pin/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
@@ -227,64 +311,110 @@ try {
       'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093',
     ),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /download-artifact must use the reviewed Node\.js 24 pin/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /download-artifact must use the reviewed Node\.js 24 pin/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace('          METADATA=".artifacts/release/metadata.json"\n', ''),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /attach \.artifacts\/release\/metadata\.json/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /attach \.artifacts\/release\/metadata\.json/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace('              --draft \\\n', ''),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /attach \.artifacts\/release\/metadata\.json/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /attach \.artifacts\/release\/metadata\.json/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replaceAll('gh release edit "$TAG" --draft=false', 'gh release edit "$TAG" --draft=true'),
+    releaseWorkflow.replaceAll(
+      'gh release edit "$TAG" --draft=false',
+      'gh release edit "$TAG" --draft=true',
+    ),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /attach \.artifacts\/release\/metadata\.json/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /attach \.artifacts\/release\/metadata\.json/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace('          cmp "$ASSET" "$DOWNLOAD_DIR/$TARBALL"\n', ''),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /attach \.artifacts\/release\/metadata\.json/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /attach \.artifacts\/release\/metadata\.json/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release-on-main.yml'),
-    releaseOnMainWorkflow.replaceAll('gh workflow run ci.yml --ref "$RELEASE_BRANCH"', 'printf "CI not dispatched"'),
+    releaseOnMainWorkflow.replaceAll(
+      'gh workflow run ci.yml --ref "$RELEASE_BRANCH"',
+      'printf "CI not dispatched"',
+    ),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /reviewed release PR with explicitly dispatched CI/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /reviewed release PR with explicitly dispatched CI/,
+  );
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release-on-main.yml'),
     releaseOnMainWorkflow.replaceAll('gh pr create', 'printf'),
   );
-  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /reviewed release PR with explicitly dispatched CI/);
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /reviewed release PR with explicitly dispatched CI/,
+  );
 
   const token = ['ghp', '_', 'A'.repeat(32)].join('');
   const clerkSecret = ['sk', '_test_', 'B'.repeat(28)].join('');
   const r2Secret = ['C'.repeat(20), 'D'.repeat(20)].join('');
   const credentialedDatabaseUrl = [
-    'postgresql', '://', 'app_owner', ':', 'LongSyntheticCredential123', '@', 'db.internal', '/app',
+    'postgresql',
+    '://',
+    'app_owner',
+    ':',
+    'LongSyntheticCredential123',
+    '@',
+    'db.internal',
+    '/app',
   ].join('');
   assert.deepEqual(scanText('safe.env.example', Buffer.from('TOKEN=replace-me\n')), []);
   assert.deepEqual(
-    scanText('safe.env.example', Buffer.from('AUTH_SECRET=replace-with-at-least-32-random-characters\n')),
+    scanText(
+      'safe.env.example',
+      Buffer.from('AUTH_SECRET=replace-with-at-least-32-random-characters\n'),
+    ),
     [],
   );
   assert.deepEqual(
-    scanText('safe.env.example', Buffer.from('ADMIN_AUTH_SECRET=replace-with-a-different-32-character-random-secret\n')),
+    scanText(
+      'safe.env.example',
+      Buffer.from('ADMIN_AUTH_SECRET=replace-with-a-different-32-character-random-secret\n'),
+    ),
     [],
   );
   const demoPlaceholder = 'local-demo-' + 'internal-token-for-development-only';
-  assert.deepEqual(scanText('demo/.env.example', Buffer.from(`INTERNAL_TOKEN=${demoPlaceholder}\n`)), []);
+  assert.deepEqual(
+    scanText('demo/.env.example', Buffer.from(`INTERNAL_TOKEN=${demoPlaceholder}\n`)),
+    [],
+  );
   assert.ok(scanText('demo/.env', Buffer.from(`INTERNAL_TOKEN=${demoPlaceholder}\n`)).length > 0);
   const maintainerEmail = ['maintainer', 'package.invalid'].join('@');
-  assert.deepEqual(scanText('pnpm-lock.yaml', Buffer.from(`    deprecated: Contact ${maintainerEmail}\n`)), []);
+  assert.deepEqual(
+    scanText('pnpm-lock.yaml', Buffer.from(`    deprecated: Contact ${maintainerEmail}\n`)),
+    [],
+  );
   assert.ok(scanText('pnpm-lock.yaml', Buffer.from(`secret: ${maintainerEmail}\n`)).length > 0);
   const localHomePath = ['', 'Users', 'local-developer', 'project', 'output.log'].join('/');
   const personalEmail = ['project-owner', 'private-domain.dev'].join('@');
@@ -305,17 +435,36 @@ try {
     [],
   );
   assert.equal(scanText('fixture.txt', Buffer.from(`TOKEN=${token}\n`))[0].pattern, 'github-token');
-  assert.ok(scanText('clerk.env', Buffer.from(`CLERK_SECRET_KEY=${clerkSecret}\n`)).some((finding) => finding.pattern === 'clerk-secret-key'));
-  assert.ok(scanText('r2.env', Buffer.from(`R2_SECRET_ACCESS_KEY=${r2Secret}\n`)).some((finding) => finding.pattern === 'credential-assignment'));
-  assert.ok(scanText('database.env', Buffer.from(`DATABASE_URL=${credentialedDatabaseUrl}\n`))
-    .some((finding) => finding.pattern === 'credentialed-database-uri'));
-  assert.deepEqual(scanText('database.env.example', Buffer.from('DATABASE_URL=postgresql://user:pass@localhost/app\n')), []);
+  assert.ok(
+    scanText('clerk.env', Buffer.from(`CLERK_SECRET_KEY=${clerkSecret}\n`)).some(
+      (finding) => finding.pattern === 'clerk-secret-key',
+    ),
+  );
+  assert.ok(
+    scanText('r2.env', Buffer.from(`R2_SECRET_ACCESS_KEY=${r2Secret}\n`)).some(
+      (finding) => finding.pattern === 'credential-assignment',
+    ),
+  );
+  assert.ok(
+    scanText('database.env', Buffer.from(`DATABASE_URL=${credentialedDatabaseUrl}\n`)).some(
+      (finding) => finding.pattern === 'credentialed-database-uri',
+    ),
+  );
+  assert.deepEqual(
+    scanText(
+      'database.env.example',
+      Buffer.from('DATABASE_URL=postgresql://user:pass@localhost/app\n'),
+    ),
+    [],
+  );
 
   const tarball = path.join(temporaryRoot, 'secret.tgz');
-  writeFileSync(tarball, gzipSync(Buffer.concat([
-    makeTarEntry('package/README.md', `token=${token}\n`),
-    Buffer.alloc(1024),
-  ])));
+  writeFileSync(
+    tarball,
+    gzipSync(
+      Buffer.concat([makeTarEntry('package/README.md', `token=${token}\n`), Buffer.alloc(1024)]),
+    ),
+  );
   assert.equal(scanTarball(tarball)[0].path, 'package/README.md');
 
   const artifactRoot = path.join(temporaryRoot, 'artifact');
@@ -337,7 +486,9 @@ try {
 
   const fakeNpm = path.join(temporaryRoot, 'fake-npm.mjs');
   const fakeState = path.join(temporaryRoot, 'fake-state.txt');
-  writeFileSync(fakeNpm, `#!/usr/bin/env node
+  writeFileSync(
+    fakeNpm,
+    `#!/usr/bin/env node
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 const responses = JSON.parse(process.env.FAKE_NPM_RESPONSES);
 const statePath = process.env.FAKE_NPM_STATE;
@@ -347,7 +498,8 @@ const response = responses[Math.min(index, responses.length - 1)];
 if (response.kind === 'found') { console.log(JSON.stringify(response.integrity)); process.exit(0); }
 if (response.kind === 'missing') { console.error('npm ERR! code E404'); process.exit(1); }
 console.error(response.message || 'registry unavailable'); process.exit(response.status || 2);
-`);
+`,
+  );
   chmodSync(fakeNpm, 0o755);
   const registryMetadata = path.join(temporaryRoot, 'registry-metadata.json');
   writeFileSync(registryMetadata, `${JSON.stringify(metadata)}\n`);
@@ -363,26 +515,43 @@ console.error(response.message || 'registry unavailable'); process.exit(response
     };
   };
 
-  let registry = runScript('check-release-registry.mjs', ['preflight', registryMetadata], registryEnv([{ kind: 'missing' }]));
+  let registry = runScript(
+    'check-release-registry.mjs',
+    ['preflight', registryMetadata],
+    registryEnv([{ kind: 'missing' }]),
+  );
   assert.equal(registry.status, 0);
   assert.equal(registry.stdout.trim(), 'missing');
 
-  registry = runScript('check-release-registry.mjs', ['preflight', registryMetadata], registryEnv([{ kind: 'found', integrity: metadata.integrity }]));
+  registry = runScript(
+    'check-release-registry.mjs',
+    ['preflight', registryMetadata],
+    registryEnv([{ kind: 'found', integrity: metadata.integrity }]),
+  );
   assert.equal(registry.status, 0);
   assert.equal(registry.stdout.trim(), 'matching');
 
-  registry = runScript('check-release-registry.mjs', ['preflight', registryMetadata], registryEnv([{ kind: 'found', integrity: 'sha512-wrong' }]));
+  registry = runScript(
+    'check-release-registry.mjs',
+    ['preflight', registryMetadata],
+    registryEnv([{ kind: 'found', integrity: 'sha512-wrong' }]),
+  );
   assert.notEqual(registry.status, 0);
   assert.match(registry.stderr, /different integrity/);
 
-  registry = runScript('check-release-registry.mjs', ['preflight', registryMetadata], registryEnv([{ kind: 'error', message: 'offline' }]));
+  registry = runScript(
+    'check-release-registry.mjs',
+    ['preflight', registryMetadata],
+    registryEnv([{ kind: 'error', message: 'offline' }]),
+  );
   assert.notEqual(registry.status, 0);
   assert.match(registry.stderr, /registry query failed/);
 
-  registry = runScript('check-release-registry.mjs', ['verify', registryMetadata], registryEnv([
-    { kind: 'missing' },
-    { kind: 'found', integrity: metadata.integrity },
-  ]));
+  registry = runScript(
+    'check-release-registry.mjs',
+    ['verify', registryMetadata],
+    registryEnv([{ kind: 'missing' }, { kind: 'found', integrity: metadata.integrity }]),
+  );
   assert.equal(registry.status, 0);
   assert.equal(registry.stdout.trim(), 'matching');
 

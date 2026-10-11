@@ -59,10 +59,22 @@ const advisoryWithCorrectedTenRange = {
     },
   ],
 };
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.1'), true);
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.5'), false);
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.2'), true);
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.3'), false);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.1'),
+  true,
+);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.5'),
+  false,
+);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.2'),
+  true,
+);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.3'),
+  false,
+);
 
 let active = 0;
 let peakActive = 0;
@@ -90,18 +102,18 @@ const findings = await collectOsvFindings(packages, {
   async queryBatch(batch) {
     await new Promise((resolve) => setTimeout(resolve, batch[0].name === 'first' ? 8 : 1));
     return {
-      results: [{ vulns: batch[0].name === 'third'
-        ? [{ id: 'OSV-2' }]
-        : [{ id: 'OSV-1' }] }],
+      results: [{ vulns: batch[0].name === 'third' ? [{ id: 'OSV-2' }] : [{ id: 'OSV-1' }] }],
     };
   },
   async queryAdvisory(id) {
     advisoryCalls.push(id);
     return id === 'OSV-1'
-      ? { affected: [
-        { package: { ecosystem: 'npm', name: 'first' }, versions: ['1.0.0'] },
-        { package: { ecosystem: 'npm', name: 'second' }, versions: ['1.0.0'] },
-      ] }
+      ? {
+          affected: [
+            { package: { ecosystem: 'npm', name: 'first' }, versions: ['1.0.0'] },
+            { package: { ecosystem: 'npm', name: 'second' }, versions: ['1.0.0'] },
+          ],
+        }
       : { affected: [{ package: { ecosystem: 'npm', name: 'third' }, versions: ['3.0.0'] }] };
   },
   onExcluded(finding) {
@@ -116,11 +128,18 @@ assert.deepEqual(findings, [
 assert.deepEqual(excluded, [{ name: 'second', version: '2.0.0', id: 'OSV-1' }]);
 
 let scheduledAfterFailure = 0;
-await assert.rejects(() => mapWithConcurrency([0, 1, 2, 3, 4], 2, async (value) => {
-  if (value === 0) throw new Error('pool failure');
-  scheduledAfterFailure += 1;
-  await new Promise((resolve) => setTimeout(resolve, 2));
-}), /pool failure/);
-assert.ok(scheduledAfterFailure <= 1, `expected the pool to stop scheduling after failure; got ${scheduledAfterFailure}`);
+await assert.rejects(
+  () =>
+    mapWithConcurrency([0, 1, 2, 3, 4], 2, async (value) => {
+      if (value === 0) throw new Error('pool failure');
+      scheduledAfterFailure += 1;
+      await new Promise((resolve) => setTimeout(resolve, 2));
+    }),
+  /pool failure/,
+);
+assert.ok(
+  scheduledAfterFailure <= 1,
+  `expected the pool to stop scheduling after failure; got ${scheduledAfterFailure}`,
+);
 
 console.log('Security audit package parsing tests passed');

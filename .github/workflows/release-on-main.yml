@@ -113,7 +113,8 @@ jobs:
               package.json \
               src/version.ts \
               plugins/anhedral/plugin.json \
-              plugins/anhedral/skills/anhedral/references/capabilities.json
+              plugins/anhedral/skills/anhedral/references/capabilities.json \
+              plugins/anhedral/skills/anhedral/references/stack-registry.json
             git commit -m "chore(release): v$RELEASE_VERSION [skip ci]"
             git push origin "HEAD:refs/heads/$RELEASE_BRANCH"
             PR_URL=$(gh pr create \

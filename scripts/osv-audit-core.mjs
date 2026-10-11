@@ -31,9 +31,11 @@ export async function collectOsvFindings(packages, options) {
   const findings = [];
   reports.forEach((report, batchIndex) => {
     const batch = batches[batchIndex];
-    findings.push(...report.results.flatMap((result, index) =>
-      (result.vulns ?? []).map((vulnerability) => ({ ...batch[index], id: vulnerability.id })),
-    ));
+    findings.push(
+      ...report.results.flatMap((result, index) =>
+        (result.vulns ?? []).map((vulnerability) => ({ ...batch[index], id: vulnerability.id })),
+      ),
+    );
   });
   if (findings.length === 0) return findings;
 

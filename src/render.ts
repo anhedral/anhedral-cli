@@ -28,9 +28,9 @@ export function markdownHeading(value: string): string {
 function assertPackageName(value: string): string {
   const leafName = value.slice(value.lastIndexOf('/') + 1);
   if (
-    value.length > MAX_PACKAGE_NAME_LENGTH
-    || !PACKAGE_NAME_PATTERN.test(value)
-    || RESERVED_PACKAGE_NAMES.has(leafName)
+    value.length > MAX_PACKAGE_NAME_LENGTH ||
+    !PACKAGE_NAME_PATTERN.test(value) ||
+    RESERVED_PACKAGE_NAMES.has(leafName)
   ) {
     throw new Error(`Invalid package name: ${value}`);
   }
@@ -71,10 +71,9 @@ export function childPackageName(projectName: string, suffix: string): string {
     );
     return assertPackageName(`${scope}${leaf}`);
   }
-  return assertPackageName(compactPackageSegment(
-    `${projectName}-${normalizedSuffix}`,
-    MAX_PACKAGE_NAME_LENGTH,
-  ));
+  return assertPackageName(
+    compactPackageSegment(`${projectName}-${normalizedSuffix}`, MAX_PACKAGE_NAME_LENGTH),
+  );
 }
 
 export function identifierSegment(value: string): string {

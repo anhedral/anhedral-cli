@@ -1,18 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import {
-  formatFindings,
-  scanDirectory,
-  scanTarball,
-  scanTrackedTree,
-} from './secret-scanner.mjs';
+import { formatFindings, scanDirectory, scanTarball, scanTrackedTree } from './secret-scanner.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const metadataPath = path.resolve(process.argv[2] ?? '.artifacts/release/metadata.json');
-const findings = [
-  ...scanTrackedTree(root),
-  ...scanDirectory(root, 'dist'),
-];
+const findings = [...scanTrackedTree(root), ...scanDirectory(root, 'dist')];
 
 if (existsSync(metadataPath)) {
   const metadata = JSON.parse(readFileSync(metadataPath, 'utf8'));
@@ -29,4 +21,6 @@ if (findings.length > 0) {
   process.exit(1);
 }
 
-console.log(`Secret scan passed for tracked files, dist${existsSync(metadataPath) ? ', and release tarball' : ''}`);
+console.log(
+  `Secret scan passed for tracked files, dist${existsSync(metadataPath) ? ', and release tarball' : ''}`,
+);

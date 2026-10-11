@@ -24,7 +24,9 @@ export function collectPnpmLockPackages(lockfile, source = 'pnpm-lock.yaml') {
 
 function parseSemver(version) {
   if (version === '0') return { major: 0, minor: 0, patch: 0, prerelease: [] };
-  const match = String(version).trim().match(/^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/);
+  const match = String(version)
+    .trim()
+    .match(/^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/);
   if (!match) return null;
   return {
     major: Number(match[1]),
@@ -110,8 +112,10 @@ export function versionMatchesComparatorRange(version, range) {
 
 function applyOsvEvent(version, event, affected) {
   for (const [field, state, inclusive] of [
-    ['introduced', true, true], ['fixed', false, true],
-    ['last_affected', false, false], ['limit', false, true],
+    ['introduced', true, true],
+    ['fixed', false, true],
+    ['last_affected', false, false],
+    ['limit', false, true],
   ]) {
     if (event[field] === undefined) continue;
     const comparison = compareSemver(version, event[field]);
@@ -150,7 +154,9 @@ function affectedPackageMatchesVersion(affected, version) {
 }
 
 export function osvAdvisoryAffectsPackageVersion(advisory, name, version) {
-  const matching = (advisory?.affected ?? []).filter((item) => item?.package?.ecosystem === 'npm' && item.package.name === name);
+  const matching = (advisory?.affected ?? []).filter(
+    (item) => item?.package?.ecosystem === 'npm' && item.package.name === name,
+  );
   if (matching.length === 0) return null;
   for (const affected of matching) {
     const result = affectedPackageMatchesVersion(affected, version);

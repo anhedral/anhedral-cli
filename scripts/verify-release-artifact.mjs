@@ -19,11 +19,19 @@ if (metadata.name !== 'anhedral') {
   throw new Error(`Unexpected release package name: ${metadata.name}`);
 }
 
-if (typeof metadata.version !== 'string' || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(metadata.version)) {
+if (
+  typeof metadata.version !== 'string' ||
+  !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(
+    metadata.version,
+  )
+) {
   throw new Error(`Release version must be valid SemVer: ${metadata.version}`);
 }
 
-if (typeof metadata.integrity !== 'string' || !/^sha512-[A-Za-z0-9+/]{86}==$/.test(metadata.integrity)) {
+if (
+  typeof metadata.integrity !== 'string' ||
+  !/^sha512-[A-Za-z0-9+/]{86}==$/.test(metadata.integrity)
+) {
   throw new Error('Release integrity must be an sha512 SRI value');
 }
 
@@ -41,7 +49,9 @@ if (metadata.filename !== path.basename(metadata.filename)) {
 
 for (const [field, expected] of expectations) {
   if (expected && metadata[field] !== expected) {
-    throw new Error(`Release metadata ${field} mismatch: expected ${expected}, received ${metadata[field]}`);
+    throw new Error(
+      `Release metadata ${field} mismatch: expected ${expected}, received ${metadata[field]}`,
+    );
   }
 }
 
@@ -56,7 +66,9 @@ const shasum = createHash('sha1').update(tarball).digest('hex');
 const size = tarballStat.size;
 
 if (integrity !== metadata.integrity) {
-  throw new Error(`Tarball integrity mismatch: expected ${metadata.integrity}, received ${integrity}`);
+  throw new Error(
+    `Tarball integrity mismatch: expected ${metadata.integrity}, received ${integrity}`,
+  );
 }
 
 if (shasum !== metadata.shasum) {
@@ -71,12 +83,19 @@ console.log(`Verified ${metadata.name}@${metadata.version}: ${metadata.integrity
 
 function verifyPlugin(plugin, version, directory) {
   if (!plugin) return; // Preserve verification of releases that predate the plugin.
-  if (plugin.version !== version || plugin.cliVersion !== version || plugin.filename !== `anhedral-plugin-${version}.zip`) throw new Error('Plugin release identity mismatch');
+  if (
+    plugin.version !== version ||
+    plugin.cliVersion !== version ||
+    plugin.filename !== `anhedral-plugin-${version}.zip`
+  )
+    throw new Error('Plugin release identity mismatch');
   const filename = path.join(directory, plugin.filename);
   const stat = lstatSync(filename);
-  if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Plugin archive must be a regular file');
+  if (!stat.isFile() || stat.isSymbolicLink())
+    throw new Error('Plugin archive must be a regular file');
   const contents = readFileSync(filename);
   const integrity = `sha512-${createHash('sha512').update(contents).digest('base64')}`;
-  if (integrity !== plugin.integrity || contents.length !== plugin.size) throw new Error('Plugin integrity mismatch');
+  if (integrity !== plugin.integrity || contents.length !== plugin.size)
+    throw new Error('Plugin integrity mismatch');
 }
 verifyPlugin(metadata.plugin, metadata.version, path.dirname(metadataPath));

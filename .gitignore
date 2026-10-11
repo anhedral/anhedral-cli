@@ -13,8 +13,6 @@ yarn-error.log*
 *.tgz
 *.tsbuildinfo
 /.artifacts/
-/demo/*
-!/demo/anhedral-factory/
-!/demo/default-stack-demo/
 /.claude/
 /.fallow/
+/.turbo/

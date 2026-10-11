@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
-  "version": "0.8.4",
-  "description": "Initialize client-owned applications with shadcn, pnpm, Turborepo, and Cloudflare-first services.",
+  "version": "0.9.0",
+  "description": "Build and deliver applications with Cloudflare-first Vinext, selected services, optional Next.js on Vercel, and verified release evidence.",
   "type": "module",
   "exports": {
     ".": {
@@ -18,12 +18,15 @@
     "dist",
     "assets/anhedral-cli-init.svg",
     "assets/anhedral-cli-init-technical.svg",
-    "assets/images/svg/logo-white-subtract.svg",
+    "assets/anhedral-mark.svg",
     "LICENSE",
     "README.md",
     "assets/anhedral.svg",
     "assets/favicon.ico",
-    "docs/application-stack-standard.md"
+    "docs/application-stack-standard.md",
+    "docs/delivery-workflow.md",
+    "docs/sponsorships.md",
+    "docs/managed-hosting-architecture.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-init#readme",
   "repository": {
@@ -43,14 +46,14 @@
   "scripts": {
     "scaffold": "node dist/bin.js init",
     "clean": "node scripts/clean.mjs",
-    "build": "pnpm clean && tsc && node scripts/prepare-cli.mjs && node scripts/build-control-panel.mjs",
+    "build": "pnpm clean && tsc && node scripts/prepare-cli.mjs",
     "prepare": "pnpm build",
-    "typecheck": "tsc --noEmit && tsc -p apps/control-panel/tsconfig.json",
+    "typecheck": "tsc --noEmit",
     "check:hygiene": "node scripts/check-source-hygiene.mjs",
     "check:security": "node scripts/check-security-policy.mjs",
     "check:release-policy": "node scripts/check-release-policy.mjs",
     "check:release-secrets": "node scripts/check-release-secrets.mjs",
-    "lint": "pnpm typecheck && pnpm check:hygiene && pnpm check:release-policy",
+    "lint": "pnpm typecheck && pnpm format:check && pnpm check:hygiene && pnpm check:release-policy",
     "audit:osv": "node scripts/audit-osv.mjs",
     "test": "pnpm test:unit",
     "pretest": "pnpm build",
@@ -71,7 +74,11 @@
     "test:standard": "pnpm build && node --test tests/test-standard.test.mjs",
     "test:unit": "node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
     "test:integration": "pnpm build && node tests/test-generated-apps.mjs",
-    "dev:panel": "node .artifacts/control-panel/preview.js"
+    "test:live:delivery": "pnpm build && node tests/test-live-delivery.mjs",
+    "test:live:vercel": "pnpm build && node tests/test-live-vercel.mjs",
+    "test:live:vercel:git": "pnpm build && node tests/test-live-vercel-git.mjs",
+    "format": "prettier --write src scripts tests",
+    "format:check": "prettier --check src scripts tests"
   },
   "keywords": [
     "cli",
@@ -87,23 +94,18 @@
     "neon",
     "drizzle",
     "shadcn",
-    "turborepo"
+    "turborepo",
+    "vinext"
   ],
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.34.5",
   "devDependencies": {
-    "@modelcontextprotocol/ext-apps": "1.7.5",
-    "@modelcontextprotocol/sdk": "1.32.1",
-    "@openai/mcp-extensions": "0.1.0",
     "@types/node": "20.19.43",
-    "@types/react": "19.2.10",
-    "@types/react-dom": "19.2.3",
-    "esbuild": "0.28.2",
-    "jsonc-parser": "3.3.1",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "prettier": "3.9.10",
     "simple-icons": "16.27.0",
-    "typescript": "5.9.3",
-    "zod": "4.4.3"
+    "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "jsonc-parser": "3.3.1"
   }
 }

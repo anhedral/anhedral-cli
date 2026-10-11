@@ -5,7 +5,11 @@ import path from 'node:path';
 import { buildPluginArchive } from '../scripts/package-plugin.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 const result = buildPluginArchive(root);
-assert.deepEqual(result.contents, buildPluginArchive(root).contents, 'Plugin ZIP must be reproducible');
+assert.deepEqual(
+  result.contents,
+  buildPluginArchive(root).contents,
+  'Plugin ZIP must be reproducible',
+);
 let offset = 0;
 const files = new Map();
 while (result.contents.readUInt32LE(offset) === 0x04034b50) {
@@ -20,15 +24,31 @@ while (result.contents.readUInt32LE(offset) === 0x04034b50) {
 assert.ok(files.has('plugin.json'));
 assert.ok(files.has('skills/anhedral/SKILL.md'));
 assert.ok(files.has('LICENSE'));
+for (const legacy of ['mcp.json', 'server.mjs', 'assets/control-panel.html'])
+  assert.equal(files.has(legacy), false, `Default plugin must exclude ${legacy}`);
+assert.ok(
+  !JSON.parse(files.get('plugin.json')).extensions['com.openai'].interface.capabilities.includes(
+    'Interactive',
+  ),
+);
 const manifest = JSON.parse(files.get('plugin.json'));
+assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [
+  'Create a new app with [@Anhedral](plugin://anhedral@anhedral). Start by asking me what it should do.',
+]);
 for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
-  assert.deepEqual(files.get(manifest.extensions['com.openai'].interface[field].replace(/^\.\//, '')), readFileSync(path.join(root, 'assets/anhedral.svg')));
+  assert.deepEqual(
+    files.get(manifest.extensions['com.openai'].interface[field].replace(/^\.\//, '')),
+    readFileSync(path.join(root, 'assets/anhedral.svg')),
+  );
 }
 for (const [name, contents] of files) {
   if (!name.endsWith('.md')) continue;
   for (const match of contents.toString().matchAll(/\]\(([^)]+)\)/g)) {
     if (/^(?:https?:|#)/.test(match[1])) continue;
-    assert.ok(files.has(path.posix.normalize(path.posix.join(path.posix.dirname(name), match[1]))), `Missing bundled reference: ${match[1]}`);
+    assert.ok(
+      files.has(path.posix.normalize(path.posix.join(path.posix.dirname(name), match[1]))),
+      `Missing bundled reference: ${match[1]}`,
+    );
   }
 }
 const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-contract-'));
@@ -36,4 +56,6 @@ try {
   cpSync(path.join(root, 'plugins'), path.join(temporary, 'plugins'), { recursive: true });
   writeFileSync(path.join(temporary, 'package.json'), JSON.stringify({ version: '0.0.0' }));
   assert.throws(() => buildPluginArchive(temporary), /versions must match/);
-} finally { rmSync(temporary, { recursive: true, force: true }); }
+} finally {
+  rmSync(temporary, { recursive: true, force: true });
+}
