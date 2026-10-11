@@ -11,26 +11,22 @@ export function packageCoordinateFromPnpmKey(rawKey) {
 }
 
 export function collectPnpmLockPackages(lockfile, source = 'pnpm-lock.yaml') {
-  // pnpm 12 writes separate YAML documents for toolchain and app dependencies.
-  const sections = [...lockfile.matchAll(/(?:^|\n)packages:\r?\n([\s\S]*?)(?=\nsnapshots:\r?\n)/g)];
-  if (sections.length !== [...lockfile.matchAll(/^packages:\r?$/gm)].length) throw new Error(`Incomplete packages section in ${source}`);
-  if (!sections.length) throw new Error(`Could not locate the packages section in ${source}`);
+  const packagesSection = lockfile.match(/\npackages:\n([\s\S]*?)\nsnapshots:\n/)?.[1];
+  if (!packagesSection) throw new Error(`Could not locate the packages section in ${source}`);
+
   const packages = [];
-  for (const [, section] of sections) {
-    for (const line of section.split(/\r?\n/).filter((row) => /^  [^ #\t]/.test(row))) {
-      const match = line.match(/^  (.+?):(?:[ \t].*|$)/);
-      if (!match) throw new Error(`Unsupported package row in ${source}: ${line}`);
-      const coordinate = packageCoordinateFromPnpmKey(match[1]);
-      if (!coordinate) throw new Error(`Unsupported package coordinate ${match[1]} in ${source}`);
-      packages.push(coordinate);
-    }
+  for (const match of packagesSection.matchAll(/^  (.+):$/gm)) {
+    const coordinate = packageCoordinateFromPnpmKey(match[1]);
+    if (coordinate) packages.push(coordinate);
   }
   return packages;
 }
 
 function parseSemver(version) {
   if (version === '0') return { major: 0, minor: 0, patch: 0, prerelease: [] };
-  const match = String(version).trim().match(/^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/);
+  const match = String(version)
+    .trim()
+    .match(/^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/);
   if (!match) return null;
   return {
     major: Number(match[1]),
@@ -116,8 +112,10 @@ export function versionMatchesComparatorRange(version, range) {
 
 function applyOsvEvent(version, event, affected) {
   for (const [field, state, inclusive] of [
-    ['introduced', true, true], ['fixed', false, true],
-    ['last_affected', false, false], ['limit', false, true],
+    ['introduced', true, true],
+    ['fixed', false, true],
+    ['last_affected', false, false],
+    ['limit', false, true],
   ]) {
     if (event[field] === undefined) continue;
     const comparison = compareSemver(version, event[field]);
@@ -156,7 +154,9 @@ function affectedPackageMatchesVersion(affected, version) {
 }
 
 export function osvAdvisoryAffectsPackageVersion(advisory, name, version) {
-  const matching = (advisory?.affected ?? []).filter((item) => item?.package?.ecosystem === 'npm' && item.package.name === name);
+  const matching = (advisory?.affected ?? []).filter(
+    (item) => item?.package?.ecosystem === 'npm' && item.package.name === name,
+  );
   if (matching.length === 0) return null;
   for (const affected of matching) {
     const result = affectedPackageMatchesVersion(affected, version);

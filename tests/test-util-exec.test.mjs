@@ -41,28 +41,41 @@ try {
   assert.throws(() => resolveCommand('pnpm', [], 'win32', ''), /direct pnpm entry point/);
 
   const noisySuccess = path.join(temporaryRoot, 'noisy-success.mjs');
-  writeFileSync(noisySuccess, `
+  writeFileSync(
+    noisySuccess,
+    `
     process.stdout.write('o'.repeat(2 * 1024 * 1024));
     process.stderr.write('e'.repeat(2 * 1024 * 1024));
-  `);
+  `,
+  );
   const success = runExecFile([noisySuccess]);
-  assert.equal(success.status, 0, `large successful output must not overflow a memory buffer: ${success.stderr}`);
+  assert.equal(
+    success.status,
+    0,
+    `large successful output must not overflow a memory buffer: ${success.stderr}`,
+  );
   assert.equal(success.stdout, '');
   assert.equal(success.stderr, '');
 
   const noisyFailure = path.join(temporaryRoot, 'noisy-failure.mjs');
-  writeFileSync(noisyFailure, `
+  writeFileSync(
+    noisyFailure,
+    `
     process.stdout.write('discarded-stdout-prefix\\n' + 'x'.repeat(256 * 1024) + '\\nstdout-tail-marker\\n');
     process.stderr.write('discarded-stderr-prefix\\n' + 'y'.repeat(256 * 1024) + '\\nstderr-tail-marker\\n');
     process.exitCode = 7;
-  `);
+  `,
+  );
   const failure = runExecFile([noisyFailure]);
   assert.equal(failure.status, 1);
   assert.match(failure.stdout, /Command failed \(exit 7\)/);
   assert.match(failure.stderr, /stdout-tail-marker/);
   assert.match(failure.stderr, /stderr-tail-marker/);
   assert.doesNotMatch(failure.stderr, /discarded-(?:stdout|stderr)-prefix/);
-  assert.ok(Buffer.byteLength(failure.stderr) <= 2 * 128 * 1024, 'failure diagnostics must remain bounded');
+  assert.ok(
+    Buffer.byteLength(failure.stderr) <= 2 * 128 * 1024,
+    'failure diagnostics must remain bounded',
+  );
 
   const quietFailure = runExecFile([noisyFailure], { ANHEDRAL_QUIET: '1' });
   assert.equal(quietFailure.status, 1);

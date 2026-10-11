@@ -14,10 +14,7 @@
     "declaration": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "types": ["node"],
-    "paths": {
-      "@panel/*": ["./apps/control-panel/src/*"]
-    }
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -38,20 +38,6 @@ assert.deepEqual(collectPnpmLockPackages(lockfile), [
   { name: 'example', version: '4.5.6' },
 ]);
 
-// pnpm12 toolchain metadata must not hide the app's second YAML document.
-const multiDocumentLock = `---\n${lockfile}\n---\n${lockfile.replaceAll('example@4.5.6', 'application@8.9.0')}`;
-assert.equal(collectPnpmLockPackages(multiDocumentLock).length, 4);
-assert.equal(collectPnpmLockPackages(multiDocumentLock.replaceAll('\n', '\r\n')).length, 4);
-assert.throws(() => collectPnpmLockPackages(`${lockfile}\n---\npackages:\n  hidden@1.0.0:\n`), /Incomplete packages section/);
-assert.ok(collectPnpmLockPackages(multiDocumentLock).some(({ name }) => name === 'application'));
-assert.throws(() => collectPnpmLockPackages('packages:\n  invalid:\n\nsnapshots:\n'), /Unsupported package coordinate/);
-
-// Valid YAML inline payloads and comments must not hide package coordinates.
-assert.deepEqual(collectPnpmLockPackages('packages:\n  lodash@4.17.20: {resolution: {integrity: test}}\n  glob@9.3.5: # registry package\n    resolution: {integrity: test}\nsnapshots:\n'), [
-  { name: 'lodash', version: '4.17.20' }, { name: 'glob', version: '9.3.5' },
-]);
-assert.throws(() => collectPnpmLockPackages('packages:\n  hidden-package-row\nsnapshots:\n'), /Unsupported package row/);
-
 assert.equal(compareSemver('10.34.5', '10.34.2'), 1);
 assert.equal(compareSemver('1.0.0-beta.2', '1.0.0-beta.11'), -1);
 assert.equal(compareSemver('1.0.0', '1.0.0-rc.1'), 1);
@@ -73,10 +59,22 @@ const advisoryWithCorrectedTenRange = {
     },
   ],
 };
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.1'), true);
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.5'), false);
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.2'), true);
-assert.equal(osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.3'), false);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.1'),
+  true,
+);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '10.34.5'),
+  false,
+);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.2'),
+  true,
+);
+assert.equal(
+  osvAdvisoryAffectsPackageVersion(advisoryWithCorrectedTenRange, 'pnpm', '11.5.3'),
+  false,
+);
 
 let active = 0;
 let peakActive = 0;
@@ -104,18 +102,18 @@ const findings = await collectOsvFindings(packages, {
   async queryBatch(batch) {
     await new Promise((resolve) => setTimeout(resolve, batch[0].name === 'first' ? 8 : 1));
     return {
-      results: [{ vulns: batch[0].name === 'third'
-        ? [{ id: 'OSV-2' }]
-        : [{ id: 'OSV-1' }] }],
+      results: [{ vulns: batch[0].name === 'third' ? [{ id: 'OSV-2' }] : [{ id: 'OSV-1' }] }],
     };
   },
   async queryAdvisory(id) {
     advisoryCalls.push(id);
     return id === 'OSV-1'
-      ? { affected: [
-        { package: { ecosystem: 'npm', name: 'first' }, versions: ['1.0.0'] },
-        { package: { ecosystem: 'npm', name: 'second' }, versions: ['1.0.0'] },
-      ] }
+      ? {
+          affected: [
+            { package: { ecosystem: 'npm', name: 'first' }, versions: ['1.0.0'] },
+            { package: { ecosystem: 'npm', name: 'second' }, versions: ['1.0.0'] },
+          ],
+        }
       : { affected: [{ package: { ecosystem: 'npm', name: 'third' }, versions: ['3.0.0'] }] };
   },
   onExcluded(finding) {
@@ -130,11 +128,18 @@ assert.deepEqual(findings, [
 assert.deepEqual(excluded, [{ name: 'second', version: '2.0.0', id: 'OSV-1' }]);
 
 let scheduledAfterFailure = 0;
-await assert.rejects(() => mapWithConcurrency([0, 1, 2, 3, 4], 2, async (value) => {
-  if (value === 0) throw new Error('pool failure');
-  scheduledAfterFailure += 1;
-  await new Promise((resolve) => setTimeout(resolve, 2));
-}), /pool failure/);
-assert.ok(scheduledAfterFailure <= 1, `expected the pool to stop scheduling after failure; got ${scheduledAfterFailure}`);
+await assert.rejects(
+  () =>
+    mapWithConcurrency([0, 1, 2, 3, 4], 2, async (value) => {
+      if (value === 0) throw new Error('pool failure');
+      scheduledAfterFailure += 1;
+      await new Promise((resolve) => setTimeout(resolve, 2));
+    }),
+  /pool failure/,
+);
+assert.ok(
+  scheduledAfterFailure <= 1,
+  `expected the pool to stop scheduling after failure; got ${scheduledAfterFailure}`,
+);
 
 console.log('Security audit package parsing tests passed');

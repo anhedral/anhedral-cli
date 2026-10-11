@@ -47,7 +47,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
-          version: 12.9.1
+          version: 10.34.5
 
       - name: Prepare automatic patch version
         id: prepare
@@ -113,7 +113,8 @@ jobs:
               package.json \
               src/version.ts \
               plugins/anhedral/plugin.json \
-              plugins/anhedral/skills/anhedral/references/capabilities.json
+              plugins/anhedral/skills/anhedral/references/capabilities.json \
+              plugins/anhedral/skills/anhedral/references/stack-registry.json
             git commit -m "chore(release): v$RELEASE_VERSION [skip ci]"
             git push origin "HEAD:refs/heads/$RELEASE_BRANCH"
             PR_URL=$(gh pr create \

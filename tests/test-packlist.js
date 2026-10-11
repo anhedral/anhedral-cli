@@ -13,6 +13,9 @@ const requiredFiles = new Set([
   'LICENSE',
   'README.md',
   'assets/anhedral.svg',
+  'assets/security/manifest.json',
+  'assets/security/audit-deps.mjs',
+  'assets/security/LICENSES.txt',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -20,27 +23,22 @@ const requiredFiles = new Set([
   'package.json',
   'assets/anhedral-cli-init.svg',
   'assets/anhedral-cli-init-technical.svg',
-  'assets/images/svg/logo-white-subtract.svg',
+  'assets/anhedral-mark.svg',
   'docs/application-stack-standard.md',
-  'assets/security/audit-deps.mjs',
-  'assets/security/manifest.json',
-  'assets/security/braces@3.0.3.patch',
-  'assets/security/node-forge@1.4.0.patch',
-  'assets/security/decode-uri-component@0.2.2.patch',
+  'docs/delivery-workflow.md',
+  'docs/sponsorships.md',
 ]);
-const allowedRootFiles = new Set([
-  'LICENSE',
-  'README.md',
-  'package.json',
-]);
+const allowedRootFiles = new Set(['LICENSE', 'README.md', 'package.json']);
 
 function assertPackedMarkdownLinks(sourcePath, markdown, packedFiles) {
   for (const match of markdown.matchAll(/\]\(([^)]+)\)/g)) {
     const target = match[1].trim().replace(/^<|>$/g, '');
-    if (/^(?:https?:|mailto:|#)/.test(target)) continue;
+    if (/^(?:https?:|mailto:|plugin:|#)/.test(target)) continue;
     const pathTarget = target.split('#', 1)[0];
     if (!pathTarget) continue;
-    const resolvedTarget = path.posix.normalize(path.posix.join(path.posix.dirname(sourcePath), pathTarget));
+    const resolvedTarget = path.posix.normalize(
+      path.posix.join(path.posix.dirname(sourcePath), pathTarget),
+    );
     assert.ok(
       !resolvedTarget.startsWith('../') && packedFiles.includes(resolvedTarget),
       `packed ${sourcePath} link target must be published: ${target}`,
@@ -66,14 +64,18 @@ try {
   assert.doesNotMatch(license, /proprietary and confidential/i);
 
   const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const result = spawnSyncPortable(npmCommand, ['pack', '--dry-run', '--json', '--ignore-scripts'], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    env: {
-      ...process.env,
-      npm_config_cache: npmCache,
+  const result = spawnSyncPortable(
+    npmCommand,
+    ['pack', '--dry-run', '--json', '--ignore-scripts'],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        npm_config_cache: npmCache,
+      },
     },
-  });
+  );
 
   assert.equal(
     result.status,
@@ -87,7 +89,10 @@ try {
 
   assert.equal(new Set(files).size, files.length, 'packlist should not contain duplicate paths');
   assert.equal(packed.entryCount, files.length, 'entryCount should match the packlist length');
-  assert.ok(packed.size < 1_000_000, `packed artifact should remain below 1 MB; received ${packed.size}`);
+  assert.ok(
+    packed.size < 1_000_000,
+    `packed artifact should remain below 1 MB; received ${packed.size}`,
+  );
   assert.ok(
     packed.unpackedSize < 2_000_000,
     `unpacked artifact should remain below 2 MB; received ${packed.unpackedSize}`,
@@ -99,10 +104,17 @@ try {
 
   const readme = readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
   assert.match(readme, /open source under the \[Apache License 2\.0\]\(LICENSE\)/i);
-  assert.match(readme, /Generated applications[\s\S]+developers can customize and license for their products/i);
+  assert.match(
+    readme,
+    /Generated applications[\s\S]+developers can customize and license for their products/i,
+  );
   assert.doesNotMatch(readme, /does not grant permission to install|separate written agreement/i);
   assertPackedMarkdownLinks('README.md', readme, files);
-  assertPackedMarkdownLinks('docs/application-stack-standard.md', readFileSync(path.join(repoRoot, 'docs/application-stack-standard.md'), 'utf8'), files);
+  assertPackedMarkdownLinks(
+    'docs/application-stack-standard.md',
+    readFileSync(path.join(repoRoot, 'docs/application-stack-standard.md'), 'utf8'),
+    files,
+  );
 
   const renderedMapPath = path.join(npmCache, 'anhedral-cli-init.svg');
   const renderResult = spawnSyncPortable(
@@ -112,21 +124,49 @@ try {
   );
   assert.equal(renderResult.status, 0, `stack map render failed: ${renderResult.stderr ?? ''}`);
   const checkedInSvg = readFileSync(path.join(repoRoot, 'assets/anhedral-cli-init.svg'), 'utf8');
-  assert.equal(readFileSync(renderedMapPath, 'utf8'), checkedInSvg, 'generated stack map SVG must be current');
+  assert.equal(
+    readFileSync(renderedMapPath, 'utf8'),
+    checkedInSvg,
+    'generated stack map SVG must be current',
+  );
   for (const requiredSvgText of [
-    'Anhedral Init Stack', 'CLIENT SURFACES', 'OpenNext', 'Hono + OpenAPI',
-    'Workers', 'Hyperdrive', 'Neon + Drizzle',
-    'Private R2', 'KV', 'Durable Objects', 'WebSockets', 'Queues',
-    'Cron Triggers', 'Workflows', 'Observability', 'Basin', 'Pipelines',
-    'Workers AI', 'D1 + Drizzle', 'Fallow audit',
-  ]) assert.ok(checkedInSvg.includes(requiredSvgText), `stack diagram must include ${requiredSvgText}`);
+    'Anhedral Init Stack',
+    'CLIENT SURFACES',
+    'OpenNext',
+    'Hono + OpenAPI',
+    'Workers',
+    'Neon HTTP',
+    'Neon + Drizzle',
+    'Private R2',
+    'KV',
+    'Durable Objects',
+    'WebSockets',
+    'Queues',
+    'Cron Triggers',
+    'Workflows',
+    'Observability',
+    'Basin',
+    'Pipelines',
+    'Workers AI',
+    'D1 + Drizzle',
+    'Fallow audit',
+  ])
+    assert.ok(
+      checkedInSvg.includes(requiredSvgText),
+      `stack diagram must include ${requiredSvgText}`,
+    );
   assert.doesNotMatch(checkedInSvg, /Ably|Fastify/);
-  assert.match(checkedInSvg, /Vercel when explicitly selected/);
+  assert.match(checkedInSvg, /Vinext on Cloudflare Workers/);
 
   const renderedTechnicalMapPath = path.join(npmCache, 'anhedral-cli-init-technical.svg');
   const technicalRenderResult = spawnSyncPortable(
     process.execPath,
-    [path.join(repoRoot, 'scripts/render-master-stack-map.mjs'), '--technical', '--output', renderedTechnicalMapPath],
+    [
+      path.join(repoRoot, 'scripts/render-master-stack-map.mjs'),
+      '--technical',
+      '--output',
+      renderedTechnicalMapPath,
+    ],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   assert.equal(
@@ -145,20 +185,29 @@ try {
   );
   assert.match(checkedInTechnicalSvg, /Application service contracts/);
   assert.match(checkedInTechnicalSvg, /CLOUDFLARE SERVICE BINDINGS/);
-  assert.doesNotMatch(checkedInTechnicalSvg, /Ably|Vercel|Fastify/);
+  assert.doesNotMatch(checkedInTechnicalSvg, /Ably|Fastify/);
+  assert.match(checkedInTechnicalSvg, /Vinext on Cloudflare Workers/);
 
   for (const file of packed.files) {
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
-    const allowedDocumentation = file.path === 'assets/anhedral-cli-init.svg'
-      || file.path === 'assets/anhedral.svg'
-      || file.path === 'assets/favicon.ico'
-      || file.path === 'assets/anhedral-cli-init-technical.svg'
-      || file.path === 'assets/images/svg/logo-white-subtract.svg'
-      || file.path === 'docs/application-stack-standard.md';
-    const allowedSecurity = /^assets\/security\/(?:audit-deps\.mjs|manifest\.json|LICENSES\.txt|(?:braces|forge|decoder)-regression\.mjs|(?:braces@3\.0\.3|node-forge@1\.4\.0|decode-uri-component@0\.2\.2)\.patch)$/.test(file.path);
-    const allowed = allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation || allowedSecurity;
+    const allowedDocumentation =
+      file.path.startsWith('assets/security/') ||
+      file.path === 'assets/anhedral-cli-init.svg' ||
+      file.path === 'assets/anhedral.svg' ||
+      file.path === 'assets/favicon.ico' ||
+      file.path === 'assets/anhedral-cli-init-technical.svg' ||
+      file.path === 'assets/anhedral-mark.svg' ||
+      file.path === 'docs/application-stack-standard.md' ||
+      file.path === 'docs/managed-hosting-architecture.md' ||
+      file.path === 'docs/delivery-workflow.md' ||
+      file.path === 'docs/sponsorships.md';
+    const allowed = allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation;
     assert.ok(allowed, `unexpected published path: ${file.path}`);
-    if (!allowedDocumentation) assert.doesNotMatch(file.path, /(^|\/)(?:\.env|src|tests?|scripts?|\.github|node_modules|\.git)(?:\/|$)/);
+    if (!allowedDocumentation)
+      assert.doesNotMatch(
+        file.path,
+        /(^|\/)(?:\.env|src|tests?|scripts?|\.github|node_modules|\.git)(?:\/|$)/,
+      );
     assert.doesNotMatch(file.path, /\.(?:map|tgz|tsbuildinfo)$/);
   }
 

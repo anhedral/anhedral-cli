@@ -1,51 +1,76 @@
 import path from 'node:path';
 import { writeReactLintConfig } from './lint.js';
 import { writeFile } from '../util.js';
-import type { ProjectOptions } from '../project.js';
+import type { RecipeContext } from '../registry/types.js';
 import { EXTENSION_DEPENDENCIES } from '../dependencies.js';
 import { childPackageName, htmlText, jsString, markdownHeading } from '../render.js';
-export async function scaffoldExtension(root: string, options: ProjectOptions): Promise<void> {
-    const { projectName, displayName, extensionSurface = 'sidepanel' } = options;
-    const dir = path.join(root, 'apps/extension');
-    writePackageJson(dir, projectName);
-    writeFile(path.join(dir, 'tsconfig.json'), JSON.stringify({ extends: './.wxt/tsconfig.json', compilerOptions: { strict: true, jsx: 'react-jsx', paths: { '@/*': ['./src/*'] } } }, null, 2) + '\n');
-    writeReactLintConfig(dir);
-    writeWxtConfig(dir, displayName, extensionSurface);
-    writeEnvExample(dir);
-    writePostcssConfig(dir);
-    writeShadcnConfig(dir);
-    writeReadme(dir, displayName, extensionSurface);
-    writeCnUtil(dir);
-    writeButtonComponent(dir);
-    if (extensionSurface === 'sidepanel') writeBackground(dir);
-    writeSurfaceEntry(dir, extensionSurface);
-    writeSurfaceHtml(dir, displayName, extensionSurface);
-    writeSurfaceApp(dir, extensionSurface);
-    writeStyles(dir);
+export async function scaffoldWxt({ root, options }: RecipeContext): Promise<void> {
+  const projectName = options.name;
+  const displayName = options.name;
+  const dir = path.join(root, 'apps/extension');
+  writePackageJson(dir, projectName);
+  writeFile(
+    path.join(dir, 'tsconfig.json'),
+    JSON.stringify(
+      {
+        extends: './.wxt/tsconfig.json',
+        compilerOptions: { strict: true, jsx: 'react-jsx', paths: { '@/*': ['./src/*'] } },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  writeReactLintConfig(dir);
+  writeWxtConfig(dir, displayName);
+  writeEnvExample(dir);
+  writePostcssConfig(dir);
+  writeTailwindConfig(dir);
+  writeShadcnConfig(dir);
+  writeReadme(dir, displayName);
+  writeCnUtil(dir);
+  writeButtonComponent(dir);
+  writeBackground(dir);
+  writeSidepanelEntry(dir);
+  writeSidepanelHtml(dir, displayName);
+  writeSidepanelApp(dir);
+  writeStyles(dir);
 }
 function writePackageJson(dir: string, projectName: string): void {
-    writeFile(path.join(dir, 'package.json'), JSON.stringify({
+  writeFile(
+    path.join(dir, 'package.json'),
+    JSON.stringify(
+      {
         name: childPackageName(projectName, 'chrome-ext'),
         version: '0.1.0',
         private: true,
         type: 'module',
         scripts: {
-            dev: 'wxt',
-            build: 'wxt build',
-            postinstall: 'wxt prepare',
-            zip: 'wxt zip',
-            typecheck: 'tsc --noEmit',
-            lint: 'eslint src --max-warnings 0',
+          dev: 'wxt',
+          build: 'wxt build',
+          postinstall: 'wxt prepare',
+          zip: 'wxt zip',
+          typecheck: 'tsc --noEmit',
+          lint: 'eslint src --max-warnings 0',
         },
         dependencies: EXTENSION_DEPENDENCIES.dependencies,
-        devDependencies: { ...EXTENSION_DEPENDENCIES.devDependencies, '@workspace/eslint-config': 'workspace:*', eslint: '9.39.5' },
-    }, null, 2) + '\n');
+        devDependencies: {
+          ...EXTENSION_DEPENDENCIES.devDependencies,
+          '@workspace/eslint-config': 'workspace:*',
+          eslint: '10.0.3',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
 }
-function writeWxtConfig(dir: string, displayName: string, surface: 'sidepanel' | 'popup'): void {
-    const nameLiteral = jsString(displayName);
-    const descriptionLiteral = jsString(`${displayName} Chrome Extension`);
-    const actionTitleLiteral = jsString(`Open ${displayName}`);
-    writeFile(path.join(dir, 'wxt.config.ts'), `import { defineConfig } from 'wxt';
+function writeWxtConfig(dir: string, displayName: string): void {
+  const nameLiteral = jsString(displayName);
+  const descriptionLiteral = jsString(`${displayName} Chrome Extension`);
+  const actionTitleLiteral = jsString(`Open ${displayName}`);
+  writeFile(
+    path.join(dir, 'wxt.config.ts'),
+    `import { defineConfig } from 'wxt';
 
 
 export default defineConfig({
@@ -59,14 +84,15 @@ export default defineConfig({
       description: ${descriptionLiteral},
       version: '0.1.0',
       ...(crxPublicKey ? { key: crxPublicKey } : {}),
-      ${surface === 'sidepanel' ? "minimum_chrome_version: '114'," : ''}
-      permissions: ${surface === 'sidepanel' ? "['activeTab', 'scripting', 'sidePanel']" : "['activeTab', 'scripting']"},
+      minimum_chrome_version: '114',
+      permissions: ['activeTab', 'scripting', 'sidePanel'],
       host_permissions: [],
       action: {
         default_title: ${actionTitleLiteral},
-        ${surface === 'popup' ? "default_popup: 'popup.html'," : ''}
       },
-      ${surface === 'sidepanel' ? "side_panel: { default_path: 'sidepanel.html' }," : ''}
+      side_panel: {
+        default_path: 'sidepanel.html',
+      },
     };
   },
   modules: ['@wxt-dev/module-react'],
@@ -76,59 +102,76 @@ export default defineConfig({
     },
   }),
 });
-`);
+`,
+  );
 }
 function extensionEnvContents(): string {
-    const sections: string[] = [];
-    sections.push(`# Chrome Extension CRX public key (optional, for stable extension ID)
+  const sections: string[] = [];
+  sections.push(`# Chrome Extension CRX public key (optional, for stable extension ID)
 VITE_CRX_PUBLIC_KEY=`);
-    return `${sections.join('\n\n')}\n`;
+  return `${sections.join('\n\n')}\n`;
 }
 function writeEnvExample(dir: string): void {
-    writeFile(path.join(dir, '.env.example'), extensionEnvContents());
+  writeFile(path.join(dir, '.env.example'), extensionEnvContents());
 }
 function writePostcssConfig(dir: string): void {
-    writeFile(path.join(dir, 'postcss.config.cjs'), `module.exports = {
+  writeFile(
+    path.join(dir, 'postcss.config.cjs'),
+    `module.exports = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    tailwindcss: {},
+    autoprefixer: {},
   },
 };
-`);
+`,
+  );
 }
 function writeShadcnConfig(dir: string): void {
-    writeFile(path.join(dir, 'components.json'), JSON.stringify({
+  writeFile(
+    path.join(dir, 'components.json'),
+    JSON.stringify(
+      {
         $schema: 'https://ui.shadcn.com/schema.json',
         style: 'new-york',
         rsc: false,
         tsx: true,
         tailwind: {
-            config: '',
-            css: 'src/styles/main.css',
-            baseColor: 'neutral',
-            cssVariables: true,
-            prefix: '',
+          config: '',
+          css: 'src/styles/main.css',
+          baseColor: 'neutral',
+          cssVariables: true,
+          prefix: '',
         },
         aliases: {
-            components: '@/components',
-            utils: '@/lib/utils',
-            ui: '@/components/ui',
-            lib: '@/lib',
-            hooks: '@/hooks',
+          components: '@/components',
+          utils: '@/lib/utils',
+          ui: '@/components/ui',
+          lib: '@/lib',
+          hooks: '@/hooks',
         },
         iconLibrary: 'lucide',
-    }, null, 2) + '\n');
+      },
+      null,
+      2,
+    ) + '\n',
+  );
 }
 function writeCnUtil(dir: string): void {
-    writeFile(path.join(dir, 'src/lib/utils.ts'), `import { clsx, type ClassValue } from 'clsx';
+  writeFile(
+    path.join(dir, 'src/lib/utils.ts'),
+    `import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-`);
+`,
+  );
 }
 function writeButtonComponent(dir: string): void {
-    writeFile(path.join(dir, 'src/components/ui/button.tsx'), `import * as React from 'react';
+  writeFile(
+    path.join(dir, 'src/components/ui/button.tsx'),
+    `import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'default' | 'outline';
@@ -160,12 +203,70 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
-`);
+`,
+  );
 }
-function writeReadme(dir: string, displayName: string, surface: 'sidepanel' | 'popup'): void {
-    writeFile(path.join(dir, 'README.md'), `# ${markdownHeading(displayName)} Chrome Extension
+function writeTailwindConfig(dir: string): void {
+  writeFile(
+    path.join(dir, 'tailwind.config.cjs'),
+    `/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./src/**/*.{ts,tsx,html}'],
+  theme: {
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+    },
+  },
+  plugins: [],
+};
+`,
+  );
+}
+function writeReadme(dir: string, displayName: string): void {
+  writeFile(
+    path.join(dir, 'README.md'),
+    `# ${markdownHeading(displayName)} Chrome Extension
 
-WXT ${surface} extension generated by anhedral. Choose the surface for the task; content UI, options pages and background-only behavior require targeted implementation.
+WXT side-panel extension generated by anhedral.
 
 ## Development
 
@@ -182,25 +283,35 @@ Run these commands from \`apps/extension\`. Anhedral generates only \`.env.examp
 
 Run \`pnpm build\`, then load \`.output/chrome-mv3\` as an unpacked extension from \`chrome://extensions\`.
 
-${surface === 'sidepanel' ? "The browser action opens the Side Panel API surface (Chrome 114+) with the sidePanel permission." : "The browser action opens popup.html; no sidePanel permission or panel background handler is generated."} Active-page reads use a user-triggered activeTab + scripting grant instead of persistent site access. Remove these permissions and the example read action if the product does not need page inspection.
-`);
+The extension uses Chrome's Side Panel API. The browser action opens \`sidepanel.html\`, \`wxt.config.ts\` declares the \`sidePanel\` permission and Chrome 114+ minimum version, and active-page reads use a user-triggered \`activeTab\` + \`scripting\` grant instead of persistent site access.
+`,
+  );
 }
 function writeBackground(dir: string): void {
-    writeFile(path.join(dir, 'src/entrypoints/background.ts'), `import { browser } from 'wxt/browser';
+  writeFile(
+    path.join(dir, 'src/entrypoints/background.ts'),
+    `type ChromeWithSidePanel = typeof chrome & {
+  sidePanel: {
+    setPanelBehavior: (behavior: { openPanelOnActionClick: boolean }) => Promise<void>;
+  };
+};
 
 export default defineBackground(() => {
 
   // Open the side panel when the extension icon is clicked.
-  browser.sidePanel
+  (chrome as ChromeWithSidePanel).sidePanel
     .setPanelBehavior({ openPanelOnActionClick: true })
     .catch(() => {});
 });
-`);
+`,
+  );
 }
-function writeSurfaceEntry(dir: string, surface: 'sidepanel' | 'popup'): void {
-    writeFile(path.join(dir, `src/entrypoints/${surface}/main.tsx`), `import * as React from 'react';
+function writeSidepanelEntry(dir: string): void {
+  writeFile(
+    path.join(dir, 'src/entrypoints/sidepanel/main.tsx'),
+    `import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ExtensionApp } from './app';
+import { SidePanelApp } from './app';
 import '../../styles/main.css';
 
 const container = document.getElementById('root');
@@ -208,14 +319,17 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <ExtensionApp />
+      <SidePanelApp />
     </React.StrictMode>
   );
 }
-`);
+`,
+  );
 }
-function writeSurfaceHtml(dir: string, displayName: string, surface: 'sidepanel' | 'popup'): void {
-    writeFile(path.join(dir, `src/entrypoints/${surface}/index.html`), `<!DOCTYPE html>
+function writeSidepanelHtml(dir: string, displayName: string): void {
+  writeFile(
+    path.join(dir, 'src/entrypoints/sidepanel/index.html'),
+    `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -227,11 +341,13 @@ function writeSurfaceHtml(dir: string, displayName: string, surface: 'sidepanel'
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>
-`);
+`,
+  );
 }
-function writeSurfaceApp(dir: string, surface: 'sidepanel' | 'popup'): void {
-    writeFile(path.join(dir, `src/entrypoints/${surface}/app.tsx`), `import * as React from 'react';
-import { browser } from 'wxt/browser';
+function writeSidepanelApp(dir: string): void {
+  writeFile(
+    path.join(dir, 'src/entrypoints/sidepanel/app.tsx'),
+    `import * as React from 'react';
 import { Button } from '../../components/ui/button';
 
 type PageSnapshot = {
@@ -240,21 +356,17 @@ type PageSnapshot = {
 };
 
 async function readPageSnapshot(): Promise<PageSnapshot> {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) throw new Error('No active tab is available.');
-  const [injection] = await browser.scripting.executeScript({
+  const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: () => ({ title: document.title, location: window.location.href }),
   });
-  return requireSnapshot(injection?.result);
-}
-
-function requireSnapshot(result: PageSnapshot | undefined): PageSnapshot {
   if (!result) throw new Error('The active page did not return a snapshot.');
-  return result;
+  return result as PageSnapshot;
 }
 
-export function ExtensionApp() {
+export function SidePanelApp() {
   const [page, setPage] = React.useState<PageSnapshot | null>(null);
   const [pageError, setPageError] = React.useState<string | null>(null);
 
@@ -269,7 +381,7 @@ export function ExtensionApp() {
 
 
   return (
-    <div style={{ padding: 24${surface === 'popup' ? ', minWidth: 320' : ''} }}>
+    <div style={{ padding: 24 }}>
       <h2>Welcome!</h2>
       <Button type="button" onClick={() => void readActivePage()}>Read active page</Button>
       {page ? (
@@ -282,35 +394,15 @@ export function ExtensionApp() {
     </div>
   );
 }
-`);
+`,
+  );
 }
 function writeStyles(dir: string): void {
-    writeFile(path.join(dir, 'src/styles/main.css'), `@import "tailwindcss";
-
-@theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-}
+  writeFile(
+    path.join(dir, 'src/styles/main.css'),
+    `@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
@@ -350,5 +442,6 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-`);
+`,
+  );
 }

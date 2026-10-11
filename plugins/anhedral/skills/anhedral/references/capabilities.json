@@ -1,12 +1,31 @@
 {
   "schemaVersion": 1,
-  "cliVersion": "0.8.6",
+  "cliVersion": "0.9.0",
   "capabilities": {
-    "next": {
-      "purpose": "Web application with Next.js rendering, routing and server integration",
-      "delivery": "starter",
+    "vinext": {
+      "purpose": "Web application on Cloudflare",
       "tools": [
-        "Browser testing where applicable"
+        "Browser control",
+        "Wrangler"
+      ],
+      "access": [],
+      "credentials": [],
+      "resources": [
+        "Vinext React application and Cloudflare Worker"
+      ],
+      "verify": [
+        "Web flows, accessibility, production Worker build and deployed preview"
+      ],
+      "selection": {
+        "conflicts": [
+          "next"
+        ]
+      }
+    },
+    "next": {
+      "purpose": "Web application",
+      "tools": [
+        "Browser control"
       ],
       "access": [],
       "credentials": [],
@@ -17,12 +36,13 @@
         "Web flows, accessibility, production hosting build and deployed preview"
       ],
       "selection": {
-        "app": true
+        "conflicts": [
+          "vinext"
+        ]
       }
     },
     "expo": {
-      "purpose": "Mobile application starter with Expo and native platform adapters",
-      "delivery": "starter",
+      "purpose": "Mobile application",
       "tools": [
         "Expo/EAS CLI",
         "Xcode or Android SDK"
@@ -37,16 +57,12 @@
         "Expo app; native adapters, signing, store configuration"
       ],
       "verify": [
-        "Pass the installed-byte dependency gate; maintain reviewed backports until supported upstream replacements are available",
         "Native simulator/device flows and signed native build; web export alone is insufficient"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "electron": {
-      "purpose": "Electron desktop starter for web UI reuse; assess memory, native integration, security and distribution",
-      "delivery": "starter",
+      "purpose": "Desktop application",
       "tools": [
         "Electron tooling",
         "Platform packaging tools"
@@ -63,13 +79,10 @@
       "verify": [
         "Packaged desktop app, permissions, update/recovery behavior"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "wxt": {
-      "purpose": "WXT Chrome extension starter; select sidepanel or popup for the task",
-      "delivery": "starter",
+      "purpose": "Chrome side-panel extension",
       "tools": [
         "Chrome",
         "WXT"
@@ -84,15 +97,12 @@
         "Extension app; minimal browser permissions and store package"
       ],
       "verify": [
-        "Installed selected surface, relevant messaging and minimal permission behavior"
+        "Installed side panel, background/content messaging and permission behavior"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "hono": {
       "purpose": "Shared OpenAPI backend",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -106,39 +116,33 @@
       "verify": [
         "Contract validation, unauthenticated rejection and resource ownership"
       ],
-      "selection": {
-        "app": true
-      }
+      "selection": {}
     },
     "neon": {
-      "purpose": "PostgreSQL persistence through Drizzle and Hyperdrive",
-      "delivery": "starter",
+      "purpose": "PostgreSQL persistence through direct Neon HTTP and Drizzle",
       "tools": [
-        "Neon integration or API",
-        "Wrangler"
+        "Neon integration or API"
       ],
       "access": [
-        "Neon project/branch access; Cloudflare Hyperdrive configuration access"
+        "Client-owned Neon project/branch access"
       ],
       "credentials": [
-        "DATABASE_URL for migrations; separate least-privilege Hyperdrive origin credentials"
+        "Server-side DATABASE_URL; separate environment roles"
       ],
       "resources": [
-        "Generated Drizzle + Hyperdrive recipe: schema/client factories, migration config and HYPERDRIVE binding; direct Neon serverless access is an existing-project adaptation"
+        "Neon project/branches, database roles and reviewed migrations"
       ],
       "verify": [
-        "Migration and runtime connectivity; disable query caching for correctness-sensitive reads"
+        "Migration, runtime connectivity and authorization; HTTP has no interactive transactions"
       ],
       "selection": {
         "conflicts": [
           "d1"
-        ],
-        "workerBinding": true
+        ]
       }
     },
     "d1": {
       "purpose": "SQLite-compatible hosted persistence",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -155,13 +159,11 @@
       "selection": {
         "conflicts": [
           "neon"
-        ],
-        "workerBinding": true
+        ]
       }
     },
     "local-data": {
       "purpose": "Device-local SQLite and files",
-      "delivery": "integration-boundary",
       "tools": [
         "Selected platform database/filesystem tooling"
       ],
@@ -177,7 +179,6 @@
     },
     "clerk": {
       "purpose": "Managed identity",
-      "delivery": "starter",
       "tools": [
         "Clerk integration or dashboard"
       ],
@@ -191,13 +192,14 @@
         "Identity project, allowed URLs, SDK setup and protected routes"
       ],
       "verify": [
-        "Sign-in/out, session expiry, server-side authorization and selected native flows; route-group names do not authorize requests"
+        "Sign-in/out, session expiry, resource authorization and selected native client flows"
       ],
       "selection": {
         "conflicts": [
           "better-auth"
         ],
         "requiresAny": [
+          "vinext",
           "next",
           "hono"
         ]
@@ -205,7 +207,6 @@
     },
     "better-auth": {
       "purpose": "Application-managed identity",
-      "delivery": "starter",
       "tools": [
         "Selected database tooling"
       ],
@@ -228,13 +229,11 @@
         "requiresAny": [
           "neon",
           "d1"
-        ],
-        "workerBinding": true
+        ]
       }
     },
     "r2": {
       "purpose": "Private remote files",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -248,13 +247,10 @@
       "verify": [
         "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "kv": {
       "purpose": "Eventually consistent cache/configuration",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -268,13 +264,10 @@
       "verify": [
         "TTL and propagation behavior; never use KV as transactional authority"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "realtime": {
       "purpose": "Rooms and collaboration",
-      "delivery": "starter",
       "tools": [
         "Wrangler",
         "Browser control"
@@ -293,7 +286,6 @@
     },
     "queues": {
       "purpose": "Deferred jobs",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -311,7 +303,6 @@
     },
     "cron": {
       "purpose": "Scheduled work",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -329,7 +320,6 @@
     },
     "workflows": {
       "purpose": "Durable multi-step processing",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -347,7 +337,6 @@
     },
     "openai": {
       "purpose": "Direct OpenAI integration",
-      "delivery": "sdk-factory",
       "tools": [
         "OpenAI integration or API"
       ],
@@ -371,7 +360,6 @@
     },
     "ai-sdk": {
       "purpose": "Streaming AI and provider abstraction",
-      "delivery": "sdk-factory",
       "tools": [
         "Selected AI provider integration or API"
       ],
@@ -395,7 +383,6 @@
     },
     "workers-ai": {
       "purpose": "Cloudflare-hosted inference",
-      "delivery": "starter",
       "tools": [
         "Wrangler"
       ],
@@ -409,13 +396,10 @@
       "verify": [
         "Supported model behavior, authorization and usage limits"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "resend": {
       "purpose": "Outbound application email",
-      "delivery": "sdk-factory",
       "tools": [
         "Resend integration or API"
       ],
@@ -435,7 +419,6 @@
     },
     "stripe": {
       "purpose": "Web payments and subscriptions",
-      "delivery": "sdk-factory",
       "tools": [
         "Stripe integration or CLI"
       ],
@@ -446,7 +429,7 @@
         "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
       ],
       "resources": [
-        "Server SDK factory; implement products/prices, signed webhooks and entitlements"
+        "Products/prices, signed webhooks and entitlement implementation"
       ],
       "verify": [
         "Test purchase/cancellation, webhook replay and transactional idempotency"
@@ -455,7 +438,6 @@
     },
     "revenuecat": {
       "purpose": "Cross-store subscription entitlements alongside Stripe",
-      "delivery": "integration-boundary",
       "tools": [
         "RevenueCat integration or API",
         "Selected mobile store tooling"
@@ -480,7 +462,6 @@
     },
     "sentry": {
       "purpose": "Additional runtime/crash diagnostics",
-      "delivery": "integration-boundary",
       "tools": [
         "Sentry integration or API"
       ],
@@ -499,8 +480,7 @@
       "selection": {}
     },
     "basin": {
-      "purpose": "Basin ingestion and analytical SQL; product analytics needs its own event model and reports",
-      "delivery": "integration-boundary",
+      "purpose": "Cloudflare analytical events",
       "tools": [
         "Wrangler",
         "Cloudflare integration or API"
@@ -510,18 +490,15 @@
       ],
       "credentials": [],
       "resources": [
-        "EventStream interface and ANALYTICS binding; provision Basin stream, pipeline/table, retention and reports separately; optional private R2 sink"
+        "Basin dataset/stream, ANALYTICS binding, optional private R2 sink and authorized sink writes"
       ],
       "verify": [
         "Private ingestion, event delivery, query results and archive retrieval when selected"
       ],
-      "selection": {
-        "workerBinding": true
-      }
+      "selection": {}
     },
     "posthog": {
       "purpose": "Specialized product analytics",
-      "delivery": "sdk-factory",
       "tools": [
         "PostHog integration or API"
       ],
@@ -541,7 +518,6 @@
     },
     "styling": {
       "purpose": "Shared styling definitions",
-      "delivery": "integration-boundary",
       "tools": [],
       "access": [],
       "credentials": [],

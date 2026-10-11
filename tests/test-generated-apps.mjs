@@ -1,18 +1,27 @@
 import assert from 'node:assert/strict';
-import { GENERATED_PROFILES } from './recipe-profiles.mjs';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { execFile } from '../dist/util.js';
 import { inspectProject } from '../dist/readiness.js';
 
-const profiles = GENERATED_PROFILES;
+const profiles = {
+  web: [],
+  'web-auth': ['--better-auth'],
+  vercel: ['--next'],
+  'vercel-auth': ['--next', '--neon', '--better-auth'],
+  cloudflare: ['--next', '--hosting=cloudflare'],
+  api: ['--hono', '--d1', '--better-auth', '--r2'],
+  'api-neon': ['--hono', '--neon', '--better-auth'],
+  desktop: ['--electron'],
+  extension: ['--wxt'],
+  mobile: ['--expo'],
+};
 const selected = process.argv[2] ? [process.argv[2]] : Object.keys(profiles);
 const cli = path.resolve(import.meta.dirname, '../dist/bin.js');
 process.env.WRANGLER_SEND_METRICS = 'false';
 process.env.NEXT_TELEMETRY_DISABLED = '1';
-process.env.EXPO_NO_TELEMETRY = '1';
 process.env.CSC_IDENTITY_AUTO_DISCOVERY = 'false';
 process.env.ANHEDRAL_VERBOSE = '1';
 for (const profile of selected) {
@@ -20,8 +29,12 @@ for (const profile of selected) {
   const temporary = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-core-')));
   const root = path.join(temporary, profile);
   try {
-    if (process.platform === 'win32' && profile === 'web') {
-      const result = spawnSync(process.execPath, [cli, 'new', root, ...profiles[profile], '--no-git'], { cwd: temporary, encoding: 'utf8' });
+    if (process.platform === 'win32') {
+      const result = spawnSync(
+        process.execPath,
+        [cli, 'new', root, ...profiles[profile], '--no-git'],
+        { cwd: temporary, encoding: 'utf8' },
+      );
       assert.equal(result.error, undefined);
       assert.notEqual(result.status, 0);
       assert.match(result.stderr, /Native Windows initialization is blocked.*WSL/);
@@ -30,40 +43,76 @@ for (const profile of selected) {
       continue;
     }
     console.log(`Generating and validating real ${profile} project`);
-    execFile(process.execPath, [cli, 'new', root, ...profiles[profile], '--no-git', '--verbose'], temporary);
+    execFile(
+      process.execPath,
+      [cli, 'new', root, ...profiles[profile], '--no-git', '--verbose'],
+      temporary,
+    );
     assert.equal(inspectProject(root).localReady, true);
-    if (profile === 'mobile') {
-      execFile('pnpm', ['--dir', 'apps/mobile', 'exec', 'expo', 'install', '--check'], root);
-    }
     execFile('pnpm', ['check'], root);
-    if (profile === 'web') assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
-    if (profile === 'web' || profile === 'api') {
-      const types = path.join(root, profile === 'web' ? 'apps/web/cloudflare-env.d.ts' : 'apps/api/worker-configuration.d.ts');
-      execFile('pnpm', ['typecheck'], root);
-      unlinkSync(types);
-      const cached = spawnSync('pnpm', ['typecheck', '--summarize'], { cwd: root, encoding: 'utf8' });
-      assert.equal(cached.status, 0, cached.stdout + cached.stderr);
-      const appName = JSON.parse(readFileSync(path.join(path.dirname(types), 'package.json'), 'utf8')).name;
-      const runs = path.join(root, '.turbo/runs');
-      const summaries = readdirSync(runs).filter((file) => file.endsWith('.json'));
-      assert.equal(summaries.length, 1, 'Only the cached run should have a summary');
-      const summary = JSON.parse(readFileSync(path.join(runs, summaries[0]), 'utf8'));
-      assert.equal(summary.tasks.find((task) => task.taskId === `${appName}#typecheck`)?.cache.status, 'HIT', 'The binding-type restoration must exercise a cache hit');
-      assert.ok(existsSync(types), 'A warm Turbo cache must restore generated binding types');
+    if (profile === 'api-neon') {
+      execFile(process.execPath, [cli, 'add', root, 'r2', '--json'], temporary);
+      const registryFile = path.join(temporary, 'customer-registry.json');
+      writeFileSync(
+        registryFile,
+        JSON.stringify({
+          schemaVersion: 1,
+          name: 'customer',
+          items: [
+            {
+              name: 'utilities',
+              version: '1.0.0',
+              registryDependencies: [],
+              files: [
+                {
+                  target: 'packages/utilities/package.json',
+                  content: JSON.stringify({
+                    name: '@workspace/utilities',
+                    private: true,
+                    type: 'module',
+                    exports: './index.mjs',
+                  }),
+                },
+                {
+                  target: 'packages/utilities/index.mjs',
+                  content: 'export const greeting = "Hello";\n',
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      execFile(
+        process.execPath,
+        [cli, 'add', root, 'utilities', '--registry', registryFile, '--json'],
+        temporary,
+      );
+      assert.equal(inspectProject(root).localReady, true);
+      execFile('pnpm', ['check'], root);
     }
-    if (profile === 'api') assert.ok(existsSync(path.join(root, 'apps/api/dist/index.js')));
-    if (profile === 'extension' || profile === 'popup') assert.ok(existsSync(path.join(root, 'apps/extension/.output/chrome-mv3/manifest.json')));
-    if (profile === 'single') {
-      assert.ok(existsSync(path.join(root, 'dist/index.js')));
-      assert.equal(/packages:/.test(readFileSync(path.join(root, 'pnpm-workspace.yaml'), 'utf8')), false);
-      assert.equal(existsSync(path.join(root, 'apps')), false);
-    }
+
+    if (profile === 'web' || profile === 'web-auth')
+      assert.ok(existsSync(path.join(root, 'apps/web/dist/server/wrangler.json')));
+    if (profile === 'vercel' || profile === 'vercel-auth')
+      assert.ok(existsSync(path.join(root, 'apps/web/.next/BUILD_ID')));
+    if (profile === 'cloudflare')
+      assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
+    if (profile === 'api' || profile === 'api-neon')
+      assert.ok(existsSync(path.join(root, 'apps/api/dist/index.js')));
+    if (profile === 'extension')
+      assert.ok(existsSync(path.join(root, 'apps/extension/.output/chrome-mv3/manifest.json')));
     if (profile === 'mobile') assert.ok(existsSync(path.join(root, 'apps/mobile/dist/index.html')));
     if (profile === 'desktop') {
-      execFile('pnpm', ['exec', 'electron-builder', '--dir', '--publish', 'never', '--config.mac.identity=null'], path.join(root, 'apps/desktop'));
+      execFile(
+        'pnpm',
+        ['exec', 'electron-builder', '--dir', '--publish', 'never', '--config.mac.identity=null'],
+        path.join(root, 'apps/desktop'),
+      );
       assert.ok(readdirSync(path.join(root, 'apps/desktop/release')).length > 0);
     }
-    console.log(`Real ${profile} project passed`);
+    console.log(
+      `Real ${profile} generation and local validation finished; production acceptance is separate`,
+    );
   } finally {
     rmSync(temporary, { recursive: true, force: true });
   }

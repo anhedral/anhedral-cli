@@ -4,7 +4,7 @@ Describe the problem and resulting behavior. Link the agreed issue for feature o
 
 ## Validation
 
-List relevant checks and regression coverage, including demo checks when applicable.
+List relevant checks and regression coverage, including generated-app checks when applicable.
 
 - [ ] The change is focused and I have the right to contribute it under Apache-2.0.
 - [ ] Tests pass and public behavior or documentation is updated where needed.

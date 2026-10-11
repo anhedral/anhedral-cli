@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { mergePnpmPatches } from './pnpm-policy.js';
 
 const assets = fileURLToPath(new URL('../assets/security/', import.meta.url));
-const manifest = () => JSON.parse(readFileSync(path.join(assets, 'manifest.json'), 'utf8')) as {
-  packages: { name: string; version: string; patch: string }[];
-};
+const manifest = () =>
+  JSON.parse(readFileSync(path.join(assets, 'manifest.json'), 'utf8')) as {
+    packages: { name: string; version: string; patch: string }[];
+  };
 
 export function writeSecurityBackports(root: string): void {
   cpSync(assets, path.join(root, 'scripts/security'), { recursive: true });
@@ -20,7 +21,16 @@ export function configureSecurityBackports(root: string): boolean {
     return new RegExp(`^  ['"]?${coordinate}['"]?:`, 'm').test(lockfile);
   });
   if (!entries.length) return false;
-  mergePnpmPatches(root, Object.fromEntries(entries.map(({ name, version, patch }) =>
-    [`${name}@${version}`, `scripts/security/${patch}`])));
-  return true;
+  const workspaceFile = path.join(root, 'pnpm-workspace.yaml');
+  const before = readFileSync(workspaceFile, 'utf8');
+  mergePnpmPatches(
+    root,
+    Object.fromEntries(
+      entries.map(({ name, version, patch }) => [
+        `${name}@${version}`,
+        `scripts/security/${patch}`,
+      ]),
+    ),
+  );
+  return readFileSync(workspaceFile, 'utf8') !== before;
 }

@@ -1,0 +1,183 @@
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { test } from 'node:test';
+import { packagePlugin } from '../scripts/package-plugin.mjs';
+
+const root = path.resolve(import.meta.dirname, '..');
+// This acceptance fixture exercises an isolated CLI tree and the exact ZIP payload.
+// It does not prove host installation, conversational agent behavior or provider access.
+test('packaged plugin and isolated CLI carry a coherent local beginner workflow', async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-workflow-'));
+  try {
+    const metadata = packagePlugin(root, temporary);
+    const bytes = readFileSync(path.join(temporary, metadata.filename));
+    assert.equal(metadata.size, bytes.length);
+    assert.equal(
+      metadata.integrity,
+      `sha512-${createHash('sha512').update(bytes).digest('base64')}`,
+    );
+    const plugin = path.join(temporary, 'installed-plugin');
+    mkdirSync(plugin);
+    for (let offset = 0; bytes.readUInt32LE(offset) === 0x04034b50;) {
+      assert.equal(bytes.readUInt16LE(offset + 8), 0, 'Fixture expects stored ZIP entries');
+      const size = bytes.readUInt32LE(offset + 18);
+      const nameSize = bytes.readUInt16LE(offset + 26);
+      const extraSize = bytes.readUInt16LE(offset + 28);
+      const name = bytes.subarray(offset + 30, offset + 30 + nameSize).toString();
+      assert.ok(!path.isAbsolute(name) && !name.split('/').includes('..'));
+      const start = offset + 30 + nameSize + extraSize;
+      const destination = path.join(plugin, name);
+      mkdirSync(path.dirname(destination), { recursive: true });
+      writeFileSync(destination, bytes.subarray(start, start + size));
+      offset = start + size;
+    }
+    const manifest = JSON.parse(readFileSync(path.join(plugin, 'plugin.json')));
+    const references = path.join(plugin, 'skills/anhedral/references');
+    const registry = JSON.parse(readFileSync(path.join(references, 'capabilities.json')));
+    const installed = path.join(temporary, 'node_modules/anhedral');
+    mkdirSync(installed, { recursive: true });
+    cpSync(path.join(root, 'dist'), path.join(installed, 'dist'), { recursive: true });
+    cpSync(path.join(root, 'assets'), path.join(installed, 'assets'), { recursive: true });
+    cpSync(path.join(root, 'package.json'), path.join(installed, 'package.json'));
+    cpSync(
+      path.join(root, 'node_modules/jsonc-parser'),
+      path.join(temporary, 'node_modules/jsonc-parser'),
+      { recursive: true, dereference: true },
+    );
+    const cli = path.join(installed, 'dist/bin.js');
+    const run = (...args) =>
+      spawnSync(process.execPath, [cli, ...args], { cwd: temporary, encoding: 'utf8' });
+    const successful = (...args) => {
+      const result = run(...args);
+      assert.equal(result.status, 0, result.stderr);
+      return result.stdout;
+    };
+    assert.equal(successful('--version').trim(), manifest.version);
+    assert.equal(registry.cliVersion, manifest.version);
+    assert.equal(metadata.cliVersion, manifest.version);
+    for (const document of ['application-stack-standard.md', 'delivery-workflow.md']) {
+      assert.equal(
+        readFileSync(path.join(references, document), 'utf8'),
+        readFileSync(path.join(root, 'docs', document), 'utf8'),
+      );
+    }
+    assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [
+      'Create a new app with [@Anhedral](plugin://anhedral@anhedral). Start by asking me what it should do.',
+    ]);
+    const app = path.join(temporary, 'my-first-app');
+    const plan = JSON.parse(successful('new', app, '--dry-run', '--json'));
+    assert.deepEqual(plan.products, ['vinext']);
+    assert.equal(plan.hosting, 'cloudflare');
+    assert.equal(existsSync(app), false, 'Planning must not create the app');
+    const api = await import(pathToFileURL(path.join(installed, 'dist/index.js')).href);
+    assert.deepEqual(api.CAPABILITY_REGISTRY, registry);
+    const stackRegistry = JSON.parse(readFileSync(path.join(references, 'stack-registry.json')));
+    assert.deepEqual(api.STACK_REGISTRY, stackRegistry);
+    assert.deepEqual(JSON.parse(successful('registry', 'list', '--json')), stackRegistry);
+    assert.deepEqual(plan.registry, api.resolveStackRegistry(plan));
+    // The official network bootstrap is replaced here; generated overlays and the CLI are real.
+    const options = api.parseStandardOptions('new', [app, '--skip-install', '--no-git', '--json']);
+    const log = console.log;
+    console.log = () => {};
+    try {
+      await api.scaffoldStandardProject(options, (command, args, cwd) => {
+        if (args[0] === 'dlx') {
+          const target = path.join(
+            args[args.indexOf('--cwd') + 1],
+            args[args.indexOf('--name') + 1],
+          );
+          for (const directory of [
+            'apps/web/app',
+            'packages/ui',
+            'packages/eslint-config',
+            'packages/typescript-config',
+          ])
+            mkdirSync(path.join(target, directory), { recursive: true });
+          const write = (name, contents) => writeFileSync(path.join(target, name), contents);
+          write(
+            'packages/eslint-config/package.json',
+            JSON.stringify({ name: '@workspace/eslint-config' }),
+          );
+          write(
+            'packages/typescript-config/package.json',
+            JSON.stringify({ name: '@workspace/typescript-config' }),
+          );
+          write(
+            'package.json',
+            JSON.stringify({
+              name: 'fixture',
+              packageManager: 'pnpm@10.34.5',
+              scripts: {},
+              devDependencies: { turbo: '^2' },
+            }),
+          );
+          write(
+            'apps/web/package.json',
+            JSON.stringify({
+              name: 'web',
+              scripts: { build: 'next build' },
+              dependencies: { next: '16.4.0' },
+            }),
+          );
+          write(
+            'apps/web/next.config.ts',
+            'export default { transpilePackages: ["@workspace/ui"] };\n',
+          );
+          write(
+            'apps/web/app/layout.tsx',
+            'export default function Layout({ children }: { children: React.ReactNode }) { return <html><body>{children}</body></html>; }\n',
+          );
+          write(
+            'packages/ui/package.json',
+            JSON.stringify({ name: '@workspace/ui', dependencies: { shadcn: '4.21.1' } }),
+          );
+          write('pnpm-workspace.yaml', 'packages:\n  - "apps/*"\n  - "packages/*"\n');
+          write('turbo.json', JSON.stringify({ tasks: { build: {}, dev: { persistent: true } } }));
+          write('.gitignore', 'node_modules/\n');
+        } else if (args.includes('--lockfile-only'))
+          writeFileSync(path.join(cwd, 'pnpm-lock.yaml'), 'lockfileVersion: "9.0"\n');
+        else throw new Error(`Unexpected bootstrap command: ${command}`);
+      });
+    } finally {
+      console.log = log;
+    }
+    const diagnosis = JSON.parse(successful('doctor', app, '--json'));
+    assert.equal(diagnosis.localReady, true);
+    assert.equal(diagnosis.productionReady, false);
+    const before = JSON.parse(successful('status', app, '--json'));
+    assert.equal(before.project.provider, 'cloudflare');
+    assert.equal(before.project.ownership, 'customer');
+    assert.equal(before.project.audience, 'unconfigured');
+    assert.deepEqual(before.releases, []);
+    const delivery = JSON.parse(successful('ship', app, '--dry-run', '--json'));
+    assert.equal(delivery.resourcesProvisioned, false);
+    assert.ok(delivery.deployments.some((target) => target.directory === 'apps/web'));
+    assert.equal(delivery.project.id, before.project.id);
+    assert.equal(existsSync(path.join(app, '.anhedral/releases.json')), false);
+    const blocked = run('ship', app, '--json');
+    assert.equal(blocked.status, 1, 'An unconnected starter must not be represented as shipped');
+    assert.equal(JSON.parse(successful('status', app, '--json')).releases.length, 0);
+    const setupFile = path.join(app, 'anhedral.setup.json');
+    const setup = JSON.parse(readFileSync(setupFile));
+    setup.cliVersion = '0.0.0';
+    writeFileSync(setupFile, JSON.stringify(setup));
+    const stale = run('doctor', app, '--json');
+    assert.equal(stale.status, 1);
+    assert.equal(JSON.parse(stale.stdout).localReady, false, 'Version drift must fail readiness');
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});

@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
-  "version": "0.8.6",
-  "description": "Guide application planning, developer setup, infrastructure, implementation, verification, delivery, and operations.",
+  "version": "0.9.0",
+  "description": "Build and ship applications with a Cloudflare-first stack, explicit architecture and verified delivery evidence.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Build and ship applications",
-        "longDescription": "Control your development lifecycle from one workspace: infrastructure status, access requirements, local readiness, and delivery checks. The CLI initializes the repository foundation.",
+        "longDescription": "Describe your application. Anhedral guides Codex through implementation with Vinext and Cloudflare Workers by default, adding D1, Better Auth and Workers AI when needed. Native Next.js on Vercel remains an option. The CLI verifies supported customer-account delivery; Anhedral-managed hosting is under development. Architecture and product verification remain visible in your source.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
         "composerIcon": "./assets/anhedral.svg",
@@ -22,11 +22,9 @@
         "logo": "./assets/anhedral.svg",
         "logoDark": "./assets/anhedral.svg",
         "defaultPrompt": [
-          "Open the Anhedral control panel.",
-          "Use Anhedral to plan, set up, build, verify, and deliver my application."
+          "Create a new app with [@Anhedral](plugin://anhedral@anhedral). Start by asking me what it should do."
         ],
         "capabilities": [
-          "Interactive",
           "Read",
           "Write"
         ]

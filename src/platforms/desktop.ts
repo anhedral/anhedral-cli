@@ -1,89 +1,122 @@
 import path from 'node:path';
 import { writeReactLintConfig } from './lint.js';
 import { writeFile } from '../util.js';
-import type { ProjectOptions } from '../project.js';
+import type { RecipeContext } from '../registry/types.js';
 import { DESKTOP_DEPENDENCIES } from '../dependencies.js';
 import { childPackageName, htmlText, identifierSegment, jsString } from '../render.js';
-export async function scaffoldDesktop(root: string, options: ProjectOptions): Promise<void> {
-    const { projectName, displayName } = options;
-    const dir = path.join(root, 'apps/desktop');
-    writePackageJson(dir, projectName);
-    writeReactLintConfig(dir);
-    writeTsConfig(dir);
-    writeViteConfig(dir);
-    writePostcssConfig(dir);
-    writeDevScript(dir);
-    writeShadcnConfig(dir);
-    writeEnvExample(dir);
-    writeSourceFiles(dir, displayName);
+export async function scaffoldElectron({ root, options }: RecipeContext): Promise<void> {
+  const projectName = options.name;
+  const displayName = options.name;
+  const dir = path.join(root, 'apps/desktop');
+  writePackageJson(dir, projectName);
+  writeReactLintConfig(dir);
+  writeTsConfig(dir);
+  writeViteConfig(dir);
+  writePostcssConfig(dir);
+  writeDevScript(dir);
+  writeShadcnConfig(dir);
+  writeEnvExample(dir);
+  writeSourceFiles(dir, displayName);
 }
 function writePackageJson(dir: string, projectName: string): void {
-    writeFile(path.join(dir, 'package.json'), JSON.stringify({
+  writeFile(
+    path.join(dir, 'package.json'),
+    JSON.stringify(
+      {
         name: childPackageName(projectName, 'desktop'),
         version: '0.1.0',
         private: true,
         type: 'module',
         main: 'dist/main/main.js',
         scripts: {
-            dev: 'tsc -p tsconfig.main.json && node scripts/dev.mjs',
-            build: 'tsc --noEmit && tsc -p tsconfig.main.json && vite build',
-            typecheck: 'tsc --noEmit && tsc -p tsconfig.main.json --noEmit',
-            lint: 'eslint src --max-warnings 0',
-            'build:mac': 'pnpm build && electron-builder --mac',
-            'build:win': 'pnpm build && electron-builder --win',
-            'build:linux': 'pnpm build && electron-builder --linux',
-            package: 'pnpm build && electron-builder',
+          dev: 'tsc -p tsconfig.main.json && node scripts/dev.mjs',
+          build: 'tsc --noEmit && tsc -p tsconfig.main.json && vite build',
+          typecheck: 'tsc --noEmit && tsc -p tsconfig.main.json --noEmit',
+          lint: 'eslint src --max-warnings 0',
+          'build:mac': 'pnpm build && electron-builder --mac',
+          'build:win': 'pnpm build && electron-builder --win',
+          'build:linux': 'pnpm build && electron-builder --linux',
+          package: 'pnpm build && electron-builder',
         },
         build: {
-            appId: `dev.anhedral.${identifierSegment(projectName)}`,
-            productName: projectName,
-            directories: {
-                output: 'release',
-            },
-            files: [
-                'dist/**/*',
-                'package.json',
-            ],
-            mac: {
-                target: ['dmg', 'zip'],
-            },
-            win: {
-                target: ['nsis', 'zip'],
-            },
-            linux: {
-                executableName: identifierSegment(projectName),
-                target: ['AppImage', 'deb'],
-            },
+          appId: `dev.anhedral.${identifierSegment(projectName)}`,
+          productName: projectName,
+          directories: {
+            output: 'release',
+          },
+          files: ['dist/**/*', 'package.json'],
+          mac: {
+            target: ['dmg', 'zip'],
+          },
+          win: {
+            target: ['nsis', 'zip'],
+          },
+          linux: {
+            executableName: identifierSegment(projectName),
+            target: ['AppImage', 'deb'],
+          },
         },
         dependencies: DESKTOP_DEPENDENCIES.dependencies,
-        devDependencies: { ...DESKTOP_DEPENDENCIES.devDependencies, '@workspace/eslint-config': 'workspace:*' },
-    }, null, 2) + '\n');
+        devDependencies: {
+          ...DESKTOP_DEPENDENCIES.devDependencies,
+          '@workspace/eslint-config': 'workspace:*',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
 }
 function writeTsConfig(dir: string): void {
-    writeFile(path.join(dir, 'tsconfig.json'), JSON.stringify({
-        compilerOptions: { target: 'ES2022', lib: ['ES2022', 'DOM'], module: 'ESNext',
-            moduleResolution: 'Bundler', jsx: 'react-jsx', strict: true, skipLibCheck: true,
-            esModuleInterop: true, noEmit: true, types: ['node', 'vite/client'],
-            paths: { '@/*': ['./src/renderer/*'] } },
-        include: ['src/renderer/**/*', 'vite.config.ts'],
-    }, null, 2) + '\n');
-    writeFile(path.join(dir, 'tsconfig.main.json'), JSON.stringify({
+  writeFile(
+    path.join(dir, 'tsconfig.json'),
+    JSON.stringify(
+      {
         compilerOptions: {
-            target: 'ES2022',
-            module: 'NodeNext',
-            moduleResolution: 'NodeNext',
-            strict: true,
-            skipLibCheck: true,
-            esModuleInterop: true,
-            outDir: 'dist/main',
-            rootDir: 'src/main',
-            types: ['node'],
+          target: 'ES2022',
+          lib: ['ES2022', 'DOM'],
+          module: 'ESNext',
+          moduleResolution: 'Bundler',
+          jsx: 'react-jsx',
+          strict: true,
+          skipLibCheck: true,
+          esModuleInterop: true,
+          noEmit: true,
+          types: ['node', 'vite/client'],
+          paths: { '@/*': ['./src/renderer/*'] },
+        },
+        include: ['src/renderer/**/*', 'vite.config.ts'],
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  writeFile(
+    path.join(dir, 'tsconfig.main.json'),
+    JSON.stringify(
+      {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'NodeNext',
+          moduleResolution: 'NodeNext',
+          strict: true,
+          skipLibCheck: true,
+          esModuleInterop: true,
+          outDir: 'dist/main',
+          rootDir: 'src/main',
+          types: ['node'],
         },
         include: ['src/main/**/*'],
-    }, null, 2) + '\n');
+      },
+      null,
+      2,
+    ) + '\n',
+  );
 }
 function writeViteConfig(dir: string): void {
-    writeFile(path.join(dir, 'vite.config.ts'), `import { defineConfig } from 'vite';
+  writeFile(
+    path.join(dir, 'vite.config.ts'),
+    `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
@@ -103,20 +136,26 @@ export default defineConfig({
     chunkSizeWarningLimit: 1600,
   },
 });
-`);
+`,
+  );
 }
 function writePostcssConfig(dir: string): void {
-    writeFile(path.join(dir, 'postcss.config.mjs'), `const config = {
+  writeFile(
+    path.join(dir, 'postcss.config.mjs'),
+    `const config = {
   plugins: {
     '@tailwindcss/postcss': {},
   },
 };
 
 export default config;
-`);
+`,
+  );
 }
 function writeDevScript(dir: string): void {
-    writeFile(path.join(dir, 'scripts/dev.mjs'), `import { spawn } from 'node:child_process';
+  writeFile(
+    path.join(dir, 'scripts/dev.mjs'),
+    `import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 
 const host = '127.0.0.1';
@@ -143,8 +182,8 @@ function stop(child) {
   if (child && child.exitCode === null && !child.killed) child.kill('SIGTERM');
 }
 
-async function isServerReady(url, timeoutMs) {
-  try { return (await fetch(url, { signal: AbortSignal.timeout(timeoutMs) })).ok; }
+async function isServerReady(url) {
+  try { return (await fetch(url)).ok; }
   catch { return false; }
 }
 
@@ -152,7 +191,7 @@ async function waitForServer(server, url, timeoutMs = 30_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (server.exitCode !== null) throw new Error('Vite exited before the dev server was ready.');
-    if (await isServerReady(url, Math.max(1, Math.min(1000, deadline - Date.now())))) return;
+    if (await isServerReady(url)) return;
     await new Promise((resolve) => setTimeout(resolve, 150));
   }
   throw new Error('Timed out waiting for Vite at ' + url + '.');
@@ -192,38 +231,48 @@ try {
   stop(electron);
   stop(vite);
 }
-`);
+`,
+  );
 }
 function writeShadcnConfig(dir: string): void {
-    writeFile(path.join(dir, 'components.json'), JSON.stringify({
+  writeFile(
+    path.join(dir, 'components.json'),
+    JSON.stringify(
+      {
         $schema: 'https://ui.shadcn.com/schema.json',
         style: 'new-york',
         rsc: false,
         tsx: true,
         tailwind: {
-            config: '',
-            css: 'src/renderer/styles.css',
-            baseColor: 'neutral',
-            cssVariables: true,
-            prefix: '',
+          config: '',
+          css: 'src/renderer/styles.css',
+          baseColor: 'neutral',
+          cssVariables: true,
+          prefix: '',
         },
         aliases: {
-            components: '@/components',
-            utils: '@/lib/utils',
-            ui: '@/components/ui',
-            lib: '@/lib',
-            hooks: '@/hooks',
+          components: '@/components',
+          utils: '@/lib/utils',
+          ui: '@/components/ui',
+          lib: '@/lib',
+          hooks: '@/hooks',
         },
         iconLibrary: 'lucide',
-    }, null, 2) + '\n');
+      },
+      null,
+      2,
+    ) + '\n',
+  );
 }
 function writeEnvExample(dir: string): void {
-    writeFile(path.join(dir, '.env.example'), '');
+  writeFile(path.join(dir, '.env.example'), '');
 }
 function writeSourceFiles(dir: string, displayName: string): void {
-    const displayNameLiteral = jsString(displayName);
-    const displayNameHtml = htmlText(displayName);
-    writeFile(path.join(dir, 'src/main/app-window.ts'), `import { BrowserWindow, shell } from 'electron';
+  const displayNameLiteral = jsString(displayName);
+  const displayNameHtml = htmlText(displayName);
+  writeFile(
+    path.join(dir, 'src/main/app-window.ts'),
+    `import { BrowserWindow, shell } from 'electron';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -293,8 +342,11 @@ export function createAppWindow(): BrowserWindow {
 
   return window;
 }
-`);
-    writeFile(path.join(dir, 'src/main/main.ts'), `import { app, BrowserWindow, session } from 'electron';
+`,
+  );
+  writeFile(
+    path.join(dir, 'src/main/main.ts'),
+    `import { app, BrowserWindow, session } from 'electron';
 import { createAppWindow } from './app-window.js';
 
 
@@ -309,14 +361,20 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createAppWindow();
 });
-`);
-    writeFile(path.join(dir, 'src/main/preload.cts'), `import { contextBridge } from 'electron';
+`,
+  );
+  writeFile(
+    path.join(dir, 'src/main/preload.cts'),
+    `import { contextBridge } from 'electron';
 
 contextBridge.exposeInMainWorld('anhedral', {
   platform: process.platform,
 });
-`);
-    writeFile(path.join(dir, 'index.html'), `<!doctype html>
+`,
+  );
+  writeFile(
+    path.join(dir, 'index.html'),
+    `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -329,15 +387,21 @@ contextBridge.exposeInMainWorld('anhedral', {
     <script type="module" src="/src/renderer/main.tsx"></script>
   </body>
 </html>
-`);
-    writeFile(path.join(dir, 'src/renderer/lib/utils.ts'), `import { clsx, type ClassValue } from 'clsx';
+`,
+  );
+  writeFile(
+    path.join(dir, 'src/renderer/lib/utils.ts'),
+    `import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-`);
-    writeFile(path.join(dir, 'src/renderer/components/ui/button.tsx'), `import * as React from 'react';
+`,
+  );
+  writeFile(
+    path.join(dir, 'src/renderer/components/ui/button.tsx'),
+    `import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export function Button({ className, type = 'button', ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
@@ -349,8 +413,11 @@ export function Button({ className, type = 'button', ...props }: React.ButtonHTM
     />
   );
 }
-`);
-    writeFile(path.join(dir, 'src/renderer/main.tsx'), `import React from 'react';
+`,
+  );
+  writeFile(
+    path.join(dir, 'src/renderer/main.tsx'),
+    `import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Button } from '@/components/ui/button';
 import './styles.css';
@@ -361,7 +428,7 @@ function App() {
       <section className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold">{${displayNameLiteral}}</h1>
         <p className="max-w-2xl text-muted-foreground">
-          ${"Electron + shadcn/ui desktop client ready for your application."}
+          ${'Electron + shadcn/ui desktop client ready for your application.'}
         </p>
       </section>
       <Button className="self-start" onClick={() => window.location.reload()}>Reload</Button>
@@ -374,8 +441,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>,
 );
-`);
-    writeFile(path.join(dir, 'src/renderer/styles.css'), `@import "tailwindcss";
+`,
+  );
+  writeFile(
+    path.join(dir, 'src/renderer/styles.css'),
+    `@import "tailwindcss";
 
 :root {
   --background: oklch(1 0 0);
@@ -403,5 +473,6 @@ body {
 button {
   border: 0;
 }
-`);
+`,
+  );
 }

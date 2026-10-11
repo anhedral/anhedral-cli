@@ -1,25 +1,45 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { hostname, tmpdir } from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { syncBuiltinESMExports } from 'node:module';
-import { PostCommitError, recoverInterruptedTransaction, runStagedTransaction } from '../dist/transaction.js';
+import {
+  PostCommitError,
+  recoverInterruptedTransaction,
+  runStagedTransaction,
+} from '../dist/transaction.js';
 
 const JOURNAL_TOKEN = ['2147483647', '22222222', '2222', '4222', '8222', '222222222222'].join('-');
 
 // Unsupported directory durability must be tolerated; real I/O errors must abort.
 for (const [operation, code, succeeds] of [
-  ['open', 'ENOTSUP', true], ['fsync', 'EOPNOTSUPP', true],
-  ['fsync', 'EINVAL', true], ['fsync', 'EIO', false], ['open', 'EACCES', false],
+  ['open', 'ENOTSUP', true],
+  ['fsync', 'EOPNOTSUPP', true],
+  ['fsync', 'EINVAL', true],
+  ['fsync', 'EIO', false],
+  ['open', 'EACCES', false],
 ]) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-directory-sync-'));
   const original = operation === 'open' ? fs.openSync : fs.fsyncSync;
   const method = operation === 'open' ? 'openSync' : 'fsyncSync';
   writeFileSync(path.join(root, 'value.txt'), 'original\n');
   fs[method] = (target, ...args) => {
-    const directory = operation === 'open' ? existsSync(target) && fs.statSync(target).isDirectory() : fs.fstatSync(target).isDirectory();
+    const directory =
+      operation === 'open'
+        ? existsSync(target) && fs.statSync(target).isDirectory()
+        : fs.fstatSync(target).isDirectory();
     if (directory) throw Object.assign(new Error(`Injected ${code}`), { code });
     return original(target, ...args);
   };
@@ -31,7 +51,10 @@ for (const [operation, code, succeeds] of [
     });
     if (succeeds) await run;
     else await assert.rejects(run, new RegExp(code));
-    assert.equal(readFileSync(path.join(root, 'value.txt'), 'utf8'), succeeds ? 'replacement\n' : 'original\n');
+    assert.equal(
+      readFileSync(path.join(root, 'value.txt'), 'utf8'),
+      succeeds ? 'replacement\n' : 'original\n',
+    );
     assert.equal(existsSync(path.join(root, '.anhedral.lock')), false);
   } finally {
     fs[method] = original;
@@ -40,15 +63,24 @@ for (const [operation, code, succeeds] of [
   }
 }
 
-for (const reservedPath of ['.anhedral-txn', `.anhedral-txn/stage-${JOURNAL_TOKEN}`, '.anhedral-txn/unknown']) {
+for (const reservedPath of [
+  '.anhedral-txn',
+  `.anhedral-txn/stage-${JOURNAL_TOKEN}`,
+  '.anhedral-txn/unknown',
+]) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-reserved-artifact-'));
   const artifact = path.join(root, reservedPath);
   mkdirSync(path.dirname(artifact), { recursive: true });
   writeFileSync(artifact, 'preserve for inspection\n');
   try {
-    await assert.rejects(runStagedTransaction(root, {
-      dryRun: true, commitPaths: ['value.txt'], build: async () => assert.fail('Unsafe namespace must prevent staging'),
-    }), /(?:Unsafe reserved transaction namespace|Unknown or unsafe artifact)/);
+    await assert.rejects(
+      runStagedTransaction(root, {
+        dryRun: true,
+        commitPaths: ['value.txt'],
+        build: async () => assert.fail('Unsafe namespace must prevent staging'),
+      }),
+      /(?:Unsafe reserved transaction namespace|Unknown or unsafe artifact)/,
+    );
     assert.equal(readFileSync(artifact, 'utf8'), 'preserve for inspection\n');
     assert.equal(existsSync(path.join(root, '.anhedral.lock')), false);
   } finally {
@@ -90,7 +122,11 @@ try {
     /missing declared path/,
   );
   assert.equal(readFileSync(path.join(root, 'a.txt'), 'utf8'), 'original\n');
-  assert.equal(existsSync(path.join(root, 'nested')), false, 'rollback must prune transaction-created empty parents');
+  assert.equal(
+    existsSync(path.join(root, 'nested')),
+    false,
+    'rollback must prune transaction-created empty parents',
+  );
 } finally {
   rmSync(root, { recursive: true, force: true });
 }
@@ -121,7 +157,10 @@ try {
     }),
     /missing declared path/,
   );
-  assert.equal(readFileSync(path.join(deletionRollbackRoot, 'a-obsolete.txt'), 'utf8'), 'restore me\n');
+  assert.equal(
+    readFileSync(path.join(deletionRollbackRoot, 'a-obsolete.txt'), 'utf8'),
+    'restore me\n',
+  );
   assert.equal(existsSync(path.join(deletionRollbackRoot, '.anhedral-journal.json')), false);
 } finally {
   rmSync(deletionRollbackRoot, { recursive: true, force: true });
@@ -143,9 +182,21 @@ try {
 }
 
 for (const topology of [
-  { commitPaths: ['tree', 'tree/child.txt'], deletePaths: [], message: /Ambiguous transaction write paths/ },
-  { commitPaths: ['tree/child.txt'], deletePaths: ['tree'], message: /Ambiguous transaction write\/delete paths/ },
-  { commitPaths: ['tree'], deletePaths: ['tree/child.txt'], message: /Ambiguous transaction write\/delete paths/ },
+  {
+    commitPaths: ['tree', 'tree/child.txt'],
+    deletePaths: [],
+    message: /Ambiguous transaction write paths/,
+  },
+  {
+    commitPaths: ['tree/child.txt'],
+    deletePaths: ['tree'],
+    message: /Ambiguous transaction write\/delete paths/,
+  },
+  {
+    commitPaths: ['tree'],
+    deletePaths: ['tree/child.txt'],
+    message: /Ambiguous transaction write\/delete paths/,
+  },
 ]) {
   const topologyRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-ambiguous-topology-'));
   try {
@@ -174,16 +225,21 @@ try {
   mkdirSync(backupRoot, { recursive: true });
   mkdirSync(stageRoot, { recursive: true });
   writeFileSync(path.join(dryRunRecoveryRoot, 'state.txt'), 'interrupted replacement\n');
-  const installedFingerprint = transactionFileFingerprint(path.join(dryRunRecoveryRoot, 'state.txt'));
+  const installedFingerprint = transactionFileFingerprint(
+    path.join(dryRunRecoveryRoot, 'state.txt'),
+  );
   writeFileSync(backupPath, 'original\n');
   writeFileSync(path.join(stageRoot, 'uncommitted.txt'), 'uncommitted\n');
-  writeFileSync(journalPath, JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [{ relativePath: 'state.txt', backupPath, installed: true, installedFingerprint }],
-    createdDirectories: [],
-  }) + '\n');
+  writeFileSync(
+    journalPath,
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [{ relativePath: 'state.txt', backupPath, installed: true, installedFingerprint }],
+      createdDirectories: [],
+    }) + '\n',
+  );
   const before = {
     target: readFileSync(path.join(dryRunRecoveryRoot, 'state.txt')),
     backup: readFileSync(backupPath),
@@ -195,7 +251,9 @@ try {
     runStagedTransaction(dryRunRecoveryRoot, {
       commitPaths: ['state.txt'],
       dryRun: true,
-      build: async () => { built = true; },
+      build: async () => {
+        built = true;
+      },
     }),
     /Dry-run cannot recover an interrupted transaction/,
   );
@@ -241,18 +299,27 @@ try {
   mkdirSync(backupRoot, { recursive: true });
   mkdirSync(stageRoot, { recursive: true });
   writeFileSync(path.join(localRecoveryRoot, 'state.txt'), 'interrupted replacement\n');
-  const installedFingerprint = transactionFileFingerprint(path.join(localRecoveryRoot, 'state.txt'));
+  const installedFingerprint = transactionFileFingerprint(
+    path.join(localRecoveryRoot, 'state.txt'),
+  );
   writeFileSync(backupPath, 'original\n');
-  writeFileSync(path.join(localRecoveryRoot, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [{ relativePath: 'state.txt', backupPath, installed: true, installedFingerprint }],
-    createdDirectories: [],
-  }) + '\n');
+  writeFileSync(
+    path.join(localRecoveryRoot, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [{ relativePath: 'state.txt', backupPath, installed: true, installedFingerprint }],
+      createdDirectories: [],
+    }) + '\n',
+  );
   assert.equal(recoverInterruptedTransaction(localRecoveryRoot), true);
   assert.equal(readFileSync(path.join(localRecoveryRoot, 'state.txt'), 'utf8'), 'original\n');
-  assert.equal(existsSync(transactionDirectory), false, 'successful recovery must remove the local transaction namespace');
+  assert.equal(
+    existsSync(transactionDirectory),
+    false,
+    'successful recovery must remove the local transaction namespace',
+  );
 } finally {
   rmSync(localRecoveryRoot, { recursive: true, force: true });
 }
@@ -269,18 +336,23 @@ try {
   writeFileSync(targetPath, 'installed by interrupted transaction\n');
   const installedFingerprint = transactionFileFingerprint(targetPath);
   writeFileSync(backupPath, 'original\n');
-  writeFileSync(path.join(changedRecoveryRoot, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [{
-      relativePath: 'state.txt',
-      backupPath,
-      installed: true,
-      installedFingerprint,
-    }],
-    createdDirectories: [],
-  }) + '\n');
+  writeFileSync(
+    path.join(changedRecoveryRoot, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [
+        {
+          relativePath: 'state.txt',
+          backupPath,
+          installed: true,
+          installedFingerprint,
+        },
+      ],
+      createdDirectories: [],
+    }) + '\n',
+  );
   writeFileSync(targetPath, 'user edit after the crash\n');
 
   assert.throws(
@@ -304,18 +376,23 @@ try {
   const stagedPath = path.join(stageRoot, 'nested/state.txt');
   mkdirSync(path.dirname(stagedPath), { recursive: true });
   writeFileSync(stagedPath, 'staged replacement\n');
-  writeFileSync(path.join(preInstallRecoveryRoot, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    createdDirectories: ['nested'],
-    entries: [{
-      relativePath: 'nested/state.txt',
-      backupPath: null,
-      installed: true,
-      installedFingerprint: transactionFileFingerprint(stagedPath),
-    }],
-  }) + '\n');
+  writeFileSync(
+    path.join(preInstallRecoveryRoot, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      createdDirectories: ['nested'],
+      entries: [
+        {
+          relativePath: 'nested/state.txt',
+          backupPath: null,
+          installed: true,
+          installedFingerprint: transactionFileFingerprint(stagedPath),
+        },
+      ],
+    }) + '\n',
+  );
   assert.equal(recoverInterruptedTransaction(preInstallRecoveryRoot), true);
   assert.equal(
     existsSync(path.join(preInstallRecoveryRoot, 'nested')),
@@ -332,13 +409,16 @@ try {
   await assert.rejects(
     runStagedTransaction(postCommitRoot, {
       commitPaths: ['committed.txt'],
-      build: async (stageRoot) => writeFileSync(path.join(stageRoot, 'committed.txt'), 'committed\n'),
-      afterCommit: async () => { throw new Error('install failed'); },
+      build: async (stageRoot) =>
+        writeFileSync(path.join(stageRoot, 'committed.txt'), 'committed\n'),
+      afterCommit: async () => {
+        throw new Error('install failed');
+      },
     }),
     (error) => {
       assert.equal(error instanceof PostCommitError, true);
       assert.deepEqual(error.committedPaths, ['committed.txt']);
-      assert.match(error.message, /Generated files were saved/);
+      assert.match(error.message, /Changes were committed successfully/);
       assert.match(error.message, /install failed/);
       return true;
     },
@@ -369,25 +449,36 @@ for (const noncanonicalPath of ['a/./b.txt', 'a//b.txt', '.anhedral-txn/escape.t
 }
 
 const recoveryRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-recovery-'));
-const sentinel = path.join(path.dirname(recoveryRoot), `${path.basename(recoveryRoot)}-sentinel.txt`);
+const sentinel = path.join(
+  path.dirname(recoveryRoot),
+  `${path.basename(recoveryRoot)}-sentinel.txt`,
+);
 try {
   writeFileSync(sentinel, 'safe\n');
   const { backupRoot, stageRoot } = transactionRoots(recoveryRoot);
-  writeFileSync(path.join(recoveryRoot, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [{
-      relativePath: `safe/../../${path.basename(sentinel)}`,
-      backupPath: null,
-      installed: true,
-      installedFingerprint: '0'.repeat(64),
-    }],
-    createdDirectories: [],
-  }));
+  writeFileSync(
+    path.join(recoveryRoot, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [
+        {
+          relativePath: `safe/../../${path.basename(sentinel)}`,
+          backupPath: null,
+          installed: true,
+          installedFingerprint: '0'.repeat(64),
+        },
+      ],
+      createdDirectories: [],
+    }),
+  );
   assert.throws(() => recoverInterruptedTransaction(recoveryRoot), /Unsafe transaction path/);
   assert.equal(readFileSync(sentinel, 'utf8'), 'safe\n');
-  assert.equal(readFileSync(path.join(recoveryRoot, '.anhedral-journal.json'), 'utf8').length > 0, true);
+  assert.equal(
+    readFileSync(path.join(recoveryRoot, '.anhedral-journal.json'), 'utf8').length > 0,
+    true,
+  );
   assert.throws(() => readFileSync(path.join(recoveryRoot, '.anhedral.lock')));
 } finally {
   rmSync(recoveryRoot, { recursive: true, force: true });
@@ -401,13 +492,16 @@ try {
     mismatchedRootsRecovery,
     '2147483647-33333333-3333-4333-8333-333333333333',
   ).stageRoot;
-  writeFileSync(path.join(mismatchedRootsRecovery, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [],
-    createdDirectories: [],
-  }));
+  writeFileSync(
+    path.join(mismatchedRootsRecovery, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [],
+      createdDirectories: [],
+    }),
+  );
   assert.throws(
     () => recoverInterruptedTransaction(mismatchedRootsRecovery),
     /do not share one token/,
@@ -420,16 +514,24 @@ try {
 const ambiguousJournalRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-ambiguous-journal-'));
 try {
   const { backupRoot, stageRoot } = transactionRoots(ambiguousJournalRoot);
-  writeFileSync(path.join(ambiguousJournalRoot, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [
-      { relativePath: 'tree', backupPath: null, installed: false, installedFingerprint: null },
-      { relativePath: 'tree/file.txt', backupPath: null, installed: false, installedFingerprint: null },
-    ],
-    createdDirectories: [],
-  }));
+  writeFileSync(
+    path.join(ambiguousJournalRoot, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [
+        { relativePath: 'tree', backupPath: null, installed: false, installedFingerprint: null },
+        {
+          relativePath: 'tree/file.txt',
+          backupPath: null,
+          installed: false,
+          installedFingerprint: null,
+        },
+      ],
+      createdDirectories: [],
+    }),
+  );
   assert.throws(
     () => recoverInterruptedTransaction(ambiguousJournalRoot),
     /Ambiguous transaction journal paths/,
@@ -439,25 +541,43 @@ try {
   rmSync(ambiguousJournalRoot, { recursive: true, force: true });
 }
 
-const invalidCreatedDirectoryRecovery = mkdtempSync(path.join(tmpdir(), 'anhedral-created-directory-inventory-'));
+const invalidCreatedDirectoryRecovery = mkdtempSync(
+  path.join(tmpdir(), 'anhedral-created-directory-inventory-'),
+);
 try {
   const { backupRoot, stageRoot } = transactionRoots(invalidCreatedDirectoryRecovery);
   const protectedDirectory = path.join(invalidCreatedDirectoryRecovery, 'protected');
   mkdirSync(protectedDirectory);
   writeFileSync(path.join(protectedDirectory, 'sentinel.txt'), 'must remain\n');
-  writeFileSync(path.join(invalidCreatedDirectoryRecovery, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [{ relativePath: 'state.txt', backupPath: null, installed: false, installedFingerprint: null }],
-    createdDirectories: ['protected'],
-  }));
+  writeFileSync(
+    path.join(invalidCreatedDirectoryRecovery, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [
+        {
+          relativePath: 'state.txt',
+          backupPath: null,
+          installed: false,
+          installedFingerprint: null,
+        },
+      ],
+      createdDirectories: ['protected'],
+    }),
+  );
   assert.throws(
     () => recoverInterruptedTransaction(invalidCreatedDirectoryRecovery),
     /not a parent of any journal entry/,
   );
-  assert.equal(readFileSync(path.join(protectedDirectory, 'sentinel.txt'), 'utf8'), 'must remain\n');
-  assert.equal(existsSync(path.join(invalidCreatedDirectoryRecovery, '.anhedral-journal.json')), true);
+  assert.equal(
+    readFileSync(path.join(protectedDirectory, 'sentinel.txt'), 'utf8'),
+    'must remain\n',
+  );
+  assert.equal(
+    existsSync(path.join(invalidCreatedDirectoryRecovery, '.anhedral-journal.json')),
+    true,
+  );
 } finally {
   rmSync(invalidCreatedDirectoryRecovery, { recursive: true, force: true });
 }
@@ -472,18 +592,31 @@ try {
   symlinkSync(symlinkOutsideRoot, path.join(backupRoot, 'linked'));
   const backupPath = path.join(backupRoot, 'linked', 'sentinel.txt');
   const journalPath = path.join(symlinkRecoveryRoot, '.anhedral-journal.json');
-  writeFileSync(journalPath, JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [{ relativePath: 'linked/sentinel.txt', backupPath, installed: false, installedFingerprint: null }],
-    createdDirectories: [],
-  }) + '\n');
+  writeFileSync(
+    journalPath,
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [
+        {
+          relativePath: 'linked/sentinel.txt',
+          backupPath,
+          installed: false,
+          installedFingerprint: null,
+        },
+      ],
+      createdDirectories: [],
+    }) + '\n',
+  );
   assert.throws(
     () => recoverInterruptedTransaction(symlinkRecoveryRoot),
     /Refusing transaction path containing a symbolic link/,
   );
-  assert.equal(readFileSync(path.join(symlinkOutsideRoot, 'sentinel.txt'), 'utf8'), 'outside is safe\n');
+  assert.equal(
+    readFileSync(path.join(symlinkOutsideRoot, 'sentinel.txt'), 'utf8'),
+    'outside is safe\n',
+  );
   assert.equal(existsSync(path.join(symlinkRecoveryRoot, 'linked', 'sentinel.txt')), false);
   assert.equal(existsSync(journalPath), true);
 } finally {
@@ -496,13 +629,18 @@ try {
   writeFileSync(path.join(concurrentRoot, 'state.txt'), '0\n');
   let markStarted;
   let unblock;
-  const started = new Promise((resolve) => { markStarted = resolve; });
-  const blocked = new Promise((resolve) => { unblock = resolve; });
+  const started = new Promise((resolve) => {
+    markStarted = resolve;
+  });
+  const blocked = new Promise((resolve) => {
+    unblock = resolve;
+  });
   let firstValue;
   const first = runStagedTransaction(concurrentRoot, {
     commitPaths: ['state.txt'],
     prepare: async () => {
-      firstValue = Number.parseInt(readFileSync(path.join(concurrentRoot, 'state.txt'), 'utf8'), 10) + 1;
+      firstValue =
+        Number.parseInt(readFileSync(path.join(concurrentRoot, 'state.txt'), 'utf8'), 10) + 1;
     },
     build: async (stageRoot) => {
       writeFileSync(path.join(stageRoot, 'state.txt'), `${firstValue}\n`);
@@ -515,7 +653,9 @@ try {
   await assert.rejects(
     runStagedTransaction(concurrentRoot, {
       commitPaths: ['state.txt'],
-      prepare: async () => { blockedPrepareCalls += 1; },
+      prepare: async () => {
+        blockedPrepareCalls += 1;
+      },
       build: async (stageRoot) => writeFileSync(path.join(stageRoot, 'state.txt'), 'stale\n'),
     }),
     /Another Anhedral operation is already running/,
@@ -529,9 +669,11 @@ try {
   await runStagedTransaction(concurrentRoot, {
     commitPaths: ['state.txt'],
     prepare: async () => {
-      secondValue = Number.parseInt(readFileSync(path.join(concurrentRoot, 'state.txt'), 'utf8'), 10) + 1;
+      secondValue =
+        Number.parseInt(readFileSync(path.join(concurrentRoot, 'state.txt'), 'utf8'), 10) + 1;
     },
-    build: async (stageRoot) => writeFileSync(path.join(stageRoot, 'state.txt'), `${secondValue}\n`),
+    build: async (stageRoot) =>
+      writeFileSync(path.join(stageRoot, 'state.txt'), `${secondValue}\n`),
   });
   assert.equal(readFileSync(path.join(concurrentRoot, 'state.txt'), 'utf8'), '2\n');
 } finally {
@@ -541,22 +683,34 @@ try {
 const activeRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-active-lock-'));
 try {
   const { backupRoot, stageRoot } = transactionRoots(activeRoot);
-  writeFileSync(path.join(activeRoot, '.anhedral.lock'), JSON.stringify({
-    version: 1,
-    pid: process.pid,
-    hostname: hostname(),
-    token: 'active-test',
-    createdAt: new Date().toISOString(),
-  }) + '\n');
-  writeFileSync(path.join(activeRoot, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [],
-    createdDirectories: [],
-  }));
-  assert.throws(() => recoverInterruptedTransaction(activeRoot), /Another Anhedral operation is already running/);
-  assert.equal(readFileSync(path.join(activeRoot, '.anhedral-journal.json'), 'utf8').length > 0, true);
+  writeFileSync(
+    path.join(activeRoot, '.anhedral.lock'),
+    JSON.stringify({
+      version: 1,
+      pid: process.pid,
+      hostname: hostname(),
+      token: 'active-test',
+      createdAt: new Date().toISOString(),
+    }) + '\n',
+  );
+  writeFileSync(
+    path.join(activeRoot, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [],
+      createdDirectories: [],
+    }),
+  );
+  assert.throws(
+    () => recoverInterruptedTransaction(activeRoot),
+    /Another Anhedral operation is already running/,
+  );
+  assert.equal(
+    readFileSync(path.join(activeRoot, '.anhedral-journal.json'), 'utf8').length > 0,
+    true,
+  );
 } finally {
   rmSync(activeRoot, { recursive: true, force: true });
 }
@@ -567,22 +721,33 @@ try {
   mkdirSync(backupRoot, { recursive: true });
   mkdirSync(stageRoot, { recursive: true });
   const backupPath = path.join(backupRoot, 'restored.txt');
-  writeFileSync(path.join(resumableRoot, '.anhedral-journal.json'), JSON.stringify({
-    version: 2,
-    backupRoot,
-    stageRoot,
-    entries: [{ relativePath: 'restored.txt', backupPath, installed: false, installedFingerprint: null }],
-    createdDirectories: [],
-  }));
-  writeFileSync(path.join(resumableRoot, '.anhedral.lock'), JSON.stringify({
-    version: 1,
-    pid: 2147483647,
-    hostname: hostname(),
-    token: 'stale-test',
-    createdAt: new Date(0).toISOString(),
-  }) + '\n');
+  writeFileSync(
+    path.join(resumableRoot, '.anhedral-journal.json'),
+    JSON.stringify({
+      version: 2,
+      backupRoot,
+      stageRoot,
+      entries: [
+        { relativePath: 'restored.txt', backupPath, installed: false, installedFingerprint: null },
+      ],
+      createdDirectories: [],
+    }),
+  );
+  writeFileSync(
+    path.join(resumableRoot, '.anhedral.lock'),
+    JSON.stringify({
+      version: 1,
+      pid: 2147483647,
+      hostname: hostname(),
+      token: 'stale-test',
+      createdAt: new Date(0).toISOString(),
+    }) + '\n',
+  );
   assert.throws(() => recoverInterruptedTransaction(resumableRoot), /missing transaction backup/);
-  assert.equal(readFileSync(path.join(resumableRoot, '.anhedral-journal.json'), 'utf8').length > 0, true);
+  assert.equal(
+    readFileSync(path.join(resumableRoot, '.anhedral-journal.json'), 'utf8').length > 0,
+    true,
+  );
   assert.throws(() => readFileSync(path.join(resumableRoot, '.anhedral.lock')));
   writeFileSync(backupPath, 'restored\n');
   assert.equal(recoverInterruptedTransaction(resumableRoot), true);
@@ -602,10 +767,13 @@ try {
     createdAt: new Date(0).toISOString(),
   };
   writeFileSync(path.join(staleReclaimerRoot, '.anhedral.lock'), JSON.stringify(staleOwner) + '\n');
-  writeFileSync(path.join(staleReclaimerRoot, '.anhedral.lock.reclaim'), JSON.stringify({
-    ...staleOwner,
-    token: 'stale-reclaimer',
-  }) + '\n');
+  writeFileSync(
+    path.join(staleReclaimerRoot, '.anhedral.lock.reclaim'),
+    JSON.stringify({
+      ...staleOwner,
+      token: 'stale-reclaimer',
+    }) + '\n',
+  );
   await runStagedTransaction(staleReclaimerRoot, {
     commitPaths: ['recovered.txt'],
     build: async (stageRoot) => writeFileSync(path.join(stageRoot, 'recovered.txt'), 'recovered\n'),
@@ -620,13 +788,16 @@ try {
 const staleTemporaryRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-stale-lock-temp-'));
 try {
   const temporaryPath = path.join(staleTemporaryRoot, '.anhedral.lock.2147483647-stale.tmp');
-  writeFileSync(temporaryPath, JSON.stringify({
-    version: 1,
-    pid: 2147483647,
-    hostname: hostname(),
-    token: 'stale-temporary-owner',
-    createdAt: new Date(0).toISOString(),
-  }) + '\n');
+  writeFileSync(
+    temporaryPath,
+    JSON.stringify({
+      version: 1,
+      pid: 2147483647,
+      hostname: hostname(),
+      token: 'stale-temporary-owner',
+      createdAt: new Date(0).toISOString(),
+    }) + '\n',
+  );
   await runStagedTransaction(staleTemporaryRoot, {
     commitPaths: ['created.txt'],
     build: async (stageRoot) => writeFileSync(path.join(stageRoot, 'created.txt'), 'created\n'),
@@ -645,7 +816,8 @@ try {
   await assert.rejects(
     runStagedTransaction(malformedArtifactRoot, {
       commitPaths: ['blocked.txt'],
-      build: async (stageRoot) => writeFileSync(path.join(stageRoot, 'blocked.txt'), 'must not commit\n'),
+      build: async (stageRoot) =>
+        writeFileSync(path.join(stageRoot, 'blocked.txt'), 'must not commit\n'),
     }),
     /Cannot safely classify transaction lock artifact/,
   );
@@ -660,7 +832,10 @@ for (const relativePath of ['dangling.txt', 'dangling-parent/created.txt']) {
   const danglingRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-dangling-link-'));
   try {
     if (relativePath.includes('/')) {
-      symlinkSync('/definitely/missing/anhedral-parent', path.join(danglingRoot, 'dangling-parent'));
+      symlinkSync(
+        '/definitely/missing/anhedral-parent',
+        path.join(danglingRoot, 'dangling-parent'),
+      );
     } else {
       symlinkSync('/definitely/missing/anhedral-file', path.join(danglingRoot, relativePath));
     }
@@ -674,7 +849,10 @@ for (const relativePath of ['dangling.txt', 'dangling-parent/created.txt']) {
       }),
       /symbolic link/,
     );
-    const linkPath = path.join(danglingRoot, relativePath.includes('/') ? 'dangling-parent' : relativePath);
+    const linkPath = path.join(
+      danglingRoot,
+      relativePath.includes('/') ? 'dangling-parent' : relativePath,
+    );
     assert.equal(lstatSync(linkPath).isSymbolicLink(), true);
   } finally {
     rmSync(danglingRoot, { recursive: true, force: true });

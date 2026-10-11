@@ -38,7 +38,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
-          version: 12.9.1
+          version: 10.34.5
 
       - name: Setup Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -81,7 +81,7 @@ jobs:
           persist-credentials: false
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
-          version: 12.9.1
+          version: 10.34.5
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '24.18.0'
@@ -104,7 +104,7 @@ jobs:
           persist-credentials: false
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
-          version: 12.9.1
+          version: 10.34.5
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ matrix.node }}
@@ -117,38 +117,6 @@ jobs:
         if: runner.os == 'Windows'
         run: node tests/test-generated-apps.mjs web
 
-  demos:
-    name: Demo (${{ matrix.demo }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        demo: [anhedral-factory, default-stack-demo]
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-        with:
-          fetch-depth: 2
-          persist-credentials: false
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
-        with:
-          version: 12.9.1
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with:
-          node-version: '24.18.0'
-          package-manager-cache: false
-      - name: Install demo dependencies
-        working-directory: demo/${{ matrix.demo }}
-        run: pnpm install --frozen-lockfile
-      - name: Validate demo and production dependencies
-        working-directory: demo/${{ matrix.demo }}
-        env:
-          AUDIT_BASE: HEAD^
-        run: pnpm check
-      - name: Build Cloudflare web artifact
-        working-directory: demo/${{ matrix.demo }}/apps/web
-        run: pnpm run build:worker
-
   generated:
     name: Generated (${{ matrix.os }}, ${{ matrix.profile }})
     runs-on: ${{ matrix.os }}
@@ -157,7 +125,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        profile: [web, api, single, desktop, extension, popup, mobile]
+        profile: [web, web-auth, vercel, vercel-auth, cloudflare, api, api-neon, desktop, extension, mobile]
         include:
           - { os: macos-latest, profile: desktop }
     env:
@@ -170,7 +138,7 @@ jobs:
           persist-credentials: false
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
         with:
-          version: 12.9.1
+          version: 10.34.5
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24.18.0'

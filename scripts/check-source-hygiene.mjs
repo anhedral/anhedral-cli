@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
-const directories = ['.agents', '.github', 'docs', 'plugins', 'apps', 'scripts', 'src', 'tests'];
+const directories = ['.agents', '.github', 'docs', 'plugins', 'scripts', 'src', 'tests'];
 const rootFiles = [
   '.gitignore',
   'LICENSE',
@@ -12,14 +12,25 @@ const rootFiles = [
   'renovate.json',
   'tsconfig.json',
 ];
-const textExtensions = new Set(['.js', '.json', '.md', '.mjs', '.ts', '.tsx', '.css', '.txt', '.yaml', '.yml']);
+const textExtensions = new Set([
+  '.js',
+  '.json',
+  '.md',
+  '.mjs',
+  '.ts',
+  '.tsx',
+  '.css',
+  '.txt',
+  '.yaml',
+  '.yml',
+]);
 
 function collect(directory) {
   const files = [];
   for (const entry of readdirSync(directory)) {
     const absolute = path.join(directory, entry);
     const relative = path.relative(root, absolute);
-    if (relative.includes('node_modules') || relative.startsWith('tests/fixtures/output-trees/')) continue;
+    if (relative.includes('node_modules')) continue;
     if (statSync(absolute).isDirectory()) files.push(...collect(absolute));
     else if (textExtensions.has(path.extname(entry))) files.push(absolute);
   }
@@ -36,7 +47,8 @@ for (const file of files) {
   const relative = path.relative(root, file);
   const content = readFileSync(file, 'utf8');
   if (content.includes('\r')) failures.push(`${relative}: CRLF line endings are not allowed`);
-  if (content.length > 0 && !content.endsWith('\n')) failures.push(`${relative}: missing final newline`);
+  if (content.length > 0 && !content.endsWith('\n'))
+    failures.push(`${relative}: missing final newline`);
   content.split('\n').forEach((line, index) => {
     if (/[ \t]+$/.test(line)) failures.push(`${relative}:${index + 1}: trailing whitespace`);
   });

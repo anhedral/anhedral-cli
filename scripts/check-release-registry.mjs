@@ -12,7 +12,8 @@ if (mode !== 'preflight' && mode !== 'verify') {
 
 const metadata = JSON.parse(readFileSync(metadataPath, 'utf8'));
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-registry-check-'));
-const npmCommand = process.env.ANHEDRAL_NPM_COMMAND || (process.platform === 'win32' ? 'npm.cmd' : 'npm');
+const npmCommand =
+  process.env.ANHEDRAL_NPM_COMMAND || (process.platform === 'win32' ? 'npm.cmd' : 'npm');
 let npmArgsPrefix = [];
 if (process.env.ANHEDRAL_NPM_ARGS_PREFIX) {
   npmArgsPrefix = JSON.parse(process.env.ANHEDRAL_NPM_ARGS_PREFIX);
@@ -25,7 +26,8 @@ const registry = 'https://registry.npmjs.org';
 function queryIntegrity() {
   const result = spawnSyncPortable(
     npmCommand,
-    [...npmArgsPrefix,
+    [
+      ...npmArgsPrefix,
       'view',
       `${metadata.name}@${metadata.version}`,
       'dist.integrity',
@@ -59,14 +61,16 @@ function queryIntegrity() {
     return { state: 'missing' };
   }
 
-  throw new Error(`npm registry query failed for ${metadata.name}@${metadata.version}:\n${combined}`);
+  throw new Error(
+    `npm registry query failed for ${metadata.name}@${metadata.version}:\n${combined}`,
+  );
 }
 
 function assertMatching(result) {
   if (result.integrity !== metadata.integrity) {
     throw new Error(
       `${metadata.name}@${metadata.version} already exists with different integrity\n` +
-      `local:  ${metadata.integrity}\nremote: ${result.integrity}`,
+        `local:  ${metadata.integrity}\nremote: ${result.integrity}`,
     );
   }
 }

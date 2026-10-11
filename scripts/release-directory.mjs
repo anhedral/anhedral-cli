@@ -10,8 +10,12 @@ export function releaseDirectory(repoRoot, output) {
   }
   for (const candidate of [path.join(repoRoot, '.artifacts'), directory]) {
     let stat;
-    try { stat = lstatSync(candidate); }
-    catch (error) { if (error.code === 'ENOENT') continue; throw error; }
+    try {
+      stat = lstatSync(candidate);
+    } catch (error) {
+      if (error.code === 'ENOENT') continue;
+      throw error;
+    }
     if (stat.isSymbolicLink() || !stat.isDirectory()) {
       throw new Error('Release output and its parent must be real directories');
     }

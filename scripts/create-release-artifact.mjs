@@ -1,7 +1,15 @@
 import { releaseDirectory } from './release-directory.mjs';
 import { packagePlugin } from './package-plugin.mjs';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +20,10 @@ const repoRoot = path.resolve(scriptDir, '..');
 const artifactDirectoryName = process.argv[2] ?? '.artifacts/release';
 const artifactDirectory = releaseDirectory(repoRoot, artifactDirectoryName);
 const packageJson = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+
+if (artifactDirectory === repoRoot || !artifactDirectory.startsWith(`${repoRoot}${path.sep}`)) {
+  throw new Error('Release artifact directory must be inside the repository root');
+}
 
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-release-pack-'));
 
@@ -47,7 +59,9 @@ try {
   );
 
   if (result.status !== 0) {
-    throw new Error(`npm pack failed\nstdout:\n${result.stdout ?? ''}\nstderr:\n${result.stderr ?? ''}`);
+    throw new Error(
+      `npm pack failed\nstdout:\n${result.stdout ?? ''}\nstderr:\n${result.stderr ?? ''}`,
+    );
   }
 
   const packed = parsePackJson(String(result.stdout ?? ''));
@@ -59,7 +73,7 @@ try {
   if (packageResult.name !== packageJson.name || packageResult.version !== packageJson.version) {
     throw new Error(
       `Packed identity ${packageResult.name}@${packageResult.version} does not match package.json ` +
-      `${packageJson.name}@${packageJson.version}`,
+        `${packageJson.name}@${packageJson.version}`,
     );
   }
 

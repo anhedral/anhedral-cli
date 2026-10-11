@@ -28,14 +28,18 @@ const technical = process.argv.includes('--technical');
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, '..');
 const outputFlag = process.argv.indexOf('--output');
-const outputPath = resolve(outputFlag >= 0 && process.argv[outputFlag + 1]
-  ? process.argv[outputFlag + 1]
-  : resolve(repositoryRoot, `assets/anhedral-cli-init${technical ? '-technical' : ''}.svg`));
-const anhedralMarkPath = resolve(repositoryRoot, 'assets/images/svg/logo-white-subtract.svg');
+const outputPath = resolve(
+  outputFlag >= 0 && process.argv[outputFlag + 1]
+    ? process.argv[outputFlag + 1]
+    : resolve(repositoryRoot, `assets/anhedral-cli-init${technical ? '-technical' : ''}.svg`),
+);
+const anhedralMarkPath = resolve(repositoryRoot, 'assets/anhedral-mark.svg');
 const anhedralMarkSource = await readFile(anhedralMarkPath, 'utf8');
 const [, markViewBox = '0 0 1820 2199'] = anhedralMarkSource.match(/viewBox="([^"]+)"/) ?? [];
 const [, , markWidth = '1820', markHeight = '2199'] = markViewBox.split(/\s+/).map(Number);
-const markPaths = [...anhedralMarkSource.matchAll(/<path\b[^>]*\bd="([^"]+)"[^>]*>/g)].map((match) => match[1]);
+const markPaths = [...anhedralMarkSource.matchAll(/<path\b[^>]*\bd="([^"]+)"[^>]*>/g)].map(
+  (match) => match[1],
+);
 
 const W = 1920;
 const H = 1660;
@@ -57,45 +61,62 @@ const palette = {
 };
 
 const svg = [];
-const escapeXml = (value) => String(value)
-  .replaceAll('&', '&amp;')
-  .replaceAll('<', '&lt;')
-  .replaceAll('>', '&gt;')
-  .replaceAll('"', '&quot;');
+const escapeXml = (value) =>
+  String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
 
-function text(x, y, value, {
-  size = 18,
-  fill = palette.text,
-  weight = 400,
-  anchor = 'start',
-  spacing = 0,
-  italic = false,
-} = {}) {
-  svg.push(`<text x="${x}" y="${y}" fill="${fill}" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}" letter-spacing="${spacing}"${italic ? ' font-style="italic"' : ''}>${escapeXml(value)}</text>`);
+function text(
+  x,
+  y,
+  value,
+  {
+    size = 18,
+    fill = palette.text,
+    weight = 400,
+    anchor = 'start',
+    spacing = 0,
+    italic = false,
+  } = {},
+) {
+  svg.push(
+    `<text x="${x}" y="${y}" fill="${fill}" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}" letter-spacing="${spacing}"${italic ? ' font-style="italic"' : ''}>${escapeXml(value)}</text>`,
+  );
 }
 
-function rect(x, y, width, height, {
-  fill = 'url(#card-fill)', stroke = palette.border, strokeWidth = 1.15, radius = 12,
-} = {}) {
-  svg.push(`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`);
+function rect(
+  x,
+  y,
+  width,
+  height,
+  { fill = 'url(#card-fill)', stroke = palette.border, strokeWidth = 1.15, radius = 12 } = {},
+) {
+  svg.push(
+    `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`,
+  );
 }
 
-function line(x1, y1, x2, y2, {
-  stroke = palette.divider, width = 1, dash = '', marker = '',
-} = {}) {
-  svg.push(`<path d="M ${x1} ${y1} L ${x2} ${y2}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}${marker ? ` marker-end="url(#${marker})"` : ''}/>`);
+function line(
+  x1,
+  y1,
+  x2,
+  y2,
+  { stroke = palette.divider, width = 1, dash = '', marker = '' } = {},
+) {
+  svg.push(
+    `<path d="M ${x1} ${y1} L ${x2} ${y2}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ''}${marker ? ` marker-end="url(#${marker})"` : ''}/>`,
+  );
 }
 
-function path(d, {
-  stroke = palette.text, width = 3, dash = '', marker = 'arrow-white',
-} = {}) {
-  svg.push(`<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"${dash ? ` stroke-dasharray="${dash}"` : ''}${marker ? ` marker-end="url(#${marker})"` : ''}/>`);
+function path(d, { stroke = palette.text, width = 3, dash = '', marker = 'arrow-white' } = {}) {
+  svg.push(
+    `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"${dash ? ` stroke-dasharray="${dash}"` : ''}${marker ? ` marker-end="url(#${marker})"` : ''}/>`,
+  );
 }
 
-function smoothConnector(x1, y1, x2, y2, {
-  curvature = 0.46,
-  ...pathOptions
-} = {}) {
+function smoothConnector(x1, y1, x2, y2, { curvature = 0.46, ...pathOptions } = {}) {
   const horizontalDistance = Math.abs(x2 - x1);
   const direction = Math.sign(x2 - x1) || 1;
   const controlOffset = Math.min(
@@ -111,7 +132,9 @@ function smoothConnector(x1, y1, x2, y2, {
 
 function logo(icon, x, y, size, fill) {
   const scale = size / 24;
-  svg.push(`<g transform="translate(${x} ${y}) scale(${scale})"><path d="${icon.path}" fill="${fill}"/></g>`);
+  svg.push(
+    `<g transform="translate(${x} ${y}) scale(${scale})"><path d="${icon.path}" fill="${fill}"/></g>`,
+  );
 }
 
 function anhedralMark(x, y, height) {
@@ -148,7 +171,9 @@ function customAppStore(x, y, size) {
   const badgeSize = size - 16;
   const badgeX = x + 8;
   const badgeY = y + 8;
-  svg.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeSize}" height="${badgeSize}" rx="11" fill="url(#app-store-fill)"/>`);
+  svg.push(
+    `<rect x="${badgeX}" y="${badgeY}" width="${badgeSize}" height="${badgeSize}" rx="11" fill="url(#app-store-fill)"/>`,
+  );
   logo(siAppstore, badgeX + 9, badgeY + 9, badgeSize - 18, palette.text);
 }
 
@@ -170,25 +195,27 @@ function customChrome(x, y, size) {
   const cy = badgeY + badgeSize / 2;
   const r = badgeSize * 0.36;
   const halfR = r * 0.5;
-  const highR = r * Math.sqrt(3) / 2;
+  const highR = (r * Math.sqrt(3)) / 2;
 
-  svg.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeSize}" height="${badgeSize}" rx="11" fill="${palette.text}"/>`);
-  svg.push(`<path d="M ${cx} ${cy} L ${cx - halfR} ${cy - highR} A ${r} ${r} 0 0 1 ${cx + r} ${cy} Z" fill="#ea4335"/>`);
-  svg.push(`<path d="M ${cx} ${cy} L ${cx + r} ${cy} A ${r} ${r} 0 0 1 ${cx - halfR} ${cy + highR} Z" fill="#fbbc04"/>`);
-  svg.push(`<path d="M ${cx} ${cy} L ${cx - halfR} ${cy + highR} A ${r} ${r} 0 0 1 ${cx - halfR} ${cy - highR} Z" fill="#34a853"/>`);
+  svg.push(
+    `<rect x="${badgeX}" y="${badgeY}" width="${badgeSize}" height="${badgeSize}" rx="11" fill="${palette.text}"/>`,
+  );
+  svg.push(
+    `<path d="M ${cx} ${cy} L ${cx - halfR} ${cy - highR} A ${r} ${r} 0 0 1 ${cx + r} ${cy} Z" fill="#ea4335"/>`,
+  );
+  svg.push(
+    `<path d="M ${cx} ${cy} L ${cx + r} ${cy} A ${r} ${r} 0 0 1 ${cx - halfR} ${cy + highR} Z" fill="#fbbc04"/>`,
+  );
+  svg.push(
+    `<path d="M ${cx} ${cy} L ${cx - halfR} ${cy + highR} A ${r} ${r} 0 0 1 ${cx - halfR} ${cy - highR} Z" fill="#34a853"/>`,
+  );
   svg.push(`<circle cx="${cx}" cy="${cy}" r="${r * 0.48}" fill="${palette.text}"/>`);
   svg.push(`<circle cx="${cx}" cy="${cy}" r="${r * 0.36}" fill="#4285f4"/>`);
 }
 
 function customR2(x, y, size) {
   const cloudSize = Math.round(size * 0.42);
-  logo(
-    siCloudflare,
-    x + 2,
-    y + (size - cloudSize) / 2,
-    cloudSize,
-    palette.orange,
-  );
+  logo(siCloudflare, x + 2, y + (size - cloudSize) / 2, cloudSize, palette.orange);
   text(x + size * 0.72, y + size * 0.62, 'R2', {
     size: Math.max(11, Math.round(size * 0.34)),
     fill: palette.text,
@@ -199,13 +226,19 @@ function customR2(x, y, size) {
 }
 
 const customCardIcons = {
-  globe: customGlobe, desktop: customDesktop, 'app-store': customAppStore,
-  'google-play': customGooglePlay, chrome: customChrome, r2: customR2,
-  ai: (x, y, size) => text(x + size / 2, y + size * 0.66, 'AI', { size: 27, weight: 600, anchor: 'middle' }),
+  globe: customGlobe,
+  desktop: customDesktop,
+  'app-store': customAppStore,
+  'google-play': customGooglePlay,
+  chrome: customChrome,
+  r2: customR2,
+  ai: (x, y, size) =>
+    text(x + size / 2, y + size * 0.66, 'AI', { size: 27, weight: 600, anchor: 'middle' }),
 };
 
 function drawPairedCardIcons(boxX, boxY, boxSize, boxWidth, options) {
-  const { icon, iconColor, secondIcon, secondEmbeddedIcon, secondIconColor, wideIcon, compact } = options;
+  const { icon, iconColor, secondIcon, secondEmbeddedIcon, secondIconColor, wideIcon, compact } =
+    options;
   const pairedSize = wideIcon ? 36 : compact ? 23 : 38;
   const pairedInset = compact ? 5 : 6;
   logo(icon, boxX + pairedInset, boxY + (boxSize - pairedSize) / 2, pairedSize, iconColor);
@@ -227,9 +260,22 @@ function drawPairedCardIcons(boxX, boxY, boxSize, boxWidth, options) {
 }
 
 function drawCardIcon(boxX, boxY, boxSize, boxWidth, options) {
-  const { customIcon, icon, iconColor, secondIcon, secondEmbeddedIcon, secondIconColor, wideIcon, compact, iconScale } = options;
+  const {
+    customIcon,
+    icon,
+    iconColor,
+    secondIcon,
+    secondEmbeddedIcon,
+    secondIconColor,
+    wideIcon,
+    compact,
+    iconScale,
+  } = options;
   const custom = customCardIcons[customIcon];
-  if (custom) { custom(boxX, boxY, boxSize, iconColor); return; }
+  if (custom) {
+    custom(boxX, boxY, boxSize, iconColor);
+    return;
+  }
   if (!icon) return;
   if (secondIcon || secondEmbeddedIcon) {
     drawPairedCardIcons(boxX, boxY, boxSize, boxWidth, options);
@@ -243,25 +289,30 @@ function drawCardIcon(boxX, boxY, boxSize, boxWidth, options) {
       iconColor,
     );
   }
-
 }
 
-function card(x, y, width, height, {
-  title,
-  subtitle,
-  detail = '',
-  icon,
-  iconColor = palette.text,
-  secondIcon,
-  secondIconColor = palette.text,
-  secondEmbeddedIcon,
-  customIcon,
-  cornerIcon,
-  cornerIconColor = palette.text,
-  iconScale = 52,
-  compact = false,
-  wideIcon = false,
-}) {
+function card(
+  x,
+  y,
+  width,
+  height,
+  {
+    title,
+    subtitle,
+    detail = '',
+    icon,
+    iconColor = palette.text,
+    secondIcon,
+    secondIconColor = palette.text,
+    secondEmbeddedIcon,
+    customIcon,
+    cornerIcon,
+    cornerIconColor = palette.text,
+    iconScale = 52,
+    compact = false,
+    wideIcon = false,
+  },
+) {
   rect(x, y, width, height);
   const boxSize = height - 24;
   const boxWidth = wideIcon ? 96 : boxSize;
@@ -277,38 +328,50 @@ function card(x, y, width, height, {
     iconBox(boxX, boxY, boxSize);
   }
 
-  drawCardIcon(boxX, boxY, boxSize, boxWidth, { customIcon, icon, iconColor, secondIcon, secondEmbeddedIcon, secondIconColor, wideIcon, compact, iconScale });
+  drawCardIcon(boxX, boxY, boxSize, boxWidth, {
+    customIcon,
+    icon,
+    iconColor,
+    secondIcon,
+    secondEmbeddedIcon,
+    secondIconColor,
+    wideIcon,
+    compact,
+    iconScale,
+  });
 
   const dividerX = boxX + boxWidth + (compact ? 12 : 10);
   const textX = dividerX + (compact ? 20 : 24);
   line(dividerX, y + 14, dividerX, y + height - 14);
   text(textX, y + (compact ? 31 : 42), title, { size: compact ? 18 : 22, weight: 500 });
   text(textX, y + (compact ? 55 : 70), subtitle, { size: compact ? 14 : 16, fill: palette.muted });
-  if (detail) text(textX, y + (compact ? 75 : 91), detail, { size: compact ? 12 : 13, fill: palette.muted });
+  if (detail)
+    text(textX, y + (compact ? 75 : 91), detail, { size: compact ? 12 : 13, fill: palette.muted });
   if (cornerIcon) logo(cornerIcon, x + width - 32, y + 15, 17, cornerIconColor);
 }
 
 function heading(x, y, width, value) {
   text(x + width / 2, y, value, {
-    size: 17, fill: palette.yellow, weight: 600, anchor: 'middle', spacing: 3.2,
+    size: 17,
+    fill: palette.yellow,
+    weight: 600,
+    anchor: 'middle',
+    spacing: 3.2,
   });
 }
 
 function endpoint(x, y) {
-  svg.push(`<circle cx="${x}" cy="${y}" r="8.5" fill="${palette.lime}" filter="url(#endpoint-glow)"/>`);
+  svg.push(
+    `<circle cx="${x}" cy="${y}" r="8.5" fill="${palette.lime}" filter="url(#endpoint-glow)"/>`,
+  );
 }
 
-function dxTool(x, y, {
-  icon,
-  label,
-  color = palette.text,
-  anhedral = false,
-}) {
+function dxTool(x, y, { icon, label, color = palette.text, anhedral = false }) {
   const width = 88;
   const height = 92;
   rect(x, y, width, height, { fill: '#07121d', stroke: palette.divider, radius: 11 });
   if (anhedral) {
-    const renderedWidth = markWidth / markHeight * 34;
+    const renderedWidth = (markWidth / markHeight) * 34;
     anhedralMark(x + (width - renderedWidth) / 2, y + 14, 34);
   } else {
     logo(icon, x + 27, y + 14, 34, color);
@@ -321,9 +384,15 @@ function dxTool(x, y, {
   });
 }
 
-svg.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="title description">`);
-svg.push(`<title id="title">${technical ? 'Anhedral Application service contracts' : 'Anhedral Init Stack'}</title>`);
-svg.push('<desc id="description">Client-owned, selected application recipes. A workspace is used for shared packages and multiple apps; a single API recipe is also supported. Next.js uses OpenNext on Cloudflare Workers; Hono and OpenAPI provide optional shared APIs. Select Neon with Drizzle and Hyperdrive or D1, authentication, private R2, KV, realtime, jobs, workflows, AI, email, billing, observability and analytics only when required. Dashed yellow lines show publication; white lines show application runtime and service bindings.</desc>');
+svg.push(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="title description">`,
+);
+svg.push(
+  `<title id="title">${technical ? 'Anhedral Application service contracts' : 'Anhedral Init Stack'}</title>`,
+);
+svg.push(
+  '<desc id="description">Client-owned shadcn, pnpm and Turborepo monorepo. Vinext on Cloudflare Workers is the web default; native Next.js on Vercel and OpenNext on Workers are optional; Hono and OpenAPI provide optional shared APIs. Select direct Neon HTTP with Drizzle or D1, authentication, private R2, KV, realtime, jobs, workflows, AI, email, billing, observability and analytics only when required. Dashed yellow lines show publication; white lines show application runtime and service bindings.</desc>',
+);
 svg.push(`<defs>
   <linearGradient id="card-fill" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0" stop-color="#0d1b29"/>
@@ -354,8 +423,8 @@ text(brandRuleX + 22, 80, 'ANHEDRAL', { size: 27, weight: 500, spacing: 1.3 });
   text(x, 176, value, { size: 78, weight: 700 });
   line(x + 1, 195, underlineEnd, 195, { stroke: palette.yellow, width: 6 });
 });
-text(34, 240, 'Client-owned apps. Cloudflare-first. Add only what you need.', { size: 24 });
-text(34, 274, 'Select the recipe → initialize source → connect only needed services', { size: 24 });
+text(34, 240, 'Cloudflare-first apps. Add only what you need.', { size: 24 });
+text(34, 274, 'shadcn monorepo init → pnpm + Turborepo → apps/* + packages/*', { size: 24 });
 
 const dxToolStartX = 1187;
 const dxToolY = 76;
@@ -370,9 +439,18 @@ heading(dxToolStartX, 52, 676, 'DX TOOLS');
   { icon: siGithub, label: 'GitHub', color: palette.text },
   { label: 'Codex + Skills', anhedral: true },
 ].forEach((tool, index) => dxTool(dxToolStartX + index * dxToolGap, dxToolY, tool));
-text(dxToolStartX, 210, 'macOS · OpenAI / Codex · Computer Use + Control Chrome', { size: 17, fill: palette.muted });
-text(dxToolStartX, 240, 'GitHub Actions · Fallow audit · Cloudflare plugin + cf + API/MCP', { size: 16, fill: palette.muted });
-text(dxToolStartX, 270, 'Suitable workloads · economical operation · client-owned delivery', { size: 17, fill: palette.muted });
+text(dxToolStartX, 210, 'macOS · OpenAI / Codex · Computer Use + Control Chrome', {
+  size: 17,
+  fill: palette.muted,
+});
+text(dxToolStartX, 240, 'GitHub Actions · Fallow audit · Cloudflare plugin + cf + API/MCP', {
+  size: 16,
+  fill: palette.muted,
+});
+text(dxToolStartX, 270, 'Vercel web · Cloudflare services · client-owned delivery', {
+  size: 17,
+  fill: palette.muted,
+});
 
 const deployX = 54;
 const deployW = 396;
@@ -387,21 +465,54 @@ const architectureCardTop = 354;
 
 heading(deployX, architectureHeadingY, deployW, 'DEPLOY & DISTRIBUTE');
 heading(clientX, architectureHeadingY, clientW, 'CLIENT SURFACES');
-heading(apiX, architectureHeadingY, serviceX + serviceW - apiX, technical ? 'CLOUDFLARE SERVICE BINDINGS' : 'BACKEND + SERVICES');
+heading(
+  apiX,
+  architectureHeadingY,
+  serviceX + serviceW - apiX,
+  technical ? 'CLOUDFLARE SERVICE BINDINGS' : 'BACKEND + SERVICES',
+);
 
 const deployRows = Array.from({ length: 5 }, (_, index) => architectureCardTop + index * 206);
 [
-  { title: 'Web', subtitle: 'Cloudflare Workers + OpenNext', detail: technical ? 'Web-only endpoints: route handlers' : 'Vercel when explicitly selected', customIcon: 'globe' },
-  { title: 'App Store', subtitle: 'iOS distribution', detail: 'EAS signed release', customIcon: 'app-store' },
-  { title: 'Google Play', subtitle: 'Android distribution', detail: 'EAS signed release', customIcon: 'google-play' },
-  { title: 'Browser Web Stores', subtitle: 'extension distribution', detail: 'reviewed WXT ZIP', customIcon: 'chrome' },
-  { title: 'Desktop Releases', subtitle: 'macOS · Windows · Linux', detail: 'signed installers + release updates', customIcon: 'desktop', iconColor: palette.text },
+  {
+    title: 'Web',
+    subtitle: 'Vinext on Cloudflare Workers',
+    detail: technical
+      ? 'Web-only endpoints: route handlers'
+      : 'Native Next.js on Vercel when selected',
+    customIcon: 'globe',
+  },
+  {
+    title: 'App Store',
+    subtitle: 'iOS distribution',
+    detail: 'EAS signed release',
+    customIcon: 'app-store',
+  },
+  {
+    title: 'Google Play',
+    subtitle: 'Android distribution',
+    detail: 'EAS signed release',
+    customIcon: 'google-play',
+  },
+  {
+    title: 'Browser Web Stores',
+    subtitle: 'extension distribution',
+    detail: 'reviewed WXT ZIP',
+    customIcon: 'chrome',
+  },
+  {
+    title: 'Desktop Releases',
+    subtitle: 'macOS · Windows · Linux',
+    detail: 'signed installers + release updates',
+    customIcon: 'desktop',
+    iconColor: palette.text,
+  },
 ].forEach((item, index) => card(deployX, deployRows[index], deployW, 102, item));
 
 const clientRows = Array.from({ length: 4 }, (_, index) => architectureCardTop + index * 260);
 [
   {
-    title: 'Next.js',
+    title: 'Vinext',
     subtitle: 'shadcn/ui',
     detail: 'web product + server routes',
     icon: siNextdotjs,
@@ -410,9 +521,30 @@ const clientRows = Array.from({ length: 4 }, (_, index) => architectureCardTop +
     cornerIcon: siCloudflare,
     cornerIconColor: palette.orange,
   },
-  { title: 'Expo Native', subtitle: 'React Native Reusables', detail: 'iOS + Android', icon: siExpo, iconColor: palette.text, iconScale: 58 },
-  { title: 'WXT Extension', subtitle: 'Chrome · Firefox · Edge', detail: 'MV3 background + side panel', icon: siWxt, iconColor: palette.lime, iconScale: 58 },
-  { title: 'Electron Desktop', subtitle: 'macOS · Windows · Linux', detail: 'Native alternatives are project adaptations', icon: siElectron, iconColor: palette.cyan, iconScale: 58 },
+  {
+    title: 'Expo Native',
+    subtitle: 'React Native Reusables',
+    detail: 'iOS + Android',
+    icon: siExpo,
+    iconColor: palette.text,
+    iconScale: 58,
+  },
+  {
+    title: 'WXT Extension',
+    subtitle: 'Chrome · Firefox · Edge',
+    detail: 'MV3 background + side panel',
+    icon: siWxt,
+    iconColor: palette.lime,
+    iconScale: 58,
+  },
+  {
+    title: 'Electron Desktop',
+    subtitle: 'macOS · Windows · Linux',
+    detail: 'shadcn/ui · GPUI / Rust by choice',
+    icon: siElectron,
+    iconColor: palette.cyan,
+    iconScale: 58,
+  },
 ].forEach((item, index) => card(clientX, clientRows[index], clientW, 112, item));
 
 // Workers hosts the web runtime and optional shared API; no mandatory API app.
@@ -426,31 +558,128 @@ iconBox(apiIconBoxX, apiIconBoxY, apiIconBoxSize);
 logo(siCloudflare, apiIconBoxX + 10, apiIconBoxY + 10, 68, palette.orange);
 line(apiX + 18, apiY + 128, apiX + apiW - 18, apiY + 128, { stroke: palette.divider });
 text(apiX + apiW / 2, apiY + 166, 'Workers', { size: 25, weight: 500, anchor: 'middle' });
-text(apiX + apiW / 2, apiY + 196, 'Next.js + OpenNext', { size: 16, fill: palette.muted, anchor: 'middle' });
+text(apiX + apiW / 2, apiY + 196, 'Vinext; optional Next.js + OpenNext', {
+  size: 16,
+  fill: palette.muted,
+  anchor: 'middle',
+});
 logo(siHono, apiX + apiW / 2 - 16, apiY + 225, 32, palette.orange);
 text(apiX + apiW / 2, apiY + 286, 'Hono + OpenAPI', { size: 19, weight: 500, anchor: 'middle' });
-text(apiX + apiW / 2, apiY + 312, 'optional shared API', { size: 15, fill: palette.muted, anchor: 'middle' });
-text(apiX + apiW / 2, apiY + 348, 'Web-only: route handlers', { size: 13, fill: palette.muted, anchor: 'middle' });
-text(apiX + apiW / 2, apiY + 376, 'Containers when required', { size: 13, fill: palette.muted, anchor: 'middle' });
+text(apiX + apiW / 2, apiY + 312, 'optional shared API', {
+  size: 15,
+  fill: palette.muted,
+  anchor: 'middle',
+});
+text(apiX + apiW / 2, apiY + 348, 'Web-only: route handlers', {
+  size: 13,
+  fill: palette.muted,
+  anchor: 'middle',
+});
+text(apiX + apiW / 2, apiY + 376, 'Containers when required', {
+  size: 13,
+  fill: palette.muted,
+  anchor: 'middle',
+});
 
 const services = [
-  { title: 'Neon + Drizzle', subtitle: 'PostgreSQL via Hyperdrive', detail: 'Worker → Drizzle → Hyperdrive → Neon', icon: siNeon, iconColor: palette.neon, secondIcon: siDrizzle, secondIconColor: palette.yellow },
-  { title: 'D1 + Local Data', subtitle: 'D1 + Drizzle · or local SQLite', detail: 'Choose persistence per product', icon: siSqlite, iconColor: palette.cyan },
-  { title: 'Clerk / Better Auth', subtitle: 'Managed or application-owned identity', detail: 'No auth when accounts are unnecessary', icon: siClerk },
-  { title: 'Stripe + RevenueCat', subtitle: 'Web billing + optional store entitlements', detail: 'Transactional, idempotent consumption', icon: siStripe, iconColor: '#635bff', secondIcon: siRevenuecat, secondIconColor: palette.red },
-  { title: 'Durable Objects', subtitle: 'WebSockets · rooms · presence', detail: 'Stateful realtime coordination', icon: siCloudflare, iconColor: palette.orange },
-  { title: 'Private R2', subtitle: 'Files through authorized Worker bindings', detail: 'Clients never receive R2 credentials', customIcon: 'r2' },
-  { title: 'Cloudflare KV', subtitle: 'Eventually consistent cache + config', detail: 'Keep transactional state in the database', icon: siCloudflare, iconColor: palette.orange },
-  { title: 'Queues + Cron Triggers', subtitle: 'Async jobs + scheduled work', detail: 'Retries · idempotency · failure handling', icon: siCloudflare, iconColor: palette.orange },
-  { title: 'Cloudflare Workflows', subtitle: 'Durable multi-step processes', detail: 'Resumable steps · retries · recovery', icon: siCloudflare, iconColor: palette.orange },
-  { title: 'OpenAI SDK / AI SDK', subtitle: 'AI integrations · streaming · tools', detail: 'Workers AI when advantageous', customIcon: 'ai' },
-  { title: 'Domain + Mail', subtitle: 'Client registrar · selected DNS provider', detail: 'Routing ≠ mailbox · selected transactional mail', icon: siCloudflare, iconColor: palette.orange },
-  { title: 'Cloudflare Observability', subtitle: 'Logs · errors · traces · latency', detail: 'Sentry for additional runtime diagnostics', icon: siCloudflare, iconColor: palette.orange },
-  { title: 'Basin', subtitle: 'Pipelines · tables · distributed SQL', detail: 'Define event model, reports and retention', icon: siCloudflare, iconColor: palette.orange },
+  {
+    title: 'Neon + Drizzle',
+    subtitle: 'Direct serverless HTTP',
+    detail: 'Worker → Drizzle → Neon HTTP',
+    icon: siNeon,
+    iconColor: palette.neon,
+    secondIcon: siDrizzle,
+    secondIconColor: palette.yellow,
+  },
+  {
+    title: 'D1 + Local Data',
+    subtitle: 'D1 + Drizzle · or local SQLite',
+    detail: 'Choose persistence per product',
+    icon: siSqlite,
+    iconColor: palette.cyan,
+  },
+  {
+    title: 'Clerk / Better Auth',
+    subtitle: 'Managed or application-owned identity',
+    detail: 'No auth when accounts are unnecessary',
+    icon: siClerk,
+  },
+  {
+    title: 'Stripe + RevenueCat',
+    subtitle: 'Web billing + optional store entitlements',
+    detail: 'Transactional, idempotent consumption',
+    icon: siStripe,
+    iconColor: '#635bff',
+    secondIcon: siRevenuecat,
+    secondIconColor: palette.red,
+  },
+  {
+    title: 'Durable Objects',
+    subtitle: 'WebSockets · rooms · presence',
+    detail: 'Stateful realtime coordination',
+    icon: siCloudflare,
+    iconColor: palette.orange,
+  },
+  {
+    title: 'Private R2',
+    subtitle: 'Files through authorized Worker bindings',
+    detail: 'Clients never receive R2 credentials',
+    customIcon: 'r2',
+  },
+  {
+    title: 'Cloudflare KV',
+    subtitle: 'Eventually consistent cache + config',
+    detail: 'Keep transactional state in the database',
+    icon: siCloudflare,
+    iconColor: palette.orange,
+  },
+  {
+    title: 'Queues + Cron Triggers',
+    subtitle: 'Async jobs + scheduled work',
+    detail: 'Retries · idempotency · failure handling',
+    icon: siCloudflare,
+    iconColor: palette.orange,
+  },
+  {
+    title: 'Cloudflare Workflows',
+    subtitle: 'Durable multi-step processes',
+    detail: 'Resumable steps · retries · recovery',
+    icon: siCloudflare,
+    iconColor: palette.orange,
+  },
+  {
+    title: 'OpenAI SDK / AI SDK',
+    subtitle: 'AI integrations · streaming · tools',
+    detail: 'Workers AI when advantageous',
+    customIcon: 'ai',
+  },
+  {
+    title: 'Domain + Mail',
+    subtitle: 'GoDaddy broker · Cloudflare nameservers',
+    detail: 'Cloudflare Routing + Sending / Resend alternative',
+    icon: siCloudflare,
+    iconColor: palette.orange,
+  },
+  {
+    title: 'Cloudflare Observability',
+    subtitle: 'Logs · errors · traces · latency',
+    detail: 'Sentry for additional runtime diagnostics',
+    icon: siCloudflare,
+    iconColor: palette.orange,
+  },
+  {
+    title: 'Basin Analytics',
+    subtitle: 'Product events · datasets · queries',
+    detail: 'Pipelines → R2 / PostHog when required',
+    icon: siCloudflare,
+    iconColor: palette.orange,
+  },
 ];
 const serviceRows = services.map((_, index) => architectureCardTop + index * 88);
 const serviceCardHeight = 80;
-services.forEach((item, index) => card(serviceX, serviceRows[index], serviceW, serviceCardHeight, { ...item, compact: true }));
+services.forEach((item, index) =>
+  card(serviceX, serviceRows[index], serviceW, serviceCardHeight, { ...item, compact: true }),
+);
 
 // Publish connections are mapped by product surface rather than by row. Expo
 // intentionally fans out to both native stores; every lane meets both card
@@ -470,9 +699,9 @@ publishConnections.forEach(({ clientIndex, deployIndex }) => {
     deployX + deployW,
     deployRows[deployIndex] + 51,
     {
-    stroke: palette.yellow,
-    dash: '10 8',
-    marker: 'arrow-yellow',
+      stroke: palette.yellow,
+      dash: '10 8',
+      marker: 'arrow-yellow',
     },
   );
 });
@@ -487,7 +716,7 @@ clientRows.forEach((row, index) => {
 
 // Worker-to-provider or binding connections. Every capability is optional.
 serviceRows.forEach((row, index) => {
-  const sourceY = apiY + 12 + index * (apiH - 24) / (services.length - 1);
+  const sourceY = apiY + 12 + (index * (apiH - 24)) / (services.length - 1);
   const targetY = row + serviceCardHeight / 2;
   svg.push(`<g data-connection="workers-to-service-${index}">`);
   smoothConnector(apiX + apiW, sourceY, serviceX, targetY, { marker: '' });
@@ -501,13 +730,23 @@ const legendLineY = legendY + 43;
 rect(126, legendY, 1668, 86, { radius: 12 });
 line(246, legendLineY, 350, legendLineY, { stroke: palette.text, width: 3, marker: 'arrow-white' });
 text(374, legendLineY + 7, 'application runtime flow', { size: 17, fill: palette.muted });
-line(720, legendLineY, 824, legendLineY, { stroke: palette.yellow, width: 3, dash: '10 8', marker: 'arrow-yellow' });
+line(720, legendLineY, 824, legendLineY, {
+  stroke: palette.yellow,
+  width: 3,
+  dash: '10 8',
+  marker: 'arrow-yellow',
+});
 text(848, legendLineY + 7, 'deploy / publish', { size: 17, fill: palette.muted });
 line(1198, legendLineY, 1302, legendLineY, { stroke: palette.text, width: 3 });
 endpoint(1302, legendLineY);
 text(1332, legendLineY + 7, 'Worker binding / provider', { size: 17, fill: palette.muted });
 
-text(W / 2, 1640, 'Select capabilities only when required · Client-owned accounts, source, infrastructure and recovery', { size: 16, fill: palette.muted, anchor: 'middle' });
+text(
+  W / 2,
+  1640,
+  'Select capabilities only when required · Client-owned accounts, source, infrastructure and recovery',
+  { size: 16, fill: palette.muted, anchor: 'middle' },
+);
 svg.push('</svg>');
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, `${svg.join('\n')}\n`, 'utf8');

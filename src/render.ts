@@ -28,9 +28,9 @@ export function markdownHeading(value: string): string {
 function assertPackageName(value: string): string {
   const leafName = value.slice(value.lastIndexOf('/') + 1);
   if (
-    value.length > MAX_PACKAGE_NAME_LENGTH
-    || !PACKAGE_NAME_PATTERN.test(value)
-    || RESERVED_PACKAGE_NAMES.has(leafName)
+    value.length > MAX_PACKAGE_NAME_LENGTH ||
+    !PACKAGE_NAME_PATTERN.test(value) ||
+    RESERVED_PACKAGE_NAMES.has(leafName)
   ) {
     throw new Error(`Invalid package name: ${value}`);
   }
@@ -71,10 +71,9 @@ export function childPackageName(projectName: string, suffix: string): string {
     );
     return assertPackageName(`${scope}${leaf}`);
   }
-  return assertPackageName(compactPackageSegment(
-    `${projectName}-${normalizedSuffix}`,
-    MAX_PACKAGE_NAME_LENGTH,
-  ));
+  return assertPackageName(
+    compactPackageSegment(`${projectName}-${normalizedSuffix}`, MAX_PACKAGE_NAME_LENGTH),
+  );
 }
 
 export function identifierSegment(value: string): string {
@@ -84,18 +83,4 @@ export function identifierSegment(value: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
   return segment || 'app';
-}
-
-/** Project names also become bootstrap directory components; scoped names are not supported. */
-export function assertProjectName(value: string): string {
-  if (typeof value !== 'string' || value.includes('/')) throw new Error('Project name must be a valid unscoped npm package name.');
-  return assertPackageName(value);
-}
-
-/** Provider identifiers obey DNS/R2 limits independently of valid npm names. */
-export function resourceName(projectName: string, suffix: string): string {
-  const normalized = identifierSegment(projectName);
-  const digest = createHash('sha256').update(projectName, 'utf8').digest('hex').slice(0, 8);
-  const distinct = normalized === projectName ? normalized : `${normalized}-${digest}`;
-  return `${compactPackageSegment(distinct, 63 - suffix.length - 1)}-${suffix}`;
 }
