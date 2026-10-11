@@ -22,13 +22,6 @@ export function setPnpmPolicy(root: string, policy: Record<string, unknown>): vo
   writeFile(file, source);
 }
 
-/** Only reads the JSON-compatible values written above, never arbitrary client YAML. */
-export function generatedPnpmPolicy(root: string, key: string): Record<string, string> {
-  const source = readFileSync(path.join(root, 'pnpm-workspace.yaml'), 'utf8');
-  const value = source.match(new RegExp(`^${key}: (.+)$`, 'm'))?.[1];
-  return value ? JSON.parse(value) : {};
-}
-
 /** Merge reviewed patches without deleting starter-maintained mappings. */
 export function mergePnpmPatches(root: string, patches: Record<string, string>): void {
   const file = path.join(root, 'pnpm-workspace.yaml');

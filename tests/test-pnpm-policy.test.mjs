@@ -45,7 +45,7 @@ test('reviewed patches preserve unrelated patch rows and are idempotent', (t) =>
   assert.match(f.read(), /"braces@3.0.3": "scripts\/security\/braces@3.0.3.patch"/);
   assert.doesNotMatch(f.read(), /obsolete/);
   const first = f.read();
-  configureSecurityBackports(f.root);
+  assert.equal(configureSecurityBackports(f.root), false);
   assert.equal(f.read(), first);
 });
 

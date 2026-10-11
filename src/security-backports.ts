@@ -21,6 +21,8 @@ export function configureSecurityBackports(root: string): boolean {
     return new RegExp(`^  ['"]?${coordinate}['"]?:`, 'm').test(lockfile);
   });
   if (!entries.length) return false;
+  const workspaceFile = path.join(root, 'pnpm-workspace.yaml');
+  const before = readFileSync(workspaceFile, 'utf8');
   mergePnpmPatches(
     root,
     Object.fromEntries(
@@ -30,5 +32,5 @@ export function configureSecurityBackports(root: string): boolean {
       ]),
     ),
   );
-  return true;
+  return readFileSync(workspaceFile, 'utf8') !== before;
 }
