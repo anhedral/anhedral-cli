@@ -16,14 +16,11 @@ import { json, put, readJson } from '../scaffold/files.js';
 import { writeStandardRoot } from '../scaffold/workspace.js';
 import { createRecipeContext } from './context.js';
 import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
-import { sourceFiles, assertSafeTarget } from './receipt.js';
-import { loadSourceRegistry, resolveSourceItems, type RemoteRegistry } from './remote.js';
+import { sourceFiles } from './receipt.js';
 import type { StandardOptions, StandardProduct, StandardRunner } from './types.js';
 
 export interface AddRequest {
   items: string[];
-  registry?: string;
-  integrity?: string;
   dryRun?: boolean;
   skipInstall?: boolean;
 }
@@ -34,6 +31,9 @@ export async function addStackItems(
   request: AddRequest,
   run: StandardRunner = execFile,
 ) {
+  for (const key of Object.keys(request))
+    if (!['items', 'dryRun', 'skipInstall'].includes(key))
+      throw new Error(`Unknown add option: ${key}. Only bundled registry items are supported.`);
   root = realpathSync(root);
   if (!request.items.length) throw new Error('Select at least one registry item.');
   const plan = readJson(root, 'anhedral.setup.json');
@@ -49,16 +49,11 @@ export async function addStackItems(
     );
   const baseline = receipt.files as Record<string, string>;
   const selected = new Set<StandardProduct>(plan.products);
-  let remote: RemoteRegistry | undefined;
-  if (request.registry) remote = await loadSourceRegistry(request.registry);
-  else
-    for (const id of request.items) {
-      if (!(STANDARD_PRODUCTS as readonly string[]).includes(id))
-        throw new Error(`Unknown stack product: ${id}.`);
-      selected.add(id as StandardProduct);
-    }
-  if (request.integrity && (!remote || remote.integrity !== request.integrity))
-    throw new Error('Source registry integrity differs from the reviewed payload.');
+  for (const id of request.items) {
+    if (!(STANDARD_PRODUCTS as readonly string[]).includes(id))
+      throw new Error(`Unknown stack product: ${id}.`);
+    selected.add(id as StandardProduct);
+  }
   resolveStandardProducts(selected, plan.hosting, false);
   const options: StandardOptions = {
     root,
@@ -83,26 +78,6 @@ export async function addStackItems(
         `Adding this selection relocates ${item.name}; migrate its existing source explicitly.`,
       );
   }
-  const remoteItems = remote ? resolveSourceItems(remote.registry, request.items) : [];
-  if (remote) {
-    const previous = Array.isArray(receipt.remoteItems) ? receipt.remoteItems : [];
-    for (const item of remoteItems) {
-      const identity = `${remote.source}#${item.name}`;
-      const targets = item.files.map((file) => file.target);
-      for (const installed of previous) {
-        if (
-          installed.identity === identity &&
-          installed.targets.some((target: string) => !targets.includes(target))
-        )
-          throw new Error(`Remote update relocates ${item.name}; migrate its source explicitly.`);
-        if (
-          installed.identity !== identity &&
-          installed.targets.some((target: string) => targets.includes(target))
-        )
-          throw new Error(`Remote target is already owned by ${installed.name}.`);
-      }
-    }
-  }
   const before = sourceFiles(root);
   const receiptText = readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8');
   const commitPaths: string[] = [];
@@ -114,11 +89,20 @@ export async function addStackItems(
     items: registry.items
       .filter((item) => !isDeepStrictEqual(oldItems.get(item.name), item))
       .map((item) => item.name),
-    remoteItems: remoteItems.map((item) => item.name),
-    ...(remote ? { registry: { source: remote.source, integrity: remote.integrity } } : {}),
+    bootstrapRequired:
+      recipes.some((item) => ['vinext', 'next'].includes(item.name)) &&
+      !existsSync(path.join(root, 'apps/web/package.json')),
+    filesChecked: true,
+    targets: recipes.flatMap((item) => item.targets),
     files: commitPaths,
     conflicts,
   };
+  // The upstream web generator requires network access and executes package scripts.
+  // A preview reports the resolved selection without invoking that generator.
+  if (request.dryRun && result.bootstrapRequired) {
+    result.filesChecked = false;
+    return result;
+  }
   await runStagedTransaction(root, {
     dryRun: !!request.dryRun,
     commitPaths,
@@ -155,11 +139,6 @@ export async function addStackItems(
           }
         put(stage, file, content);
       }
-      for (const item of remoteItems)
-        for (const file of item.files) {
-          assertSafeTarget(stage, file.target);
-          put(stage, file.target, file.content);
-        }
       writeStandardRoot(stage, options, registry, true);
       if (options.products.includes('next') && options.hosting === 'vercel')
         registerVercelApplication(stage);
@@ -198,28 +177,12 @@ export async function addStackItems(
         throw new Error(
           `Addition conflicts with edited or untracked source: ${conflicts.join(', ')}. No files were installed.`,
         );
-      const remoteReceipts = Array.isArray(receipt.remoteItems) ? [...receipt.remoteItems] : [];
-      for (const item of remoteItems) {
-        const identity = `${remote!.source}#${item.name}`;
-        const previous = remoteReceipts.findIndex((entry) => entry.identity === identity);
-        const entry = {
-          identity,
-          name: item.name,
-          version: item.version,
-          source: remote!.source,
-          integrity: remote!.integrity,
-          targets: item.files.map((file) => file.target),
-        };
-        if (previous >= 0) remoteReceipts[previous] = entry;
-        else remoteReceipts.push(entry);
-      }
       json(stage, 'anhedral.registry.json', {
         ...registry,
         status: 'scaffolded',
         resourcesProvisioned: false,
         workspaces: inspectWorkspaceGraph(stage),
         files,
-        ...(remoteReceipts.length ? { remoteItems: remoteReceipts } : {}),
       });
       commitPaths.push('anhedral.registry.json');
       // Detect concurrent changes even to source that this addition would otherwise preserve.
@@ -230,8 +193,7 @@ export async function addStackItems(
         throw new Error('Workspace changed during addition; retry after reviewing source.');
     },
     afterCommit: () => {
-      if (!request.skipInstall)
-        run('pnpm', ['install', '--frozen-lockfile', '--ignore-scripts'], root);
+      if (!request.skipInstall) run('pnpm', ['install', '--frozen-lockfile'], root);
     },
   });
   return result;

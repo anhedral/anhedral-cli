@@ -54,11 +54,4 @@ export { inspectWorkspaceGraph } from './workspace-graph.js';
 export { resolveStackRegistry } from './registry/resolve.js';
 export type { ResolvedStackRegistry } from './registry/resolve.js';
 export { addStackItems } from './registry/add.js';
-export {
-  buildSourceRegistry,
-  loadSourceRegistry,
-  validateSourceRegistry,
-  resolveSourceItems,
-} from './registry/remote.js';
-export type { SourceRegistry, SourceItem, RemoteRegistry } from './registry/remote.js';
 export type { AddRequest } from './registry/add.js';

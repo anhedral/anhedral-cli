@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { json, readJson } from '../scaffold/files.js';
 
@@ -50,30 +50,4 @@ export function recordScaffoldFiles(root: string): void {
     ...receipt,
     files: Object.fromEntries(sourceFiles(root)),
   });
-}
-export function assertSafeTarget(root: string, relative: string): void {
-  if (
-    !relative ||
-    path.isAbsolute(relative) ||
-    relative.includes('\\') ||
-    relative
-      .split('/')
-      .some(
-        (part) =>
-          !part ||
-          part === '.' ||
-          part === '..' ||
-          part.includes(':') ||
-          /[\x00-\x1f]/.test(part) ||
-          /[. ]$/.test(part) ||
-          /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(part),
-      )
-  )
-    throw new Error(`Unsafe registry target: ${relative}.`);
-  let current = root;
-  for (const part of relative.split('/')) {
-    current = path.join(current, part);
-    if (existsSync(current) && lstatSync(current).isSymbolicLink())
-      throw new Error(`Registry target traverses a symlink: ${relative}.`);
-  }
 }

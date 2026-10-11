@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "name": "anhedral",
-  "cliVersion": "0.9.0",
+  "cliVersion": "0.10.0",
   "items": [
     {
       "name": "workspace",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [],
       "environment": [],
@@ -21,7 +21,7 @@
     },
     {
       "name": "typescript",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -36,7 +36,7 @@
     },
     {
       "name": "eslint",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -51,7 +51,7 @@
     },
     {
       "name": "ui",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -68,7 +68,7 @@
     },
     {
       "name": "vinext",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "next"
@@ -102,7 +102,7 @@
     },
     {
       "name": "next",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "vinext"
@@ -135,7 +135,7 @@
     },
     {
       "name": "expo",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -171,7 +171,7 @@
     },
     {
       "name": "electron",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -207,7 +207,7 @@
     },
     {
       "name": "wxt",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -243,7 +243,7 @@
     },
     {
       "name": "hono",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -276,7 +276,7 @@
     },
     {
       "name": "neon",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "d1"
@@ -318,7 +318,7 @@
     },
     {
       "name": "d1",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "neon"
@@ -356,7 +356,7 @@
     },
     {
       "name": "local-data",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -392,7 +392,7 @@
     },
     {
       "name": "clerk",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "better-auth"
@@ -441,7 +441,7 @@
     },
     {
       "name": "better-auth",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "clerk"
@@ -491,7 +491,7 @@
     },
     {
       "name": "r2",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -526,7 +526,7 @@
     },
     {
       "name": "kv",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -561,7 +561,7 @@
     },
     {
       "name": "realtime",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -595,7 +595,7 @@
     },
     {
       "name": "queues",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -631,7 +631,7 @@
     },
     {
       "name": "cron",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -664,7 +664,7 @@
     },
     {
       "name": "workflows",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -697,7 +697,7 @@
     },
     {
       "name": "openai",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "ai-sdk"
@@ -745,7 +745,7 @@
     },
     {
       "name": "ai-sdk",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "conflicts": [
           "openai"
@@ -794,7 +794,7 @@
     },
     {
       "name": "workers-ai",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -829,7 +829,7 @@
     },
     {
       "name": "resend",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -873,7 +873,7 @@
     },
     {
       "name": "stripe",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -918,7 +918,7 @@
     },
     {
       "name": "revenuecat",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {
         "requiresAll": [
           "stripe"
@@ -956,7 +956,7 @@
     },
     {
       "name": "sentry",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -998,7 +998,7 @@
     },
     {
       "name": "basin",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -1039,7 +1039,7 @@
     },
     {
       "name": "posthog",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -1084,7 +1084,7 @@
     },
     {
       "name": "styling",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "selection": {},
       "registryDependencies": [
         "workspace",

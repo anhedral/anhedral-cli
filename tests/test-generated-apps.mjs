@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -52,41 +52,8 @@ for (const profile of selected) {
     execFile('pnpm', ['check'], root);
     if (profile === 'api-neon') {
       execFile(process.execPath, [cli, 'add', root, 'r2', '--json'], temporary);
-      const registryFile = path.join(temporary, 'customer-registry.json');
-      writeFileSync(
-        registryFile,
-        JSON.stringify({
-          schemaVersion: 1,
-          name: 'customer',
-          items: [
-            {
-              name: 'utilities',
-              version: '1.0.0',
-              registryDependencies: [],
-              files: [
-                {
-                  target: 'packages/utilities/package.json',
-                  content: JSON.stringify({
-                    name: '@workspace/utilities',
-                    private: true,
-                    type: 'module',
-                    exports: './index.mjs',
-                  }),
-                },
-                {
-                  target: 'packages/utilities/index.mjs',
-                  content: 'export const greeting = "Hello";\n',
-                },
-              ],
-            },
-          ],
-        }),
-      );
-      execFile(
-        process.execPath,
-        [cli, 'add', root, 'utilities', '--registry', registryFile, '--json'],
-        temporary,
-      );
+      execFile(process.execPath, [cli, 'add', root, 'wxt', '--json'], temporary);
+      assert.ok(existsSync(path.join(root, 'apps/extension/.wxt/tsconfig.json')));
       assert.equal(inspectProject(root).localReady, true);
       execFile('pnpm', ['check'], root);
     }
