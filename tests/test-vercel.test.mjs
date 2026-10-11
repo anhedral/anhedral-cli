@@ -368,7 +368,7 @@ test('Vercel Git connection verifies the remote provider link and keeps account 
           mock.calls.some(
             (call) =>
               call.args[2] === 'git' &&
-              call.args.includes('https://github.com/customer/customer-app'),
+              call.args.some((argument) => argument === 'https://github.com/customer/customer-app'),
           ),
         );
       }

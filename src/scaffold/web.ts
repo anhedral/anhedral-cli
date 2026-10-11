@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { configureVinext } from '../vinext.js';
@@ -27,7 +28,10 @@ function cleanWorkspaceManifest(root: string, directory: string): void {
       !Object.values(manifest.scripts ?? {}).some((script) => String(script).includes('turbo gen'))
     )
       delete manifest.devDependencies?.['@turbo/gen'];
-    manifest.devDependencies = { ...manifest.devDependencies, 'postcss-load-config': '^6.0.1' };
+    manifest.devDependencies = {
+      ...manifest.devDependencies,
+      'postcss-load-config': STACK_DEPENDENCIES['postcss-load-config'],
+    };
     if (manifest.dependencies?.shadcn) {
       manifest.devDependencies.shadcn = manifest.dependencies.shadcn;
       delete manifest.dependencies.shadcn;
@@ -72,8 +76,11 @@ export function scaffoldWeb({ root, options, bindings, runtimeApp, has }: Recipe
     configureVinext(root, `${options.name}-web`, runtimeApp === 'web' ? bindings : {});
   } else if (options.hosting === 'cloudflare') {
     patchPackage(root, 'apps/web/package.json', {
-      dependencies: { '@opennextjs/cloudflare': '^1.0.0', next: '16.3.8' },
-      devDependencies: { wrangler: '^4.0.0' },
+      dependencies: {
+        '@opennextjs/cloudflare': STACK_DEPENDENCIES['@opennextjs/cloudflare'],
+        next: '16.3.8',
+      },
+      devDependencies: { wrangler: STACK_DEPENDENCIES['wrangler'] },
       scripts: {
         preview: 'opennextjs-cloudflare build && opennextjs-cloudflare preview',
         deploy: 'opennextjs-cloudflare build && opennextjs-cloudflare deploy',

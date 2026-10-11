@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from '../dist/dependencies.js';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { mock } from 'node:test';
@@ -360,7 +361,10 @@ try {
     'workflows',
   ]);
   assert.ok(read(services.root, 'apps/api/package.json').dependencies['@hono/zod-openapi']);
-  assert.equal(read(services.root, 'packages/billing/package.json').dependencies.stripe, '^20.0.0');
+  assert.equal(
+    read(services.root, 'packages/billing/package.json').dependencies.stripe,
+    STACK_DEPENDENCIES.stripe,
+  );
   const auth = options('better-auth', ['--hono', '--better-auth', '--d1']);
   await scaffoldStandardProject(auth, runner);
   assert.match(

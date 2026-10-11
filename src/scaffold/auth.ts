@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { writeBetterAuthSchema } from '../auth-schema.js';
@@ -74,7 +75,9 @@ export { handler as GET, handler as POST };
         vars: { BETTER_AUTH_URL: 'http://localhost:3000' },
       });
     }
-    patchPackage(root, 'apps/web/package.json', { dependencies: { 'drizzle-orm': '^0.45.3' } });
+    patchPackage(root, 'apps/web/package.json', {
+      dependencies: { 'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'] },
+    });
   }
   put(
     root,
@@ -87,7 +90,9 @@ export { handler as GET, handler as POST };
 
 export function scaffoldClerk({ root, has }: RecipeContext): void {
   if (has('next') || has('vinext')) {
-    patchPackage(root, 'apps/web/package.json', { dependencies: { '@clerk/nextjs': '^7.0.0' } });
+    patchPackage(root, 'apps/web/package.json', {
+      dependencies: { '@clerk/nextjs': STACK_DEPENDENCIES['@clerk/nextjs'] },
+    });
     const layoutPath = path.join(root, 'apps/web/app/layout.tsx');
     if (existsSync(layoutPath)) {
       const layout = readFileSync(layoutPath, 'utf8');
@@ -128,7 +133,9 @@ export const config = { matcher: ['/((?!_next|[^?]*\\\\.(?:html?|css|js(?!on)|jp
     // Middleware makes auth available; product routes must explicitly require identity and authorization.
   }
   if (has('hono')) {
-    patchPackage(root, 'apps/api/package.json', { dependencies: { '@clerk/backend': '^3.0.0' } });
+    patchPackage(root, 'apps/api/package.json', {
+      dependencies: { '@clerk/backend': STACK_DEPENDENCIES['@clerk/backend'] },
+    });
     put(
       root,
       'apps/api/src/identity.ts',

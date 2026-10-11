@@ -739,7 +739,7 @@
         "name": "ai",
         "source": "import OpenAI from 'openai';\nexport function createAI(apiKey: string) { return new OpenAI({ apiKey }); }\n",
         "dependencies": {
-          "openai": "^6.0.0"
+          "openai": "6.49.0"
         }
       }
     },
@@ -787,8 +787,8 @@
         "name": "ai",
         "source": "export { generateText, streamText } from 'ai';\nexport { createOpenAI } from '@ai-sdk/openai';\n",
         "dependencies": {
-          "ai": "^6.0.0",
-          "@ai-sdk/openai": "^3.0.0"
+          "ai": "6.0.303",
+          "@ai-sdk/openai": "3.0.125"
         }
       }
     },
@@ -867,7 +867,7 @@
         "name": "email",
         "source": "import { Resend } from 'resend';\nexport function createEmail(apiKey: string) { return new Resend(apiKey); }\n",
         "dependencies": {
-          "resend": "^6.0.0"
+          "resend": "6.32.1"
         }
       }
     },
@@ -912,7 +912,7 @@
         "name": "billing",
         "source": "import Stripe from 'stripe';\nexport function createBilling(apiKey: string) { return new Stripe(apiKey); }\n",
         "dependencies": {
-          "stripe": "^20.0.0"
+          "stripe": "20.4.1"
         }
       }
     },
@@ -1078,7 +1078,7 @@
         "name": "analytics",
         "source": "import { PostHog } from 'posthog-node';\nexport function createAnalytics(apiKey: string, host: string) { return new PostHog(apiKey, { host }); }\n",
         "dependencies": {
-          "posthog-node": "^5.0.0"
+          "posthog-node": "5.55.2"
         }
       }
     },

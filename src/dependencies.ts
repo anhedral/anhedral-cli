@@ -1,4 +1,4 @@
-// Exact versions required by the native app generators.
+// Exact versions owned by the registry recipes and native app generators.
 export interface DependencyGroup {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -146,3 +146,44 @@ export const EAS_CLI_VERSION = '21.0.1';
 
 // renovate: datasource=npm depName=shadcn
 export const SHADCN_VERSION = '4.21.4';
+
+export const STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=drizzle-orm
+  'drizzle-orm': '0.45.4',
+  // renovate: datasource=npm depName=@clerk/nextjs
+  '@clerk/nextjs': '7.9.14',
+  // renovate: datasource=npm depName=@clerk/backend
+  '@clerk/backend': '3.23.2',
+  // renovate: datasource=npm depName=wrangler
+  wrangler: '4.149.0',
+  // renovate: datasource=npm depName=typescript
+  typescript: '5.9.3',
+  // renovate: datasource=npm depName=@types/node
+  '@types/node': '22.20.5',
+  // renovate: datasource=npm depName=eslint
+  eslint: '9.39.5',
+  // renovate: datasource=npm depName=postcss-load-config
+  'postcss-load-config': '6.0.1',
+  // renovate: datasource=npm depName=@opennextjs/cloudflare
+  '@opennextjs/cloudflare': '1.20.10',
+  // renovate: datasource=npm depName=drizzle-kit
+  'drizzle-kit': '0.31.11',
+  // renovate: datasource=npm depName=hono
+  hono: '4.13.13',
+  // renovate: datasource=npm depName=@hono/zod-openapi
+  '@hono/zod-openapi': '1.6.3',
+  // renovate: datasource=npm depName=fallow
+  fallow: '3.33.1',
+  // renovate: datasource=npm depName=openai
+  openai: '6.49.0',
+  // renovate: datasource=npm depName=ai
+  ai: '6.0.303',
+  // renovate: datasource=npm depName=@ai-sdk/openai
+  '@ai-sdk/openai': '3.0.125',
+  // renovate: datasource=npm depName=resend
+  resend: '6.32.1',
+  // renovate: datasource=npm depName=stripe
+  stripe: '20.4.1',
+  // renovate: datasource=npm depName=posthog-node
+  'posthog-node': '5.55.2',
+} as const;

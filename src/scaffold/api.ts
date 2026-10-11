@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { workerConfig, worker } from './files.js';
 export function scaffoldApi({ root, options, bindings }: RecipeContext): void {
@@ -11,6 +12,9 @@ app.openapi(createRoute({ method: 'get', path: '/health', responses: { 200: { de
 app.doc('/openapi.json', { openapi: '3.0.0', info: { title: '${options.name}', version: '1.0.0' } });
 export default app;
 `,
-    { hono: '^4.0.0', '@hono/zod-openapi': '^1.0.0' },
+    {
+      hono: STACK_DEPENDENCIES['hono'],
+      '@hono/zod-openapi': STACK_DEPENDENCIES['@hono/zod-openapi'],
+    },
   );
 }

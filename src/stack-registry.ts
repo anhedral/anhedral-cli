@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from './dependencies.js';
 import { dependencyOrder } from './dependency-order.js';
 import { GENERATOR_VERSION } from './version.js';
 import { scaffoldWeb } from './scaffold/web.js';
@@ -388,7 +389,7 @@ const PRODUCT_ITEMS = defineItems({
     package: packageSource(
       'ai',
       "import OpenAI from 'openai';\nexport function createAI(apiKey: string) { return new OpenAI({ apiKey }); }\n",
-      { openai: '^6.0.0' },
+      { openai: STACK_DEPENDENCIES['openai'] },
     ),
     environment: ['OPENAI_API_KEY'],
   },
@@ -409,7 +410,7 @@ const PRODUCT_ITEMS = defineItems({
     package: packageSource(
       'ai',
       "export { generateText, streamText } from 'ai';\nexport { createOpenAI } from '@ai-sdk/openai';\n",
-      { ai: '^6.0.0', '@ai-sdk/openai': '^3.0.0' },
+      { ai: STACK_DEPENDENCIES['ai'], '@ai-sdk/openai': STACK_DEPENDENCIES['@ai-sdk/openai'] },
     ),
     environment: ['OPENAI_API_KEY'],
   },
@@ -449,7 +450,7 @@ const PRODUCT_ITEMS = defineItems({
     package: packageSource(
       'email',
       "import { Resend } from 'resend';\nexport function createEmail(apiKey: string) { return new Resend(apiKey); }\n",
-      { resend: '^6.0.0' },
+      { resend: STACK_DEPENDENCIES['resend'] },
     ),
     environment: ['RESEND_API_KEY'],
   },
@@ -469,7 +470,7 @@ const PRODUCT_ITEMS = defineItems({
     package: packageSource(
       'billing',
       "import Stripe from 'stripe';\nexport function createBilling(apiKey: string) { return new Stripe(apiKey); }\n",
-      { stripe: '^20.0.0' },
+      { stripe: STACK_DEPENDENCIES['stripe'] },
     ),
     environment: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
   },
@@ -560,7 +561,7 @@ export async function recordEvents(stream: EventStream, events: Record<string, u
     package: packageSource(
       'analytics',
       "import { PostHog } from 'posthog-node';\nexport function createAnalytics(apiKey: string, host: string) { return new PostHog(apiKey, { host }); }\n",
-      { 'posthog-node': '^5.0.0' },
+      { 'posthog-node': STACK_DEPENDENCIES['posthog-node'] },
     ),
     environment: ['POSTHOG_API_KEY', 'POSTHOG_HOST'],
   },

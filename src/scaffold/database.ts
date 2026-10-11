@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { put, patchPackage, sharedPackage } from './files.js';
 export function scaffoldDatabase({ root, options, runtimeApp, has }: RecipeContext): void {
@@ -17,7 +18,10 @@ export function createDatabase(connectionString: string) {
 import * as schema from './schema';
 export function createDatabase(binding: Parameters<typeof drizzle>[0]) { return drizzle(binding, { schema }); }
 `,
-    { 'drizzle-orm': '^0.45.3', ...(has('neon') ? { '@neondatabase/serverless': '1.2.0' } : {}) },
+    {
+      'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'],
+      ...(has('neon') ? { '@neondatabase/serverless': '1.2.0' } : {}),
+    },
   );
   if (has('neon')) {
     const native = runtimeApp === 'web' && options.hosting === 'vercel';
@@ -52,7 +56,7 @@ export default defineConfig({ dialect: 'sqlite', schema: './src/schema.ts', out:
 `,
   );
   patchPackage(root, 'packages/db/package.json', {
-    devDependencies: { 'drizzle-kit': '^0.31.0' },
+    devDependencies: { 'drizzle-kit': STACK_DEPENDENCIES['drizzle-kit'] },
     scripts: { 'db:generate': 'drizzle-kit generate' },
   });
   patchPackage(root, `apps/${runtimeApp}/package.json`, {

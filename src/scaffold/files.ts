@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { writeFile } from '../util.js';
@@ -63,10 +64,10 @@ export function worker(
     },
     dependencies,
     devDependencies: {
-      wrangler: '^4.0.0',
-      typescript: '^5.9.3',
-      '@types/node': '^22.0.0',
-      eslint: '^9.0.0',
+      wrangler: STACK_DEPENDENCIES['wrangler'],
+      typescript: STACK_DEPENDENCIES['typescript'],
+      '@types/node': STACK_DEPENDENCIES['@types/node'],
+      eslint: STACK_DEPENDENCIES['eslint'],
       '@workspace/eslint-config': 'workspace:*',
     },
   });
@@ -107,9 +108,9 @@ export function sharedPackage(
     scripts: { typecheck: 'tsc --noEmit', lint: 'eslint . --max-warnings 0' },
     dependencies,
     devDependencies: {
-      typescript: '^5.9.3',
-      '@types/node': '^22.0.0',
-      eslint: '^9.0.0',
+      typescript: STACK_DEPENDENCIES['typescript'],
+      '@types/node': STACK_DEPENDENCIES['@types/node'],
+      eslint: STACK_DEPENDENCIES['eslint'],
       '@workspace/eslint-config': 'workspace:*',
     },
   });

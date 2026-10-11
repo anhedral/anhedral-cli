@@ -1,3 +1,4 @@
+import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { setPnpmPolicy } from '../pnpm-policy.js';
 import { writeSecurityBackports } from '../security-backports.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
@@ -28,6 +29,12 @@ export function writeStandardRoot(
     ...(has('wxt') ? { '@wxt-dev/module-react>@vitejs/plugin-react': '5.2.0' } : {}),
     ...(has('next') || has('vinext') ? { 'sharp@<0.35.5': '0.35.5' } : {}),
     'source-map-js@<1.2.2': '1.2.2',
+    ...(has('next') && options.hosting === 'cloudflare'
+      ? { 'glob@>=10.2.0 <10.5.0': '10.5.0', 'glob@>=11.0.0 <11.1.0': '11.1.0' }
+      : {}),
+    ...(has('wxt')
+      ? { 'shell-quote@<1.12.0': '1.12.0', 'tmp@<0.2.7': '0.2.7', 'adm-zip@<0.6.1': '0.6.1' }
+      : {}),
     'baseline-browser-mapping@<2.11.0': '2.11.27',
     'browserslist@<4.28.7': '4.29.3',
     ...(((has('next') || has('vinext')) && options.hosting === 'cloudflare') ||
@@ -60,7 +67,7 @@ export function writeStandardRoot(
       'audit:deps': 'node scripts/security/audit-deps.mjs',
       check: `pnpm lint && pnpm typecheck && pnpm run audit && pnpm audit:deps && pnpm test && pnpm build${workerBuildSuffix(options)}`,
     },
-    devDependencies: { fallow: '^3.31.0' },
+    devDependencies: { fallow: STACK_DEPENDENCIES['fallow'] },
     // Upstream starter lockfiles can retain vulnerable transitive versions. Keep fixes within compatible majors.
     pnpm: { ...existing.pnpm, overrides: { ...existing.pnpm?.overrides, ...securityOverrides } },
   });
