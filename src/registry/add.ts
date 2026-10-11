@@ -1,3 +1,4 @@
+import { configureSecurityBackports } from '../security-backports.js';
 import { bootstrapWorkspace } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
 import { registerVercelApplication } from '../vercel.js';
@@ -167,6 +168,12 @@ export async function addStackItems(
       )
         registerApplication(stage, true);
       if (!request.dryRun)
+        run(
+          'pnpm',
+          ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],
+          stage,
+        );
+      if (!request.dryRun && configureSecurityBackports(stage))
         run(
           'pnpm',
           ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],

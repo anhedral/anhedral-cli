@@ -50,6 +50,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     const installed = path.join(temporary, 'node_modules/anhedral');
     mkdirSync(installed, { recursive: true });
     cpSync(path.join(root, 'dist'), path.join(installed, 'dist'), { recursive: true });
+    cpSync(path.join(root, 'assets'), path.join(installed, 'assets'), { recursive: true });
     cpSync(path.join(root, 'package.json'), path.join(installed, 'package.json'));
     cpSync(
       path.join(root, 'node_modules/jsonc-parser'),

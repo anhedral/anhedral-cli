@@ -1,7 +1,7 @@
+import { setPnpmPolicy } from '../pnpm-policy.js';
+import { writeSecurityBackports } from '../security-backports.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
 import { BOOTSTRAP_COMMAND } from '../registry/bootstrap.js';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { appendGitignore } from '../util.js';
 import { PACKAGE_MANAGER } from '../dependencies.js';
 import { createSetupPlan } from '../capabilities.js';
@@ -57,7 +57,7 @@ export function writeStandardRoot(
       test: 'turbo test',
       audit: 'node scripts/audit.mjs',
       'audit:full': 'fallow --fail-on-issues',
-      'audit:deps': 'pnpm audit --prod --audit-level high',
+      'audit:deps': 'node scripts/security/audit-deps.mjs',
       check: `pnpm lint && pnpm typecheck && pnpm run audit && pnpm audit:deps && pnpm test && pnpm build${workerBuildSuffix(options)}`,
     },
     devDependencies: { fallow: '^3.31.0' },
@@ -116,20 +116,17 @@ process.exitCode = result.status ?? 1;
     },
   };
   json(root, 'turbo.json', turbo);
-  const workspaceFile = path.join(root, 'pnpm-workspace.yaml');
-  const workspace = readFileSync(workspaceFile, 'utf8');
-  // Keep the upstream package globs and other policies; translate only the build approval section for pnpm 10.
-  const policy =
-    'onlyBuiltDependencies:\n' +
-    ['esbuild', 'sharp', 'unrs-resolver', 'workerd', ...(has('electron') ? ['electron'] : [])]
-      .map((name) => `  - ${name}\n`)
-      .join('');
-  const section = /(?:allowBuilds|onlyBuiltDependencies):\n(?:[ \t]+[^\n]*\n|[ \t]*\n)*/;
-  put(
-    root,
-    'pnpm-workspace.yaml',
-    section.test(workspace) ? workspace.replace(section, policy) : workspace + '\n' + policy,
-  );
+  setPnpmPolicy(root, {
+    allowBuilds: undefined,
+    onlyBuiltDependencies: [
+      'esbuild',
+      'sharp',
+      'unrs-resolver',
+      'workerd',
+      ...(has('electron') ? ['electron'] : []),
+    ],
+  });
+  writeSecurityBackports(root);
   appendGitignore(root, [
     'node_modules/',
     '.open-next/',

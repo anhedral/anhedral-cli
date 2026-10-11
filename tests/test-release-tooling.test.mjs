@@ -1,7 +1,16 @@
+import { releaseDirectory } from '../scripts/release-directory.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -79,6 +88,36 @@ function makeTarEntry(name, contents) {
 }
 
 try {
+  const outputRoot = path.join(temporaryRoot, 'output-safety');
+  mkdirSync(outputRoot);
+  assert.equal(
+    releaseDirectory(outputRoot, '.artifacts/release'),
+    path.join(outputRoot, '.artifacts/release'),
+  );
+  assert.equal(
+    releaseDirectory(outputRoot, '.artifacts/release-review'),
+    path.join(outputRoot, '.artifacts/release-review'),
+  );
+  for (const output of [
+    'src',
+    '.',
+    '..',
+    '.artifacts',
+    '.artifacts/control-panel',
+    '.artifacts/release/nested',
+  ]) {
+    assert.throws(() => releaseDirectory(outputRoot, output), /Release output must/);
+  }
+  const protectedDirectory = path.join(temporaryRoot, 'protected');
+  mkdirSync(protectedDirectory);
+  writeFileSync(path.join(protectedDirectory, 'keep.txt'), 'keep');
+  symlinkSync(protectedDirectory, path.join(outputRoot, '.artifacts'), 'junction');
+  assert.throws(() => releaseDirectory(outputRoot, '.artifacts/release'), /real directories/);
+  rmSync(path.join(outputRoot, '.artifacts'));
+  mkdirSync(path.join(outputRoot, '.artifacts'));
+  symlinkSync(protectedDirectory, path.join(outputRoot, '.artifacts/release'), 'junction');
+  assert.throws(() => releaseDirectory(outputRoot, '.artifacts/release'), /real directories/);
+  assert.equal(readFileSync(path.join(protectedDirectory, 'keep.txt'), 'utf8'), 'keep');
   for (const extension of ['jsonc', 'toml', 'svg']) {
     const credential = `gh${'p_'}${'x'.repeat(36)}`;
     assert.equal(

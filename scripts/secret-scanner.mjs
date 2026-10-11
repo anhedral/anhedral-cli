@@ -88,6 +88,7 @@ function looksLikeText(name, contents) {
 }
 
 function isAllowedMatch(id, relativePath, match, text) {
+  if (id === 'email-address' && /^[a-z0-9._-]+@\d+\.\d+\.\d+\.patch$/i.test(match[0])) return true;
   if (
     id === 'email-address' &&
     /@(?:users\.noreply\.github\.com|(?:[A-Z0-9-]+\.)*example\.(?:com|net|org))$/i.test(match[0])
@@ -107,6 +108,12 @@ function isAllowedMatch(id, relativePath, match, text) {
   )
     return true;
   const sourceLine = text.slice(0, match.index).split('\n').at(-1);
+  if (
+    id === 'email-address' &&
+    ['THIRD_PARTY_NOTICES.txt', 'LICENSES.txt'].includes(path.basename(relativePath)) &&
+    /^\s*Copyright\s+\(c\)\s+/i.test(sourceLine)
+  )
+    return true;
   // Package deprecation notices carry public maintainer contact addresses.
   if (
     id === 'email-address' &&

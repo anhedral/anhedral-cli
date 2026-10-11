@@ -1,3 +1,4 @@
+import { configureSecurityBackports } from './security-backports.js';
 import { recordScaffoldFiles } from './registry/receipt.js';
 import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, rmdirSync } from 'node:fs';
 import path from 'node:path';
@@ -70,6 +71,8 @@ export async function scaffoldStandardProject(
         )
           registerApplication(stageRoot);
         run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
+        if (configureSecurityBackports(stageRoot))
+          run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
         recordScaffoldFiles(stageRoot);
         commitPaths.push(...readdirSync(stageRoot).filter((name) => name !== 'node_modules'));
       },

@@ -1,77 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { execFile } from '../dist/util.js';
 import { inspectProject } from '../dist/readiness.js';
-import { resolveCommand } from '../dist/command.js';
-
-function verifyMobileSecurityGate(root) {
-  const invocation = resolveCommand('pnpm', ['audit', '--prod', '--audit-level', 'high', '--json']);
-  const result = spawnSync(invocation.command, invocation.args, {
-    cwd: root,
-    encoding: 'utf8',
-    maxBuffer: 4 * 1024 * 1024,
-  });
-  assert.equal(result.error, undefined);
-  const report = JSON.parse(result.stdout);
-  assert.ok(
-    report.metadata?.vulnerabilities && report.advisories,
-    'The audit must return a valid vulnerability report',
-  );
-  const blocking = Object.values(report.advisories).filter(
-    ({ severity }) => severity === 'high' || severity === 'critical',
-  );
-  assert.equal(result.status, blocking.length ? 1 : 0);
-  // This tests rejection of known upstream vulnerabilities; generated release checks still fail.
-  const known = new Map([
-    ['GHSA-86w9-cpqp-85rv', 'node-forge'],
-    ['GHSA-vfj7-8cjw-p6xm', 'braces'],
-  ]);
-  for (const advisory of blocking) {
-    assert.equal(advisory.severity, 'high');
-    assert.equal(
-      known.get(advisory.github_advisory_id),
-      advisory.module_name,
-      'Unexpected blocking security advisory',
-    );
-    assert.equal(advisory.patched_versions, '<0.0.0', 'A patched upstream version must be adopted');
-    console.log(
-      `Mobile production release blocked: ${advisory.github_advisory_id} (${advisory.module_name})`,
-    );
-  }
-}
-
-function verifyVinextSecurityGate(root) {
-  const invocation = resolveCommand('pnpm', ['audit', '--prod', '--audit-level', 'high', '--json']);
-  const result = spawnSync(invocation.command, invocation.args, {
-    cwd: root,
-    encoding: 'utf8',
-    maxBuffer: 4 * 1024 * 1024,
-  });
-  assert.equal(result.error, undefined);
-  const report = JSON.parse(result.stdout);
-  assert.ok(report.metadata?.vulnerabilities && report.advisories);
-  const blocking = Object.values(report.advisories).filter(
-    ({ severity }) => severity === 'high' || severity === 'critical',
-  );
-  assert.equal(result.status, blocking.length ? 1 : 0);
-  for (const advisory of blocking) {
-    assert.equal(
-      advisory.github_advisory_id,
-      'GHSA-vfj7-8cjw-p6xm',
-      'Unexpected blocking security advisory',
-    );
-    assert.equal(advisory.module_name, 'braces');
-    assert.equal(
-      advisory.patched_versions,
-      '<0.0.0',
-      'Adopt the patched upstream dependency when available',
-    );
-  }
-  return blocking.length > 0;
-}
 
 const profiles = {
   web: [],
@@ -116,20 +49,48 @@ for (const profile of selected) {
       temporary,
     );
     assert.equal(inspectProject(root).localReady, true);
-    if (profile === 'mobile') {
-      for (const task of ['lint', 'typecheck', 'audit', 'test', 'build'])
-        execFile('pnpm', ['run', task], root);
-      verifyMobileSecurityGate(root);
-    } else if (profile === 'web' || profile === 'web-auth') {
-      for (const task of ['lint', 'typecheck', 'audit', 'test', 'build'])
-        execFile('pnpm', ['run', task], root);
-      if (verifyVinextSecurityGate(root))
-        console.log(
-          'Vinext production release blocked by unpatched braces advisory; security gate remains enforced',
-        );
-    } else {
+    execFile('pnpm', ['check'], root);
+    if (profile === 'api-neon') {
+      execFile(process.execPath, [cli, 'add', root, 'r2', '--json'], temporary);
+      const registryFile = path.join(temporary, 'customer-registry.json');
+      writeFileSync(
+        registryFile,
+        JSON.stringify({
+          schemaVersion: 1,
+          name: 'customer',
+          items: [
+            {
+              name: 'utilities',
+              version: '1.0.0',
+              registryDependencies: [],
+              files: [
+                {
+                  target: 'packages/utilities/package.json',
+                  content: JSON.stringify({
+                    name: '@workspace/utilities',
+                    private: true,
+                    type: 'module',
+                    exports: './index.mjs',
+                  }),
+                },
+                {
+                  target: 'packages/utilities/index.mjs',
+                  content: 'export const greeting = "Hello";\n',
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      execFile(
+        process.execPath,
+        [cli, 'add', root, 'utilities', '--registry', registryFile, '--json'],
+        temporary,
+      );
+      assert.equal(inspectProject(root).localReady, true);
       execFile('pnpm', ['check'], root);
     }
+
     if (profile === 'web' || profile === 'web-auth')
       assert.ok(existsSync(path.join(root, 'apps/web/dist/server/wrangler.json')));
     if (profile === 'vercel' || profile === 'vercel-auth')

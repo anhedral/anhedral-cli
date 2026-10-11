@@ -100,3 +100,5 @@ Follow the [delivery workflow](delivery-workflow.md) for release, acceptance and
 ## Maintenance
 
 This file owns stack choices; the delivery guide owns lifecycle/acceptance; the managed contract owns its API; sponsorship owns support information. Update the owning file in the same change when behavior or provider requirements change. Remove stale claims and unused options. Verify current official guidance when selecting a provider; beta availability is not guaranteed. Do not add catalogs, duplicated analyses or progress reports to `docs`. The plugin's bundled stack/delivery files are generated copies, never separate sources of truth.
+
+Generated `pnpm audit:deps` checks all dependencies and verifies reviewed security backports against patch hashes, installed package hashes and regression checks. Unknown advisories and altered backports fail closed.

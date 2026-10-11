@@ -121,6 +121,8 @@ export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
     '@react-native/metro-config': '0.86.0',
     // renovate: datasource=npm depName=@types/react
     '@types/react': '19.2.10',
+    // renovate: datasource=npm depName=@types/react-dom
+    '@types/react-dom': '19.2.3',
     // renovate: datasource=npm depName=typescript
     typescript: '6.0.3',
   },

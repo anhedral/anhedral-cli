@@ -13,6 +13,9 @@ const requiredFiles = new Set([
   'LICENSE',
   'README.md',
   'assets/anhedral.svg',
+  'assets/security/manifest.json',
+  'assets/security/audit-deps.mjs',
+  'assets/security/LICENSES.txt',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -132,7 +135,7 @@ try {
     'OpenNext',
     'Hono + OpenAPI',
     'Workers',
-    'Hyperdrive',
+    'Neon HTTP',
     'Neon + Drizzle',
     'Private R2',
     'KV',
@@ -188,6 +191,7 @@ try {
   for (const file of packed.files) {
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
+      file.path.startsWith('assets/security/') ||
       file.path === 'assets/anhedral-cli-init.svg' ||
       file.path === 'assets/anhedral.svg' ||
       file.path === 'assets/favicon.ico' ||

@@ -26,7 +26,8 @@
     "docs/application-stack-standard.md",
     "docs/delivery-workflow.md",
     "docs/sponsorships.md",
-    "docs/managed-hosting-architecture.md"
+    "docs/managed-hosting-architecture.md",
+    "assets/security"
   ],
   "homepage": "https://github.com/anhedral/anhedral-init#readme",
   "repository": {

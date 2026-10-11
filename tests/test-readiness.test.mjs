@@ -34,7 +34,8 @@ try {
   write('pnpm-workspace.yaml', 'packages: []\n');
   for (const item of plan.registry.items)
     for (const target of item.targets) {
-      if (target.startsWith('apps/') || target.startsWith('packages/')) {
+      if (target === 'scripts/security') mkdirSync(path.join(root, target), { recursive: true });
+      else if (target.startsWith('apps/') || target.startsWith('packages/')) {
         mkdirSync(path.join(root, target), { recursive: true });
         writeFileSync(
           path.join(root, target, 'package.json'),
@@ -49,7 +50,7 @@ try {
     workspaces: [],
   });
   const before = readdirSync(root)
-    .filter((file) => !['apps', 'packages'].includes(file))
+    .filter((file) => !['apps', 'packages', 'scripts'].includes(file))
     .map((file) => [file, readFileSync(path.join(root, file), 'utf8')]);
   const result = inspectProject(root);
   assert.equal(result.localReady, true);
@@ -57,7 +58,7 @@ try {
   assert.equal(result.productionReady, false);
   assert.deepEqual(
     readdirSync(root)
-      .filter((file) => !['apps', 'packages'].includes(file))
+      .filter((file) => !['apps', 'packages', 'scripts'].includes(file))
       .map((file) => [file, readFileSync(path.join(root, file), 'utf8')]),
     before,
   );

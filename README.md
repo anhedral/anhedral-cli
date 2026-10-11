@@ -151,7 +151,7 @@ The CLI supports `new`, `init`, `add`, `registry`, `doctor`, `repository`, `regi
 
 Requires Node.js 20.19+ in the 20 series or 22.12+ and pnpm 10.34.5. Pin the CLI version and commit the generated lockfile. The shadcn bootstrap version is pinned in `src/dependencies.ts`; review its upgrades and generated output before use.
 
-Initialize from Linux, macOS, or WSL. Native Windows initialization fails before writes because upstream shadcn currently resolves monorepo component paths outside the project; planning and `doctor` remain portable. Expo's release gate currently blocks unpatched `node-forge` and `braces` advisories in its CLI/Metro dependencies. Application releases require resolving or explicitly reviewing those risks; the initializer does not waive them.
+Initialize from Linux, macOS, or WSL. Native Windows initialization fails before writes because upstream shadcn currently resolves monorepo component paths outside the project; planning and `doctor` remain portable. Generated projects include reviewed security backports for affected tooling dependencies, with verified patch and installed-package hashes and regression checks. Unknown advisories and modified patches remain blocking.
 
 ## Use with ChatGPT and Codex
 
@@ -181,4 +181,4 @@ Implementation lives in `src/`, plugin instructions in `plugins/anhedral/`, and 
 
 Anhedral is open source under the [Apache License 2.0](LICENSE). Generated applications remain ordinary project source that their developers can customize and license for their products. Preserve applicable license notices for upstream code and dependencies.
 
-Vinext 1.1.0 currently brings an unpatched `braces` dependency advisory, `GHSA-vfj7-8cjw-p6xm`, through its build tools. Generated Vinext apps retain the high-severity production audit gate: `pnpm check` and automatic shipping remain blocked until the dependency is resolved. Local Worker/build/authentication checks are separate evidence and do not waive that gate. Native Next.js/Vercel remains an explicit alternative.
+Generated projects run a full dependency audit through `pnpm audit:deps`. Reviewed backports for `braces`, `node-forge`, and `decode-uri-component` retain upstream findings and require exact patch hashes, installed-package hashes, and regression checks before accepting remediation. Adopt upstream fixed releases when available; unverified findings remain blocking.

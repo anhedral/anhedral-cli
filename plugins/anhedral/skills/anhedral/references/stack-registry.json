@@ -15,7 +15,8 @@
       "targets": [
         "package.json",
         "pnpm-workspace.yaml",
-        "turbo.json"
+        "turbo.json",
+        "scripts/security"
       ]
     },
     {

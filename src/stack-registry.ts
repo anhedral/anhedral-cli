@@ -591,7 +591,7 @@ const FOUNDATION_ITEMS = defineItems({
   workspace: {
     type: 'foundation',
     description: 'pnpm and Turborepo workspace, task graph and shared checks',
-    targets: ['package.json', 'pnpm-workspace.yaml', 'turbo.json'],
+    targets: ['package.json', 'pnpm-workspace.yaml', 'turbo.json', 'scripts/security'],
     registryDependencies: [],
   },
   typescript: {
