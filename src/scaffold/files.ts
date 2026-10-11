@@ -1,5 +1,5 @@
-import { STACK_DEPENDENCIES } from '../dependencies.js';
-import { readFileSync } from 'node:fs';
+import { STACK_DEPENDENCIES, WORKER_DEV_PORTS } from '../dependencies.js';
+import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import path from 'node:path';
 import { writeFile } from '../util.js';
 export type Json = Record<string, unknown>;
@@ -12,10 +12,19 @@ export interface PackageManifest extends Json {
   pnpm?: { overrides?: Record<string, string> };
 }
 export interface TurboConfig extends Json {
+  globalEnv?: string[];
   tasks: Record<string, { dependsOn?: string[]; outputs?: string[]; [key: string]: unknown }>;
 }
 export function readJson<T extends Json = Json>(root: string, file: string): T {
-  const value: unknown = JSON.parse(readFileSync(path.join(root, file), 'utf8'));
+  let value: unknown;
+  try {
+    value = JSON.parse(
+      readBoundedFile(path.join(root, file), MAX_PROJECT_JSON_BYTES).toString('utf8'),
+    );
+  } catch (error) {
+    if (error instanceof SyntaxError) throw new Error(`Invalid JSON in ${file}.`);
+    throw error;
+  }
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error(`Expected a JSON object: ${file}.`);
   return value as T;
@@ -51,12 +60,14 @@ export function worker(
   source: string,
   dependencies: Record<string, string> = {},
 ): void {
+  const ports = WORKER_DEV_PORTS[app as keyof typeof WORKER_DEV_PORTS];
+  if (!ports) throw new Error(`Unknown Worker application: ${app}.`);
   json(root, `apps/${app}/package.json`, {
     name: `@workspace/${app}`,
     private: true,
     type: 'module',
     scripts: {
-      dev: 'wrangler dev',
+      dev: `wrangler dev --port ${ports.http} --inspector-port ${ports.inspector}`,
       build: 'wrangler deploy --dry-run --outdir dist',
       deploy: 'wrangler deploy',
       typecheck: 'wrangler types && tsc --noEmit',

@@ -1,23 +1,13 @@
+import { verifyWorkerDevelopment } from './support/worker-dev-smoke.mjs';
+import { STACK_PROFILES as profiles } from './support/stack-profiles.mjs';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { execFile } from '../dist/util.js';
 import { inspectProject } from '../dist/readiness.js';
 
-const profiles = {
-  web: [],
-  'web-auth': ['--better-auth'],
-  vercel: ['--next'],
-  'vercel-auth': ['--next', '--neon', '--better-auth'],
-  cloudflare: ['--next', '--hosting=cloudflare'],
-  api: ['--hono', '--d1', '--better-auth', '--r2'],
-  'api-neon': ['--hono', '--neon', '--better-auth'],
-  desktop: ['--electron'],
-  extension: ['--wxt'],
-  mobile: ['--expo'],
-};
 const selected = process.argv[2] ? [process.argv[2]] : Object.keys(profiles);
 const cli = path.resolve(import.meta.dirname, '../dist/bin.js');
 process.env.WRANGLER_SEND_METRICS = 'false';
@@ -43,6 +33,10 @@ for (const profile of selected) {
       continue;
     }
     console.log(`Generating and validating real ${profile} project`);
+    // Synthetic public key: builds only; it grants no access and never tests live identity.
+    if (profiles[profile].includes('--clerk'))
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY =
+        'pk_test_' + Buffer.from('example.clerk.accounts.dev$').toString('base64');
     execFile(
       process.execPath,
       [cli, 'new', root, ...profiles[profile], '--no-git', '--verbose'],
@@ -58,18 +52,26 @@ for (const profile of selected) {
       execFile('pnpm', ['check'], root);
     }
 
-    if (profile === 'web' || profile === 'web-auth')
+    if (profile === 'worker-services') await verifyWorkerDevelopment(root);
+    const setup = JSON.parse(readFileSync(path.join(root, 'anhedral.setup.json'), 'utf8'));
+    if (setup.products.includes('vinext'))
       assert.ok(existsSync(path.join(root, 'apps/web/dist/server/wrangler.json')));
-    if (profile === 'vercel' || profile === 'vercel-auth')
+    if (setup.products.includes('next')) {
       assert.ok(existsSync(path.join(root, 'apps/web/.next/BUILD_ID')));
-    if (profile === 'cloudflare')
-      assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
-    if (profile === 'api' || profile === 'api-neon')
-      assert.ok(existsSync(path.join(root, 'apps/api/dist/index.js')));
-    if (profile === 'extension')
+      if (setup.hosting === 'cloudflare')
+        assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
+    }
+    for (const app of ['api', 'realtime', 'jobs', 'scheduled', 'workflows'])
+      if (existsSync(path.join(root, 'apps', app, 'package.json')))
+        assert.ok(
+          existsSync(path.join(root, 'apps', app, 'dist/index.js')),
+          `${app} build artifact`,
+        );
+    if (setup.products.includes('wxt'))
       assert.ok(existsSync(path.join(root, 'apps/extension/.output/chrome-mv3/manifest.json')));
-    if (profile === 'mobile') assert.ok(existsSync(path.join(root, 'apps/mobile/dist/index.html')));
-    if (profile === 'desktop') {
+    if (setup.products.includes('expo'))
+      assert.ok(existsSync(path.join(root, 'apps/mobile/dist/index.html')));
+    if (setup.products.includes('electron')) {
       execFile(
         'pnpm',
         ['exec', 'electron-builder', '--dir', '--publish', 'never', '--config.mac.identity=null'],
@@ -81,6 +83,8 @@ for (const profile of selected) {
       `Real ${profile} generation and local validation finished; production acceptance is separate`,
     );
   } finally {
-    rmSync(temporary, { recursive: true, force: true });
+    delete process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    if (process.env.ANHEDRAL_KEEP_GENERATED === '1') console.log(`Kept audit fixture: ${root}`);
+    else rmSync(temporary, { recursive: true, force: true });
   }
 }

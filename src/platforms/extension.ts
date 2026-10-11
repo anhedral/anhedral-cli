@@ -1,3 +1,4 @@
+import { NATIVE_ESLINT_VERSION } from '../dependencies.js';
 import path from 'node:path';
 import { writeReactLintConfig } from './lint.js';
 import { writeFile } from '../util.js';
@@ -52,11 +53,14 @@ function writePackageJson(dir: string, projectName: string): void {
           typecheck: 'tsc --noEmit',
           lint: 'eslint src --max-warnings 0',
         },
-        dependencies: EXTENSION_DEPENDENCIES.dependencies,
+        dependencies: {
+          ...EXTENSION_DEPENDENCIES.dependencies,
+          '@workspace/styling': 'workspace:*',
+        },
         devDependencies: {
           ...EXTENSION_DEPENDENCIES.devDependencies,
           '@workspace/eslint-config': 'workspace:*',
-          eslint: '10.0.3',
+          eslint: NATIVE_ESLINT_VERSION,
         },
       },
       null,
@@ -72,12 +76,11 @@ function writeWxtConfig(dir: string, displayName: string): void {
     path.join(dir, 'wxt.config.ts'),
     `import { defineConfig } from 'wxt';
 
-
 export default defineConfig({
   srcDir: 'src',
+  dev: { server: { port: 3001, strictPort: true } },
   manifest: () => {
     const crxPublicKey = import.meta.env.VITE_CRX_PUBLIC_KEY || '';
-
 
     return {
       name: ${nameLiteral},
@@ -212,51 +215,7 @@ function writeTailwindConfig(dir: string): void {
     `/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{ts,tsx,html}'],
-  theme: {
-    extend: {
-      colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-      },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
-      },
-    },
-  },
-  plugins: [],
+  presets: [require('@workspace/styling/tailwind')],
 };
 `,
   );
@@ -301,7 +260,7 @@ export default defineBackground(() => {
   // Open the side panel when the extension icon is clicked.
   (chrome as ChromeWithSidePanel).sidePanel
     .setPanelBehavior({ openPanelOnActionClick: true })
-    .catch(() => {});
+    .catch((error) => console.error('Unable to configure the side panel:', error));
 });
 `,
   );
@@ -379,7 +338,6 @@ export function SidePanelApp() {
     }
   }, []);
 
-
   return (
     <div style={{ padding: 24 }}>
       <h2>Welcome!</h2>
@@ -405,28 +363,6 @@ function writeStyles(dir: string): void {
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 63.9%;
-    --radius: 0.5rem;
-  }
 
   * {
     border-color: hsl(var(--border));

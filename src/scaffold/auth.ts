@@ -1,3 +1,4 @@
+import { writeEnvironmentFile } from './environment.js';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -13,17 +14,22 @@ export function scaffoldBetterAuth({ root, options, runtimeApp, has }: RecipeCon
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { createDatabase } from '@workspace/db';
 export function createAuth(db: ReturnType<typeof createDatabase>, secret: string, baseURL: string) {
-  return betterAuth({ database: drizzleAdapter(db, { provider: '${has('neon') ? 'pg' : 'sqlite'}', transaction: false }), secret, baseURL, emailAndPassword: { enabled: true } });
+  return betterAuth({
+    database: drizzleAdapter(db, { provider: '${has('neon') ? 'pg' : 'sqlite'}', transaction: false }),
+    secret,
+    baseURL,
+    emailAndPassword: { enabled: true },
+  });
 }
 `,
     {
-      'better-auth': '1.7.7',
-      '@better-auth/drizzle-adapter': '1.7.7',
+      'better-auth': STACK_DEPENDENCIES['better-auth'],
+      '@better-auth/drizzle-adapter': STACK_DEPENDENCIES['@better-auth/drizzle-adapter'],
       '@workspace/db': 'workspace:*',
     },
   );
   patchPackage(root, `apps/${runtimeApp}/package.json`, {
-    dependencies: { '@workspace/auth': 'workspace:*' },
+    dependencies: { '@workspace/auth': 'workspace:*', '@workspace/db': 'workspace:*' },
   });
   const connection = has('neon') ? 'createDatabase(env.DATABASE_URL)' : 'createDatabase(env.DB)';
   if (has('hono')) {
@@ -40,7 +46,10 @@ export function createAuth(db: ReturnType<typeof createDatabase>, secret: string
     const config = readJson(root, 'apps/api/wrangler.jsonc');
     json(root, 'apps/api/wrangler.jsonc', {
       ...config,
-      vars: { BETTER_AUTH_URL: 'http://localhost:8787' },
+      vars: {
+        BETTER_AUTH_URL: 'http://localhost:8787',
+        ...((config.vars as Record<string, unknown>) ?? {}),
+      },
     });
   } else {
     put(
@@ -72,17 +81,24 @@ export { handler as GET, handler as POST };
       const config = readJson(root, 'apps/web/wrangler.jsonc');
       json(root, 'apps/web/wrangler.jsonc', {
         ...config,
-        vars: { BETTER_AUTH_URL: 'http://localhost:3000' },
+        vars: {
+          BETTER_AUTH_URL: 'http://localhost:3000',
+          ...((config.vars as Record<string, unknown>) ?? {}),
+        },
       });
     }
     patchPackage(root, 'apps/web/package.json', {
       dependencies: { 'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'] },
     });
   }
-  put(
+  writeEnvironmentFile(
     root,
     `apps/${runtimeApp}/${runtimeApp === 'web' && options.hosting === 'vercel' ? '.env.example' : '.dev.vars.example'}`,
-    `${has('neon') ? 'DATABASE_URL=\n' : ''}BETTER_AUTH_SECRET=\nBETTER_AUTH_URL=http://localhost:${runtimeApp === 'web' && (options.hosting === 'vercel' || has('vinext')) ? '3000' : '8787'}\n`,
+    {
+      ...(has('neon') ? { DATABASE_URL: '' } : {}),
+      BETTER_AUTH_SECRET: '',
+      BETTER_AUTH_URL: `http://localhost:${runtimeApp === 'web' ? '3000' : '8787'}`,
+    },
   );
   if (has('hono'))
     put(root, 'apps/api/src/secrets.d.ts', 'interface Env { BETTER_AUTH_SECRET: string }\n');
@@ -115,35 +131,76 @@ export function scaffoldClerk({ root, has }: RecipeContext): void {
     put(
       root,
       'apps/web/app/sign-in/[[...sign-in]]/page.tsx',
-      'import { SignIn } from "@clerk/nextjs";\nexport default function SignInPage() { return <SignIn />; }\n',
+      `import { Suspense } from 'react';
+import { SignIn } from '@clerk/nextjs';
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<p role="status">Loading sign in…</p>}>
+      <SignIn />
+    </Suspense>
+  );
+}
+`,
     );
     put(
       root,
       'apps/web/app/sign-up/[[...sign-up]]/page.tsx',
-      'import { SignUp } from "@clerk/nextjs";\nexport default function SignUpPage() { return <SignUp />; }\n',
+      `import { Suspense } from 'react';
+import { SignUp } from '@clerk/nextjs';
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<p role="status">Loading sign up…</p>}>
+      <SignUp />
+    </Suspense>
+  );
+}
+`,
     );
     put(
       root,
       'apps/web/proxy.ts',
       `import { clerkMiddleware } from '@clerk/nextjs/server';
-export default clerkMiddleware();
+import type { NextMiddleware } from 'next/server';
+
+const proxy: NextMiddleware = clerkMiddleware();
+export default proxy;
 export const config = { matcher: ['/((?!_next|[^?]*\\\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico)).*)', '/(api|trpc)(.*)'] };
 `,
     );
     // Middleware makes auth available; product routes must explicitly require identity and authorization.
   }
   if (has('hono')) {
-    patchPackage(root, 'apps/api/package.json', {
-      dependencies: { '@clerk/backend': STACK_DEPENDENCIES['@clerk/backend'] },
-    });
-    put(
+    sharedPackage(
       root,
-      'apps/api/src/identity.ts',
+      'auth',
       `import { createClerkClient } from '@clerk/backend';
-export async function authenticate(request: Request, secretKey: string, authorizedParties: string[]) {
-  return createClerkClient({ secretKey }).authenticateRequest(request, { authorizedParties });
+
+export async function authenticate(
+  request: Request,
+  secretKey: string,
+  publishableKey: string,
+  authorizedParties: string[],
+) {
+  if (!secretKey || !publishableKey || authorizedParties.length === 0) {
+    throw new Error('Configure Clerk keys and explicit authorized origins before authenticating.');
+  }
+  return createClerkClient({ secretKey, publishableKey }).authenticateRequest(request, {
+    authorizedParties,
+  });
 }
 `,
+      { '@clerk/backend': STACK_DEPENDENCIES['@clerk/backend'] },
     );
+    writeEnvironmentFile(root, 'apps/api/.dev.vars.example', {
+      CLERK_SECRET_KEY: '',
+      CLERK_PUBLISHABLE_KEY: '',
+    });
   }
+  if (has('next') || has('vinext'))
+    writeEnvironmentFile(root, 'apps/web/.env.example', {
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: '',
+      CLERK_SECRET_KEY: '',
+    });
 }

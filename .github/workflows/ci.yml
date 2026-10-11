@@ -117,17 +117,33 @@ jobs:
         if: runner.os == 'Windows'
         run: node tests/test-generated-apps.mjs web
 
+  registry-matrix:
+    name: Registry matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      profiles: ${{ steps.profiles.outputs.profiles }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - id: profiles
+        run: |
+          node --input-type=module -e "import { STACK_PROFILES } from './tests/support/stack-profiles.mjs'; console.log('profiles=' + JSON.stringify(Object.keys(STACK_PROFILES)))" >> "$GITHUB_OUTPUT"
+
   generated:
-    name: Generated (${{ matrix.os }}, ${{ matrix.profile }})
+    name: Generated (${{ matrix.os }}, ${{ matrix.profile }}, Node ${{ matrix.node }})
+    needs: registry-matrix
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        profile: [web, web-auth, vercel, vercel-auth, cloudflare, api, api-neon, desktop, extension, mobile]
+        profile: ${{ fromJSON(needs.registry-matrix.outputs.profiles) }}
+        node: ['22.13.0', '24.18.0']
         include:
-          - { os: macos-latest, profile: desktop }
+          - { os: macos-latest, profile: desktop, node: '24.18.0' }
     env:
       WRANGLER_SEND_METRICS: 'false'
       NEXT_TELEMETRY_DISABLED: '1'
@@ -141,7 +157,7 @@ jobs:
           version: 10.34.5
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version: '24.18.0'
+          node-version: ${{ matrix.node }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build

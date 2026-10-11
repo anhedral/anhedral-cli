@@ -1,4 +1,4 @@
-import { STACK_DEPENDENCIES } from '../dependencies.js';
+import { STACK_DEPENDENCIES, WORKSPACE_NODE_ENGINE } from '../dependencies.js';
 import { setPnpmPolicy } from '../pnpm-policy.js';
 import { writeSecurityBackports } from '../security-backports.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
@@ -16,19 +16,18 @@ import {
   type TurboConfig,
 } from './files.js';
 import { writeSetupDocumentation, workerBuildSuffix } from './documentation.js';
+import { writeStackDocumentation } from './stack-documentation.js';
 import { writeEnvironmentExample } from './environment.js';
-export function writeStandardRoot(
-  root: string,
-  options: StandardOptions,
-  registry: ResolvedStackRegistry,
-  updating = false,
-): void {
+function securityOverrides(options: StandardOptions): Record<string, string> {
   const has = (value: StandardProduct) => options.products.includes(value);
-  const existing = readJson<PackageManifest>(root, 'package.json');
-  const securityOverrides = {
+  return {
     ...(has('wxt') ? { '@wxt-dev/module-react>@vitejs/plugin-react': '5.2.0' } : {}),
     ...(has('next') || has('vinext') ? { 'sharp@<0.35.5': '0.35.5' } : {}),
-    'source-map-js@<1.2.2': '1.2.2',
+    ...(options.products.some((product) =>
+      ['vinext', 'next', 'expo', 'electron', 'wxt', 'neon', 'd1'].includes(product),
+    )
+      ? { 'source-map-js@<1.2.2': '1.2.2' }
+      : {}),
     ...(has('next') && options.hosting === 'cloudflare'
       ? { 'glob@>=10.2.0 <10.5.0': '10.5.0', 'glob@>=11.0.0 <11.1.0': '11.1.0' }
       : {}),
@@ -48,11 +47,41 @@ export function writeStandardRoot(
     'brace-expansion@>=3 <4': '3.0.9',
     'brace-expansion@>=4 <5.0.12': '5.0.12',
   };
+}
+
+function writeTurboConfiguration(root: string, registry: ResolvedStackRegistry): void {
+  const turbo = readJson<TurboConfig>(root, 'turbo.json');
+  turbo.globalEnv = [
+    ...new Set([...(turbo.globalEnv ?? []), ...registry.items.flatMap((item) => item.environment)]),
+  ].sort();
+  turbo.tasks = {
+    ...turbo.tasks,
+    dev: { ...turbo.tasks.dev, cache: false, persistent: true },
+    lint: { ...turbo.tasks.lint, dependsOn: ['^lint'] },
+    typecheck: { ...turbo.tasks.typecheck, dependsOn: ['^typecheck'] },
+    test: { dependsOn: ['^build'], outputs: ['coverage/**'] },
+    build: {
+      ...turbo.tasks.build,
+      dependsOn: [...new Set(['^build', ...(turbo.tasks.build?.dependsOn ?? [])])],
+      outputs: ['.next/**', '!.next/cache/**', '.open-next/**', 'dist/**', '.output/**'],
+    },
+  };
+  json(root, 'turbo.json', turbo);
+}
+
+export function writeStandardRoot(
+  root: string,
+  options: StandardOptions,
+  registry: ResolvedStackRegistry,
+  updating = false,
+): void {
+  const has = (value: StandardProduct) => options.products.includes(value);
+  const existing = readJson<PackageManifest>(root, 'package.json');
   patchPackage(root, 'package.json', {
     name: options.name,
     private: true,
     packageManager: PACKAGE_MANAGER,
-    engines: { node: '>=22.13.0' },
+    engines: { node: WORKSPACE_NODE_ENGINE },
     scripts: {
       dev: 'turbo dev',
       build: 'turbo build',
@@ -69,7 +98,10 @@ export function writeStandardRoot(
     },
     devDependencies: { fallow: STACK_DEPENDENCIES['fallow'] },
     // Upstream starter lockfiles can retain vulnerable transitive versions. Keep fixes within compatible majors.
-    pnpm: { ...existing.pnpm, overrides: { ...existing.pnpm?.overrides, ...securityOverrides } },
+    pnpm: {
+      ...existing.pnpm,
+      overrides: { ...existing.pnpm?.overrides, ...securityOverrides(options) },
+    },
   });
   put(
     root,
@@ -108,21 +140,7 @@ process.exitCode = result.status ?? 1;
       '**/cloudflare-env.d.ts',
     ],
   });
-  const turbo = readJson<TurboConfig>(root, 'turbo.json');
-  turbo.globalEnv = [...new Set(registry.items.flatMap((item) => item.environment))].sort();
-  turbo.tasks = {
-    ...turbo.tasks,
-    dev: { ...turbo.tasks.dev, cache: false, persistent: true },
-    lint: { ...turbo.tasks.lint, dependsOn: ['^lint'] },
-    typecheck: { ...turbo.tasks.typecheck, dependsOn: ['^typecheck'] },
-    test: { dependsOn: ['^build'], outputs: ['coverage/**'] },
-    build: {
-      ...turbo.tasks.build,
-      dependsOn: [...new Set(['^build', ...(turbo.tasks.build?.dependsOn ?? [])])],
-      outputs: ['.next/**', '!.next/cache/**', '.open-next/**', 'dist/**', '.output/**'],
-    },
-  };
-  json(root, 'turbo.json', turbo);
+  writeTurboConfiguration(root, registry);
   setPnpmPolicy(root, {
     allowBuilds: undefined,
     onlyBuiltDependencies: [
@@ -146,8 +164,10 @@ process.exitCode = result.status ?? 1;
     '!.env.example',
     '.fallow/',
     '.anhedral/',
+    '.anhedral-audit-report.json',
   ]);
   writeEnvironmentExample(root, registry);
+  writeStackDocumentation(root, registry);
   json(root, 'anhedral.standard.json', {
     schemaVersion: 1,
     standard: 'anhedral-application-stack',

@@ -115,11 +115,16 @@ function validateAdvisory(advisory) {
   ensure(Array.isArray(advisory.findings), 'Malformed pnpm advisory');
   ensure(advisory.findings.length > 0, 'Malformed pnpm advisory');
   advisory.findings.forEach(validateFinding);
+  const versions = advisory.findings.map((finding) => finding.version);
+  ensure(new Set(versions).size === versions.length, 'Duplicate pnpm advisory versions');
 }
 
 function validateCount(advisories, severity, count) {
   ensure(Number.isInteger(count) && count >= 0, 'Malformed pnpm vulnerability counts');
-  const details = advisories.filter((advisory) => advisory.severity === severity).length;
+  // The pnpm 10 registry endpoint counts affected versions, not unique advisory IDs.
+  const details = advisories
+    .filter((advisory) => advisory.severity === severity)
+    .reduce((total, advisory) => total + advisory.findings.length, 0);
   ensure(count === details, `Missing ${severity} advisory details: count ${count}, details ${details}`);
 }
 

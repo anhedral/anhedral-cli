@@ -1,4 +1,6 @@
-import { STACK_DEPENDENCIES } from '../dependencies.js';
+import { resourceName } from '../render.js';
+import { writeEnvironmentFile } from './environment.js';
+import { STACK_DEPENDENCIES, NEXT_VERCEL_VERSION, NEXT_OPENNEXT_VERSION } from '../dependencies.js';
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { configureVinext } from '../vinext.js';
@@ -45,20 +47,38 @@ function cleanShadcnStarter(root: string): void {
   const themePath = 'apps/web/components/theme-provider.tsx';
   if (existsSync(path.join(root, themePath))) {
     const source = readFileSync(path.join(root, themePath), 'utf8');
-    // Preserve the upstream keyboard behavior while reducing branching in its guards.
-    put(
-      root,
-      themePath,
-      source
-        .replace(
-          /target.tagName === "INPUT" \|\|\s*target.tagName === "TEXTAREA" \|\|\s*target.tagName === "SELECT"/,
-          '["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)',
+    const updated = source
+      .replace(
+        /target.tagName === "INPUT" \|\|\s*target.tagName === "TEXTAREA" \|\|\s*target.tagName === "SELECT"/,
+        '["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)',
+      )
+      .replace(
+        /if \(event.defaultPrevented \|\| event.repeat\) \{\s*return\s*\}\s*if \(event.metaKey \|\| event.ctrlKey \|\| event.altKey\) \{\s*return\s*\}\s*if \(event.key.toLowerCase\(\) !== "d"\) \{\s*return\s*\}\s*if \(isTypingTarget\(event.target\)\) \{\s*return\s*\}/,
+        'if (!isThemeShortcut(event) || isTypingTarget(event.target)) return',
+      );
+    // Group modifier handling while preserving short-circuiting and avoiding guard arrays.
+    const modifierHelper = `function hasShortcutModifier(event: KeyboardEvent) {
+  return event.metaKey || event.ctrlKey || event.altKey
+}
+
+function isThemeShortcut(event: KeyboardEvent) {
+  if (event.defaultPrevented || event.repeat) return false
+  return !hasShortcutModifier(event) && event.key.toLowerCase() === "d"
+}
+
+`;
+    const needsModifierHelper =
+      updated.includes('isThemeShortcut(event)') &&
+      !updated.includes('function hasShortcutModifier(');
+    const content = needsModifierHelper
+      ? updated.replace(
+          /(?:export )?function ThemeProvider\b/,
+          (declaration) => modifierHelper + declaration,
         )
-        .replace(
-          /if \(event.defaultPrevented \|\| event.repeat\) \{\s*return\s*\}\s*if \(event.metaKey \|\| event.ctrlKey \|\| event.altKey\) \{\s*return\s*\}\s*if \(event.key.toLowerCase\(\) !== "d"\) \{\s*return\s*\}\s*if \(isTypingTarget\(event.target\)\) \{\s*return\s*\}/,
-          'if ([event.defaultPrevented, event.repeat, event.metaKey, event.ctrlKey, event.altKey, event.key.toLowerCase() !== "d", isTypingTarget(event.target)].some(Boolean)) { return }',
-        ),
-    );
+      : updated;
+    if (needsModifierHelper && content === updated)
+      throw new Error('The upstream theme provider changed; review its shortcut integration.');
+    put(root, themePath, content);
   }
 }
 
@@ -73,27 +93,27 @@ export function scaffoldWeb({ root, options, bindings, runtimeApp, has }: Recipe
     scripts: { typecheck: 'tsc --noEmit', lint: 'eslint . --max-warnings 0' },
   });
   if (has('vinext')) {
-    configureVinext(root, `${options.name}-web`, runtimeApp === 'web' ? bindings : {});
+    configureVinext(root, resourceName(options.name, 'web'), runtimeApp === 'web' ? bindings : {});
   } else if (options.hosting === 'cloudflare') {
     patchPackage(root, 'apps/web/package.json', {
       dependencies: {
         '@opennextjs/cloudflare': STACK_DEPENDENCIES['@opennextjs/cloudflare'],
-        next: '16.3.8',
+        next: NEXT_OPENNEXT_VERSION,
       },
       devDependencies: { wrangler: STACK_DEPENDENCIES['wrangler'] },
       scripts: {
-        preview: 'opennextjs-cloudflare build && opennextjs-cloudflare preview',
+        preview: 'opennextjs-cloudflare build && opennextjs-cloudflare preview --port 3000',
         deploy: 'opennextjs-cloudflare build && opennextjs-cloudflare deploy',
         'build:worker': 'opennextjs-cloudflare build',
         'cf:typegen': 'wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts',
       },
     });
     json(root, 'apps/web/wrangler.jsonc', {
-      ...workerConfig(`${options.name}-web`),
+      ...workerConfig(resourceName(options.name, 'web')),
       compatibility_flags: ['nodejs_compat', 'global_fetch_strictly_public'],
       main: '.open-next/worker.js',
       assets: { directory: '.open-next/assets', binding: 'ASSETS' },
-      services: [{ binding: 'WORKER_SELF_REFERENCE', service: `${options.name}-web` }],
+      services: [{ binding: 'WORKER_SELF_REFERENCE', service: resourceName(options.name, 'web') }],
       ...(runtimeApp === 'web' ? bindings : {}),
     });
     const nextConfig = ['next.config.ts', 'next.config.mjs', 'next.config.js'].find((file) =>
@@ -117,9 +137,9 @@ export function scaffoldWeb({ root, options, bindings, runtimeApp, has }: Recipe
       'apps/web/public/_headers',
       '/_next/static/*\n  Cache-Control: public,max-age=31536000,immutable\n',
     );
-    put(root, 'apps/web/.dev.vars.example', 'NEXTJS_ENV=development\n');
+    writeEnvironmentFile(root, 'apps/web/.dev.vars.example', { NEXTJS_ENV: 'development' });
   } else {
-    patchPackage(root, 'apps/web/package.json', { dependencies: { next: '16.4.0' } });
+    patchPackage(root, 'apps/web/package.json', { dependencies: { next: NEXT_VERCEL_VERSION } });
     put(
       root,
       'apps/web/next.config.ts',

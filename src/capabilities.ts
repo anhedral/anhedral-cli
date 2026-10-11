@@ -77,7 +77,7 @@ export function createSetupPlan(
       tools: [
         ...new Set([
           'Git',
-          'Node.js 22.13+ for generated workspaces',
+          'Node.js 22.13+ on 22.x, or Node.js 24+ for generated workspaces',
           PACKAGE_MANAGER.replace('@', ' '),
           'GitHub integration or gh',
           'Fallow',

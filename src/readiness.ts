@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from './bounded-file.js';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { inspectWorkspaceGraph } from './workspace-graph.js';
@@ -10,7 +11,8 @@ import { STANDARD_PRODUCTS, type StandardProduct } from './stack-registry.js';
 export function inspectProject(root: string) {
   const checks: { id: string; ok: boolean; detail: string }[] = [];
   const record = (id: string, ok: boolean, detail: string) => checks.push({ id, ok, detail });
-  const read = (file: string) => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
+  const read = (file: string) =>
+    JSON.parse(readBoundedFile(path.join(root, file), MAX_PROJECT_JSON_BYTES).toString('utf8'));
   record(
     'workspace',
     existsSync(path.join(root, 'pnpm-workspace.yaml')),
@@ -23,6 +25,15 @@ export function inspectProject(root: string) {
   );
   try {
     const plan = read('anhedral.setup.json');
+    const recordedVersion = plan?.cliVersion;
+    const compatible = recordedVersion === CAPABILITY_REGISTRY.cliVersion;
+    record(
+      'cli-compatibility',
+      compatible,
+      /^\d+\.\d+\.\d+$/.test(recordedVersion ?? '')
+        ? `Use anhedral@${recordedVersion} for this project or review upgrade differences`
+        : 'Use the recorded project CLI version or review upgrade differences',
+    );
     validateSetupPlan(plan);
     const standard = read('anhedral.standard.json');
     record('setup-plan', true, `Requirements recorded by CLI ${plan.cliVersion}`);
@@ -74,11 +85,6 @@ export function inspectProject(root: string) {
     }
 
     record(
-      'cli-compatibility',
-      plan.cliVersion === CAPABILITY_REGISTRY.cliVersion,
-      'Use the project CLI version or review upgrade differences',
-    );
-    record(
       'selection',
       standard.schemaVersion === 1 &&
         JSON.stringify(standard.products) === JSON.stringify(plan.products) &&
@@ -122,6 +128,13 @@ export function validateSetupPlan(plan: unknown): asserts plan is {
     typeof value.cliVersion !== 'string'
   )
     throw new Error('Unsupported setup plan version.');
+  if (
+    /^\d+\.\d+\.\d+$/.test(value.cliVersion as string) &&
+    value.cliVersion !== CAPABILITY_REGISTRY.cliVersion
+  )
+    throw new Error(
+      `Use anhedral@${value.cliVersion} for this project or review upgrade differences.`,
+    );
   if (
     !Array.isArray(value.products) ||
     !value.products.length ||

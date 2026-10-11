@@ -1,3 +1,5 @@
+import { scaffoldStyling } from './scaffold/styling.js';
+import { resourceName } from './render.js';
 import { STACK_DEPENDENCIES } from './dependencies.js';
 import { dependencyOrder } from './dependency-order.js';
 import { GENERATOR_VERSION } from './version.js';
@@ -100,7 +102,7 @@ const PRODUCT_ITEMS = defineItems({
     type: 'application',
     description: 'Expo mobile application with native UI',
     targets: ['apps/mobile'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'styling'],
     setup: requirements(
       'Mobile application',
       ['Expo/EAS CLI', 'Xcode or Android SDK'],
@@ -130,7 +132,7 @@ const PRODUCT_ITEMS = defineItems({
     type: 'application',
     description: 'WXT browser side-panel extension',
     targets: ['apps/extension'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'styling'],
     setup: requirements(
       'Chrome side-panel extension',
       ['Chrome', 'WXT'],
@@ -193,7 +195,7 @@ const PRODUCT_ITEMS = defineItems({
       d1_databases: [
         {
           binding: 'DB',
-          database_name: `${options.name}-db`,
+          database_name: resourceName(options.name, 'db'),
           database_id: 'REPLACE_WITH_D1_ID',
           migrations_dir: '../../packages/db/migrations',
         },
@@ -216,7 +218,12 @@ const PRODUCT_ITEMS = defineItems({
     ),
     package: packageSource(
       'local-data',
-      '// Device-local SQLite and filesystem need platform-specific adapters.\nexport interface LocalDataStore { read(key: string): Promise<string | null>; write(key: string, value: string): Promise<void>; }\n',
+      `// Device-local SQLite and filesystem need platform-specific adapters.
+export interface LocalDataStore {
+  read(key: string): Promise<string | null>;
+  write(key: string, value: string): Promise<void>;
+}
+`,
       {},
     ),
   },
@@ -235,7 +242,12 @@ const PRODUCT_ITEMS = defineItems({
       ['Sign-in/out, session expiry, resource authorization and selected native client flows'],
     ),
     install: scaffoldClerk,
-    environment: ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'CLERK_SECRET_KEY'],
+    environment: ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'CLERK_PUBLISHABLE_KEY', 'CLERK_SECRET_KEY'],
+    resolveEnvironment: ({ has }) => [
+      'CLERK_SECRET_KEY',
+      ...(has('vinext') || has('next') ? ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'] : []),
+      ...(has('hono') ? ['CLERK_PUBLISHABLE_KEY'] : []),
+    ],
     runtime: 'server',
     resolveDependencies: ({ has }) => ['vinext', 'next', 'hono'].filter((id) => has(id)),
     resolveTargets: ({ has }) => [
@@ -281,7 +293,7 @@ const PRODUCT_ITEMS = defineItems({
     ),
     install: scaffoldPrivateFiles,
     configure: ({ options }) => ({
-      r2_buckets: [{ binding: 'FILES', bucket_name: `${options.name}-private-files` }],
+      r2_buckets: [{ binding: 'FILES', bucket_name: resourceName(options.name, 'private-files') }],
     }),
     runtime: 'worker',
     resolveTargets: ({ runtimeApp }) => [`apps/${runtimeApp}/private-files.md`],
@@ -334,7 +346,7 @@ const PRODUCT_ITEMS = defineItems({
     ),
     install: scaffoldQueues,
     configure: ({ options }) => ({
-      queues: { producers: [{ binding: 'JOBS', queue: `${options.name}-jobs` }] },
+      queues: { producers: [{ binding: 'JOBS', queue: resourceName(options.name, 'jobs') }] },
     }),
     runtime: 'optional-worker',
     resolveTargets: ({ runtimeApp, has }) => [
@@ -530,7 +542,9 @@ const PRODUCT_ITEMS = defineItems({
     package: packageSource(
       'analytics',
       `export interface EventStream { send(events: Record<string, unknown>[]): Promise<void> }
-export async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) { await stream.send(events); }
+export async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) {
+  await stream.send(events);
+}
 `,
       {},
     ),
@@ -575,14 +589,27 @@ export async function recordEvents(stream: EventStream, events: Record<string, u
       [],
       [],
       [],
-      ['Styling package; implement actual shared colors, typography, spacing and themes'],
+      [
+        'Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components',
+      ],
       ['Consistency across selected interfaces; preserve platform-specific components'],
     ),
     package: packageSource(
       'styling',
-      "export const styling = { colors: { foreground: '#171717', background: '#ffffff' }, spacing: { small: 4, medium: 8, large: 16 } } as const;\n",
+      `import { light, dark, spacing } from './tokens.cjs';
+
+export const styling = {
+  colors: {
+    foreground: 'hsl(' + light['--foreground'] + ')',
+    background: 'hsl(' + light['--background'] + ')',
+  },
+  spacing,
+  themes: { light, dark },
+};
+`,
       {},
     ),
+    install: scaffoldStyling,
   },
 });
 
@@ -629,6 +656,7 @@ function describe(definition: ItemDefinition): StackRegistryItem {
     install: _install,
     configure: _configure,
     resolveTargets: _targets,
+    resolveEnvironment: _environment,
     resolveDependencies: _dependencies,
     resolvePackage: _package,
     fallbackDependency: _fallback,
