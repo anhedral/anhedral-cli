@@ -84,3 +84,13 @@ export function identifierSegment(value: string): string {
     .replace(/^-+|-+$/g, '');
   return segment || 'app';
 }
+
+/** Keep provider resource names within the shared Workers/R2/Queues naming limits. */
+export function resourceName(projectName: string, suffix: string): string {
+  const segment = identifierSegment(projectName);
+  const qualifier = identifierSegment(suffix);
+  if (qualifier.length > 40) throw new Error('Resource suffix is too long.');
+  const digest = createHash('sha256').update(projectName).digest('hex').slice(0, 8);
+  const base = segment === projectName ? segment : `${segment}-${digest}`;
+  return `${compactPackageSegment(base, 62 - qualifier.length)}-${qualifier}`;
+}

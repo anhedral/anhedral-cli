@@ -82,6 +82,26 @@ export interface ResolvedStackRegistry {
   items: StackRegistryItem[];
 }
 
+function itemDependencies(name: string, context: RecipeContext): Set<string> {
+  const definition = getStackDefinition(name);
+  const dependencies = new Set(definition.registryDependencies);
+  if (definition.runtime) {
+    if (!hasServer(context) && definition.runtime !== 'optional-worker')
+      throw new Error(`${name} requires a server runtime.`);
+    if (
+      needsWorker(name, context) &&
+      !context.has('hono') &&
+      !(context.options.hosting === 'cloudflare' && (context.has('vinext') || context.has('next')))
+    )
+      throw new Error(`${name} requires a Cloudflare runtime.`);
+    if (hasServer(context))
+      dependencies.add(context.has('hono') ? 'hono' : context.has('vinext') ? 'vinext' : 'next');
+  }
+  for (const dependency of definition.resolveDependencies?.(context) ?? [])
+    dependencies.add(dependency);
+  return dependencies;
+}
+
 export function resolveStackRegistry(
   options: Pick<StandardOptions, 'products' | 'hosting'> & Partial<Pick<StandardOptions, 'name'>>,
 ): ResolvedStackRegistry {
@@ -95,22 +115,9 @@ export function resolveStackRegistry(
     if (resolved.has(name)) return;
     const definition = getStackDefinition(name);
     const metadata = getStackItem(name);
-    const dependencies = new Set(definition.registryDependencies);
-    if (definition.runtime) {
-      if (!hasServer(context) && definition.runtime !== 'optional-worker')
-        throw new Error(`${name} requires a server runtime.`);
-      if (
-        needsWorker(name, context) &&
-        !context.has('hono') &&
-        !(options.hosting === 'cloudflare' && (context.has('vinext') || context.has('next')))
-      )
-        throw new Error(`${name} requires a Cloudflare runtime.`);
-      if (hasServer(context))
-        dependencies.add(context.has('hono') ? 'hono' : context.has('vinext') ? 'vinext' : 'next');
-    }
-    for (const dependency of definition.resolveDependencies?.(context) ?? [])
-      dependencies.add(dependency);
+    const dependencies = itemDependencies(name, context);
     metadata.registryDependencies = [...dependencies];
+    metadata.environment = definition.resolveEnvironment?.(context) ?? metadata.environment;
     metadata.targets = definition.resolveTargets?.(context) ?? metadata.targets;
     if (definition.configure) metadata.bindings = definition.configure(context);
     if (definition.package)

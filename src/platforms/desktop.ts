@@ -131,9 +131,6 @@ export default defineConfig({
   build: {
     outDir: 'dist/renderer',
     emptyOutDir: true,
-    // Clerk is already loaded behind a dynamic import. Its optional account-management
-    // surface is intentionally a large async chunk and does not inflate initial rendering.
-    chunkSizeWarningLimit: 1600,
   },
 });
 `,
@@ -301,7 +298,7 @@ function isAllowedAppNavigation(value: string): boolean {
 }
 
 // Product-owned window options and navigation policy belong in this file.
-// Anhedral's managed main.ts imports this seam and wires lifecycle integrations around it.
+// main.ts imports this seam and manages application lifecycle.
 export function createAppWindow(): BrowserWindow {
   const window = new BrowserWindow({
     width: 1180,
@@ -349,11 +346,13 @@ export function createAppWindow(): BrowserWindow {
     `import { app, BrowserWindow, session } from 'electron';
 import { createAppWindow } from './app-window.js';
 
-
 app.whenReady().then(() => {
   session.defaultSession.setPermissionCheckHandler(() => false);
   session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
   createAppWindow();
+}).catch((error) => {
+  console.error('Unable to start the desktop app:', error);
+  app.quit();
 });
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

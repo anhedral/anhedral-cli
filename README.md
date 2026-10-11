@@ -25,7 +25,7 @@ Starter prompt:
 
 Codex asks about the app, explains the stack, implements the product, configures selected services, and delivers into your authorized accounts. The CLI commands below are also available independently.
 
-Use Node.js 22.13+ and pnpm 10.34.5 for generated workspaces. Generate on Linux, macOS, or WSL.
+Use Node.js 22.13+ on the 22.x line or Node.js 24+, with pnpm 10.34.5, for generated workspaces. Generate on Linux, macOS, or WSL.
 
 ```sh
 # Inspect a plan first: no project files or cloud resources are created
@@ -51,7 +51,7 @@ Anhedral Init is free and open source. Sponsorship helps fund ongoing developmen
 
 ## Choose your stack
 
-The bundled stack registry drives composition of every supported stack part. Run `anhedral registry list` or `anhedral registry view better-auth --json` to inspect items, destinations, dependencies and selection constraints. `new --dry-run --json` includes the resolved dependency graph. Scaffolding installs recipes in dependency order into `apps/*` and `packages/*`, validates local workspace references and cycles, and writes `anhedral.registry.json` with recipe versions and the resulting workspace graph. The same catalog is bundled with the plugin at build time.
+The bundled stack registry drives composition of every supported stack part. Run `anhedral registry list` or `anhedral registry view better-auth --json` to inspect items, destinations, dependencies and selection constraints. `new --dry-run --json` includes the resolved dependency graph. Scaffolding installs recipes in dependency order into `apps/*` and `packages/*`, validates local workspace references and cycles, and writes `anhedral.registry.json` with recipe versions and the resulting workspace graph. The same catalog is bundled with the plugin at build time. Generated `docs/stack.md` lists the current resolved options, targets, environment names, required setup and verification; additions refresh it without rewriting the application README.
 
 Registry items are trusted recipes shipped in the CLI release: foundations, apps, services, shared packages and runtime integrations. They follow shadcn's source ownership and dependency composition practices; this catalog is an Anhedral schema, not a shadcn registry payload. Runtime-aware recipes coordinate bindings, manifests and auth routes across workspaces. Each registry entry owns its recipe, provider requirements, environment variables, bindings and composition rules. Resolved plans name the exact generated destinations, including runtime-dependent packages. Recipe versions follow the CLI release. The official shadcn bootstrap is pinned to 4.21.4; commit the generated source and lockfile to preserve the application artifact. Incremental `add` supports only the bundled catalog maintained and tested by Anhedral. External registries and customer-authored registry payloads are unsupported. Additions refuse to overwrite edited or untracked source; runtime relocation requires a deliberate migration.
 

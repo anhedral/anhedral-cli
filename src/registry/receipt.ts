@@ -17,6 +17,7 @@ const excluded = new Set([
   '.expo',
   '.fallow',
   '.anhedral',
+  '.anhedral-audit-report.json',
   '.anhedral.lock',
   '.anhedral-txn',
   'anhedral.registry.json',

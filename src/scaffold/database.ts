@@ -1,3 +1,4 @@
+import { writeEnvironmentFile } from './environment.js';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { put, patchPackage, sharedPackage } from './files.js';
@@ -20,16 +21,19 @@ export function createDatabase(binding: Parameters<typeof drizzle>[0]) { return 
 `,
     {
       'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'],
-      ...(has('neon') ? { '@neondatabase/serverless': '1.2.0' } : {}),
+      ...(has('neon')
+        ? { '@neondatabase/serverless': STACK_DEPENDENCIES['@neondatabase/serverless'] }
+        : {}),
     },
   );
   if (has('neon')) {
     const native = runtimeApp === 'web' && options.hosting === 'vercel';
-    put(
+    writeEnvironmentFile(
       root,
       `apps/${runtimeApp}/${native ? '.env.example' : '.dev.vars.example'}`,
-      'DATABASE_URL=\n',
+      { DATABASE_URL: '' },
     );
+    writeEnvironmentFile(root, 'packages/db/.env.example', { DATABASE_URL: '' });
     if (!native)
       put(
         root,
@@ -48,7 +52,12 @@ export function createDatabase(binding: Parameters<typeof drizzle>[0]) { return 
     root,
     'packages/db/drizzle.config.ts',
     has('neon')
-      ? `import { defineConfig } from 'drizzle-kit';
+      ? `import { existsSync } from 'node:fs';
+import { loadEnvFile } from 'node:process';
+import { defineConfig } from 'drizzle-kit';
+
+if (existsSync('.env')) loadEnvFile('.env');
+
 export default defineConfig({ dialect: 'postgresql', schema: './src/schema.ts', out: './migrations', dbCredentials: { url: process.env.DATABASE_URL! } });
 `
       : `import { defineConfig } from 'drizzle-kit';
@@ -58,8 +67,5 @@ export default defineConfig({ dialect: 'sqlite', schema: './src/schema.ts', out:
   patchPackage(root, 'packages/db/package.json', {
     devDependencies: { 'drizzle-kit': STACK_DEPENDENCIES['drizzle-kit'] },
     scripts: { 'db:generate': 'drizzle-kit generate' },
-  });
-  patchPackage(root, `apps/${runtimeApp}/package.json`, {
-    dependencies: { '@workspace/db': 'workspace:*' },
   });
 }

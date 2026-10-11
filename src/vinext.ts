@@ -1,3 +1,4 @@
+import { VINEXT_DEPENDENCIES } from './dependencies.js';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { writeFile } from './util.js';
@@ -13,28 +14,15 @@ export function configureVinext(
   const pkg = JSON.parse(readFileSync(path.join(root, 'apps/web/package.json'), 'utf8'));
   delete pkg.dependencies?.['@opennextjs/cloudflare'];
   pkg.type = 'module';
-  pkg.dependencies = {
-    ...pkg.dependencies,
-    vinext: '1.1.0',
-    next: '16.4.0',
-    react: '19.2.8',
-    'react-dom': '19.2.8',
-    'react-server-dom-webpack': '19.2.8',
-  };
-  pkg.devDependencies = {
-    ...pkg.devDependencies,
-    vite: '8.3.4',
-    '@cloudflare/vite-plugin': '1.63.1',
-    '@vitejs/plugin-rsc': '0.5.36',
-    '@vitejs/plugin-react': '6.1.2',
-    wrangler: '4.149.0',
-  };
+  pkg.dependencies = { ...pkg.dependencies, ...VINEXT_DEPENDENCIES.dependencies };
+  pkg.devDependencies = { ...pkg.devDependencies, ...VINEXT_DEPENDENCIES.devDependencies };
   pkg.scripts = {
     ...pkg.scripts,
     dev: 'vite dev --host 127.0.0.1 --port 3000',
     build: 'vite build',
     start: 'vinext start',
-    preview: 'wrangler dev --config dist/server/wrangler.json --persist-to .wrangler/state',
+    preview:
+      'wrangler dev --config dist/server/wrangler.json --port 3000 --persist-to .wrangler/state',
     deploy: 'vite build && wrangler deploy --config dist/server/wrangler.json',
     'build:worker': 'vite build',
     typecheck: 'wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts && tsc --noEmit',
@@ -97,7 +85,11 @@ export default config;
   const uiFile = path.join(root, 'packages/ui/package.json');
   if (existsSync(uiFile)) {
     const ui = JSON.parse(readFileSync(uiFile, 'utf8'));
-    ui.dependencies = { ...ui.dependencies, react: '19.2.8', 'react-dom': '19.2.8' };
+    ui.dependencies = {
+      ...ui.dependencies,
+      react: VINEXT_DEPENDENCIES.dependencies!.react,
+      'react-dom': VINEXT_DEPENDENCIES.dependencies!['react-dom'],
+    };
     writeFile(uiFile, JSON.stringify(ui, null, 2) + '\n');
   }
 }

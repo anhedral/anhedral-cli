@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cliVersion": "0.10.0",
+  "cliVersion": "0.10.1",
   "capabilities": {
     "vinext": {
       "purpose": "Web application on Cloudflare",
@@ -522,7 +522,7 @@
       "access": [],
       "credentials": [],
       "resources": [
-        "Styling package; implement actual shared colors, typography, spacing and themes"
+        "Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components"
       ],
       "verify": [
         "Consistency across selected interfaces; preserve platform-specific components"

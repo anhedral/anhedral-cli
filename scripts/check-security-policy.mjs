@@ -1,3 +1,4 @@
+import { findUncataloguedDependencyPins } from './dependency-policy.mjs';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { formatFindings, scanDirectory, scanWorkingTree } from './secret-scanner.mjs';
@@ -31,7 +32,7 @@ const dependencySource = readFileSync(path.join(root, 'src', 'dependencies.ts'),
 if (/@latest\b/.test(dependencySource))
   failures.push('src/dependencies.ts: generated dependencies must not use @latest');
 const dependencyPinSource = dependencySource.replace(
-  /^export const (?:MOBILE_)?NODE_ENGINE = .*$/gm,
+  /^export const (?:[A-Z_]+_)?NODE_ENGINE = .*$/gm,
   '',
 );
 if (/['"](?:\^|~)[^'"]+['"]/.test(dependencyPinSource))
@@ -41,24 +42,14 @@ for (const filename of readdirSync(path.join(root, 'src'), { recursive: true }))
   if (typeof filename !== 'string' || !filename.endsWith('.ts')) continue;
   const relative = path.join('src', filename);
   const source = readFileSync(path.join(root, relative), 'utf8');
-  if (/['"](?:\^|~)\d+\.\d+\.\d+/.test(source))
+  const pinSource = filename === 'dependencies.ts' ? dependencyPinSource : source;
+  if (/['"](?:\^|~)\d+\.\d+\.\d+/.test(pinSource))
     failures.push(`${relative}: generated dependency versions must be exactly pinned`);
+  if (filename !== 'dependencies.ts')
+    failures.push(...findUncataloguedDependencyPins(source, relative));
   if (/\bshell\s*:\s*true\b/.test(source)) {
     failures.push(
       `${relative}: child processes must use an executable and argument vector, not a command shell`,
-    );
-  }
-}
-
-const platformsRoot = path.join(root, 'src', 'platforms');
-for (const filename of readdirSync(platformsRoot).filter((entry) => entry.endsWith('.ts'))) {
-  const relative = path.join('src', 'platforms', filename);
-  const source = readFileSync(path.join(root, relative), 'utf8');
-  for (const match of source.matchAll(
-    /['"](@?[a-z0-9][a-z0-9._/-]*)['"]\s*:\s*['"](?:\^|~)?\d+\.\d+\.\d+/gi,
-  )) {
-    failures.push(
-      `${relative}: dependency-like pin ${match[1]} must come from src/dependencies.ts`,
     );
   }
 }

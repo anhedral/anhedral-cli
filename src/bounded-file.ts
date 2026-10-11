@@ -1,5 +1,7 @@
 import { closeSync, constants, fstatSync, lstatSync, openSync, readSync } from 'node:fs';
 
+export const MAX_PROJECT_JSON_BYTES = 2 * 1024 * 1024;
+
 /** Reject devices, links and oversized or growing files before parsing local input. */
 export function readBoundedFile(filePath: string, maximumBytes: number): Buffer {
   const stat = lstatSync(filePath);

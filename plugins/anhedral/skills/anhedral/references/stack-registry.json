@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "name": "anhedral",
-  "cliVersion": "0.10.0",
+  "cliVersion": "0.10.1",
   "items": [
     {
       "name": "workspace",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [],
       "environment": [],
@@ -21,7 +21,7 @@
     },
     {
       "name": "typescript",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -36,7 +36,7 @@
     },
     {
       "name": "eslint",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -51,7 +51,7 @@
     },
     {
       "name": "ui",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -68,7 +68,7 @@
     },
     {
       "name": "vinext",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "next"
@@ -102,7 +102,7 @@
     },
     {
       "name": "next",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "vinext"
@@ -135,12 +135,13 @@
     },
     {
       "name": "expo",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
         "typescript",
-        "eslint"
+        "eslint",
+        "styling"
       ],
       "environment": [],
       "installer": "recipe",
@@ -171,7 +172,7 @@
     },
     {
       "name": "electron",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -207,12 +208,13 @@
     },
     {
       "name": "wxt",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
         "typescript",
-        "eslint"
+        "eslint",
+        "styling"
       ],
       "environment": [],
       "installer": "recipe",
@@ -243,7 +245,7 @@
     },
     {
       "name": "hono",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -276,7 +278,7 @@
     },
     {
       "name": "neon",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "d1"
@@ -318,7 +320,7 @@
     },
     {
       "name": "d1",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "neon"
@@ -356,7 +358,7 @@
     },
     {
       "name": "local-data",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -386,13 +388,13 @@
       },
       "package": {
         "name": "local-data",
-        "source": "// Device-local SQLite and filesystem need platform-specific adapters.\nexport interface LocalDataStore { read(key: string): Promise<string | null>; write(key: string, value: string): Promise<void>; }\n",
+        "source": "// Device-local SQLite and filesystem need platform-specific adapters.\nexport interface LocalDataStore {\n  read(key: string): Promise<string | null>;\n  write(key: string, value: string): Promise<void>;\n}\n",
         "dependencies": {}
       }
     },
     {
       "name": "clerk",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "better-auth"
@@ -410,6 +412,7 @@
       ],
       "environment": [
         "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        "CLERK_PUBLISHABLE_KEY",
         "CLERK_SECRET_KEY"
       ],
       "installer": "recipe",
@@ -441,7 +444,7 @@
     },
     {
       "name": "better-auth",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "clerk"
@@ -491,7 +494,7 @@
     },
     {
       "name": "r2",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -526,7 +529,7 @@
     },
     {
       "name": "kv",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -561,7 +564,7 @@
     },
     {
       "name": "realtime",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -595,7 +598,7 @@
     },
     {
       "name": "queues",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -631,7 +634,7 @@
     },
     {
       "name": "cron",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -664,7 +667,7 @@
     },
     {
       "name": "workflows",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -697,7 +700,7 @@
     },
     {
       "name": "openai",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "ai-sdk"
@@ -745,7 +748,7 @@
     },
     {
       "name": "ai-sdk",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "conflicts": [
           "openai"
@@ -794,7 +797,7 @@
     },
     {
       "name": "workers-ai",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -829,7 +832,7 @@
     },
     {
       "name": "resend",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -873,7 +876,7 @@
     },
     {
       "name": "stripe",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -918,7 +921,7 @@
     },
     {
       "name": "revenuecat",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {
         "requiresAll": [
           "stripe"
@@ -956,7 +959,7 @@
     },
     {
       "name": "sentry",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -998,7 +1001,7 @@
     },
     {
       "name": "basin",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -1032,14 +1035,14 @@
       },
       "package": {
         "name": "analytics",
-        "source": "export interface EventStream { send(events: Record<string, unknown>[]): Promise<void> }\nexport async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) { await stream.send(events); }\n",
+        "source": "export interface EventStream { send(events: Record<string, unknown>[]): Promise<void> }\nexport async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) {\n  await stream.send(events);\n}\n",
         "dependencies": {}
       },
       "runtime": "worker"
     },
     {
       "name": "posthog",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -1084,7 +1087,7 @@
     },
     {
       "name": "styling",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -1104,7 +1107,7 @@
         "access": [],
         "credentials": [],
         "resources": [
-          "Styling package; implement actual shared colors, typography, spacing and themes"
+          "Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components"
         ],
         "verify": [
           "Consistency across selected interfaces; preserve platform-specific components"
@@ -1112,7 +1115,7 @@
       },
       "package": {
         "name": "styling",
-        "source": "export const styling = { colors: { foreground: '#171717', background: '#ffffff' }, spacing: { small: 4, medium: 8, large: 16 } } as const;\n",
+        "source": "import { light, dark, spacing } from './tokens.cjs';\n\nexport const styling = {\n  colors: {\n    foreground: 'hsl(' + light['--foreground'] + ')',\n    background: 'hsl(' + light['--background'] + ')',\n  },\n  spacing,\n  themes: { light, dark },\n};\n",
         "dependencies": {}
       }
     }

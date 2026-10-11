@@ -1,4 +1,5 @@
-import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from './bounded-file.js';
+import { existsSync, lstatSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { dependencyOrder } from './dependency-order.js';
 
@@ -25,7 +26,7 @@ function readManifest(file: string, directory: string): WorkspaceManifest {
   if (!existsSync(file)) throw new Error(`Workspace manifest missing: ${directory}.`);
   if (lstatSync(file).isSymbolicLink())
     throw new Error(`Workspace symlinks are unsupported: ${directory}/package.json.`);
-  const value: unknown = JSON.parse(readFileSync(file, 'utf8'));
+  const value: unknown = JSON.parse(readBoundedFile(file, MAX_PROJECT_JSON_BYTES).toString('utf8'));
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error(`Invalid workspace manifest: ${directory}.`);
   const manifest = value as Record<string, unknown>;

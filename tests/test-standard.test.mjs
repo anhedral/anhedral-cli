@@ -296,6 +296,13 @@ try {
     layout,
     /<body className="antialiased"><ClerkProvider>\{children\}<\/ClerkProvider><\/body>/,
   );
+  for (const route of ['sign-in', 'sign-up']) {
+    const source = readFileSync(
+      path.join(clerk.root, `apps/web/app/${route}/[[...${route}]]/page.tsx`),
+      'utf8',
+    );
+    assert.match(source, /<Suspense fallback=/, 'Clerk route data must stream behind Suspense');
+  }
   const invalidLayout = options('invalid-layout', ['--clerk']);
   await assert.rejects(
     scaffoldStandardProject(invalidLayout, (command, args, cwd) => {

@@ -87,6 +87,11 @@ try {
   assert.equal(inspectProject(root).localReady, true);
   write('anhedral.setup.json', { ...plan, cliVersion: '0.0.1' });
   assert.equal(inspectProject(root).localReady, false);
+  assert.match(
+    inspectProject(root).checks.find((check) => check.id === 'cli-compatibility').detail,
+    /anhedral@0.0.1/,
+  );
+  assert.throws(() => validateSetupPlan({ ...plan, cliVersion: '0.0.1' }), /anhedral@0.0.1/);
   write('anhedral.setup.json', plan);
   write('anhedral.standard.json', {
     schemaVersion: 1,

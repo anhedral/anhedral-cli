@@ -1,5 +1,6 @@
+import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import { configureSecurityBackports } from '../security-backports.js';
-import { bootstrapWorkspace } from '../scaffold/bootstrap.js';
+import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
 import { registerVercelApplication } from '../vercel.js';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
@@ -34,6 +35,7 @@ export async function addStackItems(
   for (const key of Object.keys(request))
     if (!['items', 'dryRun', 'skipInstall'].includes(key))
       throw new Error(`Unknown add option: ${key}. Only bundled registry items are supported.`);
+  if (!request.dryRun) assertWorkspaceRuntime(run);
   root = realpathSync(root);
   if (!request.items.length) throw new Error('Select at least one registry item.');
   const plan = readJson(root, 'anhedral.setup.json');
@@ -79,7 +81,10 @@ export async function addStackItems(
       );
   }
   const before = sourceFiles(root);
-  const receiptText = readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8');
+  const receiptText = readBoundedFile(
+    path.join(root, 'anhedral.registry.json'),
+    MAX_PROJECT_JSON_BYTES,
+  ).toString('utf8');
   const commitPaths: string[] = [];
   const conflicts: string[] = [];
   const result = {
@@ -188,7 +193,9 @@ export async function addStackItems(
       // Detect concurrent changes even to source that this addition would otherwise preserve.
       if (
         !isDeepStrictEqual(sourceFiles(root), before) ||
-        readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8') !== receiptText
+        readBoundedFile(path.join(root, 'anhedral.registry.json'), MAX_PROJECT_JSON_BYTES).toString(
+          'utf8',
+        ) !== receiptText
       )
         throw new Error('Workspace changed during addition; retry after reviewing source.');
     },

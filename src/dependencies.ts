@@ -4,6 +4,9 @@ export interface DependencyGroup {
   devDependencies?: Record<string, string>;
 }
 
+// renovate: datasource=npm depName=eslint
+export const NATIVE_ESLINT_VERSION = '10.0.3';
+
 export const DESKTOP_DEPENDENCIES: DependencyGroup = {
   dependencies: {
     // renovate: datasource=npm depName=react
@@ -30,7 +33,7 @@ export const DESKTOP_DEPENDENCIES: DependencyGroup = {
     electron: '43.7.8',
     // renovate: datasource=npm depName=electron-builder
     'electron-builder': '26.15.3',
-    eslint: '10.0.3',
+    eslint: NATIVE_ESLINT_VERSION,
     // renovate: datasource=npm depName=tailwindcss
     tailwindcss: '4.1.18',
     // renovate: datasource=npm depName=postcss
@@ -139,6 +142,8 @@ export const MOBILE_NATIVEWIND_DEPENDENCIES: DependencyGroup = {
   },
 };
 
+export const WORKSPACE_NODE_ENGINE = '^22.13.0 || >=24.0.0';
+
 export const PACKAGE_MANAGER = 'pnpm@10.34.5';
 
 // renovate: datasource=npm depName=eas-cli
@@ -147,7 +152,18 @@ export const EAS_CLI_VERSION = '21.0.1';
 // renovate: datasource=npm depName=shadcn
 export const SHADCN_VERSION = '4.21.4';
 
+// renovate: datasource=npm depName=next
+export const NEXT_VERCEL_VERSION = '16.4.0';
+// renovate: datasource=npm depName=next
+export const NEXT_OPENNEXT_VERSION = '16.3.8';
+
 export const STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=better-auth
+  'better-auth': '1.7.7',
+  // renovate: datasource=npm depName=@better-auth/drizzle-adapter
+  '@better-auth/drizzle-adapter': '1.7.7',
+  // renovate: datasource=npm depName=@neondatabase/serverless
+  '@neondatabase/serverless': '1.2.0',
   // renovate: datasource=npm depName=drizzle-orm
   'drizzle-orm': '0.45.4',
   // renovate: datasource=npm depName=@clerk/nextjs
@@ -186,4 +202,39 @@ export const STACK_DEPENDENCIES = {
   stripe: '20.4.1',
   // renovate: datasource=npm depName=posthog-node
   'posthog-node': '5.55.2',
+} as const;
+
+/** Vinext's RSC/React versions form a separately verified compatibility group. */
+export const VINEXT_DEPENDENCIES: DependencyGroup = {
+  dependencies: {
+    // renovate: datasource=npm depName=vinext
+    vinext: '1.1.0',
+    next: NEXT_VERCEL_VERSION,
+    // renovate: datasource=npm depName=react
+    react: '19.2.8',
+    // renovate: datasource=npm depName=react-dom
+    'react-dom': '19.2.8',
+    // renovate: datasource=npm depName=react-server-dom-webpack
+    'react-server-dom-webpack': '19.2.8',
+  },
+  devDependencies: {
+    // renovate: datasource=npm depName=vite
+    vite: '8.3.4',
+    // renovate: datasource=npm depName=@cloudflare/vite-plugin
+    '@cloudflare/vite-plugin': '1.63.1',
+    // renovate: datasource=npm depName=@vitejs/plugin-rsc
+    '@vitejs/plugin-rsc': '0.5.36',
+    // renovate: datasource=npm depName=@vitejs/plugin-react
+    '@vitejs/plugin-react': '6.1.2',
+    wrangler: STACK_DEPENDENCIES.wrangler,
+  },
+};
+
+/** Separate HTTP and inspector ports let all selected Workers run together. */
+export const WORKER_DEV_PORTS = {
+  api: { http: 8787, inspector: 9231 },
+  realtime: { http: 8788, inspector: 9232 },
+  jobs: { http: 8789, inspector: 9233 },
+  scheduled: { http: 8790, inspector: 9234 },
+  workflows: { http: 8791, inspector: 9235 },
 } as const;

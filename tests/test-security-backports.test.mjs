@@ -182,6 +182,47 @@ test('backport gate rejects missing reports, unknown advisories, altered version
     assert.match(moderate.verdicts[0], /moderate.*unremediated/);
   }));
 
+test('audit counts each affected version and rejects missing or duplicated version details', async () =>
+  fixture(async ({ report, options, advisory }) => {
+    const multiple = {
+      ...report,
+      advisories: {
+        1: {
+          ...advisory,
+          module_name: 'uuid',
+          severity: 'moderate',
+          github_advisory_id: 'GHSA-w5hq-g745-h8pq',
+          findings: [
+            { version: '8.3.2', paths: ['mobile>uuid'] },
+            { version: '7.0.3', paths: ['desktop>uuid', 'extension>uuid'] },
+          ],
+        },
+      },
+      metadata: { vulnerabilities: { info: 0, low: 0, moderate: 2, high: 0, critical: 0 } },
+    };
+    assert.match(
+      (await verifyAuditReport(multiple, options)).verdicts[0],
+      /moderate.*unremediated/,
+    );
+    for (const findings of [[], multiple.advisories[1].findings.slice(0, 1)]) {
+      await assert.rejects(
+        verifyAuditReport(
+          { ...multiple, advisories: { 1: { ...multiple.advisories[1], findings } } },
+          options,
+        ),
+        /Malformed|Missing moderate/,
+      );
+    }
+    const repeated = [multiple.advisories[1].findings[0], multiple.advisories[1].findings[0]];
+    await assert.rejects(
+      verifyAuditReport(
+        { ...multiple, advisories: { 1: { ...multiple.advisories[1], findings: repeated } } },
+        options,
+      ),
+      /Duplicate pnpm advisory versions/,
+    );
+  }));
+
 test('backport gate preserves patch mappings after unindented YAML comments', async () =>
   fixture(async ({ projectRoot, report, options }) => {
     await writeFile(
