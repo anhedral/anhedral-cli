@@ -1,8 +1,6 @@
+import { readBoundedFile } from './bounded-file.js';
 import {
   closeSync,
-  constants,
-  fstatSync,
-  readSync,
   cpSync,
   fsyncSync,
   linkSync,
@@ -308,42 +306,13 @@ function removeEntryDurably(target: string): void {
   if (pathEntryExists(parent)) syncDirectory(parent);
 }
 
-function readRecoveryMetadata(filePath: string, maximumBytes: number): string {
-  const stat = lstatSync(filePath);
-  if (!stat.isFile() || stat.isSymbolicLink())
-    throw new Error(`Recovery metadata must be a regular file: ${filePath}`);
-  const descriptor = openSync(
-    filePath,
-    constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0) | (constants.O_NONBLOCK ?? 0),
-  );
-  try {
-    const opened = fstatSync(descriptor);
-    if (!opened.isFile()) throw new Error(`Recovery metadata must be a regular file: ${filePath}`);
-    if (opened.size > maximumBytes)
-      throw new Error(`Recovery metadata exceeds size limit: ${filePath}`);
-    const chunks: Buffer[] = [];
-    let total = 0;
-    for (;;) {
-      const chunk = Buffer.alloc(Math.min(8192, maximumBytes + 1 - total));
-      const length = readSync(descriptor, chunk, 0, chunk.length, null);
-      if (!length) return Buffer.concat(chunks).toString('utf8');
-      total += length;
-      if (total > maximumBytes)
-        throw new Error(`Recovery metadata exceeds size limit: ${filePath}`);
-      chunks.push(chunk.subarray(0, length));
-    }
-  } finally {
-    closeSync(descriptor);
-  }
-}
-
 function parseLockOwner(lockPath: string): LockOwner {
   if (lstatSync(lockPath).isSymbolicLink()) {
     throw new Error(`Refusing symbolic-link transaction lock at ${lockPath}.`);
   }
   let value: unknown;
   try {
-    value = JSON.parse(readRecoveryMetadata(lockPath, 16 * 1024));
+    value = JSON.parse(readBoundedFile(lockPath, 16 * 1024).toString('utf8'));
   } catch (error) {
     throw new Error(
       `Cannot read transaction lock owner at ${lockPath}; remove it only after confirming no Anhedral process is running.`,
@@ -873,7 +842,7 @@ function recoverInterruptedTransactionUnlocked(root: string): boolean {
 
   const journal = validateJournal(
     root,
-    JSON.parse(readRecoveryMetadata(journalPath, 16 * 1024 * 1024)),
+    JSON.parse(readBoundedFile(journalPath, 16 * 1024 * 1024).toString('utf8')),
   );
   restoreJournal(root, journal);
   return true;

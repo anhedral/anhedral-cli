@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFileSync, statSync } from 'node:fs';
+import { readBoundedFile } from '../bounded-file.js';
 import path from 'node:path';
 import { dependencyOrder } from '../dependency-order.js';
 import { assertSafeTarget } from './receipt.js';
@@ -159,8 +159,7 @@ export async function loadSourceRegistry(
     source = url.href;
   } else {
     source = path.resolve(source);
-    if (statSync(source).size > limit) throw new Error('Source registry exceeds 2 MiB.');
-    bytes = readFileSync(source);
+    bytes = readBoundedFile(source, limit);
   }
   if (bytes.length > limit) throw new Error('Source registry exceeds 2 MiB.');
   return {
@@ -190,8 +189,7 @@ export function resolveSourceItems(
 /** Compile repository-relative source paths into a distributable JSON payload. */
 export function buildSourceRegistry(manifestFile: string): SourceRegistry {
   const root = path.dirname(path.resolve(manifestFile));
-  if (statSync(manifestFile).size > limit) throw new Error('Source registry exceeds 2 MiB.');
-  const registry = JSON.parse(readFileSync(manifestFile, 'utf8'));
+  const registry = JSON.parse(readBoundedFile(manifestFile, limit).toString('utf8'));
   if (!Array.isArray(registry.items)) throw new Error('Invalid source registry manifest.');
   for (const item of registry.items) {
     if (!Array.isArray(item.files)) throw new Error('Invalid registry file list.');
@@ -206,8 +204,7 @@ export function buildSourceRegistry(manifestFile: string): SourceRegistry {
       )
         throw new Error('Registry source paths must stay in application or package source.');
       const source = path.join(root, file.path);
-      if (statSync(source).size > limit) throw new Error('Source registry exceeds 2 MiB.');
-      file.content = readFileSync(source, 'utf8');
+      file.content = readBoundedFile(source, limit).toString('utf8');
       delete file.path;
     }
   }

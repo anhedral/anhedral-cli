@@ -1,6 +1,16 @@
+import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, symlinkSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+  symlinkSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -260,5 +270,42 @@ test('registry build compiles confined local source files before writing a paylo
     assert.throws(() => buildSourceRegistry(file), /Unsafe/);
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('local registry inputs reject nonregular and oversized files without hanging', () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-registry-input-'));
+  const moduleUrl = pathToFileURL(path.resolve('dist/registry/remote.js')).href;
+  try {
+    for (const kind of [
+      'directory',
+      'oversized',
+      ...(process.platform === 'win32' ? [] : ['fifo']),
+    ]) {
+      const file = path.join(temporary, kind);
+      if (kind === 'directory') mkdirSync(file);
+      if (kind === 'oversized') writeFileSync(file, ' '.repeat(2 * 1024 * 1024 + 1));
+      if (kind === 'fifo') assert.equal(spawnSync('mkfifo', [file]).status, 0);
+      const result = spawnSync(
+        process.execPath,
+        [
+          '--input-type=module',
+          '--eval',
+          `
+        import { loadSourceRegistry, buildSourceRegistry } from ${JSON.stringify(moduleUrl)};
+        for (const read of [loadSourceRegistry, buildSourceRegistry]) {
+          try { await read(${JSON.stringify(file)}); process.exitCode = 2; }
+          catch (error) { console.log(error.message); }
+        }
+      `,
+        ],
+        { encoding: 'utf8', timeout: 3000 },
+      );
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 0, result.stderr);
+      assert.match(result.stdout, /regular file|size limit/);
+    }
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
   }
 });
