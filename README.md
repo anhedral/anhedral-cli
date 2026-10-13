@@ -193,7 +193,7 @@ Anhedral is maintainer-led, with a small contribution surface. Focused bug fixes
 
 ## Development
 
-This checkout documents the unpublished development candidate. Use its matching local CLI, plugin, and registry when reviewing candidate behavior; installing the public npm release does not install these unshipped changes. Local tests and packaged-artifact checks do not establish live provider acceptance or native plugin installation.
+Match the CLI, plugin and registry versions when developing or reviewing changes. Unpublished changes require the locally built CLI and matching plugin rather than the public npm release. Local tests and packaged-artifact checks do not establish live provider acceptance or native plugin installation.
 
 ```sh
 pnpm install --frozen-lockfile

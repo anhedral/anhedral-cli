@@ -2,7 +2,7 @@
 
 Anhedral is headless-first: describe the application to Codex, review the selected stack, develop its features, authenticate to your providers and ship through the CLI. The optional project inspector displays the same local evidence available from `anhedral inspect --json`. Opening or refreshing it performs no provider calls, credential checks, provisioning, deployment or migrations.
 
-This is an unpublished development candidate. Packaging does not install or publish it. Actual Codex host rendering and composer behavior require separate verification; protocol tests do not establish those behaviors.
+Building or packaging the plugin does not install or publish it. Actual Codex host rendering and composer behavior require separate verification; protocol tests do not establish those behaviors.
 
 ## Screens and evidence
 
