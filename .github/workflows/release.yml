@@ -310,6 +310,12 @@ jobs:
             exit 1
           fi
 
+      - name: Publish immutable plugin source from the verified ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: node scripts/publish-plugin-source.mjs .artifacts/release/metadata.json
+
       - name: Create or verify tag
         env:
           RELEASE_SHA: ${{ inputs.release_sha }}

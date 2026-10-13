@@ -23,6 +23,10 @@ New project opens a new composer with this prompt, without sending: “Create a 
 
 Refresh reloads local files only. Rename and forget affect only local catalog metadata, never project source or provider resources. There is no project-creation or registration dialog. Register an explicitly authorized directory through the local operator command. MCP tool inputs accept project IDs rather than arbitrary filesystem paths.
 
+## Installation
+
+Install with `codex plugin marketplace add anhedral/anhedral-cli`, then `codex plugin add anhedral@anhedral`. The marketplace references `plugin-v<version>` in the same repository. The release workflow creates this immutable tag from the verified ZIP, including its generated runtime; the development source directory alone is not an installable release. Plugin source tags retain the reviewed release commit as their parent. Existing tags cannot be replaced by the release workflow.
+
 ## Local development
 
 The UI toolchain requires Node 22.13+ within Node 22, or Node 24+. The CLI retains its separately documented engines.

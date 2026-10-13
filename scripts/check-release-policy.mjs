@@ -383,6 +383,20 @@ function validatePluginRelease(root, version) {
       'utf8',
     ),
   );
+  const marketplace = JSON.parse(
+    readFileSync(path.join(root, '.agents/plugins/marketplace.json'), 'utf8'),
+  );
+  const entry = marketplace.plugins?.find((plugin) => plugin.name === 'anhedral');
+  if (
+    entry?.source?.source !== 'git-subdir' ||
+    entry.source.url !== 'https://github.com/anhedral/anhedral-cli.git' ||
+    entry.source.path !== './plugins/anhedral' ||
+    entry.source.ref !== `plugin-v${version}` ||
+    entry.policy?.installation !== 'AVAILABLE' ||
+    entry.policy?.authentication !== 'ON_INSTALL' ||
+    entry.category !== 'Developer Tools'
+  )
+    failures.push('Marketplace must pin the matching self-contained plugin release');
   if (
     manifest.version !== version ||
     registry.cliVersion !== version ||

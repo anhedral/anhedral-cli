@@ -217,6 +217,13 @@ try {
     path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/stack-registry.json'),
     JSON.stringify({ cliVersion: '0.4.0', items: [{ name: 'workspace', version: '0.4.0' }] }),
   );
+  mkdirSync(path.join(preparationRoot, '.agents/plugins'), { recursive: true });
+  writeFileSync(
+    path.join(preparationRoot, '.agents/plugins/marketplace.json'),
+    JSON.stringify({
+      plugins: [{ name: 'anhedral', source: { source: 'git-subdir', ref: 'plugin-v0.4.0' } }],
+    }),
+  );
   assert.deepEqual(prepareAutomaticRelease(preparationRoot, '0.4.0'), {
     version: '0.4.1',
     automatic: true,
@@ -246,6 +253,11 @@ try {
   );
   assert.equal(preparedStack.cliVersion, '0.4.1');
   assert.equal(preparedStack.items[0].version, '0.4.1');
+  assert.equal(
+    JSON.parse(readFileSync(path.join(preparationRoot, '.agents/plugins/marketplace.json')))
+      .plugins[0].source.ref,
+    'plugin-v0.4.1',
+  );
   assert.deepEqual(
     validateGeneratorVersion(
       { version: '0.4.1' },

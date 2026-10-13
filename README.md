@@ -21,7 +21,14 @@ Anhedral initializes a Vinext, React, TypeScript, Tailwind, shadcn/ui and Lucide
 
 Use `anhedral help <command>` for focused options and examples. Human output shows concise outcomes and next steps; `--json` preserves the complete result for scripts. `--cwd` / `-c` selects a project, and `--quiet` / `-q` suppresses human output while retaining errors and JSON. [CLI behavior and design](docs/cli-design.md) explains the comparison with shadcn, GitHub CLI and uv, and the source preview contract.
 
-Install the plugin and select **Try now**. Use the CLI version pinned by its bundled registry. A local rewrite or ZIP does not update an installed plugin; unpublished development versions require their matching local CLI and skill.
+Use the CLI independently, or install the optional Codex plugin:
+
+```sh
+codex plugin marketplace add anhedral/anhedral-cli
+codex plugin add anhedral@anhedral
+```
+
+Select **Try now** in Codex. The plugin uses the CLI version pinned by its bundled registry. A local rebuild does not update an installed plugin; development versions require their matching local CLI and plugin.
 
 Starter prompt:
 
@@ -46,6 +53,8 @@ The first command downloads the CLI through pnpm; the CLI's dry run performs no 
 **If Anhedral is useful to you, [star the repository](https://github.com/anhedral/anhedral-cli) to help other developers discover it.**
 
 ## Initialize, authenticate and deliver
+
+Install the CLI with `npm install --global anhedral`, or run these commands through `pnpm dlx anhedral@latest`.
 
 ```sh
 anhedral init my-app --hono --d1 --better-auth --r2
@@ -179,7 +188,7 @@ Initialize from Linux, macOS, or WSL. Native Windows initialization fails before
 
 The workflow follows the [Anhedral Application Stack & Delivery Standard](docs/application-stack-standard.md).
 
-Install the plugin with `codex plugin marketplace add anhedral/anhedral-cli`, then `codex plugin add anhedral@anhedral`. Released plugin ZIPs match the CLI version. The headless-first local development version adds an optional MCP-backed project inspector; see [plugin UI development](docs/plugin-ui.md) for preview, packaging and host integration. A public ChatGPT listing requires separate submission.
+Install the plugin with `codex plugin marketplace add anhedral/anhedral-cli`, then `codex plugin add anhedral@anhedral`. The marketplace pins an immutable plugin source tag containing the same self-contained runtime as the release ZIP. Released plugin ZIPs match the CLI version. The headless-first plugin includes an optional MCP-backed project inspector with Overview, Stack, Setup and Delivery sections; see [plugin UI development](docs/plugin-ui.md) for preview, packaging and host integration. A public ChatGPT listing requires separate submission.
 
 Ask: **“Build a team request dashboard with Anhedral. Include sign-in, persistent requests, ownership, status updates, and filters. Implement and verify the complete app.”**
 
