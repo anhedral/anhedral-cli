@@ -35,10 +35,16 @@ const repoRoot = path.resolve(__dirname, '..');
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-release-tooling-'));
 
 function runScript(script, args = [], env = {}) {
+  // Synthetic historical artifacts must not inherit the production release's pins.
+  const fixtureEnvironment = { ...process.env };
+  for (const name of Object.keys(fixtureEnvironment)) {
+    if (name === 'ANHEDRAL_REQUIRE_PLUGIN' || name.startsWith('ANHEDRAL_EXPECTED_'))
+      delete fixtureEnvironment[name];
+  }
   return spawnSync(process.execPath, [path.join(repoRoot, 'scripts', script), ...args], {
     cwd: repoRoot,
     encoding: 'utf8',
-    env: { ...process.env, ...env },
+    env: { ...fixtureEnvironment, ...env },
   });
 }
 
