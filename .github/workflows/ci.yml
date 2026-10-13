@@ -144,6 +144,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
           cache-dependency-path: plugin-app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --dir plugin-app install --frozen-lockfile
       - run: pnpm plugin:check
       - run: pnpm --dir plugin-app audit --audit-level low
