@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { writeBetterAuthSchema } from '../auth-schema.js';
 import type { RecipeContext } from '../registry/types.js';
-import { json, put, readJson, patchPackage, sharedPackage } from './files.js';
+import { put, patchPackage, sharedPackage } from './files.js';
 export function scaffoldBetterAuth({ root, options, runtimeApp, has }: RecipeContext): void {
   writeBetterAuthSchema(root, has('neon'));
   sharedPackage(
@@ -43,14 +43,6 @@ export function createAuth(db: ReturnType<typeof createDatabase>, secret: string
           `app.on(['GET', 'POST'], '/api/auth/*', async (c) => {\n  const env = c.env;\n  const database = ${connection};\n  return await createAuth(database, env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).handler(c.req.raw);\n});\nexport default app;`,
         ),
     );
-    const config = readJson(root, 'apps/api/wrangler.jsonc');
-    json(root, 'apps/api/wrangler.jsonc', {
-      ...config,
-      vars: {
-        BETTER_AUTH_URL: 'http://localhost:8787',
-        ...((config.vars as Record<string, unknown>) ?? {}),
-      },
-    });
   } else {
     put(
       root,
@@ -76,16 +68,8 @@ export { handler as GET, handler as POST };
       put(
         root,
         'apps/web/secrets.d.ts',
-        'declare namespace Cloudflare { interface Env { BETTER_AUTH_SECRET: string } }\n',
+        'declare namespace Cloudflare { interface Env { BETTER_AUTH_SECRET: string; BETTER_AUTH_URL: string } }\n',
       );
-      const config = readJson(root, 'apps/web/wrangler.jsonc');
-      json(root, 'apps/web/wrangler.jsonc', {
-        ...config,
-        vars: {
-          BETTER_AUTH_URL: 'http://localhost:3000',
-          ...((config.vars as Record<string, unknown>) ?? {}),
-        },
-      });
     }
     patchPackage(root, 'apps/web/package.json', {
       dependencies: { 'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'] },
@@ -101,7 +85,11 @@ export { handler as GET, handler as POST };
     },
   );
   if (has('hono'))
-    put(root, 'apps/api/src/secrets.d.ts', 'interface Env { BETTER_AUTH_SECRET: string }\n');
+    put(
+      root,
+      'apps/api/src/secrets.d.ts',
+      'interface Env { BETTER_AUTH_SECRET: string; BETTER_AUTH_URL: string }\n',
+    );
 }
 
 export function scaffoldClerk({ root, has }: RecipeContext): void {

@@ -217,6 +217,13 @@ try {
     path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/stack-registry.json'),
     JSON.stringify({ cliVersion: '0.4.0', items: [{ name: 'workspace', version: '0.4.0' }] }),
   );
+  mkdirSync(path.join(preparationRoot, '.agents/plugins'), { recursive: true });
+  writeFileSync(
+    path.join(preparationRoot, '.agents/plugins/marketplace.json'),
+    JSON.stringify({
+      plugins: [{ name: 'anhedral', source: { source: 'git-subdir', ref: 'plugin-v0.4.0' } }],
+    }),
+  );
   assert.deepEqual(prepareAutomaticRelease(preparationRoot, '0.4.0'), {
     version: '0.4.1',
     automatic: true,
@@ -246,6 +253,11 @@ try {
   );
   assert.equal(preparedStack.cliVersion, '0.4.1');
   assert.equal(preparedStack.items[0].version, '0.4.1');
+  assert.equal(
+    JSON.parse(readFileSync(path.join(preparationRoot, '.agents/plugins/marketplace.json')))
+      .plugins[0].source.ref,
+    'plugin-v0.4.1',
+  );
   assert.deepEqual(
     validateGeneratorVersion(
       { version: '0.4.1' },
@@ -394,25 +406,28 @@ try {
     /attach \.artifacts\/release\/metadata\.json/,
   );
 
+  writeFileSync(path.join(workflowPolicyDirectory, 'release.yml'), releaseWorkflow);
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release-on-main.yml'),
-    releaseOnMainWorkflow.replaceAll(
-      'gh workflow run ci.yml --ref "$RELEASE_BRANCH"',
-      'printf "CI not dispatched"',
-    ),
+    releaseOnMainWorkflow.replace('  workflow_dispatch:', '  workflow_run:'),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
-    /reviewed release PR with explicitly dispatched CI/,
+    /explicit reviewed-candidate dispatch/,
   );
-
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release-on-main.yml'),
-    releaseOnMainWorkflow.replaceAll('gh pr create', 'printf'),
+    releaseOnMainWorkflow.replace('REVIEWED_SHA: ${{ inputs.release_sha }}', 'REVIEWED_SHA: main'),
+  );
+  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /exact reviewed main commit/);
+  writeFileSync(path.join(workflowPolicyDirectory, 'release-on-main.yml'), releaseOnMainWorkflow);
+  writeFileSync(
+    path.join(workflowPolicyDirectory, 'release.yml'),
+    releaseWorkflow.replace("  ANHEDRAL_REQUIRE_PLUGIN: '1'", ''),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
-    /reviewed release PR with explicitly dispatched CI/,
+    /reviewed CLI and plugin artifacts/,
   );
 
   const token = ['ghp', '_', 'A'.repeat(32)].join('');

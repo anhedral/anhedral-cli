@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  rmSync,
+  existsSync,
+  statSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -14,10 +22,59 @@ import {
   adoptVercelApplication,
   recoverVercelApplication,
   writeVercelOverview,
+  configureVercelEnvironment,
 } from '../dist/vercel.js';
 const team = 'team_Customer',
   projectId = 'prj_Application',
   commit = 'b'.repeat(40);
+
+test('Vercel configures production variables through a private file, verifies partial failures and removes temporary credentials', async () => {
+  const root = fixture();
+  const mock = provider(root);
+  let temporary;
+  let reject = false;
+  const values = { OPENAI_API_KEY: 'runtime-only-key' };
+  const run = async (command, args, cwd, env) => {
+    if (args[2] === 'api' && args[3].includes('/env?upsert=true')) {
+      assert.ok(args.includes(team));
+      assert.doesNotMatch(args.join(' '), /runtime-only-key/);
+      temporary = args[args.indexOf('--input') + 1];
+      if (process.platform !== 'win32') assert.equal(statSync(temporary).mode & 0o777, 0o600);
+      assert.deepEqual(JSON.parse(readFileSync(temporary, 'utf8')), [
+        {
+          key: 'OPENAI_API_KEY',
+          value: values.OPENAI_API_KEY,
+          type: 'encrypted',
+          target: ['production'],
+        },
+      ]);
+      return JSON.stringify(
+        reject
+          ? { failed: [{ error: { message: values.OPENAI_API_KEY } }] }
+          : { failed: [], created: [{ key: 'OPENAI_API_KEY', target: ['production'] }] },
+      );
+    }
+    return mock.run(command, args, cwd, env);
+  };
+  try {
+    await connect(root, mock.run);
+    await configureVercelEnvironment(root, values, run);
+    assert.equal(existsSync(temporary), false);
+    reject = true;
+    await assert.rejects(
+      configureVercelEnvironment(root, values, run),
+      (error) =>
+        /did not confirm/.test(error.message) && !error.message.includes(values.OPENAI_API_KEY),
+    );
+    assert.equal(existsSync(temporary), false);
+    assert.equal(
+      mock.calls.some((call) => call.args[2] === 'deploy'),
+      false,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 function fixture() {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-vercel-test-'));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });

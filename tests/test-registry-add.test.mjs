@@ -28,6 +28,83 @@ const runner = (_command, args, cwd) => {
     writeFileSync(path.join(cwd, 'pnpm-lock.yaml'), 'lockfileVersion: "9.0"\n');
   else throw new Error(`Unexpected command: ${args}`);
 };
+
+test('add source previews show staged changes without installing, printing private files or replacing edited source', async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-add-source-preview-'));
+  const root = path.join(temporary, 'project');
+  try {
+    await project(root);
+    const before = sourceFiles(root);
+    const file = 'packages/email/src/index.ts';
+    const cli = spawnSync(
+      process.execPath,
+      [path.resolve('dist/bin.js'), '--cwd', root, 'add', 'resend', '--diff', file, '--json'],
+      { encoding: 'utf8', env: { ...process.env, CI: '1' } },
+    );
+    assert.equal(cli.status, 0, cli.stderr);
+    assert.match(JSON.parse(cli.stdout).previews[0].diff, /createEmail/);
+    assert.equal(cli.stderr, '');
+    assert.deepEqual(sourceFiles(root), before);
+    const diff = await addStackItems(
+      root,
+      { items: ['resend'], dryRun: true, preview: { mode: 'diff', path: file } },
+      runner,
+    );
+    assert.equal(diff.previews.length, 1);
+    assert.match(diff.previews[0].diff, /new file mode|createEmail/);
+    assert.equal(existsSync(path.join(root, file)), false);
+    assert.deepEqual(sourceFiles(root), before);
+    const view = await addStackItems(
+      root,
+      { items: ['resend'], dryRun: true, preview: { mode: 'view', path: file } },
+      runner,
+    );
+    assert.match(view.previews[0].content, /createEmail/);
+    const all = await addStackItems(
+      root,
+      { items: ['resend'], dryRun: true, preview: { mode: 'view' } },
+      runner,
+    );
+    assert.ok(all.previews.some((preview) => preview.path === '.env.example'));
+    assert.ok(all.previews.every((preview) => !preview.path.includes('.anhedral/')));
+    await assert.rejects(
+      addStackItems(
+        root,
+        {
+          items: ['resend'],
+          dryRun: true,
+          preview: { mode: 'view', path: '.anhedral/providers.json' },
+        },
+        runner,
+      ),
+      /private environment/,
+    );
+    await assert.rejects(
+      addStackItems(
+        root,
+        { items: ['resend'], dryRun: true, preview: { mode: 'view', path: 'unrelated.ts' } },
+        runner,
+      ),
+      /not a changed generated/,
+    );
+    await assert.rejects(
+      addStackItems(root, { items: ['resend'], preview: { mode: 'diff' } }, runner),
+      /require dry-run/,
+    );
+    await addStackItems(root, { items: ['resend'], skipInstall: true }, runner);
+    writeFileSync(path.join(root, file), '// User-owned implementation.\n');
+    const edited = sourceFiles(root);
+    const conflicted = await addStackItems(
+      root,
+      { items: ['stripe'], dryRun: true, preview: { mode: 'diff' } },
+      runner,
+    );
+    assert.ok(conflicted.previews.length);
+    assert.deepEqual(sourceFiles(root), edited);
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
 async function project(root, flags = ['--hono']) {
   const log = console.log;
   console.log = () => {};

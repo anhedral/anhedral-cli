@@ -19,11 +19,18 @@ import { createRecipeContext } from './context.js';
 import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
 import { sourceFiles } from './receipt.js';
 import type { StandardOptions, StandardProduct, StandardRunner } from './types.js';
+import {
+  sourcePreview,
+  validatePreviewPath,
+  MAX_PREVIEW_TOTAL_BYTES,
+  type SourcePreview,
+} from './preview.js';
 
 export interface AddRequest {
   items: string[];
   dryRun?: boolean;
   skipInstall?: boolean;
+  preview?: { mode: 'diff' | 'view'; path?: string };
 }
 
 /** Add recipes to an initialized workspace, refusing edits to customer-owned source. */
@@ -33,8 +40,17 @@ export async function addStackItems(
   run: StandardRunner = execFile,
 ) {
   for (const key of Object.keys(request))
-    if (!['items', 'dryRun', 'skipInstall'].includes(key))
+    if (!['items', 'dryRun', 'skipInstall', 'preview'].includes(key))
       throw new Error(`Unknown add option: ${key}. Only bundled registry items are supported.`);
+  if (request.preview) {
+    if (
+      !request.dryRun ||
+      !['diff', 'view'].includes(request.preview.mode) ||
+      Object.keys(request.preview).some((key) => !['mode', 'path'].includes(key))
+    )
+      throw new Error('Source previews require dry-run and one mode: diff or view.');
+    if (request.preview.path !== undefined) validatePreviewPath(request.preview.path);
+  }
   if (!request.dryRun) assertWorkspaceRuntime(run);
   root = realpathSync(root);
   if (!request.items.length) throw new Error('Select at least one registry item.');
@@ -101,11 +117,16 @@ export async function addStackItems(
     targets: recipes.flatMap((item) => item.targets),
     files: commitPaths,
     conflicts,
+    ...(request.preview ? { previews: [] as SourcePreview[] } : {}),
   };
   // The upstream web generator requires network access and executes package scripts.
   // A preview reports the resolved selection without invoking that generator.
   if (request.dryRun && result.bootstrapRequired) {
     result.filesChecked = false;
+    if (request.preview)
+      throw new Error(
+        'Source preview requires a new web bootstrap and cannot run offline. Use add --dry-run for the selection plan.',
+      );
     return result;
   }
   await runStagedTransaction(root, {
@@ -190,6 +211,24 @@ export async function addStackItems(
         files,
       });
       commitPaths.push('anhedral.registry.json');
+      if (request.preview && result.previews) {
+        const preview = request.preview;
+        const selected = [...commitPaths]
+          .filter((file) => !preview.path || preview.path === file)
+          .sort();
+        if (preview.path && !selected.length)
+          throw new Error('Requested path is not a changed generated source file.');
+        let total = 0;
+        for (const file of selected) {
+          const content = sourcePreview(root, stage, file, preview.mode);
+          total += Buffer.byteLength(JSON.stringify(content));
+          if (total > MAX_PREVIEW_TOTAL_BYTES)
+            throw new Error(
+              'Source preview exceeds 1 MiB. Select a single file with --diff <path> or --view <path>.',
+            );
+          result.previews.push(content);
+        }
+      }
       // Detect concurrent changes even to source that this addition would otherwise preserve.
       if (
         !isDeepStrictEqual(sourceFiles(root), before) ||

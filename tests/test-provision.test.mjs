@@ -13,6 +13,39 @@ import {
 import { reconcileAccess } from '../dist/access.js';
 import { listCloudflare, cloudflareRequest } from '../dist/cloudflare.js';
 const account = 'a'.repeat(32);
+
+test('Basin creates private JSON streams, resolves bindings and refuses public ingestion during reconciliation', async () => {
+  const root = fixture({
+    pipelines: [{ binding: 'ANALYTICS', stream: 'REPLACE_WITH_BASIN_STREAM_ID' }],
+  });
+  const id = 'b'.repeat(32);
+  let created;
+  const request = async (method, endpoint, body) => {
+    if (method === 'POST') {
+      created = { id, ...body };
+      return { result: created };
+    }
+    if (endpoint.split('?')[0] === '/pipelines/v1/streams')
+      return { result: created ? [created] : [] };
+    return { result: created };
+  };
+  try {
+    await connectApplication(root, account, 'public', run);
+    const first = await provisionApplication(root, false, run, request);
+    assert.equal(first.resources[0].kind, 'stream');
+    assert.deepEqual(created.http, { enabled: false, authentication: true });
+    assert.deepEqual(created.worker_binding, { enabled: true });
+    assert.equal(
+      parse(readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8')).pipelines[0].stream,
+      id,
+    );
+    await provisionApplication(root, false, run, request);
+    created.http.enabled = true;
+    await assert.rejects(inspectApplicationResources(root, request), /private Worker binding/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 function fixture(config = {}) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-resource-test-'));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });

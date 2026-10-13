@@ -1,9 +1,40 @@
 import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
+import { digest, pluginSourceDigest } from '../plugin-app/source-integrity.mjs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { buildPluginArchive } from '../scripts/package-plugin.mjs';
-const root = path.resolve(import.meta.dirname, '..');
+const checkout = path.resolve(import.meta.dirname, '..');
+// Portable package-contract fixture: UI compilation runs separately on its supported Node engines.
+const root = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-package-'));
+process.on('exit', () => rmSync(root, { recursive: true, force: true }));
+for (const relative of ['plugins', 'assets', 'src', 'plugin-app']) {
+  cpSync(path.join(checkout, relative), path.join(root, relative), {
+    recursive: true,
+    filter: (source) => !['node_modules', 'dist', 'runtime'].includes(path.basename(source)),
+  });
+}
+cpSync(path.join(checkout, 'package.json'), path.join(root, 'package.json'));
+const runtime = path.join(root, 'plugins/anhedral/runtime');
+mkdirSync(runtime, { recursive: true });
+const runtimeFiles = {
+  'THIRD_PARTY_NOTICES.txt': 'Fixture notices',
+  'server.mjs': 'export {};',
+  'dashboard.html': '<!doctype html><title>Fixture</title>',
+};
+for (const [name, bytes] of Object.entries(runtimeFiles))
+  writeFileSync(path.join(runtime, name), bytes);
+writeFileSync(
+  path.join(runtime, 'build.json'),
+  JSON.stringify({
+    version: JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).version,
+    sourceDigest: pluginSourceDigest(root),
+    files: Object.fromEntries(
+      Object.entries(runtimeFiles).map(([name, bytes]) => [name, digest(bytes)]),
+    ),
+  }),
+);
 const result = buildPluginArchive(root);
 assert.deepEqual(
   result.contents,
@@ -24,21 +55,33 @@ while (result.contents.readUInt32LE(offset) === 0x04034b50) {
 assert.ok(files.has('plugin.json'));
 assert.ok(files.has('skills/anhedral/SKILL.md'));
 assert.ok(files.has('LICENSE'));
-for (const legacy of ['mcp.json', 'server.mjs', 'assets/control-panel.html'])
+for (const name of [
+  'mcp.json',
+  'runtime/server.mjs',
+  'runtime/dashboard.html',
+  'runtime/build.json',
+  'runtime/THIRD_PARTY_NOTICES.txt',
+])
+  assert.ok(files.has(name), `Plugin must bundle ${name}`);
+const mcp = JSON.parse(files.get('mcp.json')).mcpServers['anhedral-projects'];
+assert.equal(mcp.type, 'stdio');
+assert.deepEqual(mcp.args, ['${PLUGIN_ROOT}/runtime/server.mjs', 'serve']);
+assert.equal(mcp.env.ANHEDRAL_PLUGIN_DATA, '${PLUGIN_DATA}/sites');
+for (const legacy of ['server.mjs', 'assets/control-panel.html'])
   assert.equal(files.has(legacy), false, `Default plugin must exclude ${legacy}`);
-assert.ok(
-  !JSON.parse(files.get('plugin.json')).extensions['com.openai'].interface.capabilities.includes(
-    'Interactive',
-  ),
-);
 const manifest = JSON.parse(files.get('plugin.json'));
 assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [
-  'Create a new app with [@Anhedral](plugin://anhedral@anhedral). Start by asking me what it should do.',
+  'Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about.',
 ]);
 for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
   assert.deepEqual(
     files.get(manifest.extensions['com.openai'].interface[field].replace(/^\.\//, '')),
-    readFileSync(path.join(root, 'assets/anhedral.svg')),
+    Buffer.from(
+      readFileSync(path.join(root, 'assets/anhedral-mark.svg'), 'utf8').replace(
+        /fill="white"/g,
+        field.endsWith('Dark') ? 'fill="white"' : 'fill="black"',
+      ),
+    ),
   );
 }
 for (const [name, contents] of files) {

@@ -1,28 +1,28 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "Build and ship applications with a Cloudflare-first stack, explicit architecture and verified delivery evidence.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
   },
-  "repository": "https://github.com/anhedral/anhedral-init",
+  "repository": "https://github.com/anhedral/anhedral-cli",
   "license": "Apache-2.0",
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Build and ship applications",
-        "longDescription": "Describe your application. Anhedral guides Codex through implementation with Vinext and Cloudflare Workers by default, adding D1, Better Auth and Workers AI when needed. Native Next.js on Vercel remains an option. The CLI verifies supported customer-account delivery; Anhedral-managed hosting is under development. Architecture and product verification remain visible in your source.",
+        "longDescription": "Describe your application. Anhedral guides Codex through implementation with Vinext and Cloudflare Workers by default, adding D1, Better Auth and Workers AI when needed. Native Next.js on Vercel remains an option. The CLI scaffolds applications and verifies supported delivery into your own provider accounts. Architecture and product verification remain visible in your source.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
-        "composerIcon": "./assets/anhedral.svg",
-        "composerIconDark": "./assets/anhedral.svg",
-        "logo": "./assets/anhedral.svg",
-        "logoDark": "./assets/anhedral.svg",
+        "composerIcon": "./assets/anhedral-mark.svg",
+        "composerIconDark": "./assets/anhedral-mark-dark.svg",
+        "logo": "./assets/anhedral-mark.svg",
+        "logoDark": "./assets/anhedral-mark-dark.svg",
         "defaultPrompt": [
-          "Create a new app with [@Anhedral](plugin://anhedral@anhedral). Start by asking me what it should do."
+          "Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about."
         ],
         "capabilities": [
           "Read",

@@ -18,6 +18,9 @@ import {
 import { writeSetupDocumentation, workerBuildSuffix } from './documentation.js';
 import { writeStackDocumentation } from './stack-documentation.js';
 import { writeEnvironmentExample } from './environment.js';
+import { providerConfigurationTemplate, type ProviderConfiguration } from '../providers/config.js';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 function securityOverrides(options: StandardOptions): Record<string, string> {
   const has = (value: StandardProduct) => options.products.includes(value);
   return {
@@ -183,5 +186,14 @@ process.exitCode = result.status ?? 1;
     resourcesProvisioned: false,
   });
   json(root, 'anhedral.setup.json', createSetupPlan({ ...options, dryRun: false }, registry));
+  const providers = providerConfigurationTemplate(options.products, options.name);
+  const prior =
+    updating && existsSync(path.join(root, 'anhedral.providers.json'))
+      ? (readJson(root, 'anhedral.providers.json') as unknown as ProviderConfiguration)
+      : undefined;
+  json(root, 'anhedral.providers.json', {
+    ...providers,
+    providers: { ...providers.providers, ...prior?.providers },
+  });
   if (!updating) writeSetupDocumentation(root, options);
 }

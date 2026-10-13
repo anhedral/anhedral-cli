@@ -15,7 +15,7 @@ import {
 import { cloudflareRequest, listCloudflare, type CloudflareRequest } from './cloudflare.js';
 
 interface Resource {
-  kind: 'd1' | 'r2' | 'kv' | 'queue';
+  kind: 'd1' | 'r2' | 'kv' | 'queue' | 'stream';
   name: string;
   id?: string;
   target: string;
@@ -26,6 +26,7 @@ const resourceTypes = {
   r2: { endpoint: '/r2/buckets', nameField: 'name', idField: 'name' },
   kv: { endpoint: '/storage/kv/namespaces', nameField: 'title', idField: 'id' },
   queue: { endpoint: '/queues', nameField: 'queue_name', idField: 'queue_id' },
+  stream: { endpoint: '/pipelines/v1/streams', nameField: 'name', idField: 'id' },
 } as const;
 
 async function listResources(
@@ -33,6 +34,24 @@ async function listResources(
   kind: Resource['kind'],
 ): Promise<Record<string, unknown>[]> {
   const { endpoint } = resourceTypes[kind];
+  if (kind === 'stream') {
+    const streams: Record<string, unknown>[] = [];
+    let bytes = 0;
+    for (let page = 0; page < 1000; page++) {
+      const response = await request('GET', `${endpoint}?page=${page}&per_page=100`);
+      if (!Array.isArray(response.result)) throw new Error('Unsupported stream listing.');
+      if (response.result.some((item) => !item || typeof item !== 'object' || Array.isArray(item)))
+        throw new Error('Unsupported stream resource.');
+      streams.push(...response.result);
+      bytes += Buffer.byteLength(JSON.stringify(response.result));
+      if (streams.length > 10_000 || bytes > 10 * 1024 * 1024)
+        throw new Error(
+          'Stream listing exceeded collection limit; select resource IDs explicitly.',
+        );
+      if (response.result.length < 100) return streams;
+    }
+    throw new Error('Stream listing exceeded pagination limit.');
+  }
   if (kind !== 'r2') return listCloudflare(request, endpoint);
   const value = (await request('GET', endpoint)).result as {
     buckets?: Record<string, unknown>[];
@@ -43,6 +62,23 @@ async function listResources(
       'Unsupported or truncated R2 bucket listing; select resources explicitly with provider tooling.',
     );
   return value.buckets;
+}
+
+async function assertPrivateStream(request: CloudflareRequest, id: string): Promise<void> {
+  if (!/^[a-f0-9]{32}$/i.test(id)) throw new Error('Invalid Basin stream ID.');
+  const stream = (await request('GET', `${resourceTypes.stream.endpoint}/${id}`)).result as {
+    http?: { enabled?: unknown };
+    worker_binding?: { enabled?: unknown };
+    format?: { type?: unknown };
+  };
+  if (
+    stream?.http?.enabled !== false ||
+    stream.worker_binding?.enabled !== true ||
+    stream.format?.type !== 'json'
+  )
+    throw new Error(
+      'Basin stream must use a private Worker binding with JSON events and HTTP ingestion disabled.',
+    );
 }
 
 /** Provisioning and recovery use the same independently verified private-storage policy. */
@@ -120,12 +156,31 @@ export function planProvisioning(root: string) {
           target: target.id,
         });
     }
+    if (config.pipelines !== undefined) {
+      if (!Array.isArray(config.pipelines)) throw new Error('Invalid Basin stream bindings.');
+      config.pipelines.forEach((entry, index) => {
+        if (
+          !entry ||
+          typeof entry.binding !== 'string' ||
+          typeof entry.stream !== 'string' ||
+          entry.pipeline
+        )
+          throw new Error('Use explicit Basin stream bindings.');
+        resources.push({
+          kind: 'stream',
+          name: resourceName(`${project.name}-${entry.binding.toLowerCase()}`),
+          target: target.id,
+          id: entry.stream.startsWith('REPLACE_WITH_') ? undefined : entry.stream,
+          field: ['pipelines', index, 'stream'],
+        });
+      });
+    }
   }
   return {
     projectId: project.id,
     accountId: project.accountId,
     resources,
-    externalIntegrations: ['hyperdrive', 'pipelines'].filter((key) =>
+    externalIntegrations: ['hyperdrive'].filter((key) =>
       project.targets.some((target) => key in readConfig(targetDirectory(root, target))),
     ),
   };
@@ -185,8 +240,18 @@ export async function provisionApplication(
           );
         assertConfiguration();
         if (!value)
-          value = (await request('POST', endpoint, { [nameField]: resource.name }))
-            .result as Record<string, unknown>;
+          value = (
+            await request('POST', endpoint, {
+              [nameField]: resource.name,
+              ...(resource.kind === 'stream'
+                ? {
+                    http: { enabled: false, authentication: true },
+                    worker_binding: { enabled: true },
+                    format: { type: 'json', unstructured: true },
+                  }
+                : {}),
+            })
+          ).result as Record<string, unknown>;
         if (!value || typeof value[idField] !== 'string' || !value[idField])
           throw new Error(
             'Provider did not return a resource identity; inspect provider state before retrying.',
@@ -209,6 +274,7 @@ export async function provisionApplication(
           state: 'reconciling',
         });
         if (resource.kind === 'r2') await assertPrivateBucket(request, resource.name);
+        if (resource.kind === 'stream') await assertPrivateStream(request, receipt.id);
       }
       assertConfiguration();
       if (resource.id && receipt.id !== resource.id)
@@ -257,6 +323,7 @@ export async function inspectApplicationResources(root: string, request: Cloudfl
         'Committed resource identity differs from the registered account; recovery will not replace it.',
       );
     if (resource.kind === 'r2') await assertPrivateBucket(request, resource.name);
+    if (resource.kind === 'stream') await assertPrivateStream(request, id);
     receipts.push({ kind: resource.kind, name: resource.name, id, target: resource.target });
   }
   return { resources: receipts, externalIntegrations: plan.externalIntegrations };

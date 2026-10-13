@@ -7,12 +7,21 @@ on:
         description: Exact commit containing the prepared release version
         required: true
         type: string
+      cli_integrity:
+        description: Reviewed CLI artifact SHA-512 integrity
+        required: true
+        type: string
+      plugin_integrity:
+        description: Reviewed plugin archive SHA-512 integrity
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 env:
   RELEASE_NODE_VERSION: '24.18.0'
+  ANHEDRAL_REQUIRE_PLUGIN: '1'
 
 concurrency:
   group: npm-publish-anhedral
@@ -28,6 +37,7 @@ jobs:
     outputs:
       artifact_name: ${{ steps.metadata.outputs.artifact_name }}
       integrity: ${{ steps.metadata.outputs.integrity }}
+      plugin_integrity: ${{ steps.metadata.outputs.plugin_integrity }}
       tarball: ${{ steps.metadata.outputs.tarball }}
       version: ${{ steps.metadata.outputs.version }}
     steps:
@@ -61,6 +71,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install plugin UI dependencies
+        run: pnpm --dir plugin-app install --frozen-lockfile
+
+      - name: Verify and build plugin UI
+        run: pnpm plugin:check && pnpm --dir plugin-app audit --audit-level low
+
       - name: Run release checks
         run: pnpm release:check
 
@@ -68,6 +84,9 @@ jobs:
         run: node scripts/create-release-artifact.mjs && pnpm check:release-secrets
 
       - name: Verify release artifact
+        env:
+          ANHEDRAL_EXPECTED_INTEGRITY: ${{ inputs.cli_integrity }}
+          ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ inputs.plugin_integrity }}
         run: pnpm release:artifact:verify
 
       - name: Smoke test exact release artifact
@@ -81,7 +100,9 @@ jobs:
           INTEGRITY=$(node -p "JSON.parse(require('node:fs').readFileSync('.artifacts/release/metadata.json', 'utf8')).integrity")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+          PLUGIN_INTEGRITY=$(node -p "JSON.parse(require('node:fs').readFileSync('.artifacts/release/metadata.json', 'utf8')).plugin.integrity")
           echo "integrity=$INTEGRITY" >> "$GITHUB_OUTPUT"
+          echo "plugin_integrity=$PLUGIN_INTEGRITY" >> "$GITHUB_OUTPUT"
           echo "artifact_name=anhedral-$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Refuse an existing tag from another commit
@@ -158,6 +179,7 @@ jobs:
         env:
           ANHEDRAL_EXPECTED_FILENAME: ${{ needs.verify.outputs.tarball }}
           ANHEDRAL_EXPECTED_INTEGRITY: ${{ needs.verify.outputs.integrity }}
+          ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ needs.verify.outputs.plugin_integrity }}
           ANHEDRAL_EXPECTED_NAME: anhedral
           ANHEDRAL_EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
         run: |
@@ -210,6 +232,7 @@ jobs:
         env:
           ANHEDRAL_EXPECTED_FILENAME: ${{ needs.verify.outputs.tarball }}
           ANHEDRAL_EXPECTED_INTEGRITY: ${{ needs.verify.outputs.integrity }}
+          ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ needs.verify.outputs.plugin_integrity }}
           ANHEDRAL_EXPECTED_NAME: anhedral
           ANHEDRAL_EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
         run: node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json
@@ -272,6 +295,7 @@ jobs:
         env:
           ANHEDRAL_EXPECTED_FILENAME: ${{ needs.verify.outputs.tarball }}
           ANHEDRAL_EXPECTED_INTEGRITY: ${{ needs.verify.outputs.integrity }}
+          ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ needs.verify.outputs.plugin_integrity }}
           ANHEDRAL_EXPECTED_NAME: anhedral
           ANHEDRAL_EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
         run: node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json
@@ -285,6 +309,12 @@ jobs:
             echo "package.json version $PACKAGE_VERSION does not match published version $EXPECTED_VERSION"
             exit 1
           fi
+
+      - name: Publish immutable plugin source from the verified ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: node scripts/publish-plugin-source.mjs .artifacts/release/metadata.json
 
       - name: Create or verify tag
         env:

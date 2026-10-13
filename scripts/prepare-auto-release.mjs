@@ -62,6 +62,12 @@ export function prepareAutomaticRelease(root, publishedVersion, automaticPatch =
   const stack = JSON.parse(readFileSync(stackPath, 'utf8'));
   const plugin = JSON.parse(readFileSync(pluginPath, 'utf8'));
   const registry = JSON.parse(readFileSync(registryPath, 'utf8'));
+  const marketplacePath = path.join(root, '.agents/plugins/marketplace.json');
+  const marketplace = JSON.parse(readFileSync(marketplacePath, 'utf8'));
+  const marketplacePlugin = marketplace.plugins?.find((entry) => entry.name === 'anhedral');
+  if (marketplacePlugin?.source?.source !== 'git-subdir')
+    throw new Error('Marketplace must use the versioned plugin source');
+  marketplacePlugin.source.ref = `plugin-v${resolution.version}`;
   packageJson.version = resolution.version;
   plugin.version = resolution.version;
   registry.cliVersion = resolution.version;
@@ -72,6 +78,7 @@ export function prepareAutomaticRelease(root, publishedVersion, automaticPatch =
   writeFileSync(pluginPath, `${JSON.stringify(plugin, null, 2)}\n`);
   writeFileSync(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
   writeFileSync(stackPath, `${JSON.stringify(stack, null, 2)}\n`);
+  writeFileSync(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`);
 
   return resolution;
 }

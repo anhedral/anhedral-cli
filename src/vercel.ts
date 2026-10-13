@@ -21,7 +21,7 @@ import {
 // Keep provider commands reproducible independently of globally installed tooling.
 const cli = ['dlx', 'vercel@62.7.0'];
 const manifest = 'anhedral.web.json';
-interface WebProject {
+export interface WebProject {
   schemaVersion: 1;
   id: string;
   name: string;
@@ -35,7 +35,7 @@ interface WebProject {
   use: 'unconfigured' | 'personal' | 'commercial';
   repository?: { repoId: number; nameWithOwner: string; productionBranch?: string };
 }
-interface WebRelease {
+export interface WebRelease {
   id: string;
   commit: string;
   operation: 'ship' | 'rollback' | 'adopt' | 'recover';
@@ -801,7 +801,7 @@ export function planVercelDelivery(root: string) {
     checks: ['pnpm run check'],
     deployment: ['pnpm', ...cli, 'deploy', '--prod', '--yes'],
     cloudflareServices: existsSync(path.join(root, 'anhedral.project.json'))
-      ? 'Deploy and verify separately with --provider cloudflare before shipping the web app.'
+      ? 'Default ship deploys Cloudflare services first. Explicit --provider vercel ships only the web app; verify its service dependencies separately.'
       : 'none',
     mutation: false,
   };
@@ -836,6 +836,52 @@ export async function vercelApplicationStatus(root: string, refresh = false, run
     management: project.scope ? `https://vercel.com/${project.scope}/${project.name}` : null,
   };
 }
+export async function configureVercelEnvironment(
+  root: string,
+  values: Record<string, string>,
+  run = defaultRunner,
+): Promise<void> {
+  const project = readWeb(root);
+  if (!project.projectId || !project.teamId)
+    throw new Error('Connect Vercel before configuring environment variables.');
+  context(root, project);
+  await inspect(root, project, run);
+  if (!Object.keys(values).length) return;
+  const response = await api(
+    root,
+    run,
+    `/v10/projects/${project.projectId}/env?upsert=true`,
+    project.teamId,
+    Object.entries(values).map(([key, value]) => ({
+      key,
+      value,
+      type: 'encrypted',
+      target: ['production'],
+    })),
+  );
+  const created = Array.isArray(response.created)
+    ? response.created
+    : response.created
+      ? [response.created]
+      : [];
+  if (
+    !Array.isArray(response.failed) ||
+    response.failed.length ||
+    Object.keys(values).some(
+      (key) =>
+        !created.some(
+          (entry: { key?: unknown; target?: unknown }) =>
+            entry.key === key &&
+            (entry.target === 'production' ||
+              (Array.isArray(entry.target) && entry.target.includes('production'))),
+        ),
+    )
+  )
+    throw new Error(
+      'Vercel did not confirm all selected production environment variables; deployment was not started.',
+    );
+}
+
 export async function shipVercelApplication(root: string, run = defaultRunner) {
   root = realpathSync(root);
   const result = await withApplicationLock(root, async () => {

@@ -17,6 +17,7 @@ import { composeStack } from './scaffold/compose.js';
 import { parseStandardOptions } from './registry/options.js';
 import { STANDARD_USAGE } from './registry/usage.js';
 import type { StandardOptions, StandardRunner } from './registry/types.js';
+import { printProgress, printResult, type OutputOptions } from './cli-output.js';
 export { parseStandardOptions, STANDARD_USAGE };
 export { STANDARD_PRODUCTS } from './stack-registry.js';
 export type { StandardOptions, StandardProduct, StandardRunner } from './registry/types.js';
@@ -24,10 +25,12 @@ export type { StandardOptions, StandardProduct, StandardRunner } from './registr
 export async function scaffoldStandardProject(
   options: StandardOptions,
   run: StandardRunner = execFile,
+  output: OutputOptions = {},
 ): Promise<void> {
   const plan = createSetupPlan(options);
+  const display = { ...output, json: options.json };
   if (options.dryRun) {
-    console.log(options.json ? JSON.stringify(plan, null, 2) : JSON.stringify(plan));
+    printResult('init', plan, { ...output, json: options.json });
     return;
   }
   assertBootstrapPlatform(run);
@@ -57,7 +60,9 @@ export async function scaffoldStandardProject(
         if (entries.length) throw new Error('Destination changed before generation.');
       },
       build: async (stageRoot) => {
+        printProgress('Creating the shadcn/Turborepo workspace…', display);
         bootstrapWorkspace(stageRoot, options.name, run);
+        printProgress('Composing the selected stack…', display);
         await composeStack(stageRoot, options, plan.registry);
         if (options.products.includes('next') && options.hosting === 'vercel')
           registerVercelApplication(stageRoot);
@@ -67,6 +72,7 @@ export async function scaffoldStandardProject(
           )
         )
           registerApplication(stageRoot);
+        printProgress('Resolving pinned dependencies…', display);
         run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
         if (configureSecurityBackports(stageRoot))
           run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
@@ -82,21 +88,13 @@ export async function scaffoldStandardProject(
           if (checkout.status !== 0 || realpathSync(checkout.stdout.trim()) !== realpathSync(root))
             run('git', ['init'], root);
         }
-        if (!options.skipInstall) run('pnpm', ['install', '--frozen-lockfile'], root);
+        if (!options.skipInstall) {
+          printProgress('Installing workspace dependencies…', display);
+          run('pnpm', ['install', '--frozen-lockfile'], root);
+        }
       },
     });
-    console.log(
-      options.json
-        ? JSON.stringify({ ...plan, generated: true })
-        : `Created ${root}. Next: cd ${JSON.stringify(root)}, then pnpm dev. Implement the product flows, configure selected resources using README.md and anhedral.setup.json, and run pnpm check. Record stack decisions in docs/architecture.md and exercised acceptance criteria in docs/verification.md.`,
-    );
-    if (!options.json) {
-      console.log('\nHelp keep Anhedral Init free and open source.');
-      console.log('Sponsor ongoing development, maintenance, and documentation.');
-      console.log(
-        'Become a sponsor: https://github.com/anhedral/anhedral-init/blob/main/docs/sponsorships.md',
-      );
-    }
+    printResult('init', { ...plan, generated: true }, { ...output, json: options.json });
   } finally {
     if (created && existsSync(root) && readdirSync(root).length === 0) rmdirSync(root);
     if (previousQuiet === undefined) delete process.env.ANHEDRAL_QUIET;

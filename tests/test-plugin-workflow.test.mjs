@@ -75,7 +75,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
       );
     }
     assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [
-      'Create a new app with [@Anhedral](plugin://anhedral@anhedral). Start by asking me what it should do.',
+      'Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about.',
     ]);
     const app = path.join(temporary, 'my-first-app');
     const plan = JSON.parse(successful('new', app, '--dry-run', '--json'));

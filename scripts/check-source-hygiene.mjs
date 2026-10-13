@@ -2,7 +2,16 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
-const directories = ['.agents', '.github', 'docs', 'plugins', 'scripts', 'src', 'tests'];
+const directories = [
+  '.agents',
+  '.github',
+  'docs',
+  'plugin-app',
+  'plugins',
+  'scripts',
+  'src',
+  'tests',
+];
 const rootFiles = [
   '.gitignore',
   'LICENSE',
@@ -30,7 +39,8 @@ function collect(directory) {
   for (const entry of readdirSync(directory)) {
     const absolute = path.join(directory, entry);
     const relative = path.relative(root, absolute);
-    if (relative.includes('node_modules')) continue;
+    if (relative.split(path.sep).some((part) => ['node_modules', 'dist', 'runtime'].includes(part)))
+      continue;
     if (statSync(absolute).isDirectory()) files.push(...collect(absolute));
     else if (textExtensions.has(path.extname(entry))) files.push(absolute);
   }

@@ -251,6 +251,7 @@ try {
   await scaffoldStandardProject(web, runner);
   assert.equal(read(web.root, 'anhedral.setup.json').root, web.root);
   assert.equal(read(web.root, 'anhedral.setup.json').setup.resourcesProvisioned, false);
+  assert.deepEqual(read(web.root, 'anhedral.providers.json'), { schemaVersion: 1, providers: {} });
   assert.deepEqual(
     read(web.root, 'anhedral.setup.json').setup.capabilities.map(({ status }) => status),
     ['starter'],
@@ -286,6 +287,8 @@ try {
   const clerk = options('clerk', ['--clerk']);
   await scaffoldStandardProject(clerk, runner);
   const layout = readFileSync(path.join(clerk.root, 'apps/web/app/layout.tsx'), 'utf8');
+  assert.deepEqual(Object.keys(read(clerk.root, 'anhedral.providers.json').providers), ['clerk']);
+  assert.equal(read(clerk.root, 'anhedral.providers.json').providers.clerk.workspaceId, '');
   const compiledLayout = ts.transpileModule(layout, {
     fileName: 'layout.tsx',
     compilerOptions: { jsx: ts.JsxEmit.Preserve },

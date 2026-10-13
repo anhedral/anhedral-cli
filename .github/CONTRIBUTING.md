@@ -2,7 +2,7 @@
 
 Anhedral is maintainer-led. Small bug fixes, tests, and documentation corrections are welcome. Open an issue and obtain maintainer agreement before implementing new capabilities, architectural changes, or broad refactors. Unsolicited large changes may be closed.
 
-Use the issue forms, search existing reports, and include the CLI version and a minimal reproduction. Keep credentials, customer data, and private deployment details out of issues, pull requests, screenshots, and logs. Report vulnerabilities through [private security reporting](https://github.com/anhedral/anhedral-init/security/advisories/new).
+Use the issue forms, search existing reports, and include the CLI version and a minimal reproduction. Keep credentials, customer data, and private deployment details out of issues, pull requests, screenshots, and logs. Report vulnerabilities through [private security reporting](https://github.com/anhedral/anhedral-cli/security/advisories/new).
 
 For a pull request, fork the repository, create a focused branch, run `pnpm install --frozen-lockfile` and `pnpm test:all`, and describe the behavior change and validation. Run `pnpm format` after source changes; `pnpm lint` enforces the shared format and type checks. Include meaningful regression tests for code fixes. Avoid generated artifacts and unrelated formatting changes.
 

@@ -242,7 +242,12 @@ export interface LocalDataStore {
       ['Sign-in/out, session expiry, resource authorization and selected native client flows'],
     ),
     install: scaffoldClerk,
-    environment: ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'CLERK_PUBLISHABLE_KEY', 'CLERK_SECRET_KEY'],
+    environment: [
+      'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
+      'EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY',
+      'CLERK_PUBLISHABLE_KEY',
+      'CLERK_SECRET_KEY',
+    ],
     resolveEnvironment: ({ has }) => [
       'CLERK_SECRET_KEY',
       ...(has('vinext') || has('next') ? ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'] : []),
@@ -501,6 +506,7 @@ export interface LocalDataStore {
       ['Sandbox purchase/restore, verified webhooks and entitlement reconciliation'],
     ),
     install: scaffoldRevenueCat,
+    environment: ['EXPO_PUBLIC_REVENUECAT_IOS_API_KEY', 'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY'],
   },
   sentry: {
     type: 'package',

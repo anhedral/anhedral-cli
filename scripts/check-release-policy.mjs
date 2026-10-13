@@ -184,53 +184,60 @@ function validateGitHubReleaseAssets(releaseWorkflow) {
   return failures;
 }
 
-function validateAutomaticRelease(releasePreparationJob, releaseOnMainWorkflow, ciWorkflow) {
+function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
   const failures = [];
-  if (!/git add[\s\S]*?references\/stack-registry\.json/.test(releasePreparationJob))
-    failures.push(
-      '.github/workflows/release-on-main.yml: release commits must stage the stack registry',
-    );
-  const releasePrCreateCount = [...releasePreparationJob.matchAll(/gh pr create/g)].length;
-  const releaseCiDispatchCount = [
-    ...releasePreparationJob.matchAll(/gh workflow run ci\.yml --ref "\$RELEASE_BRANCH"/g),
-  ].length;
+  const trigger =
+    releaseOnMainWorkflow.match(/^on:\s*$[\s\S]*?(?=^[a-zA-Z0-9_-]+:\s*(?:$|\S))/m)?.[0] ?? '';
   if (
-    !/prepare-auto-release\.mjs/.test(releasePreparationJob) ||
-    !/git push origin "HEAD:refs\/heads\/\$RELEASE_BRANCH"/.test(releasePreparationJob) ||
-    releasePrCreateCount !== 2 ||
-    releaseCiDispatchCount !== 2 ||
-    /git push origin HEAD:main/.test(releasePreparationJob)
-  ) {
+    !/^  workflow_dispatch:$/m.test(trigger) ||
+    /^  (?!workflow_dispatch:)[a-zA-Z_]+:/m.test(trigger) ||
+    /workflow_run|git push|gh pr create|prepare-auto-release/.test(releaseOnMainWorkflow)
+  )
     failures.push(
-      '.github/workflows/release-on-main.yml: automatic versions must use a reviewed release PR with explicitly dispatched CI',
+      '.github/workflows/release-on-main.yml: publication must require explicit reviewed-candidate dispatch without automatic source changes',
     );
-  }
+  const reviewGuard =
+    releaseOnMainWorkflow.match(
+      /name: Require exact reviewed commit[\s\S]*?(?=\n      - name:|\n  release:)/,
+    )?.[0] ?? '';
   if (
-    !/workflow_run:/.test(releaseOnMainWorkflow) ||
-    !/workflow_run\.conclusion == 'success'/.test(releasePreparationJob)
-  ) {
+    !/REVIEWED_SHA: \$\{\{ inputs\.release_sha \}\}/.test(reviewGuard) ||
+    !/git rev-parse HEAD/.test(reviewGuard) ||
+    !/REVIEWED_CLI: \$\{\{ inputs\.cli_integrity \}\}/.test(reviewGuard) ||
+    !/REVIEWED_PLUGIN: \$\{\{ inputs\.plugin_integrity \}\}/.test(reviewGuard) ||
+    !/valid SHA-512 SRI values/.test(reviewGuard)
+  )
     failures.push(
-      '.github/workflows/release-on-main.yml: automatic releases must wait for successful main CI',
+      '.github/workflows/release-on-main.yml: dispatch must pin the exact reviewed main commit',
     );
-  }
-  if (!/^\s{6}contents:\s*write\s*$/m.test(releasePreparationJob)) {
-    failures.push(
-      '.github/workflows/release-on-main.yml: release preparation must grant contents=write',
-    );
-  }
   if (
-    !/^\s{6}actions:\s*write\s*$/m.test(releasePreparationJob) ||
-    !/^\s{6}pull-requests:\s*write\s*$/m.test(releasePreparationJob)
-  ) {
+    !/ANHEDRAL_REQUIRE_PLUGIN: '1'/.test(releaseWorkflow) ||
+    !/ANHEDRAL_EXPECTED_INTEGRITY: \$\{\{ inputs\.cli_integrity \}\}/.test(releaseWorkflow) ||
+    !/ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: \$\{\{ inputs\.plugin_integrity \}\}/.test(
+      releaseWorkflow,
+    ) ||
+    (
+      releaseWorkflow.match(
+        /ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: \$\{\{ needs\.verify\.outputs\.plugin_integrity \}\}/g,
+      ) ?? []
+    ).length !== 3
+  )
     failures.push(
-      '.github/workflows/release-on-main.yml: release PR preparation must grant actions=write and pull-requests=write',
+      '.github/workflows/release.yml: every release gate must require the reviewed CLI and plugin artifacts',
     );
-  }
-  if (!/^\s{2}workflow_dispatch:\s*$/m.test(ciWorkflow)) {
+  if (
+    !/Require successful CI for the reviewed commit/.test(releaseOnMainWorkflow) ||
+    !/gh run list --workflow ci\.yml --branch main --commit "\$REVIEWED_SHA" --status success/.test(
+      releaseOnMainWorkflow,
+    )
+  )
     failures.push(
-      '.github/workflows/ci.yml: CI must support explicit dispatch for automated release PR branches',
+      '.github/workflows/release-on-main.yml: the reviewed commit must have successful full CI',
     );
-  }
+  if (!/^    environment: npm$/m.test(releaseWorkflow))
+    failures.push(
+      '.github/workflows/release.yml: publication must retain the protected npm environment',
+    );
   return failures;
 }
 
@@ -344,15 +351,10 @@ export function validateWorkflowPolicy(root) {
     path.join(workflowsRoot, 'release-on-main.yml'),
     'utf8',
   );
-  const ciWorkflow = readFileSync(path.join(workflowsRoot, 'ci.yml'), 'utf8');
   const reusableReleaseJob = releaseOnMainWorkflow.match(/^  release:[\s\S]*$/m)?.[0] ?? '';
-  const releasePreparationJob =
-    releaseOnMainWorkflow.match(/^  prepare:[\s\S]*?(?=^  [a-zA-Z0-9_-]+:\s*$)/m)?.[0] ?? '';
   const publishJob =
     releaseWorkflow.match(/^  publish:[\s\S]*?(?=^  [a-zA-Z0-9_-]+:\s*$)/m)?.[0] ?? '';
-  failures.push(
-    ...validateAutomaticRelease(releasePreparationJob, releaseOnMainWorkflow, ciWorkflow),
-  );
+  failures.push(...validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow));
   failures.push(
     ...validateTrustedPublishing(
       reusableReleaseJob,
@@ -381,6 +383,20 @@ function validatePluginRelease(root, version) {
       'utf8',
     ),
   );
+  const marketplace = JSON.parse(
+    readFileSync(path.join(root, '.agents/plugins/marketplace.json'), 'utf8'),
+  );
+  const entry = marketplace.plugins?.find((plugin) => plugin.name === 'anhedral');
+  if (
+    entry?.source?.source !== 'git-subdir' ||
+    entry.source.url !== 'https://github.com/anhedral/anhedral-cli.git' ||
+    entry.source.path !== './plugins/anhedral' ||
+    entry.source.ref !== `plugin-v${version}` ||
+    entry.policy?.installation !== 'AVAILABLE' ||
+    entry.policy?.authentication !== 'ON_INSTALL' ||
+    entry.category !== 'Developer Tools'
+  )
+    failures.push('Marketplace must pin the matching self-contained plugin release');
   if (
     manifest.version !== version ||
     registry.cliVersion !== version ||

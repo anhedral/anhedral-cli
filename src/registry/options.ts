@@ -54,7 +54,8 @@ export function parseStandardOptions(
   args: readonly string[],
 ): StandardOptions {
   const remaining = [...args];
-  const directory = command === 'new' ? remaining.shift() : process.cwd();
+  const hasDirectory = remaining[0] && !remaining[0].startsWith('-');
+  const directory = command === 'new' || hasDirectory ? remaining.shift() : process.cwd();
   if (!directory || directory.startsWith('-'))
     throw new Error('new requires a destination directory.');
   const root = path.resolve(directory);
@@ -68,6 +69,6 @@ export function parseStandardOptions(
     skipInstall: remaining.includes('--skip-install'),
     dryRun: remaining.includes('--dry-run'),
     json: remaining.includes('--json'),
-    initializeGit: gitSpecified ?? command === 'new',
+    initializeGit: gitSpecified ?? (command === 'new' || Boolean(hasDirectory)),
   };
 }

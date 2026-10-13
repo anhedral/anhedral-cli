@@ -16,6 +16,7 @@ import {
   siNextdotjs,
   siReact,
   siRevenuecat,
+  siResend,
   siShadcnui,
   siStripe,
   siTailwindcss,
@@ -31,7 +32,7 @@ const outputFlag = process.argv.indexOf('--output');
 const outputPath = resolve(
   outputFlag >= 0 && process.argv[outputFlag + 1]
     ? process.argv[outputFlag + 1]
-    : resolve(repositoryRoot, `assets/anhedral-cli-init${technical ? '-technical' : ''}.svg`),
+    : resolve(repositoryRoot, `assets/anhedral-stack${technical ? '-technical' : ''}.svg`),
 );
 const anhedralMarkPath = resolve(repositoryRoot, 'assets/anhedral-mark.svg');
 const anhedralMarkSource = await readFile(anhedralMarkPath, 'utf8');
@@ -388,7 +389,7 @@ svg.push(
   `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="title description">`,
 );
 svg.push(
-  `<title id="title">${technical ? 'Anhedral Application service contracts' : 'Anhedral Init Stack'}</title>`,
+  `<title id="title">${technical ? 'Anhedral Application service contracts' : 'Anhedral Stack'}</title>`,
 );
 svg.push(
   '<desc id="description">Client-owned shadcn, pnpm and Turborepo monorepo. Vinext on Cloudflare Workers is the web default; native Next.js on Vercel and OpenNext on Workers are optional; Hono and OpenAPI provide optional shared APIs. Select direct Neon HTTP with Drizzle or D1, authentication, private R2, KV, realtime, jobs, workflows, AI, email, billing, observability and analytics only when required. Dashed yellow lines show publication; white lines show application runtime and service bindings.</desc>',
@@ -575,7 +576,7 @@ text(apiX + apiW / 2, apiY + 348, 'Web-only: route handlers', {
   fill: palette.muted,
   anchor: 'middle',
 });
-text(apiX + apiW / 2, apiY + 376, 'Containers when required', {
+text(apiX + apiW / 2, apiY + 376, 'Selected Worker bindings', {
   size: 13,
   fill: palette.muted,
   anchor: 'middle',
@@ -593,7 +594,7 @@ const services = [
   },
   {
     title: 'D1 + Local Data',
-    subtitle: 'D1 + Drizzle · or local SQLite',
+    subtitle: 'D1 + Drizzle · local adapter interface',
     detail: 'Choose persistence per product',
     icon: siSqlite,
     iconColor: palette.cyan,
@@ -654,10 +655,10 @@ const services = [
     customIcon: 'ai',
   },
   {
-    title: 'Domain + Mail',
-    subtitle: 'GoDaddy broker · Cloudflare nameservers',
-    detail: 'Cloudflare Routing + Sending / Resend alternative',
-    icon: siCloudflare,
+    title: 'Resend Email',
+    subtitle: 'Transactional email client',
+    detail: 'Configure API key and verified sender',
+    icon: siResend,
     iconColor: palette.orange,
   },
   {
