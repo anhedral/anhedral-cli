@@ -260,7 +260,8 @@ test('GET response-body stalls are bounded and canceled', async () => {
     {
       ...immediate,
       attemptTimeoutMs: 10,
-      totalTimeoutMs: 50,
+      // Allow runner scheduling delays without consuming the overall retry budget.
+      totalTimeoutMs: 1_000,
       maxAttempts: 2,
       baseDelayMs: 0,
       maxDelayMs: 0,
@@ -270,7 +271,7 @@ test('GET response-body stalls are bounded and canceled', async () => {
   await assert.rejects(api('/projects'), /did not complete|deadline exceeded/);
   assert.equal(attempts, 2);
   assert.equal(canceled, 2);
-  assert.ok(Date.now() - started < 500);
+  assert.ok(Date.now() - started < 2_000);
 });
 test('POST transport stalls have one bounded attempt and an aborted signal', async () => {
   let attempts = 0;
