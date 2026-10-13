@@ -16,3 +16,10 @@ yarn-error.log*
 /.claude/
 /.fallow/
 /.turbo/
+
+/plugins/anhedral/runtime/
+
+/plugin-app/.fallow/
+
+# Private companion application; not part of the public CLI repository.
+/sites-cloudflare-chat/

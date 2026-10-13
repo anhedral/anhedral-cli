@@ -25,6 +25,10 @@ writeFileSync(
   readFileSync(new URL('../docs/delivery-workflow.md', import.meta.url)),
 );
 writeFileSync(
+  new URL('provider-configuration.md', references),
+  readFileSync(new URL('../docs/provider-configuration.md', import.meta.url)),
+);
+writeFileSync(
   new URL('application-stack-standard.md', references),
   readFileSync(new URL('../docs/application-stack-standard.md', import.meta.url)),
 );

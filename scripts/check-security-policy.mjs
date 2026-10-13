@@ -19,11 +19,15 @@ for (const filename of readdirSync(workflowsRoot).filter((entry) => /\.ya?ml$/.t
   }
 }
 
-const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
-for (const group of ['dependencies', 'devDependencies', 'optionalDependencies']) {
-  for (const [name, version] of Object.entries(packageJson[group] ?? {})) {
-    if (/^(?:\^|~|>|<|\*|latest$)/.test(version)) {
-      failures.push(`package.json: ${group}.${name} must be exactly pinned (received ${version})`);
+for (const packageFile of ['package.json', 'plugin-app/package.json']) {
+  const packageJson = JSON.parse(readFileSync(path.join(root, packageFile), 'utf8'));
+  for (const group of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+    for (const [name, version] of Object.entries(packageJson[group] ?? {})) {
+      if (/^(?:\^|~|>|<|\*|latest$)/.test(version)) {
+        failures.push(
+          `package.json: ${group}.${name} must be exactly pinned (received ${version})`,
+        );
+      }
     }
   }
 }

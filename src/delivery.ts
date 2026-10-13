@@ -34,7 +34,7 @@ interface TargetRelease {
   urls: string[];
   providerConfirmed: boolean;
 }
-interface Release {
+export interface Release {
   id: string;
   commit: string;
   startedAt: string;
@@ -133,7 +133,11 @@ function history(root: string, project: ApplicationProject): ReleaseHistory {
     throw new Error('Release history belongs to a different or unsupported project.');
   return value;
 }
-function checkTargets(root: string, project: ApplicationProject): void {
+function checkTargets(
+  root: string,
+  project: ApplicationProject,
+  allowResourcePlaceholders = false,
+): void {
   if (!project.targets.length)
     throw new Error(
       'No Cloudflare targets; native applications require their platform delivery tools.',
@@ -150,9 +154,26 @@ function checkTargets(root: string, project: ApplicationProject): void {
       );
     if (config.account_id && config.account_id !== project.accountId)
       throw new Error('Wrangler configuration account conflicts with the registered account.');
+    const pending = structuredClone(config);
+    if (allowResourcePlaceholders) {
+      for (const [field, id] of [
+        ['d1_databases', 'database_id'],
+        ['kv_namespaces', 'id'],
+        ['pipelines', 'stream'],
+      ] as const) {
+        const entries = pending[field];
+        if (Array.isArray(entries))
+          for (const entry of entries) {
+            if (entry && typeof entry[id] === 'string' && entry[id].startsWith('REPLACE_WITH_'))
+              entry[id] = 'pending-resource';
+          }
+      }
+    }
     if (
       /REPLACE_WITH_|YOUR_[A-Z_]+/.test(
-        readFileSync(path.join(directory, 'wrangler.jsonc'), 'utf8'),
+        allowResourcePlaceholders
+          ? JSON.stringify(pending)
+          : readFileSync(path.join(directory, 'wrangler.jsonc'), 'utf8'),
       )
     )
       throw new Error('Configure selected resources before shipping; placeholder bindings remain.');
@@ -167,9 +188,9 @@ function configurationFingerprint(root: string, project: ApplicationProject): st
     hash.update(readFileSync(path.join(targetDirectory(root, target), 'wrangler.jsonc')));
   return hash.digest('hex');
 }
-export function planDelivery(root: string) {
+export function planDelivery(root: string, allowResourcePlaceholders = false) {
   const project = readApplication(root);
-  checkTargets(root, project);
+  checkTargets(root, project, allowResourcePlaceholders);
   return {
     project,
     checks: [['pnpm', 'run', 'check']],

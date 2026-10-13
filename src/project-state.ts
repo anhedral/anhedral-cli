@@ -1,6 +1,13 @@
 import { randomUUID } from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import {
   existsSync,
+  lstatSync,
+  fstatSync,
+  openSync,
+  closeSync,
+  unlinkSync,
+  rmdirSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -11,6 +18,8 @@ import {
 } from 'node:fs';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
+import { hostname } from 'node:os';
+import { readBoundedFile } from './bounded-file.js';
 import { parse, type ParseError } from 'jsonc-parser';
 import { resolveCommand } from './command.js';
 
@@ -274,26 +283,293 @@ export async function authenticate(
       'Wrangler cannot access the registered Cloudflare account. Run wrangler login or configure scoped credentials.',
     );
 }
+interface LockOwner {
+  schemaVersion: 1;
+  pid: number;
+  host: string;
+  token: string;
+  createdAt: string;
+}
+interface LockIdentity {
+  device: number;
+  inode: number;
+  ownerDevice: number;
+  ownerInode: number;
+  owner: LockOwner;
+}
+interface HeldApplicationLock {
+  root: string;
+  active: boolean;
+  identity: LockIdentity;
+}
+const applicationLocks = new AsyncLocalStorage<HeldApplicationLock>();
+const lockBusy = () =>
+  new Error(
+    'Another delivery is running or was interrupted. Inspect provider status and use anhedral recover --lock only after reviewing the recorded operation.',
+  );
+const ownerChanged = () =>
+  new Error(
+    'Delivery lock ownership changed or is invalid. Preserve the lock and inspect local operation evidence before retrying.',
+  );
+
+function privateState(root: string): string {
+  const state = path.join(root, stateDirectory);
+  try {
+    mkdirSync(state, { recursive: true, mode: 0o700 });
+    const stat = lstatSync(state);
+    if (
+      !stat.isDirectory() ||
+      stat.isSymbolicLink() ||
+      realpathSync(state) !== state ||
+      (process.platform !== 'win32' && stat.mode & 0o022)
+    )
+      throw new Error();
+    return state;
+  } catch {
+    throw new Error('Delivery state must be a regular directory without shared write permissions.');
+  }
+}
+function lockOwner(): LockOwner {
+  return {
+    schemaVersion: 1,
+    pid: process.pid,
+    host: hostname(),
+    token: randomUUID(),
+    createdAt: new Date().toISOString(),
+  };
+}
+function privateOwner(file: string): LockOwner {
+  try {
+    const stat = lstatSync(file);
+    if (
+      !stat.isFile() ||
+      stat.isSymbolicLink() ||
+      (process.platform !== 'win32' && (stat.mode & 0o077 || stat.uid !== process.getuid?.()))
+    )
+      throw new Error();
+    const value: unknown = JSON.parse(readBoundedFile(file, 4096).toString('utf8'));
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error();
+    const owner = value as LockOwner;
+    if (
+      Object.keys(owner).some(
+        (key) => !['schemaVersion', 'pid', 'host', 'token', 'createdAt'].includes(key),
+      ) ||
+      owner.schemaVersion !== 1 ||
+      !Number.isSafeInteger(owner.pid) ||
+      owner.pid < 1 ||
+      owner.pid > 2147483647 ||
+      typeof owner.host !== 'string' ||
+      !owner.host ||
+      owner.host.length > 255 ||
+      /[\x00-\x1f\x7f]/.test(owner.host) ||
+      typeof owner.token !== 'string' ||
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(owner.token) ||
+      typeof owner.createdAt !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T/.test(owner.createdAt) ||
+      !Number.isFinite(Date.parse(owner.createdAt))
+    )
+      throw new Error();
+    return owner;
+  } catch {
+    throw ownerChanged();
+  }
+}
+function snapshotLock(lock: string): { identity: LockIdentity; owner: LockOwner } {
+  try {
+    const stat = lstatSync(lock);
+    if (
+      !stat.isDirectory() ||
+      stat.isSymbolicLink() ||
+      (process.platform !== 'win32' && (stat.mode & 0o077 || stat.uid !== process.getuid?.())) ||
+      readdirSync(lock).join(',') !== 'owner.json'
+    )
+      throw new Error();
+    const file = path.join(lock, 'owner.json');
+    const owner = privateOwner(file);
+    const ownerStat = lstatSync(file);
+    return {
+      identity: {
+        device: stat.dev,
+        inode: stat.ino,
+        ownerDevice: ownerStat.dev,
+        ownerInode: ownerStat.ino,
+        owner,
+      },
+      owner,
+    };
+  } catch {
+    throw ownerChanged();
+  }
+}
+function sameOwner(left: LockOwner, right: LockOwner): boolean {
+  return (
+    left.pid === right.pid &&
+    left.host === right.host &&
+    left.token === right.token &&
+    left.createdAt === right.createdAt
+  );
+}
+function sameIdentity(left: LockIdentity, right: LockIdentity): boolean {
+  return (
+    left.device === right.device &&
+    left.inode === right.inode &&
+    left.ownerDevice === right.ownerDevice &&
+    left.ownerInode === right.ownerInode &&
+    sameOwner(left.owner, right.owner)
+  );
+}
+
+class DeliveryGuardBusyError extends Error {
+  constructor() {
+    super(
+      'Delivery lock acquisition or recovery is busy. Inspect .anhedral/ship.guard before retrying.',
+    );
+  }
+}
+/** This synchronous guard covers only filesystem transitions. An uncertain guard
+ * after process termination is preserved for operator inspection, never auto-unlinked. */
+function withLockGuard<T>(state: string, operation: () => T): T {
+  try {
+    const stat = lstatSync(state);
+    if (
+      !stat.isDirectory() ||
+      stat.isSymbolicLink() ||
+      realpathSync(state) !== state ||
+      (process.platform !== 'win32' && stat.mode & 0o022)
+    )
+      throw new Error();
+  } catch {
+    throw ownerChanged();
+  }
+  const file = path.join(state, 'ship.guard');
+  let descriptor: number;
+  try {
+    descriptor = openSync(file, 'wx', 0o600);
+  } catch {
+    throw new DeliveryGuardBusyError();
+  }
+  const stat = fstatSync(descriptor);
+  const owner = lockOwner();
+  try {
+    writeFileSync(descriptor, JSON.stringify(owner) + '\n');
+    return operation();
+  } finally {
+    closeSync(descriptor);
+    // Another process must never lose its guard because this invocation finishes.
+    let current;
+    try {
+      current = lstatSync(file);
+    } catch {
+      throw ownerChanged();
+    }
+    if (
+      current.isSymbolicLink() ||
+      current.dev !== stat.dev ||
+      current.ino !== stat.ino ||
+      !sameOwner(privateOwner(file), owner)
+    )
+      throw ownerChanged();
+    unlinkSync(file);
+  }
+}
+function removeOwnedLock(lock: string, identity: LockIdentity): void {
+  if (!sameIdentity(snapshotLock(lock).identity, identity)) throw ownerChanged();
+  // Never recursively remove a lock: unknown additional files are evidence.
+  unlinkSync(path.join(lock, 'owner.json'));
+  rmdirSync(lock);
+}
+
+async function releaseApplicationLock(
+  state: string,
+  lock: string,
+  identity: LockIdentity,
+): Promise<void> {
+  // A simultaneous operator inspection may briefly hold the guard. Preserve our
+  // lock while waiting; never bypass a guard or reinterpret uncertain ownership.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      withLockGuard(state, () => removeOwnedLock(lock, identity));
+      return;
+    } catch (error) {
+      if (!(error instanceof DeliveryGuardBusyError) || attempt >= 4) throw error;
+      await new Promise<void>((resolve) => setTimeout(resolve, 25));
+    }
+  }
+}
+
+/** Explicit local cleanup only. A dead same-host PID is required; live, foreign,
+ * malformed and legacy locks remain intact. Provider operations are never replayed. */
+export function recoverDeliveryLock(root: string) {
+  root = realpathSync(root);
+  const state = privateState(root);
+  return withLockGuard(state, () => {
+    const lock = path.join(state, 'ship.lock');
+    if (!lstatSync(lock, { throwIfNoEntry: false }))
+      return {
+        schemaVersion: 1,
+        state: 'unlocked',
+        recovered: false,
+        mutation: 'local-lock-only',
+        providerReplay: false,
+      };
+    const snapshot = snapshotLock(lock);
+    if (snapshot.owner.host !== hostname())
+      throw new Error(
+        'Delivery lock belongs to another host; preserve it and inspect operation evidence.',
+      );
+    let dead = false;
+    try {
+      process.kill(snapshot.owner.pid, 0);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ESRCH') dead = true;
+      else throw new Error('Cannot prove the delivery lock owner exited; preserve the lock.');
+    }
+    if (!dead)
+      throw new Error(
+        'Delivery lock owner is still running; no lock or provider state was changed.',
+      );
+    removeOwnedLock(lock, snapshot.identity);
+    return {
+      schemaVersion: 1,
+      state: 'lock-recovered',
+      recovered: true,
+      mutation: 'local-lock-only',
+      providerReplay: false,
+      nextAction:
+        'Inspect provider status and recorded receipts before retrying ship. No provider operation was replayed.',
+    };
+  });
+}
+
 export async function withApplicationLock<T>(
   root: string,
   operation: () => Promise<T>,
 ): Promise<T> {
   root = realpathSync(root);
-  const state = path.join(root, stateDirectory);
-  mkdirSync(state, { recursive: true });
-  if (realpathSync(state) !== path.join(root, stateDirectory))
-    throw new Error('Delivery state directory must not be a symbolic link.');
+  const held = applicationLocks.getStore();
+  const state = privateState(root);
   const lock = path.join(state, 'ship.lock');
-  try {
-    mkdirSync(lock);
-  } catch {
-    throw new Error(
-      'Another delivery is running or was interrupted. Inspect provider status and remove .anhedral/ship.lock only after confirming no delivery is active.',
-    );
+  if (held?.active && held.root === root) {
+    if (!sameIdentity(snapshotLock(lock).identity, held.identity)) throw ownerChanged();
+    return operation();
   }
+  const identity = withLockGuard(state, () => {
+    try {
+      mkdirSync(lock, { mode: 0o700 });
+    } catch {
+      throw lockBusy();
+    }
+    writeFileSync(path.join(lock, 'owner.json'), JSON.stringify(lockOwner()) + '\n', {
+      flag: 'wx',
+      mode: 0o600,
+    });
+    return snapshotLock(lock).identity;
+  });
+  const context: HeldApplicationLock = { root, active: true, identity };
   try {
-    return await operation();
+    return await applicationLocks.run(context, operation);
   } finally {
-    rmSync(lock, { recursive: true, force: true });
+    context.active = false;
+    await releaseApplicationLock(state, lock, identity);
   }
 }

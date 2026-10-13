@@ -394,25 +394,28 @@ try {
     /attach \.artifacts\/release\/metadata\.json/,
   );
 
+  writeFileSync(path.join(workflowPolicyDirectory, 'release.yml'), releaseWorkflow);
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release-on-main.yml'),
-    releaseOnMainWorkflow.replaceAll(
-      'gh workflow run ci.yml --ref "$RELEASE_BRANCH"',
-      'printf "CI not dispatched"',
-    ),
+    releaseOnMainWorkflow.replace('  workflow_dispatch:', '  workflow_run:'),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
-    /reviewed release PR with explicitly dispatched CI/,
+    /explicit reviewed-candidate dispatch/,
   );
-
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release-on-main.yml'),
-    releaseOnMainWorkflow.replaceAll('gh pr create', 'printf'),
+    releaseOnMainWorkflow.replace('REVIEWED_SHA: ${{ inputs.release_sha }}', 'REVIEWED_SHA: main'),
+  );
+  assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /exact reviewed main commit/);
+  writeFileSync(path.join(workflowPolicyDirectory, 'release-on-main.yml'), releaseOnMainWorkflow);
+  writeFileSync(
+    path.join(workflowPolicyDirectory, 'release.yml'),
+    releaseWorkflow.replace("  ANHEDRAL_REQUIRE_PLUGIN: '1'", ''),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
-    /reviewed release PR with explicitly dispatched CI/,
+    /reviewed CLI and plugin artifacts/,
   );
 
   const token = ['ghp', '_', 'A'.repeat(32)].join('');

@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "Build and deliver applications with Cloudflare-first Vinext, selected services, optional Next.js on Vercel, and verified release evidence.",
   "type": "module",
   "exports": {
@@ -16,8 +16,8 @@
   },
   "files": [
     "dist",
-    "assets/anhedral-cli-init.svg",
-    "assets/anhedral-cli-init-technical.svg",
+    "assets/anhedral-stack.svg",
+    "assets/anhedral-stack-technical.svg",
     "assets/anhedral-mark.svg",
     "LICENSE",
     "README.md",
@@ -25,17 +25,18 @@
     "assets/favicon.ico",
     "docs/application-stack-standard.md",
     "docs/delivery-workflow.md",
-    "docs/sponsorships.md",
-    "docs/managed-hosting-architecture.md",
-    "assets/security"
+    "docs/provider-configuration.md",
+    "docs/cli-design.md",
+    "assets/security",
+    "docs/plugin-ui.md"
   ],
-  "homepage": "https://github.com/anhedral/anhedral-init#readme",
+  "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anhedral/anhedral-init.git"
+    "url": "git+https://github.com/anhedral/anhedral-cli.git"
   },
   "bugs": {
-    "url": "https://github.com/anhedral/anhedral-init/issues"
+    "url": "https://github.com/anhedral/anhedral-cli/issues"
   },
   "author": "Anhedral, Inc.",
   "publishConfig": {
@@ -66,7 +67,7 @@
     "test:release-tooling": "node tests/test-release-tooling.test.mjs",
     "test:all": "pnpm build && pnpm lint && pnpm check:security && pnpm audit:osv && pnpm test:unit && node tests/test-packed-cli.js && node tests/test-packlist.js",
     "release:check": "pnpm test:all",
-    "release:pack": "pnpm build && node scripts/create-release-artifact.mjs && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
+    "release:pack": "pnpm build && pnpm plugin:build && node scripts/create-release-artifact.mjs && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:verify": "node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:smoke": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
     "docs:stack-map": "node scripts/render-master-stack-map.mjs",
@@ -78,8 +79,11 @@
     "test:live:delivery": "pnpm build && node tests/test-live-delivery.mjs",
     "test:live:vercel": "pnpm build && node tests/test-live-vercel.mjs",
     "test:live:vercel:git": "pnpm build && node tests/test-live-vercel-git.mjs",
-    "format": "prettier --write src scripts tests",
-    "format:check": "prettier --check src scripts tests"
+    "format": "prettier --write src scripts tests plugin-app",
+    "format:check": "prettier --check src scripts tests plugin-app",
+    "plugin:build": "pnpm --dir plugin-app build",
+    "plugin:check": "pnpm --dir plugin-app check",
+    "plugin:preview": "pnpm --dir plugin-app start"
   },
   "keywords": [
     "cli",

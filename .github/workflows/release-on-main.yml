@@ -1,14 +1,20 @@
-name: Release On Main
+name: Release Reviewed Candidate
 
 on:
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact reviewed main commit
+        required: true
+        type: string
+      cli_integrity:
+        description: SHA-512 integrity of the reviewed CLI tarball
+        required: true
+        type: string
+      plugin_integrity:
+        description: SHA-512 integrity of the reviewed plugin archive
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -19,129 +25,56 @@ concurrency:
 
 jobs:
   prepare:
-    name: Prepare release version
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    name: Require reviewed main commit
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
-      actions: write
-      contents: write
-      pull-requests: write
+      contents: read
+      actions: read
     outputs:
-      changed: ${{ steps.prepare.outputs.changed }}
-      release_sha: ${{ steps.prepare.outputs.release_sha }}
-      version: ${{ steps.prepare.outputs.version }}
+      release_sha: ${{ steps.review.outputs.release_sha }}
     steps:
-      - name: Checkout latest main
+      - name: Checkout main
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
-          fetch-depth: 0
           ref: main
+          persist-credentials: false
+      - name: Require exact reviewed commit
+        id: review
+        env:
+          REVIEWED_SHA: ${{ inputs.release_sha }}
+          REVIEWED_CLI: ${{ inputs.cli_integrity }}
+          REVIEWED_PLUGIN: ${{ inputs.plugin_integrity }}
+        run: |
+          if ! [[ "$REVIEWED_SHA" =~ ^[a-f0-9]{40}$ ]] || [ "$(git rev-parse HEAD)" != "$REVIEWED_SHA" ]; then
+            echo "The reviewed commit must be the current main commit"
+            exit 1
+          fi
+          if ! [[ "$REVIEWED_CLI" =~ ^sha512-[A-Za-z0-9+/]{86}==$ ]] || ! [[ "$REVIEWED_PLUGIN" =~ ^sha512-[A-Za-z0-9+/]{86}==$ ]]; then
+            echo "Both reviewed artifact integrities must be valid SHA-512 SRI values"
+            exit 1
+          fi
+          echo "release_sha=$REVIEWED_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: '24.18.0'
-          package-manager-cache: false
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
-        with:
-          version: 10.34.5
-
-      - name: Prepare automatic patch version
-        id: prepare
+      - name: Require successful CI for the reviewed commit
         env:
           GH_TOKEN: ${{ github.token }}
-          TRIGGER_SHA: ${{ github.event.workflow_run.head_sha }}
+          REVIEWED_SHA: ${{ inputs.release_sha }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_run" ] && [ "$(git rev-parse HEAD)" != "$TRIGGER_SHA" ]; then
-            SUPERSEDED_VERSION=$(node -p "JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')).version")
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            echo "version=$SUPERSEDED_VERSION" >> "$GITHUB_OUTPUT"
-            echo "A newer main commit superseded CI commit $TRIGGER_SHA; its own successful CI run will release it" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
+          PASSED=$(gh run list --workflow ci.yml --branch main --commit "$REVIEWED_SHA" --status success --json headSha,conclusion --jq 'length')
+          if ! [[ "$PASSED" =~ ^[1-9][0-9]*$ ]]; then
+            echo "The reviewed main commit must pass CI, including generated-profile checks"
+            exit 1
           fi
-
-          CURRENT_VERSION=$(node -p "JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')).version")
-          PUBLISHED_VERSION=$(npm view anhedral version --json --registry=https://registry.npmjs.org | node -e "process.stdout.write(JSON.parse(require('node:fs').readFileSync(0, 'utf8')))")
-
-          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ] && [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ] && git tag --points-at HEAD | grep -Fxq "v$CURRENT_VERSION"; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            echo "version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
-            echo "v$CURRENT_VERSION already publishes the current main commit" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            RELEASE_RESULT=$(node scripts/prepare-auto-release.mjs "$PUBLISHED_VERSION" --preserve-current)
-          else
-            RELEASE_RESULT=$(node scripts/prepare-auto-release.mjs "$PUBLISHED_VERSION")
-          fi
-          RELEASE_VERSION=$(node -p "JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')).version")
-
-          if ! git diff --quiet; then
-            RELEASE_BRANCH="release/v$RELEASE_VERSION"
-            REMOTE_RELEASE_SHA=$(git ls-remote origin "refs/heads/$RELEASE_BRANCH" | cut -f1)
-            if [ -n "$REMOTE_RELEASE_SHA" ]; then
-              PR_URL=$(gh pr list \
-                --head "$RELEASE_BRANCH" \
-                --base main \
-                --state open \
-                --json url \
-                --jq '.[0].url')
-              if [ -z "$PR_URL" ]; then
-                PR_URL=$(gh pr create \
-                  --base main \
-                  --head "$RELEASE_BRANCH" \
-                  --title "chore(release): v$RELEASE_VERSION" \
-                  --body "Automated release preparation for v$RELEASE_VERSION. Merge only after required CI and human review.")
-              fi
-              gh workflow run ci.yml --ref "$RELEASE_BRANCH"
-              echo "changed=false" >> "$GITHUB_OUTPUT"
-              echo "release_sha=$REMOTE_RELEASE_SHA" >> "$GITHUB_OUTPUT"
-              echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
-              echo "Release PR: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
-              exit 0
-            fi
-
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add \
-              package.json \
-              src/version.ts \
-              plugins/anhedral/plugin.json \
-              plugins/anhedral/skills/anhedral/references/capabilities.json \
-              plugins/anhedral/skills/anhedral/references/stack-registry.json
-            git commit -m "chore(release): v$RELEASE_VERSION [skip ci]"
-            git push origin "HEAD:refs/heads/$RELEASE_BRANCH"
-            PR_URL=$(gh pr create \
-              --base main \
-              --head "$RELEASE_BRANCH" \
-              --title "chore(release): v$RELEASE_VERSION" \
-              --body "Automated release preparation for v$RELEASE_VERSION. Merge only after required CI and human review.")
-            gh workflow run ci.yml --ref "$RELEASE_BRANCH"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
-            echo "Release PR: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
-          echo "Release version: $RELEASE_VERSION" >> "$GITHUB_STEP_SUMMARY"
 
   release:
-    name: Publish prepared package version
+    name: Publish reviewed immutable artifacts
     needs: prepare
-    if: needs.prepare.outputs.changed == 'true'
     permissions:
       contents: write
       id-token: write
     uses: ./.github/workflows/release.yml
     with:
       release_sha: ${{ needs.prepare.outputs.release_sha }}
+      cli_integrity: ${{ inputs.cli_integrity }}
+      plugin_integrity: ${{ inputs.plugin_integrity }}

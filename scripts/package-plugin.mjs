@@ -1,3 +1,4 @@
+import { verifyPluginRuntime } from '../plugin-app/source-integrity.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -73,6 +74,8 @@ export function buildPluginArchive(root) {
     stack.items.some((item) => item.version !== packageJson.version)
   )
     throw new Error('Plugin and CLI release versions must match. Run pnpm build.');
+  if (lstatSync(path.join(pluginRoot, 'mcp.json'), { throwIfNoEntry: false }))
+    verifyPluginRuntime(root);
   const local = [],
     central = [];
   let offset = 0;

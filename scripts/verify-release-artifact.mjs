@@ -1,9 +1,20 @@
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { isValidSemver } from './check-release-policy.mjs';
 
 const metadataPath = path.resolve(process.argv[2] ?? '.artifacts/release/metadata.json');
-const metadata = JSON.parse(readFileSync(metadataPath, 'utf8'));
+function regularJson(file) {
+  const stat = lstatSync(file);
+  if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 2 * 1024 * 1024)
+    throw new Error('Release metadata must be a bounded regular file');
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch {
+    throw new Error('Invalid release metadata JSON');
+  }
+}
+const metadata = regularJson(metadataPath);
 const expectations = [
   ['name', process.env.ANHEDRAL_EXPECTED_NAME],
   ['version', process.env.ANHEDRAL_EXPECTED_VERSION],
@@ -19,13 +30,8 @@ if (metadata.name !== 'anhedral') {
   throw new Error(`Unexpected release package name: ${metadata.name}`);
 }
 
-if (
-  typeof metadata.version !== 'string' ||
-  !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(
-    metadata.version,
-  )
-) {
-  throw new Error(`Release version must be valid SemVer: ${metadata.version}`);
+if (!isValidSemver(metadata.version)) {
+  throw new Error('Release version must be valid SemVer');
 }
 
 if (
@@ -43,7 +49,11 @@ if (!Number.isSafeInteger(metadata.size) || metadata.size < 1) {
   throw new Error(`Release size must be a positive safe integer: ${metadata.size}`);
 }
 
-if (metadata.filename !== path.basename(metadata.filename)) {
+if (
+  typeof metadata.filename !== 'string' ||
+  metadata.filename !== `anhedral-${metadata.version}.tgz` ||
+  metadata.filename !== path.basename(metadata.filename)
+) {
   throw new Error(`Release tarball filename must not contain a path: ${metadata.filename}`);
 }
 
@@ -82,13 +92,37 @@ if (size !== metadata.size) {
 console.log(`Verified ${metadata.name}@${metadata.version}: ${metadata.integrity}`);
 
 function verifyPlugin(plugin, version, directory) {
-  if (!plugin) return; // Preserve verification of releases that predate the plugin.
+  if (!plugin) {
+    if (
+      process.env.ANHEDRAL_REQUIRE_PLUGIN === '1' ||
+      process.env.ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY
+    )
+      throw new Error('This release requires a verified plugin archive');
+    return; // Standalone verification retains compatibility with CLI-only historical releases.
+  }
   if (
+    plugin.schemaVersion !== 1 ||
+    !Number.isSafeInteger(plugin.size) ||
+    plugin.size < 1 ||
+    typeof plugin.integrity !== 'string' ||
+    !/^sha512-[A-Za-z0-9+/]{86}==$/.test(plugin.integrity) ||
     plugin.version !== version ||
     plugin.cliVersion !== version ||
     plugin.filename !== `anhedral-plugin-${version}.zip`
   )
     throw new Error('Plugin release identity mismatch');
+  if (
+    process.env.ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY &&
+    plugin.integrity !== process.env.ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY
+  )
+    throw new Error('Plugin metadata does not match the reviewed plugin integrity');
+  const declaration = regularJson(path.join(directory, 'plugin-metadata.json'));
+  const fields = ['schemaVersion', 'version', 'cliVersion', 'filename', 'integrity', 'size'];
+  if (
+    Object.keys(declaration).some((key) => !fields.includes(key)) ||
+    fields.some((key) => declaration[key] !== plugin[key])
+  )
+    throw new Error('Plugin metadata declarations disagree');
   const filename = path.join(directory, plugin.filename);
   const stat = lstatSync(filename);
   if (!stat.isFile() || stat.isSymbolicLink())

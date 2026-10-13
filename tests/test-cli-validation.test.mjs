@@ -13,9 +13,15 @@ assert.match(readme, /anhedral --help/);
 try {
   for (const args of [
     ['add', 'expo'],
+    ['auth', '--unknown'],
+    ['auth', '--provider'],
+    ['ship', '--platform', 'ios'],
+    ['ship', '--platform', 'android', '--profile', 'preview', '--provider', 'cloudflare'],
     ['doctor', '--unknown'],
     ['adopt', '--unknown'],
     ['recover', '--unknown'],
+    ['recover', '--lock', '--provider', 'cloudflare'],
+    ['recover', '--lock', '--refresh'],
     ['adopt', '--provider', 'cloudflare'],
     ['setup-vps'],
     ['init', '--legacy'],
@@ -25,12 +31,15 @@ try {
     ['init', '--neon', '--d1'],
     ['init', '--vinext', '--next'],
     ['init', '--vinext', '--hosting', 'vercel'],
+    ['cloud', 'register'],
     ['cloud', 'stage'],
     ['cloud', 'deploy'],
   ]) {
     const result = run(...args, '--json');
     assert.equal(result.status, 1, `${args} must fail`);
-    assert.ok(JSON.parse(result.stderr).error);
+    const failure = JSON.parse(result.stderr);
+    assert.ok(failure.error);
+    if (args[0] === 'cloud') assert.equal(failure.code, 'UNKNOWN_COMMAND');
     assert.deepEqual(readdirSync(root), [], 'invalid commands must not create files');
   }
   assert.equal(run('repository', '--help').status, 0);
@@ -45,7 +54,7 @@ try {
   assert.deepEqual(JSON.parse(result.stdout).products, ['hono', 'neon']);
   assert.equal(existsSync(target), false);
   assert.match(run('--help').stdout, /Vinext on Cloudflare/);
-  assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify/);
+  assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify|anhedral cloud/);
   assert.match(run('--version').stdout, /^\d+\.\d+\.\d+\n$/);
 } finally {
   rmSync(root, { recursive: true, force: true });

@@ -39,14 +39,6 @@ export { setupRepository, githubRepository } from './repository.js';
 
 export { inspectProviderReadiness } from './provider-readiness.js';
 
-export {
-  registerManagedApplication,
-  stageManagedVersion,
-  saveManagedVersion,
-  deployManagedVersion,
-  managedApplicationStatus,
-} from './managed-hosting.js';
-
 export { STACK_REGISTRY, STACK_ITEMS, getStackItem } from './stack-registry.js';
 export type { StackItemId } from './stack-registry.js';
 export type { StackRegistryItem } from './registry/types.js';
@@ -55,3 +47,36 @@ export { resolveStackRegistry } from './registry/resolve.js';
 export type { ResolvedStackRegistry } from './registry/resolve.js';
 export { addStackItems } from './registry/add.js';
 export type { AddRequest } from './registry/add.js';
+
+export { PROVIDER_AUTH, requiredProviders, authenticateProviders } from './provider-auth.js';
+export type { ProviderAuth, AuthOptions, AuthCheck } from './provider-auth.js';
+
+export { buildMobileApplication } from './mobile-delivery.js';
+export type { MobileBuildOptions } from './mobile-delivery.js';
+
+export { shipCloudflareApplication } from './ship.js';
+export { shipSelectedStack, shipSelectedVercelApplication } from './ship.js';
+export { planProviderProvisioning, provisionSelectedProviders } from './providers/provision.js';
+export { providerConfigurationTemplate } from './providers/config.js';
+export type { ProviderConfiguration, IntegrationProvider } from './providers/config.js';
+export { validateProviderConfiguration } from './providers/config.js';
+export { PROVIDER_CONFIGURATION_SCHEMA } from './providers/schema.js';
+export { PROVIDER_DEFINITIONS } from './providers/definitions.js';
+export type { ProviderSettingsById } from './providers/definitions.js';
+export { applicationRuntime } from './providers/runtime.js';
+export { readLifecycleOperation } from './lifecycle.js';
+export type { LifecycleOperation, OperationState, PhaseState } from './lifecycle.js';
+export { integrationStatus, recoverIntegrationResource } from './providers/recovery.js';
+export type { IntegrationRecoveryRequest } from './providers/recovery.js';
+export { CAPABILITY_CONTRACT, formatCapabilityContract } from './capability-contract.js';
+export type {
+  CapabilitySupport,
+  CapabilityEvidence,
+  CapabilityStage,
+  ProductCapability,
+} from './capability-contract.js';
+
+export { recoverDeliveryLock } from './project-state.js';
+
+export { inspectApplication } from './project-inspector.js';
+export type { ProjectInspection } from './inspector-model.js';

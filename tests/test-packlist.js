@@ -21,12 +21,14 @@ const requiredFiles = new Set([
   'dist/index.js',
   'assets/favicon.ico',
   'package.json',
-  'assets/anhedral-cli-init.svg',
-  'assets/anhedral-cli-init-technical.svg',
+  'assets/anhedral-stack.svg',
+  'assets/anhedral-stack-technical.svg',
   'assets/anhedral-mark.svg',
   'docs/application-stack-standard.md',
   'docs/delivery-workflow.md',
-  'docs/sponsorships.md',
+  'docs/provider-configuration.md',
+  'docs/cli-design.md',
+  'docs/plugin-ui.md',
 ]);
 const allowedRootFiles = new Set(['LICENSE', 'README.md', 'package.json']);
 
@@ -50,12 +52,12 @@ try {
   const packageJson = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   const license = readFileSync(path.join(repoRoot, 'LICENSE'), 'utf8');
   assert.equal(packageJson.sideEffects, false);
-  assert.equal(packageJson.homepage, 'https://github.com/anhedral/anhedral-init#readme');
+  assert.equal(packageJson.homepage, 'https://github.com/anhedral/anhedral-cli#readme');
   assert.deepEqual(packageJson.repository, {
     type: 'git',
-    url: 'git+https://github.com/anhedral/anhedral-init.git',
+    url: 'git+https://github.com/anhedral/anhedral-cli.git',
   });
-  assert.deepEqual(packageJson.bugs, { url: 'https://github.com/anhedral/anhedral-init/issues' });
+  assert.deepEqual(packageJson.bugs, { url: 'https://github.com/anhedral/anhedral-cli/issues' });
   assert.equal(packageJson.license, 'Apache-2.0');
   assert.match(license, /Apache License\s+Version 2\.0, January 2004/i);
   assert.match(license, /Grant of Copyright License/i);
@@ -88,6 +90,13 @@ try {
   const files = packed.files.map((file) => file.path);
 
   assert.equal(new Set(files).size, files.length, 'packlist should not contain duplicate paths');
+  for (const file of files) {
+    assert.doesNotMatch(
+      file,
+      /managed-hosting|sponsorships|NORTHSTAR|(?:^|\/)growth(?:\/|$)/,
+      'commercial implementation and planning must stay outside the public package',
+    );
+  }
   assert.equal(packed.entryCount, files.length, 'entryCount should match the packlist length');
   assert.ok(
     packed.size < 1_000_000,
@@ -116,21 +125,21 @@ try {
     files,
   );
 
-  const renderedMapPath = path.join(npmCache, 'anhedral-cli-init.svg');
+  const renderedMapPath = path.join(npmCache, 'anhedral-stack.svg');
   const renderResult = spawnSyncPortable(
     process.execPath,
     [path.join(repoRoot, 'scripts/render-master-stack-map.mjs'), '--output', renderedMapPath],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   assert.equal(renderResult.status, 0, `stack map render failed: ${renderResult.stderr ?? ''}`);
-  const checkedInSvg = readFileSync(path.join(repoRoot, 'assets/anhedral-cli-init.svg'), 'utf8');
+  const checkedInSvg = readFileSync(path.join(repoRoot, 'assets/anhedral-stack.svg'), 'utf8');
   assert.equal(
     readFileSync(renderedMapPath, 'utf8'),
     checkedInSvg,
     'generated stack map SVG must be current',
   );
   for (const requiredSvgText of [
-    'Anhedral Init Stack',
+    'Anhedral Stack',
     'CLIENT SURFACES',
     'OpenNext',
     'Hono + OpenAPI',
@@ -158,7 +167,7 @@ try {
   assert.doesNotMatch(checkedInSvg, /Ably|Fastify/);
   assert.match(checkedInSvg, /Vinext on Cloudflare Workers/);
 
-  const renderedTechnicalMapPath = path.join(npmCache, 'anhedral-cli-init-technical.svg');
+  const renderedTechnicalMapPath = path.join(npmCache, 'anhedral-stack-technical.svg');
   const technicalRenderResult = spawnSyncPortable(
     process.execPath,
     [
@@ -175,7 +184,7 @@ try {
     `technical stack map render failed: ${technicalRenderResult.stderr ?? ''}`,
   );
   const checkedInTechnicalSvg = readFileSync(
-    path.join(repoRoot, 'assets/anhedral-cli-init-technical.svg'),
+    path.join(repoRoot, 'assets/anhedral-stack-technical.svg'),
     'utf8',
   );
   assert.equal(
@@ -192,15 +201,16 @@ try {
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
       file.path.startsWith('assets/security/') ||
-      file.path === 'assets/anhedral-cli-init.svg' ||
+      file.path === 'assets/anhedral-stack.svg' ||
       file.path === 'assets/anhedral.svg' ||
       file.path === 'assets/favicon.ico' ||
-      file.path === 'assets/anhedral-cli-init-technical.svg' ||
+      file.path === 'assets/anhedral-stack-technical.svg' ||
       file.path === 'assets/anhedral-mark.svg' ||
       file.path === 'docs/application-stack-standard.md' ||
-      file.path === 'docs/managed-hosting-architecture.md' ||
       file.path === 'docs/delivery-workflow.md' ||
-      file.path === 'docs/sponsorships.md';
+      file.path === 'docs/provider-configuration.md' ||
+      file.path === 'docs/cli-design.md' ||
+      file.path === 'docs/plugin-ui.md';
     const allowed = allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation;
     assert.ok(allowed, `unexpected published path: ${file.path}`);
     if (!allowedDocumentation)
