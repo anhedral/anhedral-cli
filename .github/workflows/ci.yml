@@ -60,6 +60,8 @@ jobs:
           path: plugins/anhedral/runtime
 
       - name: Run unit tests
+        env:
+          ANHEDRAL_REQUIRE_PLUGIN: '1'
         run: pnpm test:unit
 
       - name: Check source hygiene and static security policy
