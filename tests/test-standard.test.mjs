@@ -1,7 +1,7 @@
 import { STACK_DEPENDENCIES } from '../dist/dependencies.js';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
-import { mock } from 'node:test';
+import { mock, test } from 'node:test';
 import {
   existsSync,
   mkdirSync,
@@ -141,6 +141,27 @@ try {
   assert.throws(() => options('unsupported-static', ['--static']));
   const vinext = options('vinext-default');
   await scaffoldStandardProject(vinext, runner);
+  await test('Vinext font caches stay out of Git without hiding application fonts', () => {
+    const cached = [
+      'apps/web/.vinext/fonts/geist/font.woff2',
+      'apps/web/.vinext/fonts/geist/style.css',
+    ];
+    const source = 'apps/web/public/fonts/product.woff2';
+    for (const file of [...cached, source]) {
+      mkdirSync(path.dirname(path.join(vinext.root, file)), { recursive: true });
+      writeFileSync(path.join(vinext.root, file), 'font fixture');
+    }
+    const git = (...args) => {
+      const result = spawnSync('git', args, { cwd: vinext.root, encoding: 'utf8' });
+      assert.equal(result.status, 0, result.stderr);
+      return result.stdout;
+    };
+    git('init', '--quiet');
+    git('add', '--all');
+    const tracked = git('ls-files').split('\n');
+    for (const file of cached) assert.ok(!tracked.includes(file), `${file} must remain ignored`);
+    assert.ok(tracked.includes(source), 'Application font assets must remain trackable');
+  });
   assert.equal(vinext.hosting, 'cloudflare');
   assert.equal(read(vinext.root, 'apps/web/package.json').dependencies.vinext, '1.1.0');
   assert.equal(read(vinext.root, 'apps/web/package.json').scripts.build, 'vite build');

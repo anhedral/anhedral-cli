@@ -54,8 +54,25 @@ for (const profile of selected) {
 
     if (profile === 'worker-services') await verifyWorkerDevelopment(root);
     const setup = JSON.parse(readFileSync(path.join(root, 'anhedral.setup.json'), 'utf8'));
-    if (setup.products.includes('vinext'))
+    if (setup.products.includes('vinext')) {
       assert.ok(existsSync(path.join(root, 'apps/web/dist/server/wrangler.json')));
+      assert.ok(
+        existsSync(path.join(root, 'apps/web/.vinext/fonts')),
+        'Real build generates its font cache',
+      );
+      execFile('git', ['init', '--quiet'], root);
+      const cachedFonts = spawnSync(
+        'git',
+        ['ls-files', '--others', '--exclude-standard', '--', 'apps/web/.vinext/'],
+        { cwd: root, encoding: 'utf8' },
+      );
+      assert.equal(cachedFonts.status, 0, cachedFonts.stderr);
+      assert.equal(
+        cachedFonts.stdout.trim(),
+        '',
+        'Generated Vinext font cache must not enter source control after a real build',
+      );
+    }
     if (setup.products.includes('next')) {
       assert.ok(existsSync(path.join(root, 'apps/web/.next/BUILD_ID')));
       if (setup.hosting === 'cloudflare')

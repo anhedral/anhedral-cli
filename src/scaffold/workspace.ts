@@ -137,6 +137,7 @@ process.exitCode = result.status ?? 1;
       '**/next-env.d.ts',
       '**/.next/**',
       '**/.open-next/**',
+      '**/.vinext/**',
       '**/.wrangler/**',
       '**/dist/**',
       '**/worker-configuration.d.ts',
@@ -158,6 +159,7 @@ process.exitCode = result.status ?? 1;
   appendGitignore(root, [
     'node_modules/',
     '.open-next/',
+    '.vinext/',
     '.wrangler/',
     '.dev.vars',
     '.dev.vars.*',
