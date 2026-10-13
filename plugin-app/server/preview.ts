@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage } from 'node:http';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { ProjectStore } from './store.ts';
+import { scriptContents } from '../shared/html.mjs';
 const requestSchema = z
   .object({
     name: z.enum(['list_projects', 'get_project', 'rename_project', 'forget_project', 'set_view']),
@@ -26,8 +27,8 @@ async function body(request: IncomingMessage) {
   return requestSchema.parse(JSON.parse(Buffer.concat(parts).toString('utf8')));
 }
 export function createPreviewServer(store: ProjectStore, html: string) {
-  const scriptHashes = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)]
-    .map((match) => `'sha256-${createHash('sha256').update(match[1]).digest('base64')}'`)
+  const scriptHashes = scriptContents(html)
+    .map((contents) => `'sha256-${createHash('sha256').update(contents).digest('base64')}'`)
     .join(' ');
   return createServer(async (request, response) => {
     response.setHeader('X-Content-Type-Options', 'nosniff');

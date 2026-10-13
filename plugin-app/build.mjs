@@ -4,6 +4,7 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'nod
 import { resolve } from 'node:path';
 import { dependencyNotices } from './licenses.mjs';
 import { digest, pluginSourceDigest } from './source-integrity.mjs';
+import { inlineBuildAsset } from './shared/html.mjs';
 rmSync('dist', { recursive: true, force: true });
 const moduleFiles = new Set();
 await buildUI({
@@ -20,17 +21,7 @@ const assets = 'dist/web/assets';
 let html = readFileSync('dist/web/index.html', 'utf8');
 for (const asset of readdirSync(assets)) {
   const bytes = readFileSync(resolve(assets, asset), 'utf8');
-  if (asset.endsWith('.js'))
-    html = html.replace(
-      /<script[^>]*src="[^"]+"[^>]*><\/script>/,
-      () => `<script type="module">${bytes.replace(/<\/script/gi, '<\\/script')}</script>`,
-    );
-  if (asset.endsWith('.css'))
-    html = html.replace(
-      /<link[^>]*href="[^"]+\.css"[^>]*>/,
-      () =>
-        `<style>@layer theme, base, components, utilities;${bytes.replace(/<\/style/gi, '<\\/style')}</style>`,
-    );
+  html = inlineBuildAsset(html, asset, bytes);
 }
 writeFileSync('dist/dashboard.html', html);
 const serverBuild = await bundle({
