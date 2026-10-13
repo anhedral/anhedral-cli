@@ -38,4 +38,5 @@ test('CSP script extraction includes mixed-case tags and refuses unrecognized bu
   ]);
   assert.throws(() => inlineBuildAsset('<html></html>', 'missing.js', ''), /could not be inlined/);
   assert.deepEqual(scriptContents('<scripture>not a script</scripture>'), []);
+  assert.deepEqual(scriptContents('<SCRIPT>third()</script\t\n bar>'), ['third()']);
 });

@@ -18,5 +18,7 @@ export function inlineBuildAsset(html, asset, contents) {
 }
 
 export function scriptContents(html) {
-  return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)].map((match) => match[1]);
+  return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi)].map(
+    (match) => match[1],
+  );
 }
