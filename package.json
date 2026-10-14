@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "Build and deliver applications with Cloudflare-first Vinext, selected services, optional Next.js on Vercel, and verified release evidence.",
   "type": "module",
   "exports": {
