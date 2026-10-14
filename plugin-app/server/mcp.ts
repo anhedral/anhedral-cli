@@ -9,8 +9,10 @@ import {
   RESOURCE_MIME_TYPE,
 } from '@modelcontextprotocol/ext-apps/server';
 import { z } from 'zod';
+import { serviceInventory } from '../shared/services.ts';
+import { serviceInventorySchema } from '../shared/service-schema.ts';
 import { dashboardSchema } from '../shared/schema.ts';
-import { catalogFailure, type ProjectStore } from './store.ts';
+import { CatalogError, catalogFailure, type ProjectStore } from './store.ts';
 import type { DashboardTool, ToolArguments } from '../shared/model.ts';
 function operationError(error: unknown) {
   return {
@@ -143,6 +145,31 @@ export function createDashboardServer(store: ProjectStore, html: string) {
         }
       },
     );
+  server.registerTool(
+    'get_project_services',
+    {
+      title: 'List project services',
+      description:
+        'List application targets, declared bindings and recorded provider resources for a registered project. Local evidence only; never contacts providers or deletes resources.',
+      inputSchema: z.object({ id: z.string().uuid() }).strict(),
+      outputSchema: serviceInventorySchema,
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ id }) => {
+      try {
+        const dashboard = store.call('get_project', { id });
+        const inspection = dashboard.projects.find((project) => project.id === id)?.inspection;
+        if (!inspection) throw new CatalogError('PROJECT_UNAVAILABLE');
+        const inventory = serviceInventorySchema.parse(serviceInventory(inspection));
+        return {
+          structuredContent: inventory,
+          content: [{ type: 'text' as const, text: JSON.stringify(inventory) }],
+        };
+      } catch (error) {
+        return operationError(error);
+      }
+    },
+  );
   server.registerTool(
     'get_catalog_context',
     {

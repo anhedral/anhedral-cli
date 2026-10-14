@@ -52,6 +52,13 @@ test('bundled MCP runtime exposes standard UI resources, extension entrypoints a
       'Headless text and structured inspection agree without rendering UI',
     );
     assert.equal((snapshot.structuredContent as { projects: { id: string }[] }).projects[0].id, id);
+    const services = await client.callTool({ name: 'get_project_services', arguments: { id } });
+    assert.equal(services.isError, undefined);
+    assert.ok('text' in services.content[0]);
+    assert.deepEqual(JSON.parse(services.content[0].text), services.structuredContent);
+    assert.ok(
+      tools.tools.find((tool) => tool.name === 'get_project_services')?.annotations?.readOnlyHint,
+    );
     const context = await client.callTool({ name: 'get_project_context', arguments: { id } });
     assert.ok('text' in context.content[0]);
     assert.equal(JSON.parse(context.content[0].text).directory, realpathSync(directory));
@@ -86,7 +93,7 @@ test('bundled MCP runtime exposes standard UI resources, extension entrypoints a
       tools.tools.some((tool) => tool.name.includes('recover')),
       false,
     );
-    for (const name of ['open_projects', 'get_project_context']) {
+    for (const name of ['open_projects', 'get_project_context', 'get_project_services']) {
       const rejected = await client.callTool({
         name,
         arguments: { id: '00000000-0000-4000-8000-000000000000' },

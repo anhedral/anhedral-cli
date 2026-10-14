@@ -1,5 +1,5 @@
 import type { ProjectInspection } from '../../src/inspector-model.ts';
-export const TABS = ['Overview', 'Stack', 'Setup', 'Delivery'] as const;
+export const TABS = ['Overview', 'Services', 'Stack', 'Setup', 'Delivery'] as const;
 export type Tab = (typeof TABS)[number];
 export interface ProjectSummary {
   id: string;

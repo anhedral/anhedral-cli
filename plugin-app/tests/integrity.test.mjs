@@ -47,6 +47,14 @@ test('the real plugin archive includes verified UI assets and refuses source or 
     );
     assert.throws(() => verifyPluginRuntime(fixture), /source changed/);
     writeFileSync(sharedDomain, domainOriginal);
+    const registry = path.join(
+      fixture,
+      'plugins/anhedral/skills/anhedral/references/stack-registry.json',
+    );
+    const registryOriginal = readFileSync(registry);
+    writeFileSync(registry, Buffer.concat([registryOriginal, Buffer.from(' ')]));
+    assert.throws(() => verifyPluginRuntime(fixture), /source changed/);
+    writeFileSync(registry, registryOriginal);
     const artifact = path.join(fixture, 'plugins/anhedral/runtime/dashboard.html');
     writeFileSync(artifact, 'modified dashboard');
     assert.throws(() => verifyPluginRuntime(fixture), /integrity failed/);

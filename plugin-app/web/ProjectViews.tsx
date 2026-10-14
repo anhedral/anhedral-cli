@@ -1,6 +1,7 @@
 import { Layers } from 'lucide-react';
 import type { ProjectSummary } from '../shared/model.ts';
 import { Overview } from './InspectorOverview.tsx';
+import { Services } from './ProjectServices.tsx';
 import { Stack } from './InspectorStack.tsx';
 import { Setup } from './InspectorSetup.tsx';
 import { Delivery } from './InspectorDelivery.tsx';
@@ -38,6 +39,8 @@ export function ProjectView(props: ViewProps) {
   switch (props.tab) {
     case 'Overview':
       return <Overview {...props} inspection={inspection} />;
+    case 'Services':
+      return <Services key={props.site.id} inspection={inspection} />;
     case 'Stack':
       return <Stack inspection={inspection} />;
     case 'Setup':

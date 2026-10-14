@@ -150,6 +150,12 @@ jobs:
       - run: pnpm --dir plugin-app install --frozen-lockfile
       - run: pnpm plugin:check
       - run: pnpm --dir plugin-app audit --audit-level low
+      - name: Install dashboard test browser
+        if: ${{ matrix.node == '24.18.0' }}
+        run: pnpm --dir plugin-app exec playwright install --with-deps chromium
+      - name: Test dashboard interactions and responsive themes
+        if: ${{ matrix.node == '24.18.0' }}
+        run: pnpm --dir plugin-app test:browser
       - name: Share verified runtime with portable CLI checks
         if: ${{ matrix.node == '24.18.0' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
