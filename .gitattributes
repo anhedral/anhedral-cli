@@ -1,3 +1,2 @@
 # Unified patches preserve upstream whitespace and require LF on every platform.
-/assets/security/*.patch text eol=lf -whitespace
-/demo/*/scripts/security/*.patch text eol=lf -whitespace
+/assets/patches/*.patch text eol=lf -whitespace

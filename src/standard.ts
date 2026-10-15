@@ -1,3 +1,4 @@
+import { configureBracesPatch } from './braces-patch.js';
 import { randomUUID } from 'node:crypto';
 import { json } from './scaffold/files.js';
 import { registerGeneratedProject } from './catalog-registration.js';
@@ -94,6 +95,8 @@ export async function scaffoldStandardProject(
           registerApplication(stageRoot);
         printProgress('Resolving pinned dependencies…', display);
         run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
+        if (configureBracesPatch(stageRoot))
+          run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
         recordScaffoldFiles(stageRoot);
         commitPaths.push(...readdirSync(stageRoot).filter((name) => name !== 'node_modules'));
       },

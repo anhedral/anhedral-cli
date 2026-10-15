@@ -16,6 +16,8 @@
   },
   "files": [
     "dist",
+    "assets/patches/braces@3.0.3.patch",
+    "assets/patches/LICENSE.braces",
     "LICENSE",
     "README.md",
     "docs/stack-standard.md",
@@ -60,7 +62,7 @@
     "test:pack:exact": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
     "test:packlist": "pnpm build && node tests/test-packlist.js",
     "test:release-tooling": "node tests/test-release-tooling.test.mjs",
-    "test:all": "pnpm build && pnpm lint && pnpm check:security && pnpm audit:osv && pnpm test:unit && node tests/test-packed-cli.js && node tests/test-packlist.js",
+    "test:all": "pnpm build && pnpm lint && pnpm check:security && pnpm audit:osv && pnpm test:unit && pnpm test:patch && node tests/test-packed-cli.js && node tests/test-packlist.js",
     "release:check": "pnpm test:all",
     "release:pack": "pnpm build && pnpm plugin:build && node scripts/create-release-artifact.mjs && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:verify": "node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
@@ -77,7 +79,8 @@
     "format:check": "prettier --check src scripts tests plugins/codex/inspector",
     "plugin:build": "pnpm --dir plugins/codex/inspector build",
     "plugin:check": "pnpm --dir plugins/codex/inspector check",
-    "plugin:preview": "pnpm --dir plugins/codex/inspector start"
+    "plugin:preview": "pnpm --dir plugins/codex/inspector start",
+    "test:patch": "node tests/test-braces-install.mjs"
   },
   "keywords": [
     "cli",
@@ -106,6 +109,7 @@
   "dependencies": {
     "@neondatabase/serverless": "1.2.0",
     "jsonc-parser": "3.3.1",
-    "zod": "4.6.6"
+    "zod": "4.6.6",
+    "yaml": "2.9.1"
   }
 }

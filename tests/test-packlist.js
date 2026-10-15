@@ -12,6 +12,8 @@ const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
 const requiredFiles = new Set([
   'LICENSE',
   'README.md',
+  'assets/patches/braces@3.0.3.patch',
+  'assets/patches/LICENSE.braces',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -127,7 +129,12 @@ try {
       file.path === 'docs/provider-configuration.md' ||
       file.path === 'docs/cli-design.md' ||
       file.path === 'docs/plugin-ui.md';
-    const allowed = allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation;
+    const allowedPatch = [
+      'assets/patches/braces@3.0.3.patch',
+      'assets/patches/LICENSE.braces',
+    ].includes(file.path);
+    const allowed =
+      allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation || allowedPatch;
     assert.ok(allowed, `unexpected published path: ${file.path}`);
     if (!allowedDocumentation)
       assert.doesNotMatch(

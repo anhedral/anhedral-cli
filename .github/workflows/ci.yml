@@ -65,6 +65,10 @@ jobs:
           ANHEDRAL_REQUIRE_PLUGIN: '1'
         run: pnpm test:unit
 
+      - name: Verify temporary braces patch and preserve advisory visibility
+        if: ${{ matrix.node == '24.21.0' }}
+        run: pnpm test:patch
+
       - name: Check source hygiene and static security policy
         if: ${{ matrix.node == '20.19.0' }}
         run: pnpm lint && pnpm check:security

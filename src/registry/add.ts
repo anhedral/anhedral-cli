@@ -1,3 +1,4 @@
+import { configureBracesPatch } from '../braces-patch.js';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
@@ -203,6 +204,12 @@ export async function addStackItems(
       )
         registerApplication(stage, true);
       if (!request.dryRun)
+        run(
+          'pnpm',
+          ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],
+          stage,
+        );
+      if (!request.dryRun && configureBracesPatch(stage))
         run(
           'pnpm',
           ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],
