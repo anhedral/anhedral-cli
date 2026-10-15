@@ -71,6 +71,8 @@ function seed(root) {
     path.join(root, 'turbo.json'),
     JSON.stringify({ tasks: { build: {}, dev: { persistent: true } } }),
   );
+  writeFileSync(path.join(root, 'apps/web/package-lock.json'), '{}\n');
+  writeFileSync(path.join(root, 'packages/ui/pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
   writeFileSync(path.join(root, '.gitignore'), 'node_modules/\n');
 }
 function runner(command, args, cwd) {
@@ -96,15 +98,15 @@ try {
   assert.deepEqual(Object.keys(CAPABILITIES).sort(), [...STANDARD_PRODUCTS].sort());
   const pluginRegistry = read(
     process.cwd(),
-    'plugins/anhedral/skills/anhedral/references/capabilities.json',
+    'plugins/codex/distribution/skills/anhedral/references/capabilities.json',
   );
   assert.deepEqual(pluginRegistry, CAPABILITY_REGISTRY);
   assert.equal(
     readFileSync(
-      'plugins/anhedral/skills/anhedral/references/application-stack-standard.md',
+      'plugins/codex/distribution/skills/anhedral/references/application-stack-standard.md',
       'utf8',
     ),
-    readFileSync('docs/application-stack-standard.md', 'utf8'),
+    readFileSync('docs/stack-standard.md', 'utf8'),
   );
   const mobilePlan = createSetupPlan(options('mobile-plan', ['--expo']));
   assert.equal(mobilePlan.setup.tools.includes('Wrangler'), false);
@@ -162,16 +164,41 @@ try {
     for (const file of cached) assert.ok(!tracked.includes(file), `${file} must remain ignored`);
     assert.ok(tracked.includes(source), 'Application font assets must remain trackable');
   });
+  const rootManifest = read(vinext.root, 'package.json');
+  assert.equal(rootManifest.devDependencies.turbo, STACK_DEPENDENCIES.turbo);
+  assert.match(
+    readFileSync(path.join(vinext.root, 'pnpm-workspace.yaml'), 'utf8'),
+    /sharedWorkspaceLockfile: true/,
+  );
+  assert.equal(existsSync(path.join(vinext.root, 'apps/web/package-lock.json')), false);
+  assert.equal(existsSync(path.join(vinext.root, 'packages/ui/pnpm-lock.yaml')), false);
+  for (const task of ['db:generate', 'db:migrate']) {
+    assert.equal(read(vinext.root, 'turbo.json').tasks[task].cache, false);
+    assert.equal(read(vinext.root, 'turbo.json').tasks[task].dependsOn, undefined);
+  }
   assert.equal(vinext.hosting, 'cloudflare');
+  assert.equal(read(vinext.root, 'apps/web/package.json').devDependencies.void, '0.27.0');
+  assert.equal(
+    read(vinext.root, 'apps/web/package.json').scripts.deploy,
+    'node ../../scripts/prepare-void-migrations.mjs && void deploy --platform cloudflare',
+  );
+  assert.equal(existsSync(path.join(vinext.root, 'apps/web/void.config.ts')), true);
+  assert.equal(existsSync(path.join(vinext.root, 'apps/web/wrangler.jsonc')), false);
+  assert.equal(existsSync(path.join(vinext.root, 'apps/web/.env.example')), false);
+  assert.equal(existsSync(path.join(vinext.root, 'apps/web/env.example')), true);
+  assert.equal(read(vinext.root, 'package.json').engines.node, '>=24.21.0');
   assert.equal(read(vinext.root, 'apps/web/package.json').dependencies.vinext, '1.1.0');
   assert.equal(read(vinext.root, 'apps/web/package.json').scripts.build, 'vite build');
-  assert.equal(read(vinext.root, 'apps/web/wrangler.jsonc').main, 'vinext/server/fetch-handler');
+  assert.equal(
+    read(vinext.root, 'apps/web/anhedral.cloudflare.json').main,
+    'vinext/server/fetch-handler',
+  );
   assert.match(
     readFileSync(path.join(vinext.root, 'apps/web/vite.config.ts'), 'utf8'),
-    /name: 'rsc', childEnvironments: \['ssr'\]/,
+    /voidPlugin\(\)/,
   );
   assert.equal(
-    read(vinext.root, 'apps/web/wrangler.jsonc').d1_databases,
+    read(vinext.root, 'apps/web/anhedral.cloudflare.json').d1_databases,
     undefined,
     'Static product needs no durable database',
   );
@@ -185,6 +212,14 @@ try {
   const vinextAuth = options('vinext-auth', ['--better-auth']);
   await scaffoldStandardProject(vinextAuth, runner);
   assert.ok(vinextAuth.products.includes('d1'));
+  const authEnvironment = readFileSync(path.join(vinextAuth.root, 'apps/web/env.ts'), 'utf8');
+  assert.match(authEnvironment, /BETTER_AUTH_SECRET: string\(\)/);
+  assert.match(authEnvironment, /BETTER_AUTH_URL: string\(\)/);
+  assert.equal(existsSync(path.join(vinextAuth.root, 'apps/web/.dev.vars.example')), false);
+  assert.match(
+    readFileSync(path.join(vinextAuth.root, 'packages/db/src/migrate.ts'), 'utf8'),
+    /anhedral\.cloudflare\.json/,
+  );
   assert.equal(existsSync(path.join(vinextAuth.root, 'apps/api')), false);
   assert.match(
     readFileSync(path.join(vinextAuth.root, 'apps/web/app/api/auth/[...all]/route.ts'), 'utf8'),
@@ -194,10 +229,22 @@ try {
     readFileSync(path.join(vinextAuth.root, 'apps/web/app/api/auth/[...all]/route.ts'), 'utf8'),
     /getCloudflareContext|@opennextjs/,
   );
-  assert.equal(read(vinextAuth.root, 'apps/web/wrangler.jsonc').d1_databases[0].binding, 'DB');
+  assert.equal(
+    read(vinextAuth.root, 'apps/web/anhedral.cloudflare.json').d1_databases[0].binding,
+    'DB',
+  );
+  const preparation = spawnSync(process.execPath, ['../../scripts/prepare-void-migrations.mjs'], {
+    cwd: path.join(vinextAuth.root, 'apps/web'),
+    encoding: 'utf8',
+  });
+  assert.equal(preparation.status, 0, preparation.stderr);
+  assert.equal(
+    readFileSync(path.join(vinextAuth.root, 'apps/web/db/migrations/0000_better_auth.sql'), 'utf8'),
+    readFileSync(path.join(vinextAuth.root, 'packages/db/drizzle/0000_better_auth.sql'), 'utf8'),
+  );
   const authSchema = readFileSync(path.join(vinextAuth.root, 'packages/db/src/schema.ts'), 'utf8');
   const authMigration = readFileSync(
-    path.join(vinextAuth.root, 'packages/db/migrations/0000_better_auth.sql'),
+    path.join(vinextAuth.root, 'packages/db/drizzle/0000_better_auth.sql'),
     'utf8',
   );
   for (const table of ['user', 'session', 'account', 'verification']) {
@@ -207,13 +254,11 @@ try {
   assert.match(authMigration, /CREATE UNIQUE INDEX `session_token_unique`/);
   assert.match(authMigration, /ON DELETE cascade/);
   assert.equal(
-    read(vinextAuth.root, 'packages/db/migrations/meta/_journal.json').entries[0].tag,
+    read(vinextAuth.root, 'packages/db/drizzle/meta/_journal.json').entries[0].tag,
     '0000_better_auth',
   );
   assert.deepEqual(
-    Object.keys(
-      read(vinextAuth.root, 'packages/db/migrations/meta/0000_snapshot.json').tables,
-    ).sort(),
+    Object.keys(read(vinextAuth.root, 'packages/db/drizzle/meta/0000_snapshot.json').tables).sort(),
     ['account', 'session', 'user', 'verification'],
   );
   assert.equal(
@@ -293,6 +338,11 @@ try {
   assert.equal(read(web.root, 'packages/ui/package.json').dependencies.shadcn, undefined);
   assert.equal(read(web.root, 'packages/ui/package.json').devDependencies.shadcn, '4.21.1');
   assert.match(read(web.root, 'package.json').scripts.check, /audit:deps/);
+  assert.equal(
+    read(web.root, 'package.json').scripts['audit:deps'],
+    'pnpm audit --audit-level=high',
+  );
+  assert.equal(existsSync(path.join(web.root, 'scripts/security')), false);
   assert.ok(read(web.root, '.fallowrc.json').ignorePatterns.includes('**/next-env.d.ts'));
   assert.equal(existsSync(path.join(web.root, 'pnpm-lock.yaml')), true);
   assert.match(
@@ -362,6 +412,57 @@ try {
     assert.equal(manifest.dependencies['@shared/api-client'], undefined);
     assert.equal(manifest.dependencies['@shared/realtime'], undefined);
   }
+  const voidServices = options('void-services', [
+    '--hono',
+    '--d1',
+    '--r2',
+    '--kv',
+    '--cron',
+    '--workflows',
+    '--realtime',
+  ]);
+  await scaffoldStandardProject(voidServices, runner);
+  for (const app of ['api', 'scheduled', 'realtime', 'workflows']) {
+    assert.equal(
+      read(voidServices.root, `apps/${app}/package.json`).scripts.deploy,
+      'node ../../scripts/prepare-void-migrations.mjs && void deploy --platform cloudflare',
+    );
+    assert.equal(
+      existsSync(path.join(voidServices.root, `apps/${app}/anhedral.cloudflare.json`)),
+      true,
+    );
+    assert.match(
+      readFileSync(path.join(voidServices.root, `apps/${app}/vite.config.ts`), 'utf8'),
+      /VOID_CLOUDFLARE_DEPLOY_BUILD/,
+    );
+  }
+  assert.match(
+    readFileSync(path.join(voidServices.root, 'apps/scheduled/crons/scheduled.ts'), 'utf8'),
+    /0 \* \* \* \*/,
+  );
+  const workerSource = path.join(voidServices.root, 'apps/scheduled/src');
+  for (const filename of ['index', 'void-entry']) {
+    const source = readFileSync(path.join(workerSource, `${filename}.ts`), 'utf8').replaceAll(
+      "'./index'",
+      "'./index.mjs'",
+    );
+    writeFileSync(
+      path.join(workerSource, `${filename}.mjs`),
+      ts.transpileModule(source, {
+        compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+      }).outputText,
+    );
+  }
+  const adapted = (await import('file://' + path.join(workerSource, 'void-entry.mjs'))).default;
+  const original = (await import('file://' + path.join(workerSource, 'index.mjs'))).default;
+  assert.equal(adapted.scheduled, original.scheduled);
+  const ready = await adapted.fetch(
+    new Request('https://example.com/__void/ready'),
+    { __VOID_VERSION_METADATA: { id: 'version-test' } },
+    {},
+  );
+  assert.deepEqual(await ready.json(), { ready: true, versionId: 'version-test' });
+  assert.equal(ready.headers.get('cache-control'), 'no-store');
   const services = options('services', [
     '--hono',
     '--neon',
@@ -377,7 +478,16 @@ try {
   await scaffoldStandardProject(services, runner);
   assert.equal(existsSync(path.join(services.root, 'apps/web')), false);
   const config = read(services.root, 'apps/api/wrangler.jsonc');
+  assert.equal(existsSync(path.join(services.root, 'apps/api/void.config.ts')), false);
   assert.ok(config.r2_buckets && config.kv_namespaces && config.pipelines);
+  assert.equal(
+    read(services.root, 'package.json').scripts['db:migrate'],
+    'turbo run db:migrate --filter=@workspace/db',
+  );
+  assert.equal(
+    read(services.root, 'apps/api/package.json').dependencies['@workspace/db'],
+    'workspace:*',
+  );
   assert.equal(config.hyperdrive, undefined);
   assert.match(
     readFileSync(path.join(services.root, 'packages/db/src/index.ts'), 'utf8'),

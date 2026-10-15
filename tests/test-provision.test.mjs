@@ -117,6 +117,10 @@ test('resource plans are read-only and provisioning is idempotent with comment-p
     const before = api.calls.filter((call) => call.method === 'POST').length;
     const second = await provisionApplication(root, false, run, api.request);
     assert.ok(second.resources.every((item) => item.reused));
+    assert.ok(
+      second.resources.every((item) => item.createdByProject),
+      'Creation ownership survives idempotent provisioning retries',
+    );
     assert.equal(api.calls.filter((call) => call.method === 'POST').length, before);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -309,6 +313,33 @@ test('provisioning refuses a stale binding plan after asynchronous configuration
         .binding,
       'OTHER',
     );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Void alone provisions new project resources; Anhedral never invokes a second resource writer', async () => {
+  const root = fixture({
+    d1_databases: [
+      { binding: 'DB', database_name: 'example-db', database_id: 'REPLACE_WITH_D1_ID' },
+    ],
+  });
+  try {
+    const file = path.join(root, 'anhedral.project.json');
+    const project = JSON.parse(readFileSync(file, 'utf8'));
+    project.deliveryEngine = 'void';
+    writeFileSync(file, JSON.stringify(project));
+    const before = readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8');
+    const result = await provisionApplication(
+      root,
+      false,
+      async () => assert.fail('No provider CLI before Void'),
+      async () => assert.fail('No provider API before Void'),
+    );
+    assert.equal(result.writer, 'void');
+    assert.equal(result.deferredToDeployment, true);
+    assert.equal(result.mutation, false);
+    assert.equal(readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8'), before);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -8,7 +8,7 @@ const cli = path.resolve('dist/bin.js');
 const run = (...args) =>
   spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8' });
 const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
-assert.match(readme, /\]\(docs\/application-stack-standard\.md\)/);
+assert.match(readme, /\]\(docs\/stack-standard\.md\)/);
 assert.match(readme, /anhedral --help/);
 try {
   for (const args of [

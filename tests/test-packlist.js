@@ -12,20 +12,13 @@ const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
 const requiredFiles = new Set([
   'LICENSE',
   'README.md',
-  'assets/anhedral.svg',
-  'assets/security/manifest.json',
-  'assets/security/audit-deps.mjs',
-  'assets/security/LICENSES.txt',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
-  'assets/favicon.ico',
   'package.json',
-  'assets/anhedral-stack.svg',
-  'assets/anhedral-stack-technical.svg',
-  'assets/anhedral-mark.svg',
-  'docs/application-stack-standard.md',
+  'docs/stack-standard.md',
   'docs/delivery-workflow.md',
+  'docs/void-verification.md',
   'docs/provider-configuration.md',
   'docs/cli-design.md',
   'docs/plugin-ui.md',
@@ -120,94 +113,17 @@ try {
   assert.doesNotMatch(readme, /does not grant permission to install|separate written agreement/i);
   assertPackedMarkdownLinks('README.md', readme, files);
   assertPackedMarkdownLinks(
-    'docs/application-stack-standard.md',
-    readFileSync(path.join(repoRoot, 'docs/application-stack-standard.md'), 'utf8'),
+    'docs/stack-standard.md',
+    readFileSync(path.join(repoRoot, 'docs/stack-standard.md'), 'utf8'),
     files,
   );
-
-  const renderedMapPath = path.join(npmCache, 'anhedral-stack.svg');
-  const renderResult = spawnSyncPortable(
-    process.execPath,
-    [path.join(repoRoot, 'scripts/render-master-stack-map.mjs'), '--output', renderedMapPath],
-    { cwd: repoRoot, encoding: 'utf8' },
-  );
-  assert.equal(renderResult.status, 0, `stack map render failed: ${renderResult.stderr ?? ''}`);
-  const checkedInSvg = readFileSync(path.join(repoRoot, 'assets/anhedral-stack.svg'), 'utf8');
-  assert.equal(
-    readFileSync(renderedMapPath, 'utf8'),
-    checkedInSvg,
-    'generated stack map SVG must be current',
-  );
-  for (const requiredSvgText of [
-    'Anhedral Stack',
-    'CLIENT SURFACES',
-    'OpenNext',
-    'Hono + OpenAPI',
-    'Workers',
-    'Neon HTTP',
-    'Neon + Drizzle',
-    'Private R2',
-    'KV',
-    'Durable Objects',
-    'WebSockets',
-    'Queues',
-    'Cron Triggers',
-    'Workflows',
-    'Observability',
-    'Basin',
-    'Pipelines',
-    'Workers AI',
-    'D1 + Drizzle',
-    'Fallow audit',
-  ])
-    assert.ok(
-      checkedInSvg.includes(requiredSvgText),
-      `stack diagram must include ${requiredSvgText}`,
-    );
-  assert.doesNotMatch(checkedInSvg, /Ably|Fastify/);
-  assert.match(checkedInSvg, /Vinext on Cloudflare Workers/);
-
-  const renderedTechnicalMapPath = path.join(npmCache, 'anhedral-stack-technical.svg');
-  const technicalRenderResult = spawnSyncPortable(
-    process.execPath,
-    [
-      path.join(repoRoot, 'scripts/render-master-stack-map.mjs'),
-      '--technical',
-      '--output',
-      renderedTechnicalMapPath,
-    ],
-    { cwd: repoRoot, encoding: 'utf8' },
-  );
-  assert.equal(
-    technicalRenderResult.status,
-    0,
-    `technical stack map render failed: ${technicalRenderResult.stderr ?? ''}`,
-  );
-  const checkedInTechnicalSvg = readFileSync(
-    path.join(repoRoot, 'assets/anhedral-stack-technical.svg'),
-    'utf8',
-  );
-  assert.equal(
-    readFileSync(renderedTechnicalMapPath, 'utf8'),
-    checkedInTechnicalSvg,
-    'generated technical stack map SVG must be current',
-  );
-  assert.match(checkedInTechnicalSvg, /Application service contracts/);
-  assert.match(checkedInTechnicalSvg, /CLOUDFLARE SERVICE BINDINGS/);
-  assert.doesNotMatch(checkedInTechnicalSvg, /Ably|Fastify/);
-  assert.match(checkedInTechnicalSvg, /Vinext on Cloudflare Workers/);
 
   for (const file of packed.files) {
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
-      file.path.startsWith('assets/security/') ||
-      file.path === 'assets/anhedral-stack.svg' ||
-      file.path === 'assets/anhedral.svg' ||
-      file.path === 'assets/favicon.ico' ||
-      file.path === 'assets/anhedral-stack-technical.svg' ||
-      file.path === 'assets/anhedral-mark.svg' ||
-      file.path === 'docs/application-stack-standard.md' ||
+      file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/delivery-workflow.md' ||
+      file.path === 'docs/void-verification.md' ||
       file.path === 'docs/provider-configuration.md' ||
       file.path === 'docs/cli-design.md' ||
       file.path === 'docs/plugin-ui.md';

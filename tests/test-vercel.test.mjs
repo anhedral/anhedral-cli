@@ -17,6 +17,7 @@ import {
   planVercelDelivery,
   shipVercelApplication,
   vercelApplicationStatus,
+  vercelServiceMetrics,
   verifyVercelApplication,
   rollbackVercelApplication,
   adoptVercelApplication,
@@ -633,6 +634,47 @@ test('Idempotent adoption refuses a production change during its refresh', async
       'stale',
     );
     assert.equal((await vercelApplicationStatus(root)).releases.length, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Vercel analytics verifies the selected project and rejects out-of-window or malformed results', async () => {
+  const root = fixture();
+  const mock = provider(root);
+  let malformed = false;
+  let queries = 0;
+  const run = async (command, args, cwd, env) => {
+    if (args[2] === 'api' && args[3].startsWith('/v1/query/web-analytics/visits/aggregate?')) {
+      queries++;
+      const params = new URL(args[3], 'https://api.vercel.com').searchParams;
+      assert.equal(params.get('projectId'), projectId);
+      assert.equal(params.get('teamId'), team);
+      assert.equal(params.get('by'), 'day');
+      assert.ok(args.includes(team));
+      return JSON.stringify({
+        version: 1,
+        query: { since: params.get('since') },
+        data: [
+          {
+            timestamp: malformed ? '2000-01-01T00:00:00Z' : params.get('since') + 'T00:00:00Z',
+            pageviews: 3,
+            visitors: 2,
+          },
+        ],
+      });
+    }
+    return mock.run(command, args, cwd, env);
+  };
+  try {
+    await connect(root, mock.run);
+    const result = await vercelServiceMetrics(root, 24, run);
+    assert.equal(result.points[0].values.pageviews, 3);
+    assert.equal(result.timezone, 'UTC');
+    malformed = true;
+    await assert.rejects(vercelServiceMetrics(root, 24, run), /Invalid Vercel analytics/);
+    await assert.rejects(vercelServiceMetrics(root, 1, run), /complete UTC days/);
+    assert.equal(queries, 2);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

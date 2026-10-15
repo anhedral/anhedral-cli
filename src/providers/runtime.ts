@@ -9,6 +9,11 @@ import { isIP } from 'node:net';
 import { providerConfiguration } from './config.js';
 
 export type RuntimeValues = Record<string, string>;
+function serverRuntimeFile(root: string, runtime: string, hosting: string): string {
+  const directory = `apps/${runtime}`;
+  if (runtime === 'web' && hosting === 'vercel') return `${directory}/.env.local`;
+  return `${directory}/${existsSync(path.join(root, directory, 'void.config.ts')) ? '.env' : '.dev.vars'}`;
+}
 export const RUNTIME_KEYS = [
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL',
@@ -58,15 +63,13 @@ export function runtimeTargets(root: string, values: RuntimeValues): Record<stri
     Object.entries(values).filter(([key]) => !key.startsWith('EXPO_PUBLIC_')),
   );
   if (existsSync(path.join(root, `apps/${runtime}`)))
-    targets[
-      `apps/${runtime}/${runtime === 'web' && setup.hosting === 'vercel' ? '.env.local' : '.dev.vars'}`
-    ] = server;
+    targets[serverRuntimeFile(root, runtime, setup.hosting)] = server;
   if (
     runtime === 'api' &&
     existsSync(path.join(root, 'apps/web')) &&
     values.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   )
-    targets[`apps/web/${setup.hosting === 'vercel' ? '.env.local' : '.dev.vars'}`] = {
+    targets[serverRuntimeFile(root, 'web', setup.hosting)] = {
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: values.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
       ...(values.CLERK_SECRET_KEY ? { CLERK_SECRET_KEY: values.CLERK_SECRET_KEY } : {}),
     };
@@ -230,7 +233,7 @@ export async function applicationRuntime(
   validateSetupPlan(setup);
   if (!setup.products.includes('better-auth')) return {};
   const runtime = setup.products.includes('hono') ? 'api' : 'web';
-  const relative = `apps/${runtime}/${runtime === 'web' && setup.hosting === 'vercel' ? '.env.local' : '.dev.vars'}`;
+  const relative = serverRuntimeFile(root, runtime, setup.hosting);
   const file = path.join(root, relative);
   if (!existsSync(file))
     throw new Error(
@@ -252,8 +255,9 @@ export async function applicationRuntime(
   )
     throw new Error('Ignore application runtime files before shipping.');
   if (
-    relative.endsWith('/.dev.vars') &&
-    existsSync(path.join(path.dirname(file), 'wrangler.jsonc'))
+    !relative.endsWith('/.env.local') &&
+    (existsSync(path.join(path.dirname(file), 'wrangler.jsonc')) ||
+      existsSync(path.join(path.dirname(file), 'anhedral.cloudflare.json')))
   ) {
     const config = readConfig(path.dirname(file));
     if (

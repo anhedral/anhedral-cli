@@ -7,17 +7,17 @@ const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), 'utf
 test('plugin entrypoints and public starter documentation use the exact composer prefill', () => {
   const prompt =
     'Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about.';
-  const manifest = JSON.parse(read('plugins/anhedral/plugin.json'));
+  const manifest = JSON.parse(read('plugins/codex/distribution/plugin.json'));
   assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [prompt]);
   assert.ok(read('README.md').includes(prompt));
   assert.ok(read('docs/plugin-ui.md').includes(prompt));
-  assert.ok(read('plugin-app/shared/starter.ts').includes(prompt));
+  assert.ok(read('plugins/codex/inspector/shared/starter.ts').includes(prompt));
 });
 
 test('plugin instructions and documentation do not imply credentials enable unimplemented live readers', () => {
-  for (const file of ['docs/plugin-ui.md', 'plugins/anhedral/skills/anhedral/SKILL.md']) {
+  for (const file of ['docs/plugin-ui.md', 'plugins/codex/distribution/skills/anhedral/SKILL.md']) {
     const source = read(file);
-    assert.match(source, /no live analytics/i);
+    assert.match(source, /explicit service controls/i);
     assert.match(source, /schedule-execution reader/);
     assert.doesNotMatch(
       source,
@@ -25,4 +25,33 @@ test('plugin instructions and documentation do not imply credentials enable unim
     );
   }
   assert.match(read('docs/cli-design.md'), /help text is never parsed/);
+});
+
+test('Cloudflare delivery documentation distinguishes Void activation checkpoints from legacy provisioning', () => {
+  const overview = read('README.md');
+  const providers = read('docs/provider-configuration.md');
+  assert.match(overview, /Void can activate a target before recording new resource identities/);
+  assert.match(providers, /If legacy resource provisioning changes tracked binding IDs/);
+  assert.match(providers, /Void may already activate targets/);
+  assert.match(providers, /noninteractive `void secret put` with stdin/);
+  assert.match(providers, /Legacy Cloudflare delivery instead uploads runtime credentials/);
+});
+
+test('generated-profile CI uses a runtime compatible with the pinned Void minimum', () => {
+  const workflow = read('.github/workflows/ci.yml');
+  const generated = workflow.slice(workflow.indexOf('\n  generated:'));
+  assert.ok(generated.length > 0);
+  const versions = [...generated.matchAll(/\bnode:\s*(?:\[)?'([0-9]+\.[0-9]+\.[0-9]+)'/g)].map(
+    (match) => match[1],
+  );
+  assert.ok(versions.length > 0);
+  for (const version of versions) {
+    const [major, minor] = version.split('.').map(Number);
+    assert.ok(
+      major > 24 || (major === 24 && minor >= 21),
+      `Generated CI runtime ${version} cannot execute Void`,
+    );
+  }
+  assert.match(workflow, /'20\.19\.0'/);
+  assert.match(workflow, /'22\.12\.0'/);
 });

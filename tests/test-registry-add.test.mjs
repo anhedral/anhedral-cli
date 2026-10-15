@@ -136,12 +136,30 @@ test('add composes bundled bindings while preserving product code', async () => 
     await addStackItems(root, { items: ['r2'], skipInstall: true }, runner);
     assert.equal(readFileSync(file, 'utf8'), source);
     assert.ok(
-      JSON.parse(readFileSync(path.join(root, 'apps/api/wrangler.jsonc'), 'utf8')).r2_buckets,
+      JSON.parse(readFileSync(path.join(root, 'apps/api/anhedral.cloudflare.json'), 'utf8'))
+        .r2_buckets,
     );
     assert.equal(inspectProject(root).localReady, true);
     const again = await addStackItems(root, { items: ['r2'], skipInstall: true }, runner);
     assert.deepEqual(again.conflicts, []);
     assert.equal(readFileSync(file, 'utf8'), source);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('Void additions refuse unsupported provisioning contracts without mixing delivery engines', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-void-boundary-'));
+  const root = path.join(temp, 'app');
+  try {
+    await project(root);
+    const before = sourceFiles(root);
+    for (const item of ['queues', 'basin'])
+      await assert.rejects(
+        addStackItems(root, { items: [item], dryRun: true, skipInstall: true }, runner),
+        /explicit engine migration/,
+      );
+    assert.deepEqual(sourceFiles(root), before);
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }

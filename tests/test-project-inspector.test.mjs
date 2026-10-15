@@ -308,3 +308,51 @@ test('Basin stream identifier is configured only from the actual stream field', 
     clean();
   }
 });
+
+test('Void inspector resolves recorded binding identities without ignoring authored changes', () => {
+  const { root, save, clean } = fixture();
+  const declaration = {
+    name: 'example-api',
+    d1_databases: [
+      { binding: 'DB', database_name: 'shared-db', database_id: 'REPLACE_WITH_D1_ID' },
+    ],
+    kv_namespaces: [{ binding: 'CACHE', id: 'REPLACE_WITH_KV_ID' }],
+  };
+  const source = {
+    name: 'example-api',
+    d1_databases: [{ binding: 'DB', database_name: 'shared-db' }],
+    kv_namespaces: [{ binding: 'CACHE' }],
+  };
+  const resolved = {
+    ...source,
+    d1_databases: [{ ...source.d1_databases[0], database_id: 'recorded-db' }],
+    kv_namespaces: [{ binding: 'CACHE', id: 'recorded-kv' }],
+  };
+  try {
+    save('apps/api/anhedral.cloudflare.json', declaration);
+    save('apps/api/void.lock.json', { version: 1, source, resolved, text: JSON.stringify(source) });
+    let result = inspectApplication(root);
+    assert.equal(result.configuration.state, 'available');
+    assert.equal(
+      result.configuration.data.bindings.find((binding) => binding.kind === 'D1').resourceId,
+      'recorded-db',
+    );
+    assert.equal(
+      result.configuration.data.bindings.find((binding) => binding.kind === 'KV').resourceId,
+      'recorded-kv',
+    );
+    declaration.d1_databases[0].database_id = 'new-authored-db';
+    save('apps/api/anhedral.cloudflare.json', declaration);
+    result = inspectApplication(root);
+    assert.equal(
+      result.configuration.data.bindings.find((binding) => binding.kind === 'D1').resourceId,
+      'new-authored-db',
+    );
+    save('apps/api/void.lock.json', { version: 999, source, resolved, text: secret });
+    result = inspectApplication(root);
+    assert.equal(result.configuration.state, 'unavailable');
+    assert.ok(!JSON.stringify(result).includes(secret));
+  } finally {
+    clean();
+  }
+});

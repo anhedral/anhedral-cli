@@ -34,8 +34,7 @@ try {
   write('pnpm-workspace.yaml', 'packages: []\n');
   for (const item of plan.registry.items)
     for (const target of item.targets) {
-      if (target === 'scripts/security') mkdirSync(path.join(root, target), { recursive: true });
-      else if (target.startsWith('apps/') || target.startsWith('packages/')) {
+      if (target.startsWith('apps/') || target.startsWith('packages/')) {
         mkdirSync(path.join(root, target), { recursive: true });
         writeFileSync(
           path.join(root, target, 'package.json'),

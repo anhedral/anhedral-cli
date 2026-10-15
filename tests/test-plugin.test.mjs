@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
-import { digest, pluginSourceDigest } from '../plugin-app/source-integrity.mjs';
+import { digest, pluginSourceDigest } from '../plugins/codex/inspector/source-integrity.mjs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { buildPluginArchive } from '../scripts/package-plugin.mjs';
@@ -9,14 +9,14 @@ const checkout = path.resolve(import.meta.dirname, '..');
 // Portable package-contract fixture: UI compilation runs separately on its supported Node engines.
 const root = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-package-'));
 process.on('exit', () => rmSync(root, { recursive: true, force: true }));
-for (const relative of ['plugins', 'assets', 'src', 'plugin-app']) {
+for (const relative of ['plugins/codex/distribution', 'src', 'plugins/codex/inspector']) {
   cpSync(path.join(checkout, relative), path.join(root, relative), {
     recursive: true,
     filter: (source) => !['node_modules', 'dist', 'runtime'].includes(path.basename(source)),
   });
 }
 cpSync(path.join(checkout, 'package.json'), path.join(root, 'package.json'));
-const runtime = path.join(root, 'plugins/anhedral/runtime');
+const runtime = path.join(root, 'plugins/codex/distribution/runtime');
 mkdirSync(runtime, { recursive: true });
 const runtimeFiles = {
   'THIRD_PARTY_NOTICES.txt': 'Fixture notices',
@@ -48,7 +48,7 @@ while (result.contents.readUInt32LE(offset) === 0x04034b50) {
   const nameSize = result.contents.readUInt16LE(offset + 26);
   const name = result.contents.subarray(offset + 30, offset + 30 + nameSize).toString();
   const content = result.contents.subarray(offset + 30 + nameSize, offset + 30 + nameSize + size);
-  assert.deepEqual(content, readFileSync(path.join(root, 'plugins/anhedral', name)));
+  assert.deepEqual(content, readFileSync(path.join(root, 'plugins/codex/distribution', name)));
   files.set(name, content);
   offset += 30 + nameSize + size;
 }
@@ -66,7 +66,7 @@ for (const name of [
 const mcp = JSON.parse(files.get('mcp.json')).mcpServers['anhedral-projects'];
 assert.equal(mcp.type, 'stdio');
 assert.deepEqual(mcp.args, ['${PLUGIN_ROOT}/runtime/server.mjs', 'serve']);
-assert.equal(mcp.env.ANHEDRAL_PLUGIN_DATA, '${PLUGIN_DATA}/sites');
+assert.equal(mcp.env.ANHEDRAL_LEGACY_PLUGIN_DATA, '${PLUGIN_DATA}/sites');
 for (const legacy of ['server.mjs', 'assets/control-panel.html'])
   assert.equal(files.has(legacy), false, `Default plugin must exclude ${legacy}`);
 const manifest = JSON.parse(files.get('plugin.json'));
@@ -77,17 +77,17 @@ for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
   assert.deepEqual(
     files.get(manifest.extensions['com.openai'].interface[field].replace(/^\.\//, '')),
     Buffer.from(
-      readFileSync(path.join(root, 'assets/anhedral-mark.svg'), 'utf8').replace(
-        /fill="white"/g,
-        field.endsWith('Dark') ? 'fill="white"' : 'fill="black"',
-      ),
+      readFileSync(
+        path.join(root, 'plugins/codex/distribution/assets/anhedral-mark-dark.svg'),
+        'utf8',
+      ).replace(/fill="white"/g, field.endsWith('Dark') ? 'fill="white"' : 'fill="black"'),
     ),
   );
 }
 for (const [name, contents] of files) {
   if (!name.endsWith('.md')) continue;
   for (const match of contents.toString().matchAll(/\]\(([^)]+)\)/g)) {
-    if (/^(?:https?:|#)/.test(match[1])) continue;
+    if (/^(?:https?:|plugin:|#)/.test(match[1])) continue;
     assert.ok(
       files.has(path.posix.normalize(path.posix.join(path.posix.dirname(name), match[1]))),
       `Missing bundled reference: ${match[1]}`,
@@ -96,7 +96,11 @@ for (const [name, contents] of files) {
 }
 const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-contract-'));
 try {
-  cpSync(path.join(root, 'plugins'), path.join(temporary, 'plugins'), { recursive: true });
+  cpSync(
+    path.join(root, 'plugins/codex/distribution'),
+    path.join(temporary, 'plugins/codex/distribution'),
+    { recursive: true },
+  );
   writeFileSync(path.join(temporary, 'package.json'), JSON.stringify({ version: '0.0.0' }));
   assert.throws(() => buildPluginArchive(temporary), /versions must match/);
 } finally {

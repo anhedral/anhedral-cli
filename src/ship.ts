@@ -6,6 +6,8 @@ import { defaultRunner, type DeliveryRunner } from './project-state.js';
 import { withLifecycleOperation, type LifecycleSession } from './lifecycle.js';
 import { planDelivery, shipApplication } from './delivery.js';
 import { planProvisioning, provisionApplication } from './provision.js';
+import { planVoidDelivery } from './void.js';
+import { syncVoidSecrets, voidServerSecrets } from './void-execution.js';
 import type { CloudflareRequest } from './cloudflare.js';
 import { planProviderProvisioning, provisionSelectedProviders } from './providers/provision.js';
 import {
@@ -27,12 +29,14 @@ async function executeCloudflareApplication(
   send: typeof fetch = fetch,
   providerEnvironment: NodeJS.ProcessEnv = process.env,
   session?: LifecycleSession,
+  options: { voidLogsDirectory?: string } = {},
 ): Promise<
   | Awaited<ReturnType<typeof shipApplication>>
   | (ReturnType<typeof planDelivery> & {
       provisioning: ReturnType<typeof planProvisioning>;
       mutation: false;
       integrations: ReturnType<typeof planProviderProvisioning>;
+      voidCandidate: ReturnType<typeof planVoidDelivery>;
     })
   | {
       state: 'configuration-required';
@@ -50,12 +54,19 @@ async function executeCloudflareApplication(
   const deployment = planDelivery(root, true);
   const provisioning = planProvisioning(root);
   const integrations = planProviderProvisioning(root);
-  if (dryRun) return { ...deployment, provisioning, integrations, mutation: false };
+  if (dryRun)
+    return {
+      ...deployment,
+      provisioning,
+      integrations,
+      voidCandidate: planVoidDelivery(root),
+      mutation: false,
+    };
   if (deployment.project.audience === 'unconfigured' || !deployment.project.accountId)
     throw new Error('Connect the intended account and audience before shipping.');
   const environment = runtimeEnvironment(providerEnvironment);
-  const providerRun: DeliveryRunner = (command, args, cwd, env) =>
-    run(command, args, cwd, runtimeEnvironment(env));
+  const providerRun: DeliveryRunner = (command, args, cwd, env, input) =>
+    run(command, args, cwd, runtimeEnvironment(env), input);
   if (
     realpathSync((await run('git', ['rev-parse', '--show-toplevel'], root, environment)).trim()) !==
       root ||
@@ -99,8 +110,37 @@ async function executeCloudflareApplication(
   const runtime = configuredRuntime(root);
   const environments = mergeRuntimeTargets(runtimeTargets(root, runtime), application);
   const buildRunner: DeliveryRunner = async (command, args, cwd, env) => {
-    const values = environments[`${path.relative(root, cwd).split(path.sep).join('/')}/.dev.vars`];
+    const relative = path.relative(root, cwd).split(path.sep).join('/');
+    const values = environments[`${relative}/.env`] ?? environments[`${relative}/.dev.vars`];
     const environment = runtimeEnvironment(env, values);
+    if (
+      deployment.project.deliveryEngine === 'void' &&
+      command === 'pnpm' &&
+      args.join(' ') === 'exec void deploy --platform cloudflare'
+    ) {
+      if (values && Object.keys(values).length)
+        await syncVoidSecrets(cwd, voidServerSecrets(values), run, environment, async () => {
+          const dirty = await run('git', ['status', '--porcelain'], root, environment);
+          const changed = dirty
+            .split('\n')
+            .filter((line) => line.trim())
+            .some(
+              (line) =>
+                !(
+                  [' M', '??'].includes(line.slice(0, 2)) &&
+                  deployment.project.targets.some(
+                    (target) => line.slice(3) === `${target.directory}/void.lock.json`,
+                  )
+                ),
+            );
+          if (
+            changed ||
+            (await run('git', ['rev-parse', 'HEAD'], root, environment)).trim() !== commit
+          )
+            throw new Error('Source changed before Void secret upload; deployment was stopped.');
+        });
+      return run(command, args, cwd, environment);
+    }
     if (
       command !== 'pnpm' ||
       args.join(' ') !== 'run deploy' ||
@@ -116,7 +156,7 @@ async function executeCloudflareApplication(
       rmSync(file, { force: true });
     }
   };
-  return phase(session, 'deployment', () => shipApplication(root, buildRunner, request));
+  return phase(session, 'deployment', () => shipApplication(root, buildRunner, request, options));
 }
 
 async function executeVercelApplication(
@@ -137,8 +177,8 @@ async function executeVercelApplication(
   )
     throw new Error('Connect the intended Vercel account, plan and audience before shipping.');
   const env = runtimeEnvironment(providerEnvironment);
-  const providerRun: DeliveryRunner = (command, args, cwd, env) =>
-    run(command, args, cwd, runtimeEnvironment(env));
+  const providerRun: DeliveryRunner = (command, args, cwd, env, input) =>
+    run(command, args, cwd, runtimeEnvironment(env), input);
   if (
     realpathSync((await run('git', ['rev-parse', '--show-toplevel'], root, env)).trim()) !==
       realpathSync(root) ||
@@ -189,11 +229,30 @@ export async function shipCloudflareApplication(
   request?: CloudflareRequest,
   send: typeof fetch = fetch,
   providerEnvironment: NodeJS.ProcessEnv = process.env,
+  options: { voidLogsDirectory?: string } = {},
 ) {
   if (dryRun)
-    return executeCloudflareApplication(root, true, run, request, send, providerEnvironment);
+    return executeCloudflareApplication(
+      root,
+      true,
+      run,
+      request,
+      send,
+      providerEnvironment,
+      undefined,
+      options,
+    );
   return withLifecycleOperation(root, 'cloudflare', run, (session) =>
-    executeCloudflareApplication(root, false, run, request, send, providerEnvironment, session),
+    executeCloudflareApplication(
+      root,
+      false,
+      run,
+      request,
+      send,
+      providerEnvironment,
+      session,
+      options,
+    ),
   );
 }
 
@@ -260,7 +319,7 @@ export async function shipSelectedStack(
         { target: 'vercel', after: ['cloudflare'] },
       ],
       targets: [
-        { provider: 'cloudflare', ...cloudflare },
+        { provider: 'cloudflare', ...cloudflare, voidCandidate: planVoidDelivery(root) },
         { provider: 'vercel', ...vercel },
       ],
       integrations: planProviderProvisioning(root),
@@ -288,6 +347,7 @@ export async function shipSelectedStack(
     );
     if (
       'state' in services &&
+      services.state !== undefined &&
       ['configuration-required', 'provider-configuration-required'].includes(services.state)
     )
       return {

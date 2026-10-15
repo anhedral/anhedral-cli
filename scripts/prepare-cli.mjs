@@ -10,7 +10,10 @@ if (!readFileSync(entry, 'utf8').startsWith('#!/usr/bin/env node\n')) {
 }
 chmodSync(entry, 0o755);
 // Ship the same registry and standard with the independently installable plugin.
-const references = new URL('../plugins/anhedral/skills/anhedral/references/', import.meta.url);
+const references = new URL(
+  '../plugins/codex/distribution/skills/anhedral/references/',
+  import.meta.url,
+);
 mkdirSync(references, { recursive: true });
 writeFileSync(
   new URL('stack-registry.json', references),
@@ -30,20 +33,23 @@ writeFileSync(
 );
 writeFileSync(
   new URL('application-stack-standard.md', references),
-  readFileSync(new URL('../docs/application-stack-standard.md', import.meta.url)),
+  readFileSync(new URL('../docs/stack-standard.md', import.meta.url)),
 );
 writeFileSync(
-  new URL('../plugins/anhedral/LICENSE', import.meta.url),
+  new URL('../plugins/codex/distribution/LICENSE', import.meta.url),
   readFileSync(new URL('../LICENSE', import.meta.url)),
 );
-const assets = new URL('../plugins/anhedral/assets/', import.meta.url);
-mkdirSync(assets, { recursive: true });
-writeFileSync(
-  new URL('anhedral.svg', assets),
-  readFileSync(new URL('../assets/anhedral.svg', import.meta.url)),
-);
-
-const manifestUrl = new URL('../plugins/anhedral/plugin.json', import.meta.url);
+const manifestUrl = new URL('../plugins/codex/distribution/plugin.json', import.meta.url);
 const manifest = JSON.parse(readFileSync(manifestUrl, 'utf8'));
 manifest.version = CAPABILITY_REGISTRY.cliVersion;
 writeFileSync(manifestUrl, JSON.stringify(manifest, null, 2) + '\n');
+
+writeFileSync(
+  new URL('void-verification.md', references),
+  readFileSync(new URL('../docs/void-verification.md', import.meta.url)),
+);
+
+writeFileSync(
+  new URL('plugin-ui.md', references),
+  readFileSync(new URL('../docs/plugin-ui.md', import.meta.url)),
+);

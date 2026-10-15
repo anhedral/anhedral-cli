@@ -1,94 +1,58 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "helpers:pinGitHubActionDigests"
-  ],
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
   "timezone": "America/Los_Angeles",
-  "labels": [
-    "dependencies"
-  ],
+  "labels": ["dependencies"],
   "dependencyDashboard": true,
   "rangeStrategy": "bump",
   "prHourlyLimit": 2,
   "prConcurrentLimit": 6,
-  "schedule": [
-    "before 6am on monday"
-  ],
+  "schedule": ["before 6am on monday"],
   "lockFileMaintenance": {
     "enabled": true
   },
   "packageRules": [
     {
-      "matchManagers": [
-        "github-actions"
-      ],
+      "matchManagers": ["github-actions"],
       "groupName": "github-actions",
-      "addLabels": [
-        "github-actions"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor",
-        "digest"
-      ],
+      "addLabels": ["github-actions"],
+      "matchUpdateTypes": ["patch", "minor", "digest"],
       "automerge": false
     },
     {
-      "matchManagers": [
-        "npm"
-      ],
-      "matchDepTypes": [
-        "devDependencies"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
       "groupName": "devDependencies (non-major)",
       "automerge": false
     },
     {
-      "matchManagers": [
-        "custom.regex"
-      ],
+      "matchManagers": ["custom.regex"],
       "groupName": "toolchain pins",
-      "addLabels": [
-        "toolchain"
-      ],
+      "addLabels": ["toolchain"],
       "automerge": false
     },
     {
-      "matchPackageNames": [
-        "pnpm"
-      ],
+      "matchPackageNames": ["pnpm"],
       "groupName": "pnpm runtime pin",
       "automerge": false
     },
     {
-      "matchPackageNames": [
-        "@types/node"
-      ],
+      "matchPackageNames": ["@types/node"],
       "allowedVersions": "<21",
       "groupName": "Node 20 type definitions",
       "automerge": false
     },
     {
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "addLabels": [
-        "major"
-      ]
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["major"]
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
       "description": "Pinned Node.js 24 runtime used for release packing and portability lanes",
-      "managerFilePatterns": [
-        "/^\\.github/workflows\\/(?:ci|release)\\.yml$/"
-      ],
+      "managerFilePatterns": ["/^\\.github/workflows\\/(?:ci|release)\\.yml$/"],
       "matchStrings": [
         "RELEASE_NODE_VERSION:\\s*'(?<currentValue>24\\.\\d+\\.\\d+)'",
         "(?:node-version:|-)\\s*'(?<currentValue>24\\.\\d+\\.\\d+)'"
@@ -100,9 +64,7 @@
     {
       "customType": "regex",
       "description": "Pinned verified generated dependency versions",
-      "managerFilePatterns": [
-        "/^src\\/dependencies\\.ts$/"
-      ],
+      "managerFilePatterns": ["/^src\\/dependencies\\.ts$/", "/^src\\/void\\.ts$/"],
       "matchStrings": [
         "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+(?:['\\\"]?[^:'\\\"]+['\\\"]?): '(?<currentValue>[^']+)'",
         "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+export const [A-Z_]+ = '(?<currentValue>[^']+)'"

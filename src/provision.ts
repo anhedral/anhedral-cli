@@ -1,5 +1,7 @@
-import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { assertNoDeletedServices } from './service-deletion.js';
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { readBoundedFile } from './bounded-file.js';
 import { applyEdits, modify } from 'jsonc-parser';
 import {
   atomicJson,
@@ -193,10 +195,14 @@ export async function provisionApplication(
 ) {
   root = realpathSync(root);
   const plan = planProvisioning(root);
+  assertNoDeletedServices(root, plan.resources);
   if (dryRun) return { ...plan, mutation: false };
+  if (readApplication(root).deliveryEngine === 'void')
+    return { ...plan, mutation: false, writer: 'void' as const, deferredToDeployment: true };
   return withApplicationLock(root, async () => {
     const project = readApplication(root);
     const plan = planProvisioning(root);
+    assertNoDeletedServices(root, plan.resources);
     const configured = new Map(
       project.targets.map((target) => {
         const file = path.join(targetDirectory(root, target), 'wrangler.jsonc');
@@ -221,7 +227,46 @@ export async function provisionApplication(
         run,
         environment(project),
       ));
-    const receipts: { kind: string; name: string; id: string; reused: boolean }[] = [];
+    const previousFile = path.join(root, '.anhedral/resources.json');
+    let previousResources: {
+      kind: string;
+      name: string;
+      id: string;
+      reused: boolean;
+      createdByProject?: boolean;
+    }[] = [];
+    if (existsSync(previousFile)) {
+      const previous = JSON.parse(readBoundedFile(previousFile, 256 * 1024).toString('utf8'));
+      if (
+        previous.schemaVersion !== 1 ||
+        previous.projectId !== project.id ||
+        previous.accountId !== project.accountId ||
+        !Array.isArray(previous.resources) ||
+        previous.resources.length > 500 ||
+        previous.resources.some(
+          (entry: unknown) =>
+            !entry ||
+            typeof entry !== 'object' ||
+            Array.isArray(entry) ||
+            !['d1', 'r2', 'kv', 'queue', 'stream'].includes(
+              String((entry as { kind?: unknown }).kind),
+            ) ||
+            ['name', 'id'].some(
+              (field) => typeof (entry as Record<string, unknown>)[field] !== 'string',
+            ) ||
+            typeof (entry as { reused?: unknown }).reused !== 'boolean',
+        )
+      )
+        throw new Error('Previous resource ownership cannot be verified.');
+      previousResources = previous.resources;
+    }
+    const receipts: {
+      kind: string;
+      name: string;
+      id: string;
+      reused: boolean;
+      createdByProject: boolean;
+    }[] = [];
     const resources = new Map<string, (typeof receipts)[number]>();
     for (const resource of plan.resources) {
       assertConfiguration();
@@ -261,6 +306,15 @@ export async function provisionApplication(
           name: resource.name,
           id: value[idField] as string,
           reused,
+          createdByProject:
+            !reused ||
+            previousResources.some(
+              (previous) =>
+                previous.kind === resource.kind &&
+                previous.name === resource.name &&
+                previous.id === value[idField] &&
+                (previous.createdByProject === true || previous.reused === false),
+            ),
         };
         resources.set(key, receipt);
         receipts.push(receipt);

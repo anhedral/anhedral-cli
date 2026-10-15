@@ -148,6 +148,34 @@ test('legacy migration writes private credentials first and remains restartable 
     rmSync(directory, { recursive: true, force: true });
   }
 });
+test('legacy migration rejects conflicting private credentials without changing either file', () => {
+  const directory = fixture();
+  try {
+    legacy(directory);
+    const file = path.join(directory, 'provider-credentials.json');
+    const conflicting = 'different-private-creation-value';
+    atomicJson(file, {
+      schemaVersion: 1,
+      providers: { resend: { [operation]: { token: conflicting } } },
+    });
+    const before = readFileSync(file, 'utf8');
+    const receiptFile = path.join(directory, 'providers.json');
+    const receiptsBefore = readFileSync(receiptFile, 'utf8');
+    assert.throws(
+      () => new ProvisioningState(directory),
+      (error) => {
+        assert.match(error.message, /credential state conflicts/);
+        assert.equal(error.message.includes(secret), false);
+        assert.equal(error.message.includes(conflicting), false);
+        return true;
+      },
+    );
+    assert.equal(readFileSync(file, 'utf8'), before);
+    assert.equal(readFileSync(receiptFile, 'utf8'), receiptsBefore);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 test('credential loss blocks replay and fails with redacted actionable error', async () => {
   const directory = fixture();
   try {

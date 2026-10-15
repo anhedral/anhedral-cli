@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@neondatabase/serverless':
+        specifier: 1.2.0
+        version: 1.2.0
       jsonc-parser:
         specifier: 3.3.1
         version: 3.3.1
+      zod:
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: 20.19.43
@@ -18,14 +24,15 @@ importers:
       prettier:
         specifier: 3.9.10
         version: 3.9.10
-      simple-icons:
-        specifier: 16.27.0
-        version: 16.27.0
       typescript:
         specifier: 5.9.3
         version: 5.9.3
 
 packages:
+
+  '@neondatabase/serverless@1.2.0':
+    resolution: {integrity: sha512-tnaqgixUengZQNd9ZrS3ytQfamJzLKY8QxgqWQTNHHtB+KrFQWk77JTbbpg4RD+J3qE4eO2lVytvGDX5Kj6FdQ==}
+    engines: {node: '>=19.0.0'}
 
   '@types/node@20.19.43':
     resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
@@ -38,10 +45,6 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  simple-icons@16.27.0:
-    resolution: {integrity: sha512-Rk2dCRVCPHnla9/mHmztJOlbkfncPDUMSOPozQO3+c+vr6Uwy9jhNHeuxxvNZgbF9ZwpoT1BCu1LNB4Q07VmZQ==}
-    engines: {node: '>=0.12.18'}
-
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -50,7 +53,12 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
+
 snapshots:
+
+  '@neondatabase/serverless@1.2.0': {}
 
   '@types/node@20.19.43':
     dependencies:
@@ -60,8 +68,8 @@ snapshots:
 
   prettier@3.9.10: {}
 
-  simple-icons@16.27.0: {}
-
   typescript@5.9.3: {}
 
   undici-types@6.21.0: {}
+
+  zod@4.6.6: {}

@@ -1,6 +1,5 @@
 import { STACK_DEPENDENCIES, WORKSPACE_NODE_ENGINE } from '../dependencies.js';
 import { setPnpmPolicy } from '../pnpm-policy.js';
-import { writeSecurityBackports } from '../security-backports.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
 import { BOOTSTRAP_COMMAND } from '../registry/bootstrap.js';
 import { appendGitignore } from '../util.js';
@@ -19,13 +18,14 @@ import { writeSetupDocumentation, workerBuildSuffix } from './documentation.js';
 import { writeStackDocumentation } from './stack-documentation.js';
 import { writeEnvironmentExample } from './environment.js';
 import { providerConfigurationTemplate, type ProviderConfiguration } from '../providers/config.js';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 function securityOverrides(options: StandardOptions): Record<string, string> {
   const has = (value: StandardProduct) => options.products.includes(value);
   return {
     ...(has('wxt') ? { '@wxt-dev/module-react>@vitejs/plugin-react': '5.2.0' } : {}),
     ...(has('next') || has('vinext') ? { 'sharp@<0.35.5': '0.35.5' } : {}),
+    ...(has('next') || has('vinext') ? { 'fflate@>=0.7.0 <0.7.5': '0.7.5' } : {}),
     ...(options.products.some((product) =>
       ['vinext', 'next', 'expo', 'electron', 'wxt', 'neon', 'd1'].includes(product),
     )
@@ -53,7 +53,19 @@ function securityOverrides(options: StandardOptions): Record<string, string> {
 }
 
 function writeTurboConfiguration(root: string, registry: ResolvedStackRegistry): void {
-  const turbo = readJson<TurboConfig>(root, 'turbo.json');
+  const turbo = existsSync(path.join(root, 'turbo.json'))
+    ? readJson<TurboConfig>(root, 'turbo.json')
+    : ({ tasks: {} } as TurboConfig);
+  turbo.$schema = 'https://turbo.build/schema.json';
+  turbo.globalDependencies = [
+    ...new Set([
+      ...((turbo.globalDependencies as string[] | undefined) ?? []),
+      '**/.env',
+      '**/.env.*',
+      '**/.dev.vars',
+      '**/.dev.vars.*',
+    ]),
+  ];
   turbo.globalEnv = [
     ...new Set([...(turbo.globalEnv ?? []), ...registry.items.flatMap((item) => item.environment)]),
   ].sort();
@@ -63,10 +75,22 @@ function writeTurboConfiguration(root: string, registry: ResolvedStackRegistry):
     lint: { ...turbo.tasks.lint, dependsOn: ['^lint'] },
     typecheck: { ...turbo.tasks.typecheck, dependsOn: ['^typecheck'] },
     test: { dependsOn: ['^build'], outputs: ['coverage/**'] },
+    'db:generate': { cache: false },
+    'db:migrate': {
+      cache: false,
+      passThroughEnv: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'],
+    },
     build: {
       ...turbo.tasks.build,
       dependsOn: [...new Set(['^build', ...(turbo.tasks.build?.dependsOn ?? [])])],
-      outputs: ['.next/**', '!.next/cache/**', '.open-next/**', 'dist/**', '.output/**'],
+      outputs: [
+        '.next/**',
+        '!.next/cache/**',
+        '!.next/dev/**',
+        '.open-next/**',
+        'dist/**',
+        '.output/**',
+      ],
     },
   };
   json(root, 'turbo.json', turbo);
@@ -94,12 +118,18 @@ export function writeStandardRoot(
       lint: 'turbo lint',
       typecheck: 'turbo typecheck',
       test: 'turbo test',
+      ...(has('neon') || has('d1')
+        ? {
+            'db:generate': 'turbo run db:generate --filter=@workspace/db',
+            'db:migrate': 'turbo run db:migrate --filter=@workspace/db',
+          }
+        : {}),
       audit: 'node scripts/audit.mjs',
       'audit:full': 'fallow --fail-on-issues',
-      'audit:deps': 'node scripts/security/audit-deps.mjs',
+      'audit:deps': 'pnpm audit --audit-level=high',
       check: `pnpm lint && pnpm typecheck && pnpm run audit && pnpm audit:deps && pnpm test && pnpm build${workerBuildSuffix(options)}`,
     },
-    devDependencies: { fallow: STACK_DEPENDENCIES['fallow'] },
+    devDependencies: { turbo: STACK_DEPENDENCIES['turbo'], fallow: STACK_DEPENDENCIES['fallow'] },
     // Upstream starter lockfiles can retain vulnerable transitive versions. Keep fixes within compatible majors.
     pnpm: {
       ...existing.pnpm,
@@ -146,6 +176,8 @@ process.exitCode = result.status ?? 1;
   });
   writeTurboConfiguration(root, registry);
   setPnpmPolicy(root, {
+    ...(!updating ? { packages: ['apps/*', 'packages/*'] } : {}),
+    sharedWorkspaceLockfile: true,
     allowBuilds: undefined,
     onlyBuiltDependencies: [
       'esbuild',
@@ -155,12 +187,28 @@ process.exitCode = result.status ?? 1;
       ...(has('electron') ? ['electron'] : []),
     ],
   });
-  writeSecurityBackports(root);
+  // Upstream app/package lockfiles would create competing dependency authorities.
+  if (!updating) {
+    for (const parent of ['apps', 'packages']) {
+      const directory = path.join(root, parent);
+      if (!existsSync(directory)) continue;
+      for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        for (const lock of ['pnpm-lock.yaml', 'package-lock.json', 'yarn.lock'])
+          rmSync(path.join(directory, entry.name, lock), { force: true });
+      }
+    }
+    for (const lock of ['package-lock.json', 'yarn.lock'])
+      rmSync(path.join(root, lock), { force: true });
+  }
   appendGitignore(root, [
     'node_modules/',
     '.open-next/',
     '.vinext/',
     '.wrangler/',
+    '.void/',
+    '.void-wrangler.jsonc',
+    '/apps/*/db/migrations/',
     '.dev.vars',
     '.dev.vars.*',
     '!.dev.vars.example',

@@ -52,7 +52,7 @@ Complete the selected provider settings and connect the intended hosting account
 
 `add --diff [path]` shows an applicable unified patch. `add --view [path]` shows generated source. Both imply a dry run and use the existing staged transaction; neither installs the preview. Without a path, they show the changed generated files. Conflict reporting still applies; previewing a conflict does not permit overwriting edited source.
 
-Previews exclude private environment files and `.anhedral/` state. Public `.env.example` / `.dev.vars.example` templates can be inspected. Binary, nonregular, or files over 256 KiB are marked unavailable. The combined preview has a 1 MiB limit; select a file for larger additions. Diffs use a linear single-contextual-hunk implementation, including explicit handling of final newlines and new empty files.
+Previews exclude private environment files and `.anhedral/` state. Public `env.example` (Void), `.env.example`, and `.dev.vars.example` templates can be inspected. Binary, nonregular, or files over 256 KiB are marked unavailable. The combined preview has a 1 MiB limit; select a file for larger additions. Diffs use a linear single-contextual-hunk implementation, including explicit handling of final newlines and new empty files.
 
 A selection that needs a new upstream web bootstrap cannot produce source previews offline. The CLI explains this and directs the user to the selection-only `--dry-run` plan, which marks `filesChecked: false`. It does not fabricate files or run a networked generator during that preview.
 

@@ -17,6 +17,11 @@ export function writeSetupDocumentation(root: string, options: StandardOptions):
       ['vinext', 'hono', 'realtime', 'queues', 'cron', 'workflows'].includes(product),
     ) ||
     (has('next') && options.hosting === 'cloudflare');
+  const voidSelected =
+    workerSelected &&
+    !(has('next') && options.hosting === 'cloudflare') &&
+    !has('queues') &&
+    !has('basin');
   const existingAgents =
     existsSync(agentsFile) && (has('next') || has('vinext'))
       ? readFileSync(agentsFile, 'utf8') + '\n'
@@ -27,13 +32,13 @@ export function writeSetupDocumentation(root: string, options: StandardOptions):
     existingAgents +
       `# Anhedral delivery standard
 
-Keep accounts, source, infrastructure, billing, and recovery client-owned. Use the available developer tools and the selected platforms’ native toolchains for implementation and verification. Use provider plugins, APIs/MCP and CLIs for operations; Wrangler handles Cloudflare project commands.
+Keep accounts, source, infrastructure, billing, and recovery client-owned. Use the available developer tools and the selected platforms’ native toolchains for implementation and verification. Use provider plugins, APIs/MCP and CLIs for operations; Void owns Cloudflare provisioning and deployment for new supported projects; Anhedral owns composition, customer ownership and verification. Explicit OpenNext, queue/DLQ, Basin and existing Wrangler projects retain their delivery engine.
 
 Vinext on Cloudflare Workers by default; native Next.js on Vercel is an explicit option. Free-to-start where suitable, within provider eligibility and limits. Respect the existing account, budget, audience and release authorization. Request only missing approval for paid activation, material spending, architecture changes or release. Do not deploy or activate providers as part of initialization.
 
-Add apps and shared packages only when needed. All services belong in apps/*, reusable code in packages/*. Shared styling is named styling. Keep secrets and privileged integrations out of client bundles. Use Clerk, Better Auth, or no auth according to project needs. Protect product routes explicitly and implement resource authorization.
+Use pnpm workspaces and Turborepo with one root pnpm-lock.yaml. Add apps and shared packages only when needed. All services belong in apps/*, reusable code in packages/*. Shared styling is named styling. Keep secrets and privileged integrations out of client bundles. Use Clerk, Better Auth, or no auth according to project needs. Protect product routes explicitly and implement resource authorization.
 
-Use private R2 Worker bindings. KV is eventually consistent configuration/cache, never transactional authority. Neon uses Drizzle and direct serverless HTTP with a server-only DATABASE_URL. HTTP supports independent queries and batches; interactive transactions require a reviewed WebSocket or PostgreSQL adapter. Define job retries, concurrency, idempotency and failure handling. Review SQL migrations before applying them.
+Use private R2 Worker bindings. KV is eventually consistent configuration/cache, never transactional authority. Neon uses Drizzle and direct serverless HTTP with a server-only DATABASE_URL. HTTP supports independent queries and batches; interactive transactions require a reviewed WebSocket or PostgreSQL adapter. Define job retries, concurrency, idempotency and failure handling. Keep database factories and schemas in packages/db/src, SQL and metadata in packages/db/drizzle, and migration configuration in packages/db/drizzle.config.ts. Only server packages import @workspace/db; clients use API contracts and endpoints. Review generated SQL before deployment. One server target owns deployment migrations; other server targets only consume the database. Manual migration tasks are uncached and never part of builds or startup. Review SQL migrations before applying them.
 
 Developer tooling includes Cloudflare’s security-audit skill (https://github.com/cloudflare/security-audit-skill) for repository security reviews.
 
@@ -55,12 +60,13 @@ Initial selection: ${options.products.join(', ')}. Current selections and additi
 
 Run pnpm install, commit pnpm-lock.yaml, then pnpm dev. Run pnpm check for lint, types, Fallow audit, tests and build. Without a Git comparison base, audit runs the full Fallow gate. Add meaningful product tests and integration checks as behavior is implemented. The tests task runs only workspaces that define tests; init does not claim product verification.
 
-${has('next') && options.hosting === 'vercel' ? 'Native Next.js uses customer-owned Vercel. Connect with the intended scope and personal/commercial use before shipping. Default to private all-deployment protection unless public access was requested; verify protection before linking Git or uploading code. Run anhedral doctor --providers for prerequisites and recorded provider context. Configure server secrets in that project; use cache components, partial prefetching, Link navigation and Suspense deliberately. ' : ''}${workerSelected ? 'Cloudflare bindings contain REPLACE_WITH_* IDs. Reconcile resources in the client account and generate Worker types before development. Workers expose local dev and explicit deploy scripts. ' : ''}${has('vinext') ? 'Build with pnpm build, then pnpm --dir apps/web preview to exercise the production Worker. Vinext provides a Next-compatible API surface; native Next.js is an explicit framework option. ' : ''}${has('next') && options.hosting === 'cloudflare' ? 'Use the web preview script to exercise the actual OpenNext Worker runtime. ' : ''}Initialization does not provision infrastructure or deploy.
+${has('next') && options.hosting === 'vercel' ? 'Native Next.js uses customer-owned Vercel. Connect with the intended scope and personal/commercial use before shipping. Default to private all-deployment protection unless public access was requested; verify protection before linking Git or uploading code. Run anhedral doctor --providers for prerequisites and recorded provider context. Configure server secrets in that project; use cache components, partial prefetching, Link navigation and Suspense deliberately. ' : ''}${voidSelected ? 'Void owns provisioning and publication in the customer account. Keep explicit resources in anhedral.cloudflare.json and configuration in void.config.ts; commit void.lock.json after provisioning and serialize initial deployment across apps. Generated .void/ and .void-wrangler.jsonc are ignored. Copy each app’s env.example to its .env for local tooling; production server secrets use void secret and are never uploaded from local dotenv files. Supply public VITE_* values through the build environment. Existing NEXT_PUBLIC_* names require explicit framework build mapping. Generate Worker types before development. ' : ''}${has('vinext') ? 'Build with pnpm build, then pnpm --dir apps/web preview to exercise the production Worker. Vinext provides a Next-compatible API surface; native Next.js is an explicit framework option. ' : ''}${has('next') && options.hosting === 'cloudflare' ? 'Use the web preview script to exercise the actual OpenNext Worker runtime. ' : ''}Initialization does not provision infrastructure or deploy.
 
-Security gate: pnpm audit:deps audits all dependencies and retains the original report. Reviewed backports in scripts/security are accepted only after patch hashes, installed package hashes and regression checks match. Unremediated high/critical advisories, incomplete reports and modified patches remain blocking; lower-severity findings remain visible in the report.
+Security gate: pnpm audit:deps runs the standard pnpm dependency audit and fails on high or critical advisories. Resolve findings through compatible upstream dependency updates.
 
 ${has('next') && options.hosting === 'cloudflare' ? 'OpenNext is configured without a provisioned incremental-cache bucket. Choose and configure a cache adapter before using ISR or cache features that require shared persistence.\n' : ''}
-${has('neon') ? 'Configure server-only DATABASE_URL for the intended Neon branch and role. Direct HTTP needs no Hyperdrive or connection cleanup. Review migrations and authorization; interactive transactions require a reviewed WebSocket or PostgreSQL adapter.\n' : ''}
+${has('neon') ? 'Configure DATABASE_URL_UNPOOLED separately in packages/db/.env for transactional migrations on the intended branch. Configure server-only DATABASE_URL for the intended Neon branch and role. Direct HTTP needs no Hyperdrive or connection cleanup. Review migrations and authorization; interactive transactions require a reviewed WebSocket or PostgreSQL adapter.\n' : ''}
+${has('neon') || has('d1') ? 'packages/db/src owns the reusable database factory, schema and migration entry point. Generated SQL lives in packages/db/drizzle; the config resolves paths from its own directory. Run pnpm db:generate, review SQL, then pnpm db:migrate. These tasks are uncached and separate from application builds. D1 defaults to local; pass -- --remote explicitly for the selected Worker database. Browser and native interfaces use an API, never database credentials.\n' : ''}
 ${has('better-auth') ? 'Core Better Auth tables are included in the Drizzle schema. Review and apply migrations before using /api/auth. Configure BETTER_AUTH_SECRET, BETTER_AUTH_URL and trusted origins for the correct environment.\n' : ''}
 ${has('clerk') ? `${has('next') || has('vinext') ? 'The web starter includes ClerkProvider, middleware and sign-in/sign-up pages. Configure NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and server-only CLERK_SECRET_KEY. ' : ''}${has('hono') ? 'packages/auth exports a Clerk request authentication helper. Configure its server secret and publishable key, supply explicit authorized origins, and wire it into product routes; the API health route remains public. ' : ''}Authentication does not establish resource authorization.\n` : ''}
 ${has('r2') ? 'FILES is a private R2 binding. Implement authentication and file-level authorization before exposing file routes. Clients never receive R2 credentials.\n' : ''}
@@ -94,7 +100,7 @@ jobs:
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version: '22'
+          node-version: '${voidSelected ? '24.21.0' : '22'}'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint && pnpm typecheck && pnpm audit:deps

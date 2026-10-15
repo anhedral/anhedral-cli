@@ -50,13 +50,16 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     const installed = path.join(temporary, 'node_modules/anhedral');
     mkdirSync(installed, { recursive: true });
     cpSync(path.join(root, 'dist'), path.join(installed, 'dist'), { recursive: true });
-    cpSync(path.join(root, 'assets'), path.join(installed, 'assets'), { recursive: true });
     cpSync(path.join(root, 'package.json'), path.join(installed, 'package.json'));
-    cpSync(
-      path.join(root, 'node_modules/jsonc-parser'),
-      path.join(temporary, 'node_modules/jsonc-parser'),
-      { recursive: true, dereference: true },
-    );
+    for (const dependency of Object.keys(
+      JSON.parse(readFileSync(path.join(root, 'package.json'))).dependencies,
+    )) {
+      cpSync(
+        path.join(root, 'node_modules', dependency),
+        path.join(temporary, 'node_modules', dependency),
+        { recursive: true, dereference: true },
+      );
+    }
     const cli = path.join(installed, 'dist/bin.js');
     const run = (...args) =>
       spawnSync(process.execPath, [cli, ...args], { cwd: temporary, encoding: 'utf8' });
@@ -68,10 +71,13 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     assert.equal(successful('--version').trim(), manifest.version);
     assert.equal(registry.cliVersion, manifest.version);
     assert.equal(metadata.cliVersion, manifest.version);
-    for (const document of ['application-stack-standard.md', 'delivery-workflow.md']) {
+    for (const [document, source] of [
+      ['application-stack-standard.md', 'stack-standard.md'],
+      ['delivery-workflow.md', 'delivery-workflow.md'],
+    ]) {
       assert.equal(
         readFileSync(path.join(references, document), 'utf8'),
-        readFileSync(path.join(root, 'docs', document), 'utf8'),
+        readFileSync(path.join(root, 'docs', source), 'utf8'),
       );
     }
     assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [

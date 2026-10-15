@@ -4,6 +4,7 @@ import { inspectProject } from './readiness.js';
 import { defaultRunner, type DeliveryRunner } from './project-state.js';
 import { vercelApplicationStatus } from './vercel.js';
 import { applicationStatus } from './delivery.js';
+import { supportsVoidRuntime, VOID_VERSION } from './void.js';
 
 /** Explicit opt-in: checks local tools and existing provider context without setup or deployment. */
 export async function inspectProviderReadiness(root: string, run: DeliveryRunner = defaultRunner) {
@@ -30,12 +31,42 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
     }
   };
   const [major, minor] = process.versions.node.split('.').map(Number);
+  const cloudflareManifest = path.join(root, 'anhedral.project.json');
+  let voidTargets: { directory: string }[] = [];
+  try {
+    const manifest = JSON.parse(readFileSync(cloudflareManifest, 'utf8'));
+    if (manifest.deliveryEngine === 'void' && Array.isArray(manifest.targets))
+      voidTargets = manifest.targets.filter(
+        (target: { directory?: unknown }) =>
+          typeof target.directory === 'string' && /^apps\/[a-z0-9-]+$/.test(target.directory),
+      );
+  } catch {
+    // Provider readiness below reports invalid or unconfigured manifests.
+  }
   checks.push({
     id: 'node',
-    ok: major > 22 || (major === 22 && minor >= 13),
-    detail:
-      'Generated framework apps require Node 22.13 or newer; the CLI itself supports older Node versions.',
+    ok: voidTargets.length
+      ? supportsVoidRuntime(process.versions.node)
+      : major > 22 || (major === 22 && minor >= 13),
+    detail: voidTargets.length
+      ? 'Void applications require Node.js 24.21.0 or newer.'
+      : 'Generated framework apps require Node 22.13 or newer; the CLI itself supports older Node versions.',
   });
+  for (const target of voidTargets)
+    await check(
+      `void:${target.directory}`,
+      async () =>
+        (
+          await run(
+            'pnpm',
+            ['exec', 'void', '--version'],
+            path.join(root, target.directory),
+            environment,
+          )
+        ).trim() === VOID_VERSION,
+      `Pinned Void ${VOID_VERSION} is available in ${target.directory}`,
+      'Install the committed workspace lockfile and the pinned Void version.',
+    );
   await check(
     'pnpm',
     async () => /^\d+\.\d+\.\d+/.test((await run('pnpm', ['--version'], root, environment)).trim()),

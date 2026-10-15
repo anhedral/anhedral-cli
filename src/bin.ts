@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { runServiceCommand } from './services-command.js';
 import {
   shipCloudflareApplication,
   shipSelectedVercelApplication,
@@ -101,6 +102,10 @@ async function main(): Promise<void> {
   }
   if (global.quiet || json) process.env.ANHEDRAL_QUIET = '1';
   if (global.verbose && !json && !global.quiet) process.env.ANHEDRAL_VERBOSE = '1';
+  if (command === 'services') {
+    printResult(command, await runServiceCommand(process.cwd(), args), output);
+    return;
+  }
   if (command === 'inspect') {
     const directories = args.filter((arg) => arg !== '--json');
     if (directories.length > 1 || directories.some((arg) => arg.startsWith('-')))

@@ -19,7 +19,7 @@ for (const filename of readdirSync(workflowsRoot).filter((entry) => /\.ya?ml$/.t
   }
 }
 
-for (const packageFile of ['package.json', 'plugin-app/package.json']) {
+for (const packageFile of ['package.json', 'plugins/codex/inspector/package.json']) {
   const packageJson = JSON.parse(readFileSync(path.join(root, packageFile), 'utf8'));
   for (const group of ['dependencies', 'devDependencies', 'optionalDependencies']) {
     for (const [name, version] of Object.entries(packageJson[group] ?? {})) {

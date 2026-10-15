@@ -18,6 +18,7 @@ for (const profile of selected) {
   assert.ok(Object.hasOwn(profiles, profile), `Unknown core profile: ${profile}`);
   const temporary = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-core-')));
   const root = path.join(temporary, profile);
+  process.env.ANHEDRAL_PLUGIN_DATA = path.join(temporary, 'catalog');
   try {
     if (process.platform === 'win32') {
       const result = spawnSync(
@@ -43,6 +44,10 @@ for (const profile of selected) {
       temporary,
     );
     assert.equal(inspectProject(root).localReady, true);
+    const appIdentity = JSON.parse(readFileSync(path.join(root, 'anhedral.app.json'), 'utf8'));
+    assert.match(appIdentity.id, /^[a-f0-9-]{36}$/);
+    const catalogFiles = readdirSync(path.join(temporary, 'catalog'));
+    assert.ok(catalogFiles.length > 0, 'CLI init registers its generated app');
     execFile('pnpm', ['check'], root);
     if (profile === 'api-neon') {
       execFile(process.execPath, [cli, 'add', root, 'r2', '--json'], temporary);

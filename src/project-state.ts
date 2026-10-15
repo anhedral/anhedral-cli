@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import {
@@ -34,6 +35,8 @@ export interface ApplicationProject {
   name: string;
   ownership: 'customer';
   provider: 'cloudflare';
+  /** Missing on existing manifests: retain the legacy Wrangler engine. */
+  deliveryEngine?: 'void' | 'wrangler';
   accountId: string | null;
   audience: 'unconfigured' | 'public' | 'private';
   access?: { emails: string[] };
@@ -44,6 +47,7 @@ export type DeliveryRunner = (
   args: string[],
   cwd: string,
   env: NodeJS.ProcessEnv,
+  input?: string,
 ) => Promise<string>;
 const manifestName = 'anhedral.project.json';
 const stateDirectory = '.anhedral';
@@ -59,11 +63,101 @@ export function atomicJson(file: string, value: unknown): void {
     rmSync(temporary, { force: true });
   }
 }
+export function configurationFile(directory: string): string {
+  const canonical = path.join(directory, 'anhedral.cloudflare.json');
+  return existsSync(canonical) ? canonical : path.join(directory, 'wrangler.jsonc');
+}
+export function usesVoid(project: ApplicationProject): boolean {
+  return project.deliveryEngine === 'void';
+}
+function mergeVoidConfig(previous: unknown, resolved: unknown, authored: unknown): unknown {
+  if (isDeepStrictEqual(previous, authored)) return resolved;
+  if (Array.isArray(previous) && Array.isArray(resolved) && Array.isArray(authored)) {
+    const identity = (value: unknown) => {
+      if (value && typeof value === 'object')
+        for (const key of ['binding', 'name', 'tag', 'class_name', 'pattern', 'route']) {
+          const item = (value as Record<string, unknown>)[key];
+          if (typeof item === 'string') return `${key}:${item}`;
+        }
+      return JSON.stringify(value);
+    };
+    return [
+      ...authored.map((item) => {
+        const before = previous.find((entry) => identity(entry) === identity(item));
+        const after = resolved.find((entry) => identity(entry) === identity(item));
+        return before !== undefined && after !== undefined
+          ? mergeVoidConfig(before, after, item)
+          : item;
+      }),
+      ...resolved.filter(
+        (item) =>
+          !previous.some((entry) => identity(entry) === identity(item)) &&
+          !authored.some((entry) => identity(entry) === identity(item)),
+      ),
+    ];
+  }
+  const object = (value: unknown): value is Record<string, unknown> =>
+    !!value && typeof value === 'object' && !Array.isArray(value);
+  if (object(previous) && object(resolved) && object(authored)) {
+    const result: Record<string, unknown> = {};
+    for (const key of new Set([
+      ...Object.keys(previous),
+      ...Object.keys(resolved),
+      ...Object.keys(authored),
+    ])) {
+      if (key in authored)
+        Object.defineProperty(result, key, {
+          value: mergeVoidConfig(previous[key], resolved[key], authored[key]),
+          enumerable: true,
+        });
+      else if (!(key in previous) && key in resolved)
+        Object.defineProperty(result, key, { value: resolved[key], enumerable: true });
+    }
+    return result;
+  }
+  return authored;
+}
+export function resolveVoidCloudflareConfig(
+  authored: Record<string, unknown>,
+  lock: Record<string, unknown>,
+): Record<string, unknown> {
+  const value = structuredClone(authored);
+  if (
+    lock.version !== 1 ||
+    !lock.source ||
+    typeof lock.source !== 'object' ||
+    Array.isArray(lock.source) ||
+    !lock.resolved ||
+    typeof lock.resolved !== 'object' ||
+    Array.isArray(lock.resolved) ||
+    typeof lock.text !== 'string'
+  )
+    throw new Error('Invalid pinned Void resource lock.');
+  // The generated Void configuration omits resource-ID scaffolding placeholders.
+  // Match that authored input when applying Void's resolved resource identities.
+  for (const [field, key] of [
+    ['d1_databases', 'database_id'],
+    ['kv_namespaces', 'id'],
+    ['pipelines', 'stream'],
+  ] as const) {
+    if (Array.isArray(value[field]))
+      for (const entry of value[field]) {
+        if (entry && typeof entry[key] === 'string' && entry[key].startsWith('REPLACE_WITH_'))
+          delete entry[key];
+      }
+  }
+  return mergeVoidConfig(lock.source, lock.resolved, value) as Record<string, unknown>;
+}
 export function readConfig(directory: string): Record<string, unknown> {
   const errors: ParseError[] = [];
-  const value = parse(readFileSync(path.join(directory, 'wrangler.jsonc'), 'utf8'), errors);
+  const value = parse(readFileSync(configurationFile(directory), 'utf8'), errors);
   if (errors.length || !value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('Invalid Wrangler JSONC configuration.');
+  const lockFile = path.join(directory, 'void.lock.json');
+  if (existsSync(path.join(directory, 'anhedral.cloudflare.json')) && existsSync(lockFile)) {
+    const lock = JSON.parse(readFileSync(lockFile, 'utf8'));
+    return resolveVoidCloudflareConfig(value, lock);
+  }
   return value;
 }
 export function targetDirectory(root: string, target: DeploymentTarget): string {
@@ -83,7 +177,7 @@ export function registerApplication(root: string, extendTargets = false): Applic
     throw new Error('Automatic delivery currently supports Cloudflare projects.');
   const targets = readdirSync(path.join(root, 'apps'), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .filter((entry) => existsSync(path.join(root, 'apps', entry.name, 'wrangler.jsonc')))
+    .filter((entry) => existsSync(configurationFile(path.join(root, 'apps', entry.name))))
     .map((entry) => {
       const workerName = readConfig(path.join(root, 'apps', entry.name)).name;
       if (typeof workerName !== 'string' || !workerPattern.test(workerName))
@@ -115,6 +209,10 @@ export function registerApplication(root: string, extendTargets = false): Applic
       JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).name ?? path.basename(root),
     ownership: 'customer',
     provider: 'cloudflare',
+    ...(targets.length &&
+    targets.every((target) => existsSync(path.join(root, target.directory, 'void.config.ts')))
+      ? { deliveryEngine: 'void' as const }
+      : {}),
     accountId: null,
     audience: 'unconfigured',
     targets,
@@ -139,6 +237,8 @@ export function readApplication(root: string): ApplicationProject {
     !/^[a-f0-9-]{36}$/i.test(project.id) ||
     project.ownership !== 'customer' ||
     project.provider !== 'cloudflare' ||
+    (project.deliveryEngine !== undefined &&
+      !['void', 'wrangler'].includes(project.deliveryEngine)) ||
     !(project.accountId === null || accountPattern.test(project.accountId)) ||
     !['unconfigured', 'public', 'private'].includes(project.audience) ||
     !Array.isArray(project.targets)
@@ -171,15 +271,19 @@ export function readApplication(root: string): ApplicationProject {
   }
   return project;
 }
-export const defaultRunner: DeliveryRunner = (command, args, cwd, env) =>
+export const defaultRunner: DeliveryRunner = (command, args, cwd, env, input) =>
   new Promise((resolve, reject) => {
     const invocation = resolveCommand(command, args);
     const child = spawn(invocation.command, invocation.args, {
       cwd,
       env,
       detached: process.platform !== 'win32',
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: [input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
     });
+    if (input !== undefined) {
+      child.stdin?.on('error', () => {});
+      child.stdin?.end(input);
+    }
     let output = '';
     let oversized = false;
     let interrupted = false;
@@ -208,7 +312,7 @@ export const defaultRunner: DeliveryRunner = (command, args, cwd, env) =>
     };
     process.once('SIGINT', interrupt);
     process.once('SIGTERM', interrupt);
-    child.stdout.on('data', (chunk: Buffer) => {
+    child.stdout?.on('data', (chunk: Buffer) => {
       if (!oversized) output += chunk.toString();
       if (output.length > 8 * 1024 * 1024) {
         oversized = true;
@@ -216,14 +320,18 @@ export const defaultRunner: DeliveryRunner = (command, args, cwd, env) =>
       }
     });
     // Do not persist raw build/provider output: it can contain credentials or customer data.
-    child.stderr.resume();
-    const timer = setTimeout(
-      () => {
-        timedOut = true;
-        stop();
-      },
-      20 * 60 * 1000,
-    );
+    child.stderr?.resume();
+    const requestedDeadline = Number(env.ANHEDRAL_COMMAND_TIMEOUT_MS);
+    const commandDeadline =
+      Number.isInteger(requestedDeadline) &&
+      requestedDeadline >= 1 &&
+      requestedDeadline <= 20 * 60 * 1000
+        ? requestedDeadline
+        : 20 * 60 * 1000;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      stop();
+    }, commandDeadline);
     const clean = () => {
       clearTimeout(timer);
       if (forceTimer) clearTimeout(forceTimer);

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { collectOsvFindings } from './osv-audit-core.mjs';
 import { collectPnpmLockPackages } from './osv-packages.mjs';
+import { collectCatalogDependencyPins } from './dependency-policy.mjs';
 
 const defaultLockfile = path.resolve(import.meta.dirname, '..', 'pnpm-lock.yaml');
 const packages = [];
@@ -22,16 +23,18 @@ collectLockfilePackages(
   lockfileArgument ? path.resolve(process.cwd(), lockfileArgument) : defaultLockfile,
 );
 if (!lockfileArgument) {
-  const source = readFileSync(new URL('../src/dependencies.ts', import.meta.url), 'utf8');
-  for (const [, name, version] of source.matchAll(/"([^"\n]+)":\s*'(\d+\.\d+\.\d+)'/g))
-    addPackage(name, version);
-  const eas = source.match(/EAS_CLI_VERSION = '(\d+\.\d+\.\d+)'/)?.[1];
-  if (eas) addPackage('eas-cli', eas);
+  for (const file of ['dependencies.ts', 'void.ts']) {
+    const source = readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8');
+    for (const { name, version } of collectCatalogDependencyPins(source, file))
+      addPackage(name, version);
+  }
 }
 
 const uniquePackages = [
   ...new Map(packages.map((entry) => [`${entry.name}@${entry.version}`, entry])).values(),
 ];
+const auditScope = lockfileArgument ? 'locked' : 'locked and catalog';
+console.log(`OSV auditing ${uniquePackages.length} unique ${auditScope} package versions`);
 const OSV_ENDPOINT = 'https://api.osv.dev/v1/querybatch';
 const MAX_ATTEMPTS = 4;
 const OSV_CONCURRENCY = 4;
@@ -124,5 +127,4 @@ if (findings.length > 0) {
   );
 }
 
-const auditScope = 'locked';
 console.log(`OSV audit passed for ${uniquePackages.length} unique ${auditScope} package versions`);

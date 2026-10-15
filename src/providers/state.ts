@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { existsSync, lstatSync, mkdirSync, realpathSync } from 'node:fs';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import { atomicJson, type DeliveryRunner } from '../project-state.js';
@@ -258,7 +259,9 @@ export class ProvisioningState {
     if (!Object.keys(entries).length) return;
     const provider = (this.credentials.providers[id] ??= {});
     const previous = provider[operation];
-    if (previous && digest(previous) !== digest(entries))
+    // Compare the private credential records directly; credential values must not
+    // flow through the SHA-256 helper used for public operation fingerprints.
+    if (previous && !isDeepStrictEqual(previous, entries))
       throw new Error('Provider credential state conflicts with the saved creation result.');
     provider[operation] = entries;
   }

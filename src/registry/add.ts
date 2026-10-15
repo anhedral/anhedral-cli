@@ -1,5 +1,4 @@
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
-import { configureSecurityBackports } from '../security-backports.js';
 import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
 import { registerVercelApplication } from '../vercel.js';
@@ -15,6 +14,7 @@ import { inspectWorkspaceGraph } from '../workspace-graph.js';
 import { execFile } from '../util.js';
 import { json, put, readJson } from '../scaffold/files.js';
 import { writeStandardRoot } from '../scaffold/workspace.js';
+import { configureVoidDelivery, refreshVoidEnvironment } from '../scaffold/void.js';
 import { createRecipeContext } from './context.js';
 import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
 import { sourceFiles } from './receipt.js';
@@ -72,6 +72,14 @@ export async function addStackItems(
       throw new Error(`Unknown stack product: ${id}.`);
     selected.add(id as StandardProduct);
   }
+  if (
+    (selected.has('queues') || selected.has('basin')) &&
+    existsSync(path.join(root, 'anhedral.project.json')) &&
+    readJson(root, 'anhedral.project.json').deliveryEngine === 'void'
+  )
+    throw new Error(
+      'Queues with dead-letter recovery and Basin currently require legacy Cloudflare delivery. Review an explicit engine migration before adding them to a Void project.',
+    );
   resolveStandardProducts(selected, plan.hosting, false);
   const options: StandardOptions = {
     root,
@@ -84,6 +92,17 @@ export async function addStackItems(
     initializeGit: false,
   };
   const registry = resolveStackRegistry(options);
+  // Additions preserve an existing runtime's configuration authority. They do
+  // not migrate a customer's old Wrangler project merely to add a capability.
+  for (const item of registry.items)
+    item.targets = item.targets.map((target) => {
+      if (!target.endsWith('/anhedral.cloudflare.json')) return target;
+      const directory = path.dirname(target);
+      return existsSync(path.join(root, directory, 'wrangler.jsonc')) &&
+        !existsSync(path.join(root, directory, 'void.config.ts'))
+        ? `${directory}/wrangler.jsonc`
+        : target;
+    });
   const oldItems = new Map(plan.registry.items.map((item) => [item.name, item]));
   const recipes = registry.items.filter(
     (item) => item.installer === 'recipe' && !isDeepStrictEqual(oldItems.get(item.name), item),
@@ -147,7 +166,8 @@ export async function addStackItems(
         (item) => !isDeepStrictEqual(oldItems.get(item.name), item) && item.bindings,
       );
       if (configurationItems.length) {
-        const file = `apps/${context.runtimeApp}/wrangler.jsonc`;
+        const directory = `apps/${context.runtimeApp}`;
+        const file = `${directory}/${existsSync(path.join(stage, directory, 'anhedral.cloudflare.json')) ? 'anhedral.cloudflare.json' : 'wrangler.jsonc'}`;
         let content = readFileSync(path.join(stage, file), 'utf8');
         const config = parse(content) as Record<string, unknown>;
         for (const item of configurationItems)
@@ -166,19 +186,23 @@ export async function addStackItems(
         put(stage, file, content);
       }
       writeStandardRoot(stage, options, registry, true);
+      const applicationFile = path.join(stage, 'anhedral.project.json');
+      if (
+        existsSync(applicationFile) &&
+        readJson(stage, 'anhedral.project.json').deliveryEngine === 'void'
+      ) {
+        configureVoidDelivery(stage);
+        refreshVoidEnvironment(stage);
+      }
       if (options.products.includes('next') && options.hosting === 'vercel')
         registerVercelApplication(stage);
       if (
-        [...sourceFiles(stage).keys()].some((file) => /^apps\/[^/]+\/wrangler\.jsonc$/.test(file))
+        [...sourceFiles(stage).keys()].some((file) =>
+          /^apps\/[^/]+\/(?:wrangler\.jsonc|anhedral\.cloudflare\.json)$/.test(file),
+        )
       )
         registerApplication(stage, true);
       if (!request.dryRun)
-        run(
-          'pnpm',
-          ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],
-          stage,
-        );
-      if (!request.dryRun && configureSecurityBackports(stage))
         run(
           'pnpm',
           ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],

@@ -1,4 +1,4 @@
-import { verifyPluginRuntime } from '../plugin-app/source-integrity.mjs';
+import { verifyPluginRuntime } from '../plugins/codex/inspector/source-integrity.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -56,9 +56,9 @@ function zipEntry(file, offset) {
 }
 
 export function buildPluginArchive(root) {
-  const findings = scanDirectory(root, 'plugins/anhedral');
+  const findings = scanDirectory(root, 'plugins/codex/distribution');
   if (findings.length) throw new Error(formatFindings(findings));
-  const pluginRoot = path.join(root, 'plugins/anhedral');
+  const pluginRoot = path.join(root, 'plugins/codex/distribution');
   const manifest = JSON.parse(readFileSync(path.join(pluginRoot, 'plugin.json'), 'utf8'));
   const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
   const registry = JSON.parse(

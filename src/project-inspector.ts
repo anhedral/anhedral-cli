@@ -1,3 +1,5 @@
+import { resolveVoidCloudflareConfig } from './project-state.js';
+import { projectLifecycle } from './project-lifecycle.js';
 import path from 'node:path';
 import { existsSync, lstatSync, readdirSync, realpathSync } from 'node:fs';
 import { parse, type ParseError } from 'jsonc-parser';
@@ -301,7 +303,13 @@ export function inspectApplication(root: string): ProjectInspection {
         });
       };
       for (const application of apps()) {
-        const config = document(`${application}/wrangler.jsonc`);
+        const declaration = document(`${application}/anhedral.cloudflare.json`);
+        const lock = declaration ? document(`${application}/void.lock.json`) : null;
+        const config = declaration
+          ? lock
+            ? resolveVoidCloudflareConfig(declaration, lock)
+            : declaration
+          : document(`${application}/wrangler.jsonc`);
         if (config) {
           for (const [field, kind, idField] of [
             ['d1_databases', 'D1', 'database_id'],
@@ -355,7 +363,7 @@ export function inspectApplication(root: string): ProjectInspection {
               schedules.push({ application, expression });
             }
         }
-        for (const example of ['.env.example', '.dev.vars.example']) {
+        for (const example of ['env.example', '.env.example', '.dev.vars.example']) {
           const source = content(`${application}/${example}`);
           if (!source) continue;
           for (const line of source.split(/\r?\n/)) {
@@ -383,7 +391,11 @@ export function inspectApplication(root: string): ProjectInspection {
     return array(value.releases).map(object).slice(-50);
   }
   function release(value: JsonObject, url: unknown): ReleaseEvidence {
-    if (!['running', 'checked', 'deployed', 'failed'].includes(String(value.state)))
+    if (
+      !['running', 'checked', 'deployed', 'configuration-required', 'failed'].includes(
+        String(value.state),
+      )
+    )
       throw new Error('Invalid release state.');
     return {
       id: identity(value.id),
@@ -660,8 +672,37 @@ export function inspectApplication(root: string): ProjectInspection {
           kind: name(entry.kind),
           name: name(entry.name),
           id: identity(entry.id),
+          createdByProject:
+            typeof entry.createdByProject === 'boolean' ? entry.createdByProject : null,
           reused: typeof entry.reused === 'boolean' ? entry.reused : null,
           recordedAt: time(value.checkedAt),
+        };
+      });
+    },
+  );
+  const serviceDeletions = section<NonNullable<ProjectInspection['serviceDeletions']>['data']>(
+    [],
+    'Service deletion records are unavailable or belong to another project.',
+    () => {
+      const value = document('.anhedral/service-deletions.json');
+      if (!value) return [];
+      const project = document('anhedral.project.json', true)!;
+      if (
+        value.schemaVersion !== 1 ||
+        value.projectId !== project.id ||
+        value.accountId !== project.accountId
+      )
+        throw new Error('Foreign deletion journal.');
+      return array(value.entries, 500).map((raw) => {
+        const entry = object(raw);
+        if (!['pending', 'deleted', 'uncertain'].includes(String(entry.state)))
+          throw new Error('Invalid deletion state.');
+        return {
+          resourceId: identity(entry.resourceId),
+          kind: name(entry.kind),
+          name: name(entry.name),
+          state: entry.state as 'pending' | 'deleted' | 'uncertain',
+          recordedAt: time(entry.recordedAt),
         };
       });
     },
@@ -695,7 +736,7 @@ export function inspectApplication(root: string): ProjectInspection {
       return value;
     },
   );
-  return {
+  const inspection: ProjectInspection = {
     schemaVersion: 1,
     name: applicationName,
     inspectedAt: new Date().toISOString(),
@@ -714,7 +755,9 @@ export function inspectApplication(root: string): ProjectInspection {
     targets,
     integrations,
     cloudflareResources,
+    serviceDeletions,
     readiness,
     operation,
   };
+  return { ...inspection, lifecycle: projectLifecycle(inspection) };
 }

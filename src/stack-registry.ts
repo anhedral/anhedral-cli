@@ -43,6 +43,10 @@ function packageSource(
 ): PackageRecipe {
   return { name, source, dependencies };
 }
+function runtimeConfiguration({ runtimeApp, options, has }: RecipeContext): string {
+  const legacy = (has('next') && options.hosting === 'cloudflare') || has('queues') || has('basin');
+  return `apps/${runtimeApp}/${legacy ? 'wrangler.jsonc' : 'anhedral.cloudflare.json'}`;
+}
 type ItemConfiguration = Pick<ItemDefinition, 'type' | 'description' | 'targets'> &
   Partial<Omit<ItemDefinition, 'name' | 'version' | 'type' | 'description' | 'targets'>>;
 function defineItems<T extends Record<string, ItemConfiguration>>(
@@ -160,7 +164,7 @@ const PRODUCT_ITEMS = defineItems({
   },
   neon: {
     type: 'package',
-    description: 'Direct Neon HTTP and Drizzle PostgreSQL starter',
+    description: 'Reusable server database package with Neon HTTP, Drizzle and explicit migrations',
     targets: ['packages/db'],
     selection: { conflicts: ['d1'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
@@ -168,17 +172,20 @@ const PRODUCT_ITEMS = defineItems({
       'PostgreSQL persistence through direct Neon HTTP and Drizzle',
       ['Neon integration or API'],
       ['Client-owned Neon project/branch access'],
-      ['Server-side DATABASE_URL; separate environment roles'],
+      [
+        'Server-side DATABASE_URL; direct DATABASE_URL_UNPOOLED for migrations; separate environment roles',
+      ],
       ['Neon project/branches, database roles and reviewed migrations'],
       ['Migration, runtime connectivity and authorization; HTTP has no interactive transactions'],
     ),
     install: scaffoldDatabase,
-    environment: ['DATABASE_URL'],
+    environment: ['DATABASE_URL', 'DATABASE_URL_UNPOOLED'],
     runtime: 'server',
+    resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
   },
   d1: {
     type: 'package',
-    description: 'Drizzle D1 database and migration tooling',
+    description: 'Reusable Drizzle D1 database package and explicit migration tooling',
     targets: ['packages/db'],
     selection: { conflicts: ['neon'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
@@ -197,11 +204,12 @@ const PRODUCT_ITEMS = defineItems({
           binding: 'DB',
           database_name: resourceName(options.name, 'db'),
           database_id: 'REPLACE_WITH_D1_ID',
-          migrations_dir: '../../packages/db/migrations',
+          migrations_dir: '../../packages/db/drizzle',
         },
       ],
     }),
     runtime: 'worker',
+    resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
   },
   'local-data': {
     type: 'package',
@@ -319,7 +327,7 @@ export interface LocalDataStore {
     configure: () => ({ kv_namespaces: [{ binding: 'CONFIG', id: 'REPLACE_WITH_KV_ID' }] }),
     installer: 'configuration',
     runtime: 'worker',
-    resolveTargets: ({ runtimeApp }) => [`apps/${runtimeApp}/wrangler.jsonc`],
+    resolveTargets: (context) => [runtimeConfiguration(context)],
   },
   realtime: {
     type: 'service',
@@ -354,9 +362,11 @@ export interface LocalDataStore {
       queues: { producers: [{ binding: 'JOBS', queue: resourceName(options.name, 'jobs') }] },
     }),
     runtime: 'optional-worker',
-    resolveTargets: ({ runtimeApp, has }) => [
+    resolveTargets: (context) => [
       'apps/jobs',
-      ...(has('hono') || has('vinext') || has('next') ? [`apps/${runtimeApp}/wrangler.jsonc`] : []),
+      ...(context.has('hono') || context.has('vinext') || context.has('next')
+        ? [runtimeConfiguration(context)]
+        : []),
     ],
   },
   cron: {
@@ -447,7 +457,7 @@ export interface LocalDataStore {
     configure: () => ({ ai: { binding: 'AI' } }),
     installer: 'configuration',
     runtime: 'worker',
-    resolveTargets: ({ runtimeApp }) => [`apps/${runtimeApp}/wrangler.jsonc`],
+    resolveTargets: (context) => [runtimeConfiguration(context)],
   },
   resend: {
     type: 'package',
@@ -624,8 +634,8 @@ export const STANDARD_PRODUCTS = Object.freeze(Object.keys(PRODUCT_ITEMS) as Sta
 const FOUNDATION_ITEMS = defineItems({
   workspace: {
     type: 'foundation',
-    description: 'pnpm and Turborepo workspace, task graph and shared checks',
-    targets: ['package.json', 'pnpm-workspace.yaml', 'turbo.json', 'scripts/security'],
+    description: 'pnpm workspace with one root lockfile, pinned Turborepo and shared checks',
+    targets: ['package.json', 'pnpm-workspace.yaml', 'turbo.json'],
     registryDependencies: [],
   },
   typescript: {

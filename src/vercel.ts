@@ -1151,3 +1151,67 @@ function renameOverview(temporary: string, file: string): string {
   renameSync(temporary, file);
   return file;
 }
+
+/** Read-only Web Analytics query for the exact connected project/team. */
+export async function vercelServiceMetrics(
+  root: string,
+  hours = 24,
+  run = defaultRunner,
+): Promise<import('./service-model.js').ServiceMetrics> {
+  if (![24, 168].includes(hours)) throw new Error('Vercel analytics uses complete UTC days.');
+  const project = readWeb(root);
+  await inspect(root, project, run);
+  if (!project.projectId || !project.teamId)
+    throw new Error('Connect the exact Vercel project and team before reading analytics.');
+  const end = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00.000Z').toISOString();
+  const start = new Date(Date.parse(end) - hours * 3600000).toISOString();
+  const query = new URLSearchParams({
+    teamId: project.teamId,
+    projectId: project.projectId,
+    since: start.slice(0, 10),
+    until: new Date(Date.parse(end) - 1).toISOString().slice(0, 10),
+    by: 'day',
+    limit: '100',
+  });
+  const value = await api(
+    root,
+    run,
+    `/v1/query/web-analytics/visits/aggregate?${query}`,
+    project.teamId,
+  );
+  if (
+    value.version !== 1 ||
+    !Array.isArray(value.data) ||
+    value.data.length >= 100 ||
+    value.query?.since !== start.slice(0, 10)
+  )
+    throw new Error('Unsupported or truncated Vercel analytics output.');
+  const points = value.data.map((row: unknown) => {
+    if (!row || typeof row !== 'object') throw new Error('Invalid analytics row.');
+    const value = row as Record<string, unknown>;
+    if (
+      typeof value.timestamp !== 'string' ||
+      !Number.isFinite(Date.parse(value.timestamp)) ||
+      Date.parse(value.timestamp) < Date.parse(start) ||
+      Date.parse(value.timestamp) >= Date.parse(end) ||
+      [value.pageviews, value.visitors].some(
+        (count) => typeof count !== 'number' || !Number.isFinite(count) || count < 0,
+      )
+    )
+      throw new Error('Invalid Vercel analytics values.');
+    return {
+      time: value.timestamp,
+      values: { pageviews: Number(value.pageviews), visitors: Number(value.visitors) },
+    };
+  });
+  return {
+    fetchedAt: new Date().toISOString(),
+    start,
+    end,
+    timezone: 'UTC',
+    source: 'Vercel Web Analytics (daily buckets)',
+    sampled: false,
+    points,
+    units: { pageviews: 'count', visitors: 'daily bucket count' },
+  };
+}

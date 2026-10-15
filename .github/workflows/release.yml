@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 env:
-  RELEASE_NODE_VERSION: '24.18.0'
+  RELEASE_NODE_VERSION: '24.21.0'
   ANHEDRAL_REQUIRE_PLUGIN: '1'
 
 concurrency:
@@ -72,10 +72,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install plugin UI dependencies
-        run: pnpm --dir plugin-app install --frozen-lockfile
+        run: pnpm --dir plugins/codex/inspector install --frozen-lockfile
 
       - name: Verify and build plugin UI
-        run: pnpm plugin:check && pnpm --dir plugin-app audit --audit-level low
+        run: pnpm plugin:check && pnpm --dir plugins/codex/inspector audit --audit-level low
 
       - name: Run release checks
         run: pnpm release:check
@@ -149,7 +149,7 @@ jobs:
         node:
           - '20.19.0'
           - '22.12.0'
-          - '24.18.0'
+          - '24.21.0'
     steps:
       - name: Checkout artifact verification code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6

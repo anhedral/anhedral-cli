@@ -53,6 +53,52 @@ export function commandDefinition(command: string | undefined): CommandDefinitio
 }
 
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
+  services: {
+    description:
+      'Inspect live Cloudflare services, analytics, data, or a confirmed resource deletion.',
+    usage:
+      'services list | status | metrics | tables | data | delete-plan | delete [service-key] [options]',
+    options: [
+      {
+        flag: '--hours',
+        value: '1|24|168',
+        arity: 'required',
+        description: 'Analytics window; D1 uses complete UTC days.',
+      },
+      {
+        flag: '--table',
+        value: 'table',
+        arity: 'required',
+        description: 'Existing database table or keys for KV metadata.',
+      },
+      {
+        flag: '--offset',
+        value: 'number',
+        arity: 'required',
+        description: 'Bounded database page offset.',
+      },
+      {
+        flag: '--cursor',
+        value: 'cursor',
+        arity: 'required',
+        description: 'Provider cursor for object metadata pages.',
+      },
+      {
+        flag: '--token',
+        value: 'token',
+        arity: 'required',
+        description: 'Single-use deletion-plan token.',
+      },
+      {
+        flag: '--confirm-name',
+        value: 'name',
+        arity: 'required',
+        description: 'Exact resource name from the deletion plan.',
+      },
+    ],
+    examples: ['services list --json', 'services status binding:apps/api:D1:DB --json'],
+    note: 'Provider calls occur only when requested. Data output can contain private values. Deletion is limited to verified project-created D1/KV resources and requires a fresh plan and typed resource name.',
+  },
   inspect: {
     description: 'Inspect local stack, setup requirements and recorded delivery evidence.',
     usage: 'inspect [directory] [options]',

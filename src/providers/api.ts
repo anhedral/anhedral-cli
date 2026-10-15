@@ -26,6 +26,7 @@ export function resourceId(value: unknown): string {
     throw new Error('Provider returned an invalid resource ID.');
   return id;
 }
+/** Stable configuration and operation identity, never a password verifier. */
 export function digest(value: unknown): string {
   const canonical = (item: unknown): unknown =>
     Array.isArray(item)

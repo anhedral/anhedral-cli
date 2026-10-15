@@ -10,7 +10,9 @@ You own the code, provider accounts, infrastructure, data, and billing. The CLI 
 
 ## Get started
 
-Generated workspaces require Node.js 22.13+ on the 22.x line or Node.js 24+, and pnpm 10.34.5. Initialize on Linux, macOS, or WSL.
+New Cloudflare workspaces use Void 0.27.0 and require Node.js 24.21.0+ and pnpm 10.34.5. Native-only and explicit OpenNext, queue and Basin workspaces retain their existing runtime requirements. Initialize on Linux, macOS, or WSL.
+
+Void owns Cloudflare provisioning, secret uploads and deployment. Anhedral retains stack composition, shared packages, customer ownership and independent release/product verification. Existing Wrangler projects keep their engine; initialization does not deploy or migrate an existing application.
 
 ```sh
 npm install --global anhedral
@@ -56,7 +58,7 @@ anhedral add resend stripe --cwd my-app --dry-run --json
 anhedral add resend stripe --cwd my-app
 ```
 
-See the [stack standard](docs/application-stack-standard.md) for supported combinations and architecture guidance.
+See the [stack standard](docs/stack-standard.md) for supported combinations and architecture guidance.
 
 ## Authenticate and ship
 
@@ -73,7 +75,7 @@ anhedral verify --json
 
 Replace the example email with the intended member. Private Workers hosting requires Cloudflare Zero Trust and the necessary Access permissions. Authentication does not establish every provisioning permission or complete service setup.
 
-If provisioning changes tracked resource IDs, `ship` stops for you to review and commit those bindings before deployment. It runs project checks and records delivery results. `verify` exercises your application's live acceptance test; a successful scaffold or deployment alone does not prove its features work.
+With legacy Wrangler delivery, changed resource IDs stop `ship` before deployment for review and a commit. Void can activate a target before recording new resource identities in `void.lock.json`; it then returns `configuration-required` with the activation receipts retained. Review and commit those locks, then ship the clean configuration. It never commits source automatically. Shipping runs project checks and records delivery results. `verify` exercises your application's live acceptance test; a successful scaffold or deployment alone does not prove its features work.
 
 Provider eligibility, subscriptions, usage limits, and charges remain your responsibility. Some setup requires owner action. Expo delivery returns EAS build links; it does not submit apps to stores.
 
@@ -97,7 +99,7 @@ The plugin guides stack selection, feature development, setup, and verification.
 Use `anhedral --help` or `anhedral help <command>` for options and examples. `--cwd` selects a project; `--json` provides structured output.
 
 - [CLI usage](docs/cli-design.md)
-- [Stack standard](docs/application-stack-standard.md)
+- [Stack standard](docs/stack-standard.md)
 - [Delivery and recovery](docs/delivery-workflow.md)
 - [Provider configuration](docs/provider-configuration.md)
 - [Plugin development](docs/plugin-ui.md)
@@ -110,8 +112,20 @@ pnpm test:all
 pnpm test:integration
 ```
 
-For the inspector, also run `pnpm --dir plugin-app install --frozen-lockfile` and `pnpm plugin:check`. Development builds require matching CLI and plugin versions; they do not update installed releases automatically.
+For the inspector, also run `pnpm --dir plugins/codex/inspector install --frozen-lockfile` and `pnpm plugin:check`. Development builds require matching CLI and plugin versions; they do not update installed releases automatically.
 
 Focused fixes, tests, and documentation contributions are welcome. See [contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md), [code of conduct](https://github.com/anhedral/anhedral-cli/blob/main/.github/CODE_OF_CONDUCT.md), and [security reporting](https://github.com/anhedral/anhedral-cli/blob/main/.github/SECURITY.md). Report reproducible problems in [issues](https://github.com/anhedral/anhedral-cli/issues) and vulnerabilities through [private reporting](https://github.com/anhedral/anhedral-cli/security/advisories/new).
 
 Anhedral is open source under the [Apache License 2.0](LICENSE). Generated applications are source code that developers can customize and license for their products, preserving applicable upstream notices.
+
+## Repository layout
+
+| Path | Purpose |
+| --- | --- |
+| `src` | CLI and application scaffolding |
+| `plugins/codex/inspector` | Optional project inspector and MCP runtime sources |
+| `plugins/codex/distribution` | Plugin manifest, assets, skill and bundled runtime |
+| `scripts`, `tests` | Build, release and verification tooling |
+| `docs` | Canonical architecture, delivery and development documentation |
+
+Run CLI commands from the repository root. `pnpm plugin:build`, `pnpm plugin:check` and `pnpm plugin:preview` delegate to the inspector application. The inspector owns its own dependencies and lockfile. Its build copies the bundled server and dashboard into `plugins/codex/distribution/runtime`; release packaging includes only the distribution directory. Shared project and provider logic stays in `src` so the CLI and plugin use the same implementation.

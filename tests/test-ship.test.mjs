@@ -79,6 +79,9 @@ test('ship previews provisioning without writes and stops before deployment when
     assert.equal(preview.mutation, false);
     assert.equal(preview.resourcesProvisioned, false);
     assert.equal(preview.provisioning.resources.length, 1);
+    assert.equal(preview.voidCandidate.engine, 'void');
+    assert.equal(preview.voidCandidate.mutation, false);
+    assert.equal(preview.voidCandidate.activation, 'runtime-validation-required');
     assert.equal(commands.length, 0);
     assert.equal(requests.length, 0);
     const result = await shipCloudflareApplication(root, false, run, request);
@@ -577,5 +580,231 @@ test('mixed stack verifies Cloudflare before deploying Vercel and retains both r
     assert.equal(result.productVerification, 'required');
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+});
+
+async function voidFixture(options = {}) {
+  const root = await fixture();
+  const directory = path.join(root, 'apps/api');
+  rmSync(path.join(directory, 'wrangler.jsonc'));
+  const config = { name: 'example-api', main: 'src/index.ts' };
+  writeFileSync(path.join(directory, 'anhedral.cloudflare.json'), JSON.stringify(config));
+  writeFileSync(path.join(directory, 'void.config.ts'), 'export default {};\n');
+  writeFileSync(
+    path.join(directory, 'package.json'),
+    JSON.stringify({
+      devDependencies: { void: '0.27.0' },
+      scripts: { deploy: 'void deploy --platform cloudflare' },
+    }),
+  );
+  const manifest = JSON.parse(readFileSync(path.join(root, 'anhedral.project.json'), 'utf8'));
+  manifest.deliveryEngine = 'void';
+  writeFileSync(path.join(root, 'anhedral.project.json'), JSON.stringify(manifest));
+  writeFileSync(
+    path.join(root, 'anhedral.setup.json'),
+    JSON.stringify(
+      createSetupPlan(
+        parseStandardOptions('new', [root, '--hono', '--d1', '--better-auth', '--skip-install']),
+      ),
+    ),
+  );
+  const secret = '0123456789abcdef'.repeat(4);
+  writeFileSync(
+    path.join(directory, '.env'),
+    `BETTER_AUTH_SECRET=${secret}\nBETTER_AUTH_URL=https://api.customer.com\n`,
+    { mode: 0o600 },
+  );
+  const logs = path.join(root, 'void-logs');
+  mkdirSync(logs);
+  const calls = [];
+  let deployed = false;
+  const versionId = '12345678-1234-1234-1234-123456789abc';
+  const run = async (command, args, cwd, env, input) => {
+    calls.push({ command, args, cwd, env, input });
+    if (args.includes('token')) return JSON.stringify({ type: 'oauth', token: 'test-oauth-token' });
+    if (command === 'node') return '24.21.0';
+    if (args.includes('--version')) return '0.27.0';
+    if (args.includes('whoami'))
+      return JSON.stringify({
+        loggedIn: !options.unauthenticated,
+        accounts: options.unauthenticated ? [] : [{ id: account }],
+      });
+    if (command === 'git') {
+      if (args.includes('--show-toplevel')) return root;
+      if (args.includes('check-ignore')) return args.at(-1);
+      if (args.includes('ls-files')) return '';
+      if (args.includes('--porcelain')) {
+        if (options.sourceChange && calls.some(({ args }) => args.includes('--version')))
+          return ' M src/index.ts';
+        return (deployed && options.firstLock) ||
+          (options.lockBeforeSecrets && calls.some(({ args }) => args.includes('--version')))
+          ? '?? apps/api/void.lock.json'
+          : '';
+      }
+      if (args[0] === 'show')
+        return readFileSync(path.join(root, args[1].slice('HEAD:'.length)), 'utf8');
+      return 'b'.repeat(40);
+    }
+    if (args.join(' ') === 'exec void deploy --platform cloudflare') {
+      assert.equal(env.BETTER_AUTH_SECRET, secret);
+      const timestamp = Date.now();
+      writeFileSync(
+        path.join(logs, 'deploy-fixture.jsonl'),
+        [
+          { ts: timestamp, msg: 'deploy_start', cwd: realpathSync(directory) },
+          {
+            ts: timestamp + 1,
+            msg: 'cloudflare_deploy_end',
+            ok: true,
+            worker: 'example-api',
+            versionId,
+          },
+          { ts: timestamp + 2, msg: 'deploy_end', ok: true },
+        ]
+          .map(JSON.stringify)
+          .join('\n'),
+      );
+      if (options.firstLock)
+        writeFileSync(
+          path.join(directory, 'void.lock.json'),
+          JSON.stringify({
+            version: 1,
+            source: config,
+            resolved: config,
+            text: JSON.stringify(config),
+          }),
+        );
+      deployed = true;
+    }
+    return '';
+  };
+  const requests = [];
+  const request = async (method, endpoint) => {
+    requests.push({ method, endpoint });
+    assert.equal(method, 'GET', 'Anhedral must never provision Void resources');
+    if (endpoint.endsWith('/deployments'))
+      return {
+        result: {
+          deployments: [
+            {
+              versions: [
+                { version_id: options.mismatch ? 'different-version' : versionId, percentage: 100 },
+              ],
+            },
+          ],
+        },
+      };
+    if (endpoint.endsWith('/subdomain')) return { result: { enabled: false } };
+    throw new Error(`Unexpected provider request: ${endpoint}`);
+  };
+  return { root, logs, calls, run, request, secret, requests };
+}
+
+test('Void full shipping preserves stdin secrets and commits first-lock handoff after provider confirmation', async () => {
+  const f = await voidFixture({ firstLock: true, lockBeforeSecrets: true });
+  try {
+    const result = await shipCloudflareApplication(
+      f.root,
+      false,
+      f.run,
+      f.request,
+      undefined,
+      {},
+      { voidLogsDirectory: f.logs },
+    );
+    assert.equal(result.release.state, 'configuration-required');
+    assert.equal(result.state, 'configuration-required');
+    assert.equal(result.activated, true);
+    assert.equal(result.deployed, false);
+    assert.equal(result.release.targets[0].providerConfirmed, true);
+    assert.deepEqual(result.release.configurationChanges, ['apps/api/void.lock.json']);
+    const puts = f.calls.filter(({ args }) => args.includes('put'));
+    assert.equal(puts.length, 2);
+    assert.equal(puts.find(({ args }) => args.at(-1) === 'BETTER_AUTH_SECRET').input, f.secret);
+    assert.ok(!JSON.stringify(f.calls.map(({ args }) => args)).includes(f.secret));
+    assert.equal(
+      f.calls.some(({ args }) => args.join(' ') === 'run deploy'),
+      false,
+    );
+    assert.equal(
+      f.requests.every(({ method }) => method === 'GET'),
+      true,
+    );
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
+  }
+});
+
+test('Void full shipping rejects provider version mismatch and records failure', async () => {
+  const f = await voidFixture({ mismatch: true });
+  try {
+    await assert.rejects(
+      shipCloudflareApplication(
+        f.root,
+        false,
+        f.run,
+        f.request,
+        undefined,
+        {},
+        { voidLogsDirectory: f.logs },
+      ),
+      /active version differs/,
+    );
+    const record = JSON.parse(
+      readFileSync(path.join(f.root, '.anhedral/releases.json'), 'utf8'),
+    ).releases.at(-1);
+    assert.equal(record.state, 'failed');
+    assert.equal(record.targets[0].providerConfirmed, false);
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
+  }
+});
+
+test('Void full shipping checks source before secret mutation', async () => {
+  const f = await voidFixture({ sourceChange: true });
+  try {
+    await assert.rejects(
+      shipCloudflareApplication(
+        f.root,
+        false,
+        f.run,
+        f.request,
+        undefined,
+        {},
+        { voidLogsDirectory: f.logs },
+      ),
+      /Source changed before Void secret upload/,
+    );
+    assert.equal(
+      f.calls.some(({ args }) => args.includes('put') || args.includes('deploy')),
+      false,
+    );
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
+  }
+});
+
+test('Void fresh checkout without Cloudflare credentials stops before secret or deployment mutation', async () => {
+  const f = await voidFixture({ unauthenticated: true });
+  try {
+    await assert.rejects(
+      shipCloudflareApplication(
+        f.root,
+        false,
+        f.run,
+        f.request,
+        undefined,
+        {},
+        { voidLogsDirectory: f.logs },
+      ),
+      /cannot access the registered Cloudflare account/,
+    );
+    assert.equal(
+      f.calls.some(({ args }) => args.includes('put') || args.includes('deploy')),
+      false,
+    );
+    assert.equal(f.requests.length, 0);
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
   }
 });

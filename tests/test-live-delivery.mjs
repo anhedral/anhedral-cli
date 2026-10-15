@@ -71,7 +71,7 @@ try {
     `import { drizzle } from 'drizzle-orm/d1';\nimport { eq } from 'drizzle-orm';\nimport { notes } from './schema';\nexport function createDatabase(binding: Parameters<typeof drizzle>[0]) {\n const db = drizzle(binding);\n return { list: () => db.select().from(notes), add: (id: string, body: string) => db.insert(notes).values({ id, body }), remove: (id: string) => db.delete(notes).where(eq(notes.id, id)) };\n}\n`,
   );
   put(
-    'packages/db/migrations/0000_notes.sql',
+    'packages/db/drizzle/0000_notes.sql',
     'CREATE TABLE notes (id TEXT PRIMARY KEY NOT NULL, body TEXT NOT NULL);\n',
   );
   put(

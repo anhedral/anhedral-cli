@@ -5,7 +5,7 @@ export interface CloudflareResponse {
   result_info?: { page?: number; total_pages?: number; count?: number; per_page?: number };
 }
 export type CloudflareRequest = (
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'DELETE',
   endpoint: string,
   body?: unknown,
 ) => Promise<CloudflareResponse>;
@@ -15,6 +15,15 @@ const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 export interface CloudflareRequestOptions {
   send?: typeof fetch;
   timeoutMs?: number;
+  analytics?: boolean;
+}
+export class CloudflareRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
 }
 function object(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -113,7 +122,7 @@ export async function cloudflareRequest(
       if (typeof endpoint !== 'string') throw new Error();
       const decodedPath = decodeURIComponent(endpoint.split('?')[0]);
       if (
-        !['GET', 'POST'].includes(method) ||
+        !['GET', 'POST', 'DELETE'].includes(method) ||
         endpoint.length > 4096 ||
         !endpoint.startsWith('/') ||
         endpoint.startsWith('//') ||
@@ -122,8 +131,20 @@ export async function cloudflareRequest(
         /[\x00-\x20\x7f#\\%]/.test(decodedPath)
       )
         throw new Error();
-      url = new URL(`${prefix}${endpoint}`, ORIGIN);
-      if (url.origin !== ORIGIN || !url.pathname.startsWith(`${prefix}/`)) throw new Error();
+      if (options.analytics) {
+        if (
+          endpoint !== '/graphql' ||
+          method !== 'POST' ||
+          !object(body) ||
+          !object(body.variables) ||
+          body.variables.accountTag !== account
+        )
+          throw new Error();
+        url = new URL('/client/v4/graphql', ORIGIN);
+      } else {
+        url = new URL(`${prefix}${endpoint}`, ORIGIN);
+        if (url.origin !== ORIGIN || !url.pathname.startsWith(`${prefix}/`)) throw new Error();
+      }
     } catch {
       throw new Error('Invalid account-scoped provider request.');
     }
@@ -162,7 +183,12 @@ export async function cloudflareRequest(
           }
           if (!object(data))
             throw new Error(`Cloudflare returned unsupported output (HTTP ${response.status}).`);
-          if (!response.ok || data.success !== true) {
+          if (
+            !response.ok ||
+            (options.analytics
+              ? data.errors != null && (!Array.isArray(data.errors) || data.errors.length > 0)
+              : data.success !== true)
+          ) {
             const codes = Array.isArray(data.errors)
               ? data.errors
                   .slice(0, 20)
@@ -177,10 +203,12 @@ export async function cloudflareRequest(
                   )
                   .join(',')
               : '';
-            throw new Error(
+            throw new CloudflareRequestError(
               `Cloudflare operation failed (HTTP ${response.status}${codes ? `; codes ${codes}` : ''}). Check scoped permissions and service eligibility; no paid plan is activated automatically.`,
+              response.status,
             );
           }
+          if (options.analytics) return { result: data.data };
           if (!Object.hasOwn(data, 'result'))
             throw new Error('Cloudflare returned no operation result.');
           return { result: data.result, result_info: responseInfo(data.result_info) };
