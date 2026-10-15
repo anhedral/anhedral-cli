@@ -1,3 +1,4 @@
+import { verifyWebLint } from './support/web-lint-check.mjs';
 import { verifyWorkerDevelopment } from './support/worker-dev-smoke.mjs';
 import { STACK_PROFILES as profiles } from './support/stack-profiles.mjs';
 import assert from 'node:assert/strict';
@@ -48,6 +49,7 @@ for (const profile of selected) {
     assert.match(appIdentity.id, /^[a-f0-9-]{36}$/);
     const catalogFiles = readdirSync(path.join(temporary, 'catalog'));
     assert.ok(catalogFiles.length > 0, 'CLI init registers its generated app');
+    if (existsSync(path.join(root, 'apps/web/package.json'))) await verifyWebLint(root);
     execFile('pnpm', ['check'], root);
     if (profile === 'api-neon') {
       execFile(process.execPath, [cli, 'add', root, 'r2', '--json'], temporary);

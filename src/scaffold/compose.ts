@@ -7,6 +7,7 @@ import type { StandardOptions } from '../registry/types.js';
 import { inspectWorkspaceGraph } from '../workspace-graph.js';
 import { writeStandardRoot } from './workspace.js';
 import { json } from './files.js';
+import { normalizeSharedLint } from './lint.js';
 import { configureVoidDelivery } from './void.js';
 
 /** Only used in a fresh staged workspace. Existing applications are never overlaid. */
@@ -24,6 +25,7 @@ export async function composeStack(
   for (const item of registry.items) {
     if (item.installer === 'recipe') await installStackItem(item, context);
   }
+  normalizeSharedLint(root);
   writeStandardRoot(root, options, registry);
   configureVoidDelivery(root);
   for (const item of registry.items) {

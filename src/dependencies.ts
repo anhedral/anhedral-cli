@@ -158,6 +158,8 @@ export const NEXT_VERCEL_VERSION = '16.4.0';
 export const NEXT_OPENNEXT_VERSION = '16.3.8';
 
 export const STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=@next/eslint-plugin-next
+  '@next/eslint-plugin-next': '16.4.2',
   // renovate: datasource=npm depName=turbo
   turbo: '2.11.7',
   // renovate: datasource=npm depName=tsx

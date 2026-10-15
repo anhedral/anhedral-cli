@@ -129,4 +129,6 @@ Follow the [delivery workflow](delivery-workflow.md) for the supported customer-
 
 Update the catalog, recipe and relevant documentation together when supported behavior changes. Regenerate plugin references with `pnpm build`; do not edit generated copies independently. Verify supported selection combinations and packaged output before release.
 
-Generated `pnpm audit:deps` runs the standard pnpm dependency audit and fails on high or critical advisories. Anhedral does not ship local dependency patches or advisory exceptions.
+Framework-specific lint dependencies belong to the consuming application. The shared `packages/eslint-config` retains generic TypeScript, React, Hooks and Turbo rules; web applications declare their own Next API lint plugin and configuration. API and native-only workspaces must not inherit Next-specific tooling solely because the bootstrap started from a Next template.
+
+Generated `pnpm audit:deps` runs the standard pnpm dependency audit and fails on high or critical advisories. Anhedral does not ship local dependency patches or advisory exceptions. Review the resolved lockfile for each generated profile: a clean CLI lockfile or direct-version catalog audit does not establish that a generated application’s transitive dependencies are clean. Removing an unused dependency path does not resolve other paths to the same vulnerable package.
