@@ -25,7 +25,6 @@ function securityOverrides(options: StandardOptions): Record<string, string> {
   return {
     ...(has('wxt') ? { '@wxt-dev/module-react>@vitejs/plugin-react': '5.2.0' } : {}),
     ...(has('next') || has('vinext') ? { 'sharp@<0.35.5': '0.35.5' } : {}),
-    ...(has('next') || has('vinext') ? { 'fflate@>=0.7.0 <0.7.5': '0.7.5' } : {}),
     ...(options.products.some((product) =>
       ['vinext', 'next', 'expo', 'electron', 'wxt', 'neon', 'd1'].includes(product),
     )
@@ -67,7 +66,11 @@ function writeTurboConfiguration(root: string, registry: ResolvedStackRegistry):
     ]),
   ];
   turbo.globalEnv = [
-    ...new Set([...(turbo.globalEnv ?? []), ...registry.items.flatMap((item) => item.environment)]),
+    ...new Set([
+      ...(turbo.globalEnv ?? []),
+      'npm_execpath',
+      ...registry.items.flatMap((item) => item.environment),
+    ]),
   ].sort();
   turbo.tasks = {
     ...turbo.tasks,
