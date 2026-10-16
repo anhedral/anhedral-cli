@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   mkdirSync,
+  existsSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -141,6 +142,17 @@ try {
     ),
   );
   assert.match(run(['run', 'audit:deps']), /Accepted only GHSA-vfj7-8cjw-p6xm/);
+  // pnpm retains platform-skipped optional packages in its JSON dependency
+  // listing. Reproduce Linux's missing fsevents even on a macOS test host.
+  const optionalDirectory = path.join(root, 'node_modules/.pnpm/fsevents@2.3.3');
+  const optionalBackup = path.join(root, 'platform-skipped-fsevents');
+  const optionalInstalled = existsSync(optionalDirectory);
+  if (optionalInstalled) renameSync(optionalDirectory, optionalBackup);
+  try {
+    assert.match(run(['run', 'audit:deps']), /Accepted only GHSA-vfj7-8cjw-p6xm/);
+  } finally {
+    if (optionalInstalled) renameSync(optionalBackup, optionalDirectory);
+  }
   const retained = JSON.parse(readFileSync(path.join(root, '.anhedral-audit-report.json'), 'utf8'));
   assert.deepEqual(retained.metadata.vulnerabilities, report.metadata.vulnerabilities);
   assert.ok(

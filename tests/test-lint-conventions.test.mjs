@@ -204,6 +204,8 @@ test(
       const packages = [
         'eslint',
         '@next/eslint-plugin-next',
+        '@typescript-eslint/parser',
+        '@typescript-eslint/eslint-plugin',
         '@eslint/js',
         '@babel/eslint-parser',
         '@babel/preset-typescript',
@@ -252,6 +254,27 @@ test(
           result.messages.some((entry) => entry.ruleId === rule),
           `${rule}: ${JSON.stringify(result.messages)}`,
         );
+      const [valid] = await eslint.lintText(
+        "import type { NextConfig } from 'next'; import Child from './child'; const config: NextConfig = {}; export function Page() { return <Child/>; } export default config;",
+        { filePath: 'app/valid-types.tsx' },
+      );
+      assert.equal(
+        valid.messages.some(
+          (entry) =>
+            entry.ruleId === '@typescript-eslint/no-unused-vars' ||
+            entry.ruleId === 'no-unused-vars',
+        ),
+        false,
+        JSON.stringify(valid.messages),
+      );
+      const [unused] = await eslint.lintText(
+        'const unused: number = 1; export default function Page() { return <main/>; }',
+        { filePath: 'app/unused-types.tsx' },
+      );
+      assert.ok(
+        unused.messages.some((entry) => entry.ruleId === '@typescript-eslint/no-unused-vars'),
+        JSON.stringify(unused.messages),
+      );
       const config = await eslint.calculateConfigForFile(path.join(pages, 'index.tsx'));
       for (const [rule, level] of Object.entries({
         ...plugin.configs.recommended.rules,

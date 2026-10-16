@@ -100,14 +100,25 @@ function treeHash(root) {
   return hash(entries.join('\n'));
 }
 
-function installedBraces(list, root) {
+export function installedBraces(list, root) {
   if (!Array.isArray(list) || !list.length) fail('Installed dependency listing is unavailable.');
   const copies = new Set();
-  const stack = [...list];
+  const stack = list.map((node) => ({ node, optional: false }));
   while (stack.length) {
-    const node = stack.pop();
+    const { node, optional } = stack.pop();
     if (!object(node) || typeof node.path !== 'string' || !path.isAbsolute(node.path))
       fail('Incomplete installed dependency identity.');
+    const location = path.resolve(node.path);
+    if (location !== root && !location.startsWith(root + path.sep))
+      fail('Installed dependency escapes the application.');
+    // pnpm lists unsupported optional packages (for example macOS fsevents on
+    // Linux) even when no package directory was installed. Required packages,
+    // existing dangling links, and unreadable directories still fail closed.
+    const entry = lstatSync(location, { throwIfNoEntry: false });
+    if (!entry) {
+      if (optional) continue;
+      fail('Required installed dependency is missing.');
+    }
     const directory = realpathSync(node.path);
     if (directory !== root && !directory.startsWith(root + path.sep))
       fail('Installed dependency escapes the application.');
@@ -122,7 +133,17 @@ function installedBraces(list, root) {
     for (const group of ['dependencies', 'devDependencies', 'optionalDependencies']) {
       if (node[group] === undefined) continue;
       if (!object(node[group])) fail('Incomplete installed dependency graph.');
-      stack.push(...Object.values(node[group]));
+      stack.push(
+        ...Object.entries(node[group]).map(([name, child]) => ({
+          node: child,
+          // pnpm's recursive listing also puts transitive optional edges in
+          // `dependencies`; the installed parent's manifest identifies them.
+          optional:
+            group === 'optionalDependencies' ||
+            (object(metadata.optionalDependencies) &&
+              Object.hasOwn(metadata.optionalDependencies, name)),
+        })),
+      );
     }
   }
   if (!copies.size) fail('Affected braces copies are missing from the installed dependency graph.');

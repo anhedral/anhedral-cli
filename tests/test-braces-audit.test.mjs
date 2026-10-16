@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { verifyAuditReport } from '../assets/patches/audit-deps.mjs';
+import { installedBraces, verifyAuditReport } from '../assets/patches/audit-deps.mjs';
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 
 const advisory = (changes = {}) => ({
   module_name: 'braces',
@@ -19,6 +22,63 @@ function report(findings = []) {
 }
 const check = (value, verifiedBraces = false, status = 1) =>
   verifyAuditReport(value, { status, verifiedBraces });
+
+test('platform-skipped optional packages do not hide missing required dependency copies', () => {
+  const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-audit-optional-')));
+  try {
+    writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'fixture' }));
+    const braces = path.join(root, 'node_modules/braces');
+    mkdirSync(braces, { recursive: true });
+    writeFileSync(
+      path.join(braces, 'package.json'),
+      JSON.stringify({ name: 'braces', version: '3.0.3' }),
+    );
+    const missing = { path: path.join(root, 'node_modules/fsevents') };
+    const fixture = {
+      path: root,
+      dependencies: { braces: { path: braces } },
+      optionalDependencies: { fsevents: missing },
+    };
+    assert.deepEqual(installedBraces([fixture], root), [braces]);
+    writeFileSync(
+      path.join(root, 'package.json'),
+      JSON.stringify({ name: 'fixture', optionalDependencies: { fsevents: '^2.3.3' } }),
+    );
+    assert.deepEqual(
+      installedBraces(
+        [{ path: root, dependencies: { ...fixture.dependencies, fsevents: missing } }],
+        root,
+      ),
+      [braces],
+    );
+    writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'fixture' }));
+    if (process.platform !== 'win32') {
+      symlinkSync(path.join(root, 'missing-target'), missing.path);
+      assert.throws(() => installedBraces([fixture], root), /ENOENT/);
+      rmSync(missing.path);
+    }
+    assert.throws(
+      () =>
+        installedBraces(
+          [{ ...fixture, dependencies: { ...fixture.dependencies, required: missing } }],
+          root,
+        ),
+      /Required installed dependency is missing/,
+    );
+    rmSync(braces, { recursive: true });
+    assert.throws(
+      () => installedBraces([fixture], root),
+      /Required installed dependency is missing/,
+    );
+    assert.throws(
+      () =>
+        installedBraces([{ path: root, optionalDependencies: { braces: { path: braces } } }], root),
+      /Affected braces copies are missing/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test('only exact braces advisory/version can pass after installed verification without changing raw findings', () => {
   const value = report([advisory()]);

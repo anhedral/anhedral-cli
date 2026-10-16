@@ -88,7 +88,11 @@ export function scaffoldWeb({ root, options, bindings, runtimeApp, has }: Recipe
   writeWebLint(root);
   patchPackage(root, 'apps/web/package.json', {
     scripts: { typecheck: 'tsc --noEmit', lint: 'eslint . --max-warnings 0' },
-    devDependencies: { '@next/eslint-plugin-next': STACK_DEPENDENCIES['@next/eslint-plugin-next'] },
+    devDependencies: {
+      '@next/eslint-plugin-next': STACK_DEPENDENCIES['@next/eslint-plugin-next'],
+      '@typescript-eslint/parser': STACK_DEPENDENCIES['@typescript-eslint/parser'],
+      '@typescript-eslint/eslint-plugin': STACK_DEPENDENCIES['@typescript-eslint/eslint-plugin'],
+    },
   });
   if (has('vinext')) {
     configureVinext(root, resourceName(options.name, 'web'), runtimeApp === 'web' ? bindings : {});

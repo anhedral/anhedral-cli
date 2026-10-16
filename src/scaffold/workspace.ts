@@ -69,6 +69,7 @@ function writeTurboConfiguration(root: string, registry: ResolvedStackRegistry):
   turbo.globalEnv = [
     ...new Set([
       ...(turbo.globalEnv ?? []),
+      'VOID_CLOUDFLARE_DEPLOY_BUILD',
       'npm_execpath',
       ...registry.items.flatMap((item) => item.environment),
     ]),
@@ -169,6 +170,9 @@ process.exitCode = result.status ?? 1;
         }
       : {}),
     ignorePatterns: [
+      // Maintained bundled tooling is regression-tested in the CLI repository;
+      // app audits cover customer code without re-auditing the vendored gate.
+      'scripts/audit-deps.mjs',
       '**/next-env.d.ts',
       '**/.next/**',
       '**/.open-next/**',
