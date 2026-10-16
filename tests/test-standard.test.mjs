@@ -169,6 +169,7 @@ try {
     assert.ok(tracked.includes(source), 'Application font assets must remain trackable');
   });
   const rootManifest = read(vinext.root, 'package.json');
+  assert.equal(rootManifest.pnpm.overrides['void@0.27.0>@cloudflare/vite-plugin'], '1.63.1');
   assert.equal(rootManifest.devDependencies.turbo, STACK_DEPENDENCIES.turbo);
   assert.match(
     readFileSync(path.join(vinext.root, 'pnpm-workspace.yaml'), 'utf8'),
@@ -282,6 +283,10 @@ try {
   assert.equal(native.hosting, 'vercel');
   await scaffoldStandardProject(native, runner);
   assert.equal(read(native.root, 'apps/web/package.json').dependencies.next, '16.4.0');
+  assert.equal(
+    read(native.root, 'package.json').pnpm.overrides['void@0.27.0>@cloudflare/vite-plugin'],
+    undefined,
+  );
   assert.match(
     readFileSync(path.join(native.root, 'apps/web/next.config.ts'), 'utf8'),
     /cacheComponents: true, partialPrefetching: true/,

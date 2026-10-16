@@ -85,12 +85,18 @@ for (const profile of selected) {
       if (setup.hosting === 'cloudflare')
         assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
     }
-    for (const app of ['api', 'realtime', 'jobs', 'scheduled', 'workflows'])
-      if (existsSync(path.join(root, 'apps', app, 'package.json')))
-        assert.ok(
-          existsSync(path.join(root, 'apps', app, 'dist/index.js')),
-          `${app} build artifact`,
-        );
+    for (const app of ['api', 'realtime', 'jobs', 'scheduled', 'workflows']) {
+      const directory = path.join(root, 'apps', app);
+      if (!existsSync(path.join(directory, 'package.json'))) continue;
+      if (existsSync(path.join(directory, 'void.config.ts'))) {
+        const output = path.join(directory, 'dist/ssr');
+        const configuration = JSON.parse(readFileSync(path.join(output, 'wrangler.json'), 'utf8'));
+        assert.equal(typeof configuration.main, 'string', `${app} generated Worker entry`);
+        const entry = path.resolve(output, configuration.main);
+        assert.ok(entry.startsWith(output + path.sep), `${app} entry stays inside build output`);
+        assert.ok(existsSync(entry), `${app} generated Worker entry exists`);
+      } else assert.ok(existsSync(path.join(directory, 'dist/index.js')), `${app} build artifact`);
+    }
     if (setup.products.includes('wxt'))
       assert.ok(existsSync(path.join(root, 'apps/extension/.output/chrome-mv3/manifest.json')));
     if (setup.products.includes('expo'))

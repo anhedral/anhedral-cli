@@ -4,6 +4,22 @@ import { VOID_NODE_ENGINE, VOID_VERSION } from '../void.js';
 import { VINEXT_DEPENDENCIES, WORKER_DEV_PORTS } from '../dependencies.js';
 import { json, patchPackage, put, readJson } from './files.js';
 
+/** Keep Void's adapter paired with the Wrangler version validated by this stack. */
+function pinVoidCloudflareAdapter(root: string): void {
+  const pkg = readJson(root, 'package.json');
+  const pnpm = (pkg.pnpm ?? {}) as Record<string, unknown>;
+  patchPackage(root, 'package.json', {
+    pnpm: {
+      ...pnpm,
+      overrides: {
+        ...((pnpm.overrides ?? {}) as Record<string, string>),
+        [`void@${VOID_VERSION}>@cloudflare/vite-plugin`]:
+          VINEXT_DEPENDENCIES.devDependencies!['@cloudflare/vite-plugin'],
+      },
+    },
+  });
+}
+
 /** Fresh-workspace conversion only. Existing applications keep their delivery engine. */
 export function configureVoidDelivery(root: string): boolean {
   if (existsSync(path.join(root, 'apps/web/open-next.config.ts'))) return false;
@@ -205,6 +221,7 @@ export default {
     configured = true;
   }
   if (configured) {
+    pinVoidCloudflareAdapter(root);
     patchPackage(root, 'package.json', { engines: { node: VOID_NODE_ENGINE } });
     // The standalone generated preparation module uses only Node builtins and
     // is byte-identical to the version exercised by Anhedral delivery tests.
@@ -290,5 +307,8 @@ export function refreshVoidEnvironment(root: string): void {
     );
     put(root, `${directory}/env.ts`, schema);
   }
-  if (configured) patchPackage(root, 'package.json', { engines: { node: VOID_NODE_ENGINE } });
+  if (configured) {
+    pinVoidCloudflareAdapter(root);
+    patchPackage(root, 'package.json', { engines: { node: VOID_NODE_ENGINE } });
+  }
 }
