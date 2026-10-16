@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "description": "Build and ship applications with a Cloudflare-first stack, explicit architecture and verified delivery evidence.",
   "author": {
     "name": "Anhedral",

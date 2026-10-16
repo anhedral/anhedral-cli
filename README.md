@@ -4,86 +4,64 @@
 [![npm](https://img.shields.io/npm/v/anhedral)](https://www.npmjs.com/package/anhedral)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-Anhedral scaffolds source code, guides authentication, then provisions, configures, and deploys the supported stack wherever provider APIs allow.
+Anhedral creates TypeScript application workspaces and helps deliver them to your own cloud accounts. Start with a web app, add the interfaces and services your product needs, and keep the source code, infrastructure, data and billing under your control.
 
-You own the code, provider accounts, infrastructure, data, and billing. The CLI provides the foundation and delivery tools; application features remain development work. Anhedral offers feature development and ongoing maintenance for businesses that want that work delivered for them.
+The default is **Vinext, React, Tailwind, shadcn/ui and Lucide on Cloudflare Workers**, with pnpm and Turborepo. The CLI generates the foundation and handles supported setup and delivery operations. You or your coding agent implement the product.
 
-## Get started
+## Start locally
 
-Supported Cloudflare workspaces use Void 0.27.0 and require Node.js 24.21.0+ and pnpm 10.34.5. Explicit OpenNext, Queues and Basin selections use Wrangler. Other workspace profiles require Node.js 22.13+ on 22.x or Node.js 24+. Initialize on Linux, macOS, or WSL.
-
-Void owns Cloudflare provisioning, secret uploads and deployment. Anhedral retains stack composition, shared packages, customer ownership and independent release/product verification. Explicit OpenNext, Queues and Basin profiles use Anhedral’s Wrangler delivery path. Initialization creates source without deploying it.
+Use **Node.js 24.21.0 or newer** and **pnpm 10.34.5**. Initialize on Linux, macOS or WSL.
 
 ```sh
 npm install --global anhedral
 
-# Preview the stack without creating project files or cloud resources
+# Inspect the default selection; no writes or network requests.
 anhedral init my-app --dry-run --json
 
-# Generate a project and start development
+# Generate source, install dependencies and start development.
 anhedral init my-app
 cd my-app
 pnpm dev
 ```
 
-You can also run the CLI with `pnpm dlx anhedral@latest`. Initialization downloads the upstream shadcn starter and installs dependencies; it does not create cloud resources or deploy your app.
+Initialization downloads the pinned upstream starter and installs dependencies. It does not provision cloud services or deploy the app. Follow the generated README for local addresses and any setup required by your selection. You can also run the CLI with `pnpm dlx anhedral@latest`; pin a version for repeatable automation.
 
-## Choose your stack
+## Choose what to generate
 
-The default is **Vinext, React, TypeScript, Tailwind, shadcn/ui, and Lucide on Cloudflare Workers**, organized as a pnpm/Turborepo monorepo.
+An explicit selection chooses the requested applications; include the web option when you want web alongside another interface.
 
-| Application | Option |
-| --- | --- |
-| Web on Cloudflare Workers | Default |
-| Native Next.js on Vercel | `--next` |
-| Mobile with Expo | `--expo` |
-| Desktop with Electron | `--electron` |
-| Browser extension with WXT | `--wxt` |
-| Shared API with Hono | `--hono` |
+| Project                            | Command                                            |
+| ---------------------------------- | -------------------------------------------------- |
+| Default web app                    | `anhedral init my-app`                             |
+| Web with D1 and Better Auth        | `anhedral init my-app --vinext --d1 --better-auth` |
+| Web and shared API with PostgreSQL | `anhedral init my-app --vinext --hono --neon`      |
+| Native Next.js on Vercel           | `anhedral init my-app --next`                      |
+| Expo mobile app                    | `anhedral init my-app --expo`                      |
+| Electron desktop app               | `anhedral init my-app --electron`                  |
+| WXT browser extension              | `anhedral init my-app --wxt`                       |
 
-Add capabilities when needed: D1 or Neon for data, Better Auth or Clerk for identity, R2 for files, and selected AI, billing, email, analytics, or background services.
+Inspect available services and preview additions:
 
 ```sh
-anhedral init my-app --d1 --better-auth
-anhedral init mobile-app --expo
-anhedral init product --next --hono --d1 --r2
 anhedral registry list
 anhedral registry view resend --json
+anhedral add resend --cwd my-app --dry-run --json
+anhedral add resend --cwd my-app
 ```
 
-Optional `--neon-realtime` adds Neon live SQL foundations with separate server/client exports in `packages/neon-realtime`; it selects Neon and needs a server runtime. `--realtime` remains Cloudflare Durable Object WebSocket rooms. Neon Realtime is beta: enable the intended branch, allowed origins and secret manually, then implement authenticated, scoped query sealing and subscriptions. Initialization does not provision or verify Realtime. See the [stack standard](docs/stack-standard.md#neon-realtime).
+Generated entry points live in `apps/*`, shared code in `packages/*`, and Anhedral configuration in one root `anhedral.json`. Read the [source-only full-stack example](https://github.com/anhedral/anhedral-cli/tree/main/examples/full-stack) to see a larger project without creating services.
 
-The project keeps Anhedral metadata in one committed root `anhedral.json`, with named sections for identity, stack selection, registry provenance, integrations and selected hosting. Credentials and delivery history remain in ignored runtime files and `.anhedral/`.
+## Build and deliver
 
-The bundled registry contains recipes maintained and tested by Anhedral. Generated source belongs to your project and stays editable. External registries are unsupported. Preview additions before applying them:
-
-```sh
-anhedral add resend stripe --cwd my-app --dry-run --json
-anhedral add resend stripe --cwd my-app
-```
-
-See the [stack standard](docs/stack-standard.md) for supported combinations and architecture guidance.
-
-## Authenticate and ship
-
-Implement your app, configure its selected services, review migrations, and commit the source before delivery. The generated README explains the remaining setup. Run these commands from your project directory.
+Implement the product, configure selected integrations and review database migrations. Then use the [software factory](docs/software-factory.md) to check provider access, connect the intended account and audience, commit source, ship and verify real user flows.
 
 ```sh
-anhedral auth
 anhedral auth --status --json
-anhedral connect --audience private --allow-email owner@example.com
+anhedral doctor --providers --json
 anhedral ship --dry-run --json
-anhedral ship --json
-anhedral verify --json
 ```
 
-Replace the example email with the intended member. Private Workers hosting requires Cloudflare Zero Trust and the necessary Access permissions. Authentication does not establish every provisioning permission or complete service setup.
-
-For Wrangler profiles, changed resource IDs stop `ship` before deployment for review and a commit. Void can activate a target before recording new resource identities in `void.lock.json`; it then returns `configuration-required` with the activation receipts retained. Review and commit those locks, then ship the clean configuration. It never commits source automatically. Shipping runs project checks and records delivery results. `verify` exercises your application's live acceptance test; a successful scaffold or deployment alone does not prove its features work.
-
-Provider eligibility, subscriptions, usage limits, and charges remain your responsibility. Some setup requires owner action. Expo delivery returns EAS build links; it does not submit apps to stores.
-
-See [delivery and recovery](docs/delivery-workflow.md) and [provider configuration](docs/provider-configuration.md) for account selection, deployment, migration, rollback, and integration requirements.
+These commands help inspect readiness; actual shipping can create resources, apply reviewed deployment migrations and publish code. Provider permissions, account eligibility and usage charges still apply. A generated starter or successful deployment does not establish a working product.
 
 ## Use with Codex
 
@@ -96,40 +74,26 @@ Select **Try now**, or start with:
 
 > Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about.
 
-The plugin guides stack selection, feature development, setup, and verification. Its optional inspector displays local stack, setup, and recorded delivery evidence. It does not monitor live health or perform provisioning when opened. The CLI also works independently.
+The plugin guides implementation using the same stack and workflow. Its optional inspector shows project structure, setup, recorded delivery evidence and explicit service controls. Opening it does not deploy the app. The CLI works independently.
 
-## Commands and documentation
+## Read next
 
-Use `anhedral --help` or `anhedral help <command>` for options and examples. `--cwd` selects a project; `--json` provides structured output.
+| Document                                     | Use it to answer                                                         |
+| -------------------------------------------- | ------------------------------------------------------------------------ |
+| [Stack standard](docs/stack-standard.md)     | What should the application contain, and how should it fit together?     |
+| [Software factory](docs/software-factory.md) | How do I turn a brief into a tested, delivered and maintainable product? |
 
-- [CLI usage](docs/cli-design.md)
-- [Stack standard](docs/stack-standard.md)
-- [Delivery and recovery](docs/delivery-workflow.md)
-- [Provider configuration](docs/provider-configuration.md)
-- [Plugin development](docs/plugin-ui.md)
+Use `anhedral --help` and `anhedral help <command>` for command options. `--cwd` selects the project; `--json` produces structured output. Detailed references cover [provider configuration](docs/provider-configuration.md), [CLI behavior](docs/cli-design.md) and the [Codex inspector](docs/plugin-ui.md).
 
-## Development and contributions
+## Work on the CLI
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm build
+node dist/bin.js init ../my-test-app --dry-run --json
 pnpm test:all
-pnpm test:integration
 ```
 
-The root test command reuses a verified inspector runtime or installs its frozen dependencies and builds it when missing/stale. Preparing that runtime requires Node 22.13+ on 22.x or Node 24+; older CLI test lanes consume the verified CI runtime artifact. For inspector-specific checks, run `pnpm --dir plugins/codex/inspector install --frozen-lockfile` and `pnpm plugin:check`. Development builds require matching CLI and plugin versions; they do not update installed releases automatically.
+`pnpm test:integration` installs and checks generated projects. Inspector development uses `pnpm plugin:build`, `pnpm plugin:check` and `pnpm plugin:preview`; its dependencies and lockfile live in `plugins/codex/inspector`. Building the checkout does not update an installed CLI or plugin. See the [contribution guide](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md) for the development and review process.
 
-Focused fixes, tests, and documentation contributions are welcome. See [contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md), [code of conduct](https://github.com/anhedral/anhedral-cli/blob/main/.github/CODE_OF_CONDUCT.md), and [security reporting](https://github.com/anhedral/anhedral-cli/blob/main/.github/SECURITY.md). Report reproducible problems in [issues](https://github.com/anhedral/anhedral-cli/issues) and vulnerabilities through [private reporting](https://github.com/anhedral/anhedral-cli/security/advisories/new).
-
-Anhedral is open source under the [Apache License 2.0](LICENSE). Generated applications are source code that developers can customize and license for their products, preserving applicable upstream notices.
-
-## Repository layout
-
-| Path | Purpose |
-| --- | --- |
-| `src` | CLI and application scaffolding |
-| `plugins/codex/inspector` | Optional project inspector and MCP runtime sources |
-| `plugins/codex/distribution` | Plugin manifest, assets, skill and bundled runtime |
-| `scripts`, `tests` | Build, release and verification tooling |
-| `docs` | Canonical architecture, delivery and development documentation |
-
-Run CLI commands from the repository root. `pnpm plugin:build`, `pnpm plugin:check` and `pnpm plugin:preview` delegate to the inspector application. The inspector owns its own dependencies and lockfile. Its build copies the bundled server and dashboard into `plugins/codex/distribution/runtime`; release packaging includes only the distribution directory. Shared project and provider logic stays in `src` so the CLI and plugin use the same implementation.
+Anhedral is open source under the [Apache License 2.0](LICENSE). Generated applications are source code that developers can customize and license for their products, preserving upstream notices. Report bugs in [issues](https://github.com/anhedral/anhedral-cli/issues) and vulnerabilities through [private security reporting](https://github.com/anhedral/anhedral-cli/security/advisories/new).

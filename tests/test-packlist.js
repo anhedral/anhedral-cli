@@ -22,7 +22,7 @@ const requiredFiles = new Set([
   'dist/index.js',
   'package.json',
   'docs/stack-standard.md',
-  'docs/delivery-workflow.md',
+  'docs/software-factory.md',
   'docs/void-verification.md',
   'docs/provider-configuration.md',
   'docs/cli-design.md',
@@ -123,12 +123,17 @@ try {
     readFileSync(path.join(repoRoot, 'docs/stack-standard.md'), 'utf8'),
     files,
   );
+  assertPackedMarkdownLinks(
+    'docs/software-factory.md',
+    readFileSync(path.join(repoRoot, 'docs/software-factory.md'), 'utf8'),
+    files,
+  );
 
   for (const file of packed.files) {
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
       file.path === 'docs/stack-standard.md' ||
-      file.path === 'docs/delivery-workflow.md' ||
+      file.path === 'docs/software-factory.md' ||
       file.path === 'docs/void-verification.md' ||
       file.path === 'docs/provider-configuration.md' ||
       file.path === 'docs/cli-design.md' ||

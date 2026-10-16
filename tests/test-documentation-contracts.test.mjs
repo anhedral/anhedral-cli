@@ -28,9 +28,9 @@ test('plugin instructions and documentation do not imply credentials enable unim
 });
 
 test('Cloudflare delivery documentation distinguishes Void activation checkpoints from Wrangler provisioning', () => {
-  const overview = read('README.md');
+  const factory = read('docs/software-factory.md');
   const providers = read('docs/provider-configuration.md');
-  assert.match(overview, /Void can activate a target before recording new resource identities/);
+  assert.match(factory, /Void can activate a target before recording new resource identities/);
   assert.match(providers, /If Wrangler resource provisioning changes tracked binding IDs/);
   assert.match(providers, /Void may already activate targets/);
   assert.match(providers, /noninteractive `void secret put` with stdin/);

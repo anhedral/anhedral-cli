@@ -81,8 +81,8 @@ export function buildPluginArchive(root) {
     'mcp.json',
     'skills/anhedral/SKILL.md',
     ...[
-      'application-stack-standard.md',
-      'delivery-workflow.md',
+      'stack-standard.md',
+      'software-factory.md',
       'provider-configuration.md',
       'plugin-ui.md',
       'void-verification.md',

@@ -32,7 +32,7 @@ The review covered command parsing/help/JSON failures, registry selection and st
 | Generated acceptance wiring | Generated-profile checks invoke a compiled-handler SQLite auth gate and fresh Void build/preview acceptance. The isolated D1/Better Auth API profile additionally applies local migrations and exercises signup, login, session retrieval, incorrect-password rejection and revocation with temporary credentials and a matching local origin. |
 | Plugin completeness | Packaging requires the current skill, references, MCP entrypoint, manifest assets and verified runtime. Missing MCP configuration cannot bypass runtime verification. |
 | Public and server environment | Vinext maps `NEXT_PUBLIC_*` during builds; Vite clients use `VITE_*`. Production public values belong in the build environment. Protected local server values can be sent to `void secret` via stdin; dotenv files remain private and untracked. |
-| Release identity | Verification requires both CLI and matching plugin archives. Canonical documentation is regenerated into the bundled plugin references. The immutable marketplace `plugins/anhedral` release-tree path and bundled `application-stack-standard.md` filename remain intentional consumer contracts. |
+| Release identity | Verification requires both CLI and matching plugin archives. Canonical documentation is regenerated into the bundled plugin references. The immutable marketplace `plugins/anhedral` release-tree path remains a consumer contract. Bundled guide filenames now match the canonical `stack-standard.md` and `software-factory.md`. |
 
 The cross-reviews found no further confirmed defect in the reviewed changes. That is a source-review result, not proof that every supported combination is production-ready.
 

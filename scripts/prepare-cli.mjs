@@ -24,15 +24,15 @@ writeFileSync(
   JSON.stringify(CAPABILITY_REGISTRY, null, 2) + '\n',
 );
 writeFileSync(
-  new URL('delivery-workflow.md', references),
-  readFileSync(new URL('../docs/delivery-workflow.md', import.meta.url)),
+  new URL('software-factory.md', references),
+  readFileSync(new URL('../docs/software-factory.md', import.meta.url)),
 );
 writeFileSync(
   new URL('provider-configuration.md', references),
   readFileSync(new URL('../docs/provider-configuration.md', import.meta.url)),
 );
 writeFileSync(
-  new URL('application-stack-standard.md', references),
+  new URL('stack-standard.md', references),
   readFileSync(new URL('../docs/stack-standard.md', import.meta.url)),
 );
 writeFileSync(
