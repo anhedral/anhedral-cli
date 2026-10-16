@@ -1,5 +1,5 @@
 import type { StandardProduct } from './stack-registry.js';
-import { EAS_CLI_VERSION, STACK_DEPENDENCIES } from './dependencies.js';
+import { EAS_CLI_VERSION, STACK_DEPENDENCIES, VERCEL_CLI_VERSION } from './dependencies.js';
 import { realpathSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { readProjectSection } from './project-config.js';
@@ -49,8 +49,8 @@ export const PROVIDER_AUTH: readonly ProviderAuth[] = [
   {
     id: 'vercel',
     products: [],
-    login: ['pnpm', 'dlx', 'vercel@62.7.0', 'login'],
-    identity: ['pnpm', 'dlx', 'vercel@62.7.0', 'whoami'],
+    login: ['pnpm', 'dlx', `vercel@${VERCEL_CLI_VERSION}`, 'login'],
+    identity: ['pnpm', 'dlx', `vercel@${VERCEL_CLI_VERSION}`, 'whoami'],
     setup: 'Connect the intended Vercel team and project before shipping.',
   },
   ...INTEGRATION_PROVIDERS.map((id): ProviderAuth => {

@@ -89,7 +89,9 @@ for (const [name, contents] of files) {
   for (const match of contents.toString().matchAll(/\]\(([^)]+)\)/g)) {
     if (/^(?:https?:|plugin:|#)/.test(match[1])) continue;
     assert.ok(
-      files.has(path.posix.normalize(path.posix.join(path.posix.dirname(name), match[1]))),
+      files.has(
+        path.posix.normalize(path.posix.join(path.posix.dirname(name), match[1].split('#')[0])),
+      ),
       `Missing bundled reference: ${match[1]}`,
     );
   }
@@ -111,7 +113,7 @@ try {
   for (const name of [
     'mcp.json',
     'skills/anhedral/SKILL.md',
-    'skills/anhedral/references/plugin-ui.md',
+    'skills/anhedral/references/software-factory.md',
     'runtime/server.mjs',
   ]) {
     const file = path.join(distribution, name);

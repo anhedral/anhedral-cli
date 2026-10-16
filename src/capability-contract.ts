@@ -102,6 +102,19 @@ function productCapability(id: StandardProduct): ProductCapability {
         : 'Extension signing, store submission, review, and distribution require a separate delivery workflow.',
     );
   }
+  if (id === 'stream') {
+    provisioning = stage(
+      'scaffold-only',
+      'Manual Stream activation and live input setup; no automatic Stream provisioning or runtime credential installation.',
+      'unverified',
+    );
+    limits.push(
+      'Server management factory only; creator/player UI, WHIP/WHEP signaling and playback token issuance require application implementation.',
+      'Keep management tokens server-only and disclose secret WHIP URLs only to authorized creators; verify private media access independently of hosting protection.',
+      'One-to-many broadcasts; conferencing, recording, HLS/DASH bridging, restreaming and live viewer counts are outside this integration.',
+      'Usage-based viewer-minute billing, account eligibility and live broadcast/playback acceptance require separate verification.',
+    );
+  }
   if (id === 'neon-realtime') {
     provisioning = stage(
       'scaffold-only',

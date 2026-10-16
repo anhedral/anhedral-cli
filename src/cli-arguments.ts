@@ -131,3 +131,39 @@ export function inlineArguments(command: string | undefined, args: readonly stri
     return [flag, value];
   });
 }
+
+/** Collect validated options using the same arity and alias metadata as help. */
+export function commandArguments(command: string, input: readonly string[]) {
+  validateCommand(command, input);
+  const args = inlineArguments(command, input);
+  const definitions = [...(commandDefinition(command)?.options ?? []), ...GLOBAL_OPTIONS];
+  const positional: string[] = [];
+  const options = new Map<string, string[]>();
+  for (let index = 0; index < args.length; index++) {
+    const argument = args[index];
+    const option = definitions.find(
+      (entry) => entry.flag === argument || entry.aliases?.includes(argument),
+    );
+    if (!option) {
+      positional.push(argument);
+      continue;
+    }
+    const values = options.get(option.flag) ?? [];
+    const next = args[index + 1];
+    if (option.arity && next && !next.startsWith('-')) {
+      values.push(next);
+      index++;
+    }
+    options.set(option.flag, values);
+  }
+  return {
+    positional,
+    has: (flag: string) => options.has(flag),
+    value: (flag: string) => options.get(flag)?.[0],
+    values: (flag: string) => [...(options.get(flag) ?? [])],
+  };
+}
+
+export function commandArgumentError(command: string, message: string): CliArgumentError {
+  return new CliArgumentError(message, `Run anhedral ${command} --help.`);
+}

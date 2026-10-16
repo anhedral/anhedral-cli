@@ -1,4 +1,4 @@
-// Exact versions owned by the registry recipes and native app generators.
+// Exact versions owned by registry recipes, generators and provider tooling.
 export interface DependencyGroup {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -148,6 +148,9 @@ export const PACKAGE_MANAGER = 'pnpm@10.34.5';
 
 // renovate: datasource=npm depName=eas-cli
 export const EAS_CLI_VERSION = '21.0.1';
+
+// renovate: datasource=npm depName=vercel
+export const VERCEL_CLI_VERSION = '62.7.0';
 
 // renovate: datasource=npm depName=shadcn
 export const SHADCN_VERSION = '4.21.4';

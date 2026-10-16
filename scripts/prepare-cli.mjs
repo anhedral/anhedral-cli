@@ -28,10 +28,6 @@ writeFileSync(
   readFileSync(new URL('../docs/software-factory.md', import.meta.url)),
 );
 writeFileSync(
-  new URL('provider-configuration.md', references),
-  readFileSync(new URL('../docs/provider-configuration.md', import.meta.url)),
-);
-writeFileSync(
   new URL('stack-standard.md', references),
   readFileSync(new URL('../docs/stack-standard.md', import.meta.url)),
 );
@@ -45,11 +41,6 @@ manifest.version = CAPABILITY_REGISTRY.cliVersion;
 writeFileSync(manifestUrl, JSON.stringify(manifest, null, 2) + '\n');
 
 writeFileSync(
-  new URL('void-verification.md', references),
-  readFileSync(new URL('../docs/void-verification.md', import.meta.url)),
-);
-
-writeFileSync(
-  new URL('plugin-ui.md', references),
-  readFileSync(new URL('../docs/plugin-ui.md', import.meta.url)),
+  new URL('verification.md', references),
+  readFileSync(new URL('../docs/verification.md', import.meta.url)),
 );

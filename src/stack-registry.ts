@@ -7,6 +7,7 @@ import { GENERATOR_VERSION } from './version.js';
 import { scaffoldWeb } from './scaffold/web.js';
 import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
+import { scaffoldStream } from './scaffold/stream.js';
 import { scaffoldNeonRealtime } from './scaffold/neon-realtime.js';
 import { scaffoldBetterAuth, scaffoldClerk } from './scaffold/auth.js';
 import {
@@ -371,6 +372,28 @@ export interface LocalDataStore {
       ['Authorized room isolation, disconnect/reconnect and deployed WebSockets'],
     ),
     install: scaffoldRealtime,
+  },
+  stream: {
+    type: 'integration',
+    description: 'Cloudflare Stream one-to-many live video with WHIP ingest and WHEP playback (GA)',
+    targets: ['packages/stream'],
+    runtime: 'server',
+    environment: ['STREAM_ACCOUNT_ID', 'STREAM_API_TOKEN'],
+    setup: requirements(
+      'Ultra-low latency one-to-many live video',
+      ['Cloudflare Stream API or dashboard', 'Browser control'],
+      ['Client-owned Cloudflare account with Stream enabled; usage-based delivery billing'],
+      [
+        'Server-only STREAM_ACCOUNT_ID and account-scoped STREAM_API_TOKEN with Stream Write permission',
+      ],
+      [
+        'Manual Stream activation and live input setup; server management factory with secret WHIP and WHEP endpoints',
+      ],
+      [
+        'Creator/input ownership, viewer authorization and signed playback when private, browser media/ICE, reconnect and session cleanup; live behavior unverified',
+      ],
+    ),
+    install: scaffoldStream,
   },
   queues: {
     type: 'service',

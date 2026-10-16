@@ -100,11 +100,28 @@ export async function buildMobileApplication(
   );
 }
 
-async function executeMobileBuild(
-  root: string,
-  options: MobileBuildOptions,
-  run: DeliveryRunner = defaultRunner,
-) {
+interface EasBuild {
+  id?: string;
+  platform?: string;
+  buildProfile?: string;
+  environment?: string;
+  isForIosSimulator?: boolean;
+  status?: string;
+  gitCommitHash?: string;
+  project?: { id?: string; ownerAccount?: { name?: string }; slug?: string };
+  artifacts?: { applicationArchiveUrl?: string; buildUrl?: string };
+}
+
+interface EasProfile {
+  extends?: unknown;
+  environment?: string;
+  developmentClient?: boolean;
+  distribution?: string;
+  ios?: { simulator?: boolean };
+  android?: { buildType?: string };
+}
+
+function mobileConfiguration(root: string, options: MobileBuildOptions) {
   root = realpathSync(root);
   if (
     !['ios', 'android'].includes(options.platform) ||
@@ -124,7 +141,7 @@ async function executeMobileBuild(
   } catch {
     throw new Error('A valid EAS build configuration is required.');
   }
-  const profile = configuration?.build?.[options.profile];
+  const profile = configuration?.build?.[options.profile] as EasProfile | undefined;
   if (!profile || typeof profile !== 'object' || Array.isArray(profile))
     throw new Error('Requested EAS profile is not configured.');
   if (profile.extends) throw new Error('Resolve inherited EAS profiles before automatic delivery.');
@@ -149,15 +166,11 @@ async function executeMobileBuild(
     '--json',
     '--no-wait',
   ];
-  if (options.dryRun)
-    return {
-      platform: options.platform,
-      profile: options.profile,
-      command: ['pnpm', ...args],
-      mutation: false,
-      storeSubmission: false,
-      integrations: planProviderProvisioning(root),
-    };
+  return { root, options, directory, profile, selectedEnvironment, args };
+}
+type MobileConfiguration = ReturnType<typeof mobileConfiguration>;
+
+function readMobileApplication(directory: string) {
   const app = JSON.parse(
     readBoundedFile(path.join(directory, 'app.json'), MAX_PROJECT_JSON_BYTES).toString('utf8'),
   ).expo;
@@ -170,69 +183,88 @@ async function executeMobileBuild(
     !/^[a-zA-Z0-9_-]+$/.test(app.slug)
   )
     throw new Error('Set the intended Expo owner and slug in app.json before shipping.');
+  return app as { owner: string; slug: string; extra?: { eas?: { projectId?: unknown } } };
+}
+type MobileApplication = ReturnType<typeof readMobileApplication>;
+
+function mobileEnvironment(): NodeJS.ProcessEnv {
   const environment: NodeJS.ProcessEnv = { ...process.env, CI: '1', NO_COLOR: '1' };
   // Expo keeps its own login credential; server/provider keys never reach native builds.
   for (const key of [...Object.values(CREDENTIALS), ...RUNTIME_KEYS])
     if (!key.startsWith('EXPO_PUBLIC_')) delete environment[key];
-  const source = async () => {
-    if (
-      realpathSync(
-        (await run('git', ['rev-parse', '--show-toplevel'], root, environment)).trim(),
-      ) !== root ||
-      (await run('git', ['status', '--porcelain'], root, environment)).trim()
-    )
-      throw new Error('Mobile delivery requires a clean application Git repository.');
-    const commit = (await run('git', ['rev-parse', 'HEAD'], root, environment)).trim();
-    if (!/^[a-f0-9]{40,64}$/.test(commit)) throw new Error('Invalid mobile source commit.');
-    return commit;
-  };
-  const initialCommit = await source();
-  // An unresolved queue mutation blocks every subsequent provisioning/configuration mutation.
-  pendingBuild(root, initialCommit, options, app.extra?.eas?.projectId);
-  await run('pnpm', ['run', 'check'], root, environment);
-  if ((await source()) !== initialCommit) throw new Error('Source changed during mobile checks.');
-  const configured = await provisionSelectedProviders(root, false, run);
-  if (!configured.ready)
-    return {
-      state: 'provider-configuration-required',
-      deployed: false,
-      integrations: configured,
-      storeSubmission: false,
-    };
-  const runtime = configuredRuntime(root);
-  const commit = await source();
-  if (commit !== initialCommit) throw new Error('Source changed during provider configuration.');
-  const cli = ['dlx', `eas-cli@${EAS_CLI_VERSION}`];
-  if (!app.extra?.eas?.projectId) {
-    await run(
-      'pnpm',
-      [...cli, 'project:init', '--non-interactive', '--force'],
-      directory,
-      environment,
+  return environment;
+}
+
+async function mobileSource(
+  root: string,
+  environment: NodeJS.ProcessEnv,
+  run: DeliveryRunner,
+): Promise<string> {
+  if (
+    realpathSync((await run('git', ['rev-parse', '--show-toplevel'], root, environment)).trim()) !==
+      root ||
+    (await run('git', ['status', '--porcelain'], root, environment)).trim()
+  )
+    throw new Error('Mobile delivery requires a clean application Git repository.');
+  const commit = (await run('git', ['rev-parse', 'HEAD'], root, environment)).trim();
+  if (!/^[a-f0-9]{40,64}$/.test(commit)) throw new Error('Invalid mobile source commit.');
+  return commit;
+}
+
+const easCli = ['dlx', `eas-cli@${EAS_CLI_VERSION}`];
+interface MobileSession {
+  configuration: MobileConfiguration;
+  app: MobileApplication;
+  environment: NodeJS.ProcessEnv;
+  run: DeliveryRunner;
+}
+interface BuildSelection {
+  commit: string;
+  projectId: string;
+  values?: Record<string, string>;
+}
+
+async function linkMobileProject({
+  configuration: { directory },
+  app,
+  environment,
+  run,
+}: MobileSession) {
+  const cli = easCli;
+  await run(
+    'pnpm',
+    [...cli, 'project:init', '--non-interactive', '--force'],
+    directory,
+    environment,
+  );
+  const linked = JSON.parse(
+    readBoundedFile(path.join(directory, 'app.json'), MAX_PROJECT_JSON_BYTES).toString('utf8'),
+  ).expo;
+  if (
+    linked?.owner !== app.owner ||
+    linked.slug !== app.slug ||
+    typeof linked.extra?.eas?.projectId !== 'string' ||
+    !/^[a-f0-9-]{36}$/i.test(linked.extra.eas.projectId)
+  )
+    throw new Error(
+      'EAS did not confirm a project link for the selected owner and slug. Inspect the account before retrying.',
     );
-    const linked = JSON.parse(
-      readBoundedFile(path.join(directory, 'app.json'), MAX_PROJECT_JSON_BYTES).toString('utf8'),
-    ).expo;
-    if (
-      linked?.owner !== app.owner ||
-      linked.slug !== app.slug ||
-      typeof linked.extra?.eas?.projectId !== 'string' ||
-      !/^[a-f0-9-]{36}$/i.test(linked.extra.eas.projectId)
-    )
-      throw new Error(
-        'EAS did not confirm a project link for the selected owner and slug. Inspect the account before retrying.',
-      );
-    return {
-      state: 'configuration-required',
-      deployed: false,
-      storeSubmission: false,
-      nextAction:
-        'Review and commit the EAS project link written to app.json, then run ship again.',
-    };
-  }
-  const projectId = app.extra.eas.projectId;
-  if (typeof projectId !== 'string' || !/^[a-f0-9-]{36}$/i.test(projectId))
-    throw new Error('Invalid EAS project ID.');
+  return {
+    state: 'configuration-required',
+    deployed: false,
+    storeSubmission: false,
+    nextAction: 'Review and commit the EAS project link written to app.json, then run ship again.',
+  };
+}
+
+async function verifyMobileProject(session: MobileSession, projectId: string): Promise<void> {
+  const {
+    configuration: { directory },
+    app,
+    environment,
+    run,
+  } = session;
+  const cli = easCli;
   const remote = await run('pnpm', [...cli, 'project:info'], directory, environment);
   const remoteName = remote
     .split(/\r?\n/)
@@ -246,7 +278,18 @@ async function executeMobileBuild(
     .split(/\s+/)[1];
   if (remoteId !== projectId || remoteName !== `@${app.owner}/${app.slug}`)
     throw new Error('EAS project identity differs from the selected owner and project.');
-  const values = runtimeTargets(root, runtime)['apps/mobile/.env.local'];
+}
+
+async function configureMobileEnvironment(
+  session: MobileSession,
+  values: BuildSelection['values'],
+): Promise<void> {
+  const {
+    configuration: { directory, selectedEnvironment },
+    environment,
+    run,
+  } = session;
+  const cli = easCli;
   if (values && Object.keys(values).length) {
     const file = path.join(tmpdir(), `anhedral-expo-${randomUUID()}.env`);
     try {
@@ -267,6 +310,17 @@ async function executeMobileBuild(
       rmSync(file, { force: true });
     }
   }
+}
+
+async function requestMobileBuild(session: MobileSession, selection: BuildSelection) {
+  const {
+    configuration: { root, options, directory, args },
+    environment,
+    run,
+  } = session;
+  const { commit, projectId, values } = selection;
+  const cli = easCli;
+  const source = () => mobileSource(root, environment, run);
   let builds: unknown;
   let expectedBuildId: string | undefined;
   const pendingFile = path.join(root, '.anhedral/mobile-build.pending.json');
@@ -300,12 +354,23 @@ async function executeMobileBuild(
       'EAS build did not return verified completion; inspect the selected Expo project before retrying.',
     );
   }
+  return { builds, expectedBuildId, pendingFile };
+}
+
+function validateMobileBuild(
+  session: MobileSession,
+  selection: BuildSelection,
+  builds: unknown,
+  expectedBuildId?: string,
+) {
+  const {
+    configuration: { options, profile, selectedEnvironment },
+    app,
+  } = session;
+  const { commit, projectId } = selection;
   if (!Array.isArray(builds) || builds.length !== 1)
     throw new Error('EAS returned an unexpected build selection.');
-  const build = builds[0];
-  const downloadUrl = artifactUrl(
-    build?.artifacts?.applicationArchiveUrl ?? build?.artifacts?.buildUrl,
-  );
+  const build: EasBuild = builds[0];
   if (typeof build?.id !== 'string' || !/^[a-zA-Z0-9-]{1,255}$/.test(build.id))
     throw new Error('EAS did not return a valid build ID.');
   if (
@@ -314,6 +379,20 @@ async function executeMobileBuild(
     build.project?.slug !== app.slug
   )
     throw new Error('EAS build belongs to a different project.');
+  validateBuildProfile(build, options, profile, selectedEnvironment);
+  if (build.gitCommitHash !== commit)
+    throw new Error('EAS build source differs from the selected source commit.');
+  if (expectedBuildId && build.id !== expectedBuildId)
+    throw new Error('EAS returned a different build than the recorded selection.');
+  return build as EasBuild & { id: string };
+}
+
+function validateBuildProfile(
+  build: EasBuild,
+  options: MobileBuildOptions,
+  profile: EasProfile,
+  selectedEnvironment: string,
+): void {
   if (
     build.platform !== options.platform.toUpperCase() ||
     build.buildProfile !== options.profile ||
@@ -323,10 +402,34 @@ async function executeMobileBuild(
     throw new Error(
       'EAS build platform, profile or environment differs from the selected configuration.',
     );
-  if (build.gitCommitHash !== commit)
-    throw new Error('EAS build source differs from the selected source commit.');
-  if (expectedBuildId && build.id !== expectedBuildId)
-    throw new Error('EAS returned a different build than the recorded selection.');
+}
+
+function mobileArtifact(options: MobileBuildOptions, profile: EasProfile): string {
+  if (options.platform === 'ios') return profile.ios?.simulator === true ? 'ios-simulator' : 'ipa';
+  return profile.android?.buildType === 'apk' ||
+    profile.distribution === 'internal' ||
+    profile.developmentClient === true
+    ? 'apk'
+    : 'aab';
+}
+
+async function recordMobileBuild(
+  session: MobileSession,
+  selection: BuildSelection,
+  build: EasBuild & { id: string },
+  pendingFile: string,
+) {
+  const {
+    configuration: { root, options, profile },
+    app,
+    environment,
+    run,
+  } = session;
+  const { commit, projectId } = selection;
+  const source = () => mobileSource(root, environment, run);
+  const downloadUrl = artifactUrl(
+    build.artifacts?.applicationArchiveUrl ?? build.artifacts?.buildUrl,
+  );
   atomicJson(pendingFile, {
     schemaVersion: 1,
     status: 'queued',
@@ -337,7 +440,7 @@ async function executeMobileBuild(
     buildId: build.id,
   });
   const buildPage = `https://expo.dev/accounts/${app.owner}/projects/${app.slug}/builds/${build.id}`;
-  if (['NEW', 'IN_QUEUE', 'IN_PROGRESS', 'PENDING_CANCEL'].includes(build.status))
+  if (['NEW', 'IN_QUEUE', 'IN_PROGRESS', 'PENDING_CANCEL'].includes(build.status ?? ''))
     return {
       schemaVersion: 1,
       state: 'building',
@@ -358,22 +461,14 @@ async function executeMobileBuild(
     throw new Error(
       'Source changed during mobile build; do not treat this artifact as the current release.',
     );
-  const owner = build.project?.ownerAccount?.name;
-  const slug = build.project?.slug;
-  const buildPageUrl =
-    typeof owner === 'string' &&
-    /^[a-zA-Z0-9_-]+$/.test(owner) &&
-    typeof slug === 'string' &&
-    /^[a-zA-Z0-9_-]+$/.test(slug)
-      ? `https://expo.dev/accounts/${owner}/projects/${slug}/builds/${build.id}`
-      : undefined;
   const result = {
     schemaVersion: 1,
     projectId,
     owner: app.owner,
     slug: app.slug,
     recordedAt: new Date().toISOString(),
-    ...(buildPageUrl ? { buildPageUrl } : {}),
+    // Identity validation already matched the provider owner/slug to the local app.
+    buildPageUrl: buildPage,
     commit,
     platform: options.platform,
     profile: options.profile,
@@ -381,18 +476,54 @@ async function executeMobileBuild(
     downloadUrl,
     state: 'built',
     storeSubmission: false,
-    artifact:
-      options.platform === 'ios'
-        ? profile.ios?.simulator === true
-          ? 'ios-simulator'
-          : 'ipa'
-        : profile.android?.buildType === 'apk' ||
-            profile.distribution === 'internal' ||
-            profile.developmentClient === true
-          ? 'apk'
-          : 'aab',
+    artifact: mobileArtifact(options, profile),
   };
   atomicJson(path.join(root, '.anhedral/mobile-build.json'), result);
   rmSync(pendingFile, { force: true });
   return result;
+}
+
+async function executeMobileBuild(root: string, options: MobileBuildOptions, run: DeliveryRunner) {
+  const configuration = mobileConfiguration(root, options);
+  root = configuration.root;
+  if (options.dryRun)
+    return {
+      platform: options.platform,
+      profile: options.profile,
+      command: ['pnpm', ...configuration.args],
+      mutation: false,
+      storeSubmission: false,
+      integrations: planProviderProvisioning(root),
+    };
+  const app = readMobileApplication(configuration.directory);
+  const environment = mobileEnvironment();
+  const session: MobileSession = { configuration, app, environment, run };
+  const source = () => mobileSource(root, environment, run);
+  const initialCommit = await source();
+  // Unknown submissions must stop before checks, provisioning or remote configuration.
+  pendingBuild(root, initialCommit, options, app.extra?.eas?.projectId);
+  await run('pnpm', ['run', 'check'], root, environment);
+  if ((await source()) !== initialCommit) throw new Error('Source changed during mobile checks.');
+  const configured = await provisionSelectedProviders(root, false, run);
+  if (!configured.ready)
+    return {
+      state: 'provider-configuration-required',
+      deployed: false,
+      integrations: configured,
+      storeSubmission: false,
+    };
+  const runtime = configuredRuntime(root);
+  const commit = await source();
+  if (commit !== initialCommit) throw new Error('Source changed during provider configuration.');
+  if (!app.extra?.eas?.projectId) return linkMobileProject(session);
+  const projectId = app.extra.eas.projectId;
+  if (typeof projectId !== 'string' || !/^[a-f0-9-]{36}$/i.test(projectId))
+    throw new Error('Invalid EAS project ID.');
+  await verifyMobileProject(session, projectId);
+  const values = runtimeTargets(root, runtime)['apps/mobile/.env.local'];
+  await configureMobileEnvironment(session, values);
+  const selection = { commit, projectId, values };
+  const { builds, expectedBuildId, pendingFile } = await requestMobileBuild(session, selection);
+  const build = validateMobileBuild(session, selection, builds, expectedBuildId);
+  return recordMobileBuild(session, selection, build, pendingFile);
 }

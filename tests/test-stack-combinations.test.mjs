@@ -123,7 +123,7 @@ test('every option generates coherent targets, workspaces, environment and synta
         generated++;
         rmSync(root, { recursive: true, force: true });
       }
-    assert.equal(generated, 166);
+    assert.equal(generated, 170);
     for (const product of STANDARD_PRODUCTS) assert.ok(covered.has(product), product);
   } finally {
     rmSync(temporary, { recursive: true, force: true });

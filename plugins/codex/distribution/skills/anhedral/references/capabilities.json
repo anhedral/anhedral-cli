@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cliVersion": "0.11.2",
+  "cliVersion": "0.12.0",
   "capabilities": {
     "vinext": {
       "purpose": "Web application on Cloudflare",
@@ -307,6 +307,26 @@
       ],
       "verify": [
         "Authorized room isolation, disconnect/reconnect and deployed WebSockets"
+      ],
+      "selection": {}
+    },
+    "stream": {
+      "purpose": "Ultra-low latency one-to-many live video",
+      "tools": [
+        "Cloudflare Stream API or dashboard",
+        "Browser control"
+      ],
+      "access": [
+        "Client-owned Cloudflare account with Stream enabled; usage-based delivery billing"
+      ],
+      "credentials": [
+        "Server-only STREAM_ACCOUNT_ID and account-scoped STREAM_API_TOKEN with Stream Write permission"
+      ],
+      "resources": [
+        "Manual Stream activation and live input setup; server management factory with secret WHIP and WHEP endpoints"
+      ],
+      "verify": [
+        "Creator/input ownership, viewer authorization and signed playback when private, browser media/ICE, reconnect and session cleanup; live behavior unverified"
       ],
       "selection": {}
     },
