@@ -143,6 +143,10 @@ try {
   assert.throws(() => options('unsupported-static', ['--static']));
   const vinext = options('vinext-default');
   await scaffoldStandardProject(vinext, runner);
+  assert.equal(
+    read(vinext.root, 'apps/web/package.json').devDependencies['@cloudflare/vite-plugin'],
+    undefined,
+  );
   await test('Vinext font caches stay out of Git without hiding application fonts', () => {
     const cached = [
       'apps/web/.vinext/fonts/geist/font.woff2',
@@ -341,6 +345,19 @@ try {
   assert.equal(read(web.root, 'package.json').scripts['audit:deps'], 'node scripts/audit-deps.mjs');
   assert.equal(existsSync(path.join(web.root, 'scripts/security')), false);
   assert.ok(read(web.root, '.fallowrc.json').ignorePatterns.includes('**/next-env.d.ts'));
+  const auditConfig = read(web.root, '.fallowrc.json');
+  assert.ok(auditConfig.entry.includes('apps/*/void.config.ts'));
+  assert.ok(auditConfig.entry.includes('apps/*/env.ts'));
+  assert.ok(auditConfig.entry.includes('apps/*/src/void-entry.ts'));
+  assert.ok(auditConfig.entry.includes('apps/*/crons/**/*.{ts,mts,js,mjs}'));
+  for (const helper of ['audit', 'audit-deps', 'void-migrations', 'prepare-void-migrations']) {
+    assert.ok(auditConfig.ignorePatterns.includes(`scripts/${helper}.mjs`));
+  }
+  assert.equal(auditConfig.ignorePatterns.includes('scripts/**'), false);
+  assert.equal(
+    auditConfig.ignorePatterns.some((pattern) => pattern.startsWith('apps/')),
+    false,
+  );
   assert.equal(existsSync(path.join(web.root, 'pnpm-lock.yaml')), true);
   assert.match(
     readFileSync(path.join(web.root, 'AGENTS.md'), 'utf8'),
@@ -483,7 +500,7 @@ try {
   );
   assert.equal(
     read(services.root, 'apps/api/package.json').dependencies['@workspace/db'],
-    'workspace:*',
+    undefined,
   );
   assert.equal(config.hyperdrive, undefined);
   assert.match(

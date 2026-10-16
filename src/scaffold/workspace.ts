@@ -157,7 +157,15 @@ process.exitCode = result.status ?? 1;
 `,
   );
   json(root, '.fallowrc.json', {
-    ...(has('electron') ? { entry: ['apps/desktop/src/main/preload.cts'] } : {}),
+    // Void loads these contracts outside the JavaScript import graph. Declare
+    // them as roots so their application dependencies remain fully audited.
+    entry: [
+      'apps/*/void.config.ts',
+      'apps/*/env.ts',
+      'apps/*/src/void-entry.ts',
+      'apps/*/crons/**/*.{ts,mts,js,mjs}',
+      ...(has('electron') ? ['apps/desktop/src/main/preload.cts'] : []),
+    ],
     // Expo web export and NativeWind load these runtime dependencies dynamically.
     ...(has('expo')
       ? {
@@ -171,8 +179,11 @@ process.exitCode = result.status ?? 1;
       : {}),
     ignorePatterns: [
       // Maintained bundled tooling is regression-tested in the CLI repository;
-      // app audits cover customer code without re-auditing the vendored gate.
+      // app audits cover customer code without re-auditing vendored CLI helpers.
+      'scripts/audit.mjs',
       'scripts/audit-deps.mjs',
+      'scripts/void-migrations.mjs',
+      'scripts/prepare-void-migrations.mjs',
       '**/next-env.d.ts',
       '**/.next/**',
       '**/.open-next/**',

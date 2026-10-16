@@ -31,7 +31,17 @@ function fixture(postgres, runtimeApp = 'api') {
     has: (id) => id === (postgres ? 'neon' : 'd1'),
   });
   const read = (name) => readFileSync(path.join(root, name), 'utf8');
-  const source = read('packages/db/src/migrate.ts');
+  const source = read('packages/db/src/migrate.ts').replace(
+    "from '../migration-environment'",
+    "from '../migration-environment.mjs'",
+  );
+  if (postgres)
+    save(
+      'packages/db/migration-environment.mjs',
+      ts.transpileModule(read('packages/db/migration-environment.ts'), {
+        compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+      }).outputText,
+    );
   save(
     'packages/db/src/migrate.mjs',
     ts.transpileModule(source, {
@@ -63,7 +73,8 @@ for (const postgres of [false, true]) {
           .replace(
             "import { defineConfig } from 'drizzle-kit';",
             'const defineConfig = (value) => value;',
-          ),
+          )
+          .replace("from './migration-environment'", "from './migration-environment.mjs'"),
         { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } },
       ).outputText;
       f.save('packages/db/drizzle.config.mjs', evaluatedConfig);
@@ -95,8 +106,8 @@ for (const postgres of [false, true]) {
       assert.equal(existsSync(path.join(f.root, 'packages/db/migrations')), false);
       assert.equal(existsSync(path.join(f.root, 'apps/api/lib/db')), false);
       assert.equal(
-        JSON.parse(f.read('apps/api/package.json')).dependencies['@workspace/db'],
-        'workspace:*',
+        JSON.parse(f.read('apps/api/package.json')).dependencies?.['@workspace/db'],
+        undefined,
       );
       assert.doesNotMatch(f.read('packages/db/src/index.ts'), /process\.env|loadEnvFile|migrate\(/);
     } finally {
@@ -195,6 +206,32 @@ test('Neon migration requires a direct URL, keeps credentials out of failures an
     assert.match(failed.stderr, /Database migration failed/);
     assert.doesNotMatch(failed.stderr, /private-credential/);
     assert.equal(f.read('packages/db/closed'), 'closed');
+  } finally {
+    f.close();
+  }
+});
+
+test('Neon config and migration share package-local environment precedence', () => {
+  const f = fixture(true);
+  try {
+    f.save('packages/db/.env', 'DATABASE_URL_UNPOOLED=shared-default\n');
+    f.save('packages/db/.env.local', 'DATABASE_URL_UNPOOLED=local-override\n');
+    f.save(
+      'packages/db/evaluate-env.mjs',
+      "import { migrationEnvironment } from './migration-environment.mjs'; console.log(migrationEnvironment().connectionString);",
+    );
+    for (const existing of [undefined, 'external-value']) {
+      const env = { ...process.env };
+      if (existing === undefined) delete env.DATABASE_URL_UNPOOLED;
+      else env.DATABASE_URL_UNPOOLED = existing;
+      const result = spawnSync(
+        process.execPath,
+        [path.join(f.root, 'packages/db/evaluate-env.mjs')],
+        { cwd: tmpdir(), encoding: 'utf8', env },
+      );
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(result.stdout.trim(), existing ?? 'local-override');
+    }
   } finally {
     f.close();
   }

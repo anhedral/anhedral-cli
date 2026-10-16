@@ -97,6 +97,12 @@ export default defineConfig({
       },
     });
     if (app === 'web') {
+      // Void owns the Cloudflare Vite adapter in this recipe; the legacy
+      // Vinext configuration's direct plugin dependency is no longer used.
+      const webPackage = readJson(root, `${directory}/package.json`);
+      const webDevDependencies = webPackage.devDependencies as Record<string, string>;
+      delete webDevDependencies['@cloudflare/vite-plugin'];
+      json(root, `${directory}/package.json`, webPackage);
       if (existsSync(path.join(root, directory, 'tsconfig.json'))) {
         const ts = readJson(root, `${directory}/tsconfig.json`);
         (ts.compilerOptions as Record<string, unknown>).resolveJsonModule = true;
@@ -135,11 +141,14 @@ export * from './index';
 // fetch, queue, scheduled and named Durable Object/Workflow exports.
 type Worker = { fetch?: (request: Request, env: Env, ctx: ExecutionContext) => Response | Promise<Response> };
 const original = application as unknown as Worker;
+function readiness(env: Env): Response {
+  return Response.json({ ready: true, versionId: env.__VOID_VERSION_METADATA?.id }, { headers: { 'cache-control': 'no-store' } });
+}
 export default {
   ...application,
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     if (request.method === 'GET' && new URL(request.url).pathname === '/__void/ready') {
-      return Response.json({ ready: true, versionId: env.__VOID_VERSION_METADATA?.id }, { headers: { 'cache-control': 'no-store' } });
+      return readiness(env);
     }
     return original.fetch ? original.fetch.call(application, request, env, ctx) : new Response('Not found', { status: 404 });
   },

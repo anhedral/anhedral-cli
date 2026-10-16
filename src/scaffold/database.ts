@@ -36,23 +36,33 @@ export function createDatabase(binding: Parameters<typeof drizzle>[0]) { return 
     '// Define product tables here; generate and review SQL before migration.\nexport {};\n',
   );
   put(root, `${directory}/drizzle/.gitkeep`, '');
-  const environment = `import { existsSync } from 'node:fs';
+  if (postgres)
+    put(
+      root,
+      `${directory}/migration-environment.ts`,
+      `import { existsSync } from 'node:fs';
 import { loadEnvFile } from 'node:process';
 import { fileURLToPath } from 'node:url';
 const root = new URL('./', import.meta.url);
-// Existing process values win; local overrides precede shared defaults.
-for (const name of ['.env.local', '.env']) {
-  const file = fileURLToPath(new URL(name, root));
-  if (existsSync(file)) loadEnvFile(file);
+export function migrationEnvironment() {
+  // Existing process values win; local overrides precede shared defaults.
+  for (const name of ['.env.local', '.env']) {
+    const file = fileURLToPath(new URL(name, root));
+    if (existsSync(file)) loadEnvFile(file);
+  }
+  return { root, connectionString: process.env.DATABASE_URL_UNPOOLED };
 }
-`;
+`,
+    );
   put(
     root,
     `${directory}/drizzle.config.ts`,
     postgres
-      ? `${environment}import { relative } from 'node:path';
+      ? `import { relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'drizzle-kit';
-const url = process.env.DATABASE_URL_UNPOOLED;
+import { migrationEnvironment } from './migration-environment';
+const { root, connectionString: url } = migrationEnvironment();
 export default defineConfig({
   dialect: 'postgresql',
   schema: fileURLToPath(new URL('./src/schema.ts', root)),
@@ -74,18 +84,12 @@ export default defineConfig({
     root,
     `${directory}/src/migrate.ts`,
     postgres
-      ? `import { existsSync } from 'node:fs';
-import { loadEnvFile } from 'node:process';
-import { fileURLToPath } from 'node:url';
+      ? `import { fileURLToPath } from 'node:url';
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { migrate } from 'drizzle-orm/neon-serverless/migrator';
-const root = new URL('../', import.meta.url);
-for (const name of ['.env.local', '.env']) {
-  const file = fileURLToPath(new URL(name, root));
-  if (existsSync(file)) loadEnvFile(file);
-}
-const connectionString = process.env.DATABASE_URL_UNPOOLED;
+import { migrationEnvironment } from '../migration-environment';
+const { root, connectionString } = migrationEnvironment();
 if (!connectionString) throw new Error('Configure DATABASE_URL_UNPOOLED for the intended migration branch and role.');
 let url: URL;
 try { url = new URL(connectionString); } catch { throw new Error('Configure a valid direct PostgreSQL migration URL.'); }
@@ -134,7 +138,8 @@ process.exitCode = result.status ?? 1;
   const tsconfig = readJson(root, `${directory}/tsconfig.json`);
   tsconfig.include = [...new Set([...((tsconfig.include as string[]) ?? []), 'drizzle.config.ts'])];
   json(root, `${directory}/tsconfig.json`, tsconfig);
-  patchPackage(root, `${app}/package.json`, { dependencies: { '@workspace/db': 'workspace:*' } });
+  // Consumers such as Better Auth add their direct workspace dependency when
+  // they generate imports. Selecting a database alone creates reusable tooling.
   if (postgres) {
     const native = runtimeApp === 'web' && options.hosting === 'vercel';
     writeEnvironmentFile(root, `${app}/${native ? '.env.example' : '.dev.vars.example'}`, {
