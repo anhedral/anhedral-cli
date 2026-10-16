@@ -18,7 +18,11 @@ import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.
 import { addStackItems } from '../dist/registry/add.js';
 import { sourceFiles } from '../dist/registry/receipt.js';
 import { bootstrap } from './support/workspace-bootstrap.mjs';
-import { configureBracesPatch, writeDependencyAudit } from '../dist/braces-patch.js';
+import {
+  configureBracesPatch,
+  configureDependencyPatches,
+  writeDependencyAudit,
+} from '../dist/braces-patch.js';
 
 const patch = 'patches/braces@3.0.3.patch';
 function fixture(
@@ -57,15 +61,18 @@ test('exact braces patch preserves unrelated YAML and patches, uses bundled byte
       readFileSync(new URL('../assets/patches/LICENSE.braces', import.meta.url)),
     );
     assert.equal(configureBracesPatch(f.root), false);
+    assert.equal(configureDependencyPatches(f.root), false);
     assert.equal(f.policy(), source);
   } finally {
     f.close();
   }
 });
 
-for (const version of ['3.0.2', '3.0.4', '3.0.30'])
+for (const version of ['3.0.2', '3.0.4', '3.0.30', '3x0x3'])
   test(`braces ${version} never receives a version-mismatched patch`, () => {
-    const f = fixture(`lockfileVersion: '9.0'\npackages:\n  braces@${version}: {}\n`);
+    const f = fixture(
+      `lockfileVersion: '9.0'\npackages:\n  braces@${version}:\n    resolution: {integrity: sha512-example}\n`,
+    );
     try {
       const before = f.policy();
       assert.equal(configureBracesPatch(f.root), false);
@@ -75,6 +82,19 @@ for (const version of ['3.0.2', '3.0.4', '3.0.30'])
       f.close();
     }
   });
+
+test('reviewed dependency staging recognizes exact quoted peer-qualified lock entries', () => {
+  const f = fixture(
+    "lockfileVersion: '9.0'\npackages:\n  'braces@3.0.3(peer@1.0.0)':\n    resolution: {integrity: sha512-example}\n",
+  );
+  try {
+    assert.equal(configureDependencyPatches(f.root), true);
+    assert.equal(parse(f.policy()).patchedDependencies['braces@3.0.3'], patch);
+    assert.equal(configureDependencyPatches(f.root), false);
+  } finally {
+    f.close();
+  }
+});
 
 test('flow-style workspace patch mappings remain intact', () => {
   const f = fixture();
@@ -152,7 +172,11 @@ test('patch files and directories cannot redirect writes through symlinks', () =
   }
 });
 
-function resolutionRunner(events, shouldResolveBraces = () => true) {
+function resolutionRunner(
+  events,
+  shouldResolveBraces = () => true,
+  shouldResolveForge = () => false,
+) {
   return (_command, args, cwd) => {
     if (args[0] === 'dlx') {
       bootstrap(path.join(args[args.indexOf('--cwd') + 1], args[args.indexOf('--name') + 1]));
@@ -160,26 +184,48 @@ function resolutionRunner(events, shouldResolveBraces = () => true) {
     }
     if (args.includes('--lockfile-only')) {
       const policy = parse(readFileSync(path.join(cwd, 'pnpm-workspace.yaml'), 'utf8'));
-      const configured = policy.patchedDependencies?.['braces@3.0.3'] === patch;
+      const coordinates = [
+        ...(shouldResolveBraces() ? ['braces@3.0.3'] : []),
+        ...(shouldResolveForge() ? ['node-forge@1.4.0'] : []),
+      ];
+      const configured =
+        coordinates.length > 0 &&
+        coordinates.every(
+          (coordinate) =>
+            policy.patchedDependencies?.[coordinate] === `patches/${coordinate}.patch`,
+        );
       events.push({ phase: configured ? 'patch-resolution' : 'initial-resolution', args });
-      if (configured) assert.equal(existsSync(path.join(cwd, patch)), true);
+      if (configured)
+        for (const coordinate of coordinates)
+          assert.equal(existsSync(path.join(cwd, `patches/${coordinate}.patch`)), true);
       writeFileSync(
         path.join(cwd, 'pnpm-lock.yaml'),
-        shouldResolveBraces()
-          ? "lockfileVersion: '9.0'\npackages:\n  braces@3.0.3:\n    resolution: {integrity: sha512-example}\n"
-          : "lockfileVersion: '9.0'\n",
+        "lockfileVersion: '9.0'\n" +
+          (coordinates.length
+            ? 'packages:\n' +
+              coordinates
+                .map(
+                  (coordinate) => `  ${coordinate}:\n    resolution: {integrity: sha512-example}\n`,
+                )
+                .join('')
+            : ''),
       );
       return;
     }
     if (args.includes('--frozen-lockfile')) {
       events.push({ phase: 'frozen-install', args });
-      assert.equal(
-        parse(readFileSync(path.join(cwd, 'pnpm-workspace.yaml'), 'utf8')).patchedDependencies?.[
-          'braces@3.0.3'
-        ],
-        patch,
-      );
-      assert.equal(existsSync(path.join(cwd, patch)), true);
+      for (const coordinate of [
+        ...(shouldResolveBraces() ? ['braces@3.0.3'] : []),
+        ...(shouldResolveForge() ? ['node-forge@1.4.0'] : []),
+      ]) {
+        assert.equal(
+          parse(readFileSync(path.join(cwd, 'pnpm-workspace.yaml'), 'utf8')).patchedDependencies?.[
+            coordinate
+          ],
+          `patches/${coordinate}.patch`,
+        );
+        assert.equal(existsSync(path.join(cwd, `patches/${coordinate}.patch`)), true);
+      }
       return;
     }
     throw new Error(`Unexpected command: ${args}`);
@@ -201,6 +247,9 @@ function assertPatchReceipt(root) {
     'patches/LICENSE.braces',
     '.gitattributes',
     'scripts/audit-deps.mjs',
+    ...(existsSync(path.join(root, 'patches/node-forge@1.4.0.patch'))
+      ? ['patches/node-forge@1.4.0.patch', 'patches/LICENSE.node-forge']
+      : []),
   ]) {
     const expected = createHash('sha256')
       .update(readFileSync(path.join(root, file)))
@@ -223,6 +272,37 @@ test('init resolves again with the exact patch before frozen install and fingerp
     assert.deepEqual(
       events.map((event) => event.phase),
       ['initial-resolution', 'patch-resolution', 'frozen-install'],
+    );
+    assertPatchReceipt(root);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('init fingerprints both reviewed dependency patch assets before frozen installation', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-reviewed-init-'));
+  try {
+    const root = path.join(temp, 'project');
+    const events = [];
+    await quietly(() =>
+      scaffoldStandardProject(
+        parseStandardOptions('new', [root, '--hono', '--no-git', '--json']),
+        resolutionRunner(
+          events,
+          () => true,
+          () => true,
+        ),
+      ),
+    );
+    assert.deepEqual(
+      events.map((event) => event.phase),
+      ['initial-resolution', 'patch-resolution', 'frozen-install'],
+    );
+    assert.equal(
+      parse(readFileSync(path.join(root, 'pnpm-workspace.yaml'), 'utf8')).patchedDependencies[
+        'node-forge@1.4.0'
+      ],
+      'patches/node-forge@1.4.0.patch',
     );
     assertPatchReceipt(root);
   } finally {

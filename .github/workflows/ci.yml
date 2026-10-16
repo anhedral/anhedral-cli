@@ -65,7 +65,7 @@ jobs:
           ANHEDRAL_REQUIRE_PLUGIN: '1'
         run: pnpm test:unit
 
-      - name: Verify temporary braces patch and preserve advisory visibility
+      - name: Verify reviewed dependency patches and preserve advisory visibility
         if: ${{ matrix.node == '24.21.0' }}
         run: pnpm test:patch
 
@@ -84,6 +84,24 @@ jobs:
       - name: Enforce package allowlist
         if: ${{ matrix.node == '20.19.0' }}
         run: node tests/test-packlist.js
+
+      - name: Build and verify Linux release candidate
+        if: ${{ matrix.node == '24.21.0' }}
+        run: |
+          node scripts/create-release-artifact.mjs
+          pnpm release:artifact:verify
+          pnpm release:artifact:smoke
+
+      - name: Share verified release candidate for review
+        if: ${{ matrix.node == '24.21.0' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-candidate
+          path: .artifacts/release/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
 
   e2e-stable:
     name: E2E Stable

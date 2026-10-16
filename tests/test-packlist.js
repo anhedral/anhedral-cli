@@ -14,6 +14,8 @@ const requiredFiles = new Set([
   'README.md',
   'assets/patches/braces@3.0.3.patch',
   'assets/patches/LICENSE.braces',
+  'assets/patches/node-forge@1.4.0.patch',
+  'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
   'dist/bin.js',
   'dist/index.d.ts',
@@ -99,8 +101,9 @@ try {
     `packed artifact should remain below 1 MB; received ${packed.size}`,
   );
   assert.ok(
-    packed.unpackedSize < 2_000_000,
-    `unpacked artifact should remain below 2 MB; received ${packed.unpackedSize}`,
+    // The reviewed forge patch includes its two minified browser distributions.
+    packed.unpackedSize < 3_000_000,
+    `unpacked artifact should remain below 3 MB; received ${packed.unpackedSize}`,
   );
 
   for (const requiredFile of requiredFiles) {
@@ -133,6 +136,8 @@ try {
     const allowedPatch = [
       'assets/patches/braces@3.0.3.patch',
       'assets/patches/LICENSE.braces',
+      'assets/patches/node-forge@1.4.0.patch',
+      'assets/patches/LICENSE.node-forge',
       'assets/patches/audit-deps.mjs',
     ].includes(file.path);
     const allowed =

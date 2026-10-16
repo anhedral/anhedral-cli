@@ -18,6 +18,8 @@
     "dist",
     "assets/patches/braces@3.0.3.patch",
     "assets/patches/LICENSE.braces",
+    "assets/patches/node-forge@1.4.0.patch",
+    "assets/patches/LICENSE.node-forge",
     "assets/patches/audit-deps.mjs",
     "LICENSE",
     "README.md",
@@ -81,7 +83,7 @@
     "plugin:build": "pnpm --dir plugins/codex/inspector build",
     "plugin:check": "pnpm --dir plugins/codex/inspector check",
     "plugin:preview": "pnpm --dir plugins/codex/inspector start",
-    "test:patch": "node tests/test-braces-install.mjs"
+    "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs"
   },
   "keywords": [
     "cli",
