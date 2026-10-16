@@ -126,6 +126,64 @@ test('only exact braces advisory/version can pass after installed verification w
   );
 });
 
+test('only declared absent optional peers may be skipped, never selected required dependencies', () => {
+  const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-audit-optional-peer-')));
+  try {
+    const braces = path.join(root, 'node_modules/braces');
+    mkdirSync(braces, { recursive: true });
+    writeFileSync(
+      path.join(braces, 'package.json'),
+      JSON.stringify({ name: 'braces', version: '3.0.3' }),
+    );
+    const missing = { path: path.join(root, 'node_modules/optional-peer') };
+    const graph = [
+      { path: root, dependencies: { braces: { path: braces }, optionalPeer: missing } },
+    ];
+    const metadata = {
+      name: 'fixture',
+      peerDependencies: { optionalPeer: '*' },
+      peerDependenciesMeta: { optionalPeer: { optional: true } },
+    };
+    const write = (value) => writeFileSync(path.join(root, 'package.json'), JSON.stringify(value));
+    write(metadata);
+    assert.deepEqual(installedBraces(graph, root), [braces]);
+    for (const invalid of [
+      { ...metadata, peerDependencies: {} },
+      { ...metadata, peerDependenciesMeta: { optionalPeer: { optional: 'true' } } },
+      { ...metadata, peerDependenciesMeta: { optionalPeer: { optional: false } } },
+      { ...metadata, dependencies: { optionalPeer: '*' } },
+    ]) {
+      write(invalid);
+      assert.throws(
+        () => installedBraces(graph, root),
+        /Required installed dependency is missing: "node_modules/,
+      );
+    }
+    write({ ...metadata, devDependencies: { optionalPeer: '*' } });
+    assert.throws(
+      () =>
+        installedBraces(
+          [
+            {
+              path: root,
+              dependencies: { braces: { path: braces } },
+              devDependencies: { optionalPeer: missing },
+            },
+          ],
+          root,
+        ),
+      /Required installed dependency is missing/,
+    );
+    write(metadata);
+    if (process.platform !== 'win32') {
+      symlinkSync(path.join(root, 'missing-target'), missing.path);
+      assert.throws(() => installedBraces(graph, root), /ENOENT/);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('audit counts track affected versions and preserve lower-severity findings', () => {
   const moderate = advisory({
     module_name: 'other',

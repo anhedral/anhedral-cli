@@ -133,7 +133,9 @@ function installedCopies(list, root, packageName, version) {
     const entry = lstatSync(location, { throwIfNoEntry: false });
     if (!entry) {
       if (optional) continue;
-      fail('Required installed dependency is missing.');
+      fail(
+        `Required installed dependency is missing: ${JSON.stringify(path.relative(root, location))}.`,
+      );
     }
     const directory = realpathSync(node.path);
     if (directory !== root && !directory.startsWith(root + path.sep))
@@ -158,7 +160,18 @@ function installedCopies(list, root, packageName, version) {
           optional:
             group === 'optionalDependencies' ||
             (object(metadata.optionalDependencies) &&
-              Object.hasOwn(metadata.optionalDependencies, name)),
+              Object.hasOwn(metadata.optionalDependencies, name)) ||
+            (object(metadata.peerDependencies) &&
+              Object.hasOwn(metadata.peerDependencies, name) &&
+              object(metadata.peerDependenciesMeta) &&
+              object(metadata.peerDependenciesMeta[name]) &&
+              metadata.peerDependenciesMeta[name].optional === true &&
+              !(object(metadata.dependencies) && Object.hasOwn(metadata.dependencies, name)) &&
+              !(
+                group === 'devDependencies' &&
+                object(metadata.devDependencies) &&
+                Object.hasOwn(metadata.devDependencies, name)
+              )),
         })),
       );
     }
