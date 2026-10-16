@@ -6,7 +6,6 @@ import { atomicJson, withApplicationLock, type DeliveryRunner } from './project-
 
 import { isLifecycleOperation, type LifecycleOperation } from './lifecycle-model.js';
 export type { LifecycleOperation, OperationState, PhaseState } from './lifecycle-model.js';
-export { isLifecycleOperation } from './lifecycle-model.js';
 
 export interface LifecycleSession {
   phase<T>(name: string, action: () => Promise<T>): Promise<T>;

@@ -1,3 +1,4 @@
+import { usesVoidSelection } from './runtime-policy.js';
 import { resolveStackRegistry } from './registry/resolve.js';
 import { BOOTSTRAP_COMMAND } from './registry/bootstrap.js';
 import { GENERATOR_VERSION } from './version.js';
@@ -24,7 +25,7 @@ export const CAPABILITY_REGISTRY = {
 
 const HOSTING_SETUP = {
   cloudflare: {
-    tools: ['Cloudflare integration or API', 'Wrangler'],
+    tools: ['Cloudflare integration or API', 'Void', 'Wrangler'],
     access: [
       'Client-owned Cloudflare account; account ID; scoped OAuth/API access; service-compatible plan; DNS access only when needed',
     ],
@@ -41,6 +42,7 @@ export function createSetupPlan(
   options: StandardOptions,
   registry = resolveStackRegistry(options),
 ) {
+  const voidWorkspace = usesVoidSelection(options.products, options.hosting);
   const items = new Map(registry.items.map((item) => [item.name, item]));
   const capabilities = options.products.map((id) => {
     const item = items.get(id)!;
@@ -77,7 +79,9 @@ export function createSetupPlan(
       tools: [
         ...new Set([
           'Git',
-          'Node.js 22.13+ on 22.x, or Node.js 24+ for generated workspaces',
+          voidWorkspace
+            ? 'Node.js 24.21.0+ for Void workspaces'
+            : 'Node.js 22.13+ on 22.x, or Node.js 24+ for generated workspaces',
           PACKAGE_MANAGER.replace('@', ' '),
           'GitHub integration or gh',
           'Fallow',

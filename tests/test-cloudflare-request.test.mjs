@@ -192,3 +192,78 @@ test('Cloudflare pagination bounds the total collected payload', async () => {
   );
   assert.equal(calls, 5);
 });
+
+test('Cloudflare DELETE preserves the selected account and never retries an ambiguous response', async () => {
+  const calls = [];
+  const request = await cloudflareRequest(
+    { accountId },
+    '/tmp',
+    credentials,
+    {},
+    {
+      send: async (url, options) => {
+        calls.push({ url, options });
+        return new Response(envelope(), { status: 503 });
+      },
+    },
+  );
+  await assert.rejects(request('DELETE', '/d1/database/resource'), /HTTP 503/);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].options.method, 'DELETE');
+  assert.equal(
+    calls[0].url,
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/resource`,
+  );
+});
+
+test('Cloudflare analytics rejects account drift, REST routes and partial GraphQL errors', async () => {
+  let calls = 0;
+  const request = await cloudflareRequest(
+    { accountId },
+    '/tmp',
+    credentials,
+    {},
+    {
+      analytics: true,
+      send: async (url) => {
+        calls++;
+        assert.equal(url, 'https://api.cloudflare.com/client/v4/graphql');
+        return new Response(
+          JSON.stringify({ data: { viewer: {} }, errors: [{ message: 'private diagnostic' }] }),
+        );
+      },
+    },
+  );
+  await assert.rejects(request('POST', '/graphql', { variables: { accountTag: 'b'.repeat(32) } }));
+  await assert.rejects(request('GET', '/d1/database'));
+  assert.equal(calls, 0);
+  await assert.rejects(
+    request('POST', '/graphql', { query: 'query', variables: { accountTag: accountId } }),
+    (error) => {
+      assert.doesNotMatch(error.message, /private diagnostic/);
+      return true;
+    },
+  );
+  assert.equal(calls, 1);
+});
+
+test('Cloudflare preserves bounded metadata cursors and rejects invalid provider pagination', async () => {
+  for (const cursor of ['next+page', '', 'x'.repeat(4097), 'bad\nvalue', 12]) {
+    const request = await cloudflareRequest(
+      { accountId },
+      '/tmp',
+      credentials,
+      {},
+      {
+        send: async () =>
+          new Response(JSON.stringify({ success: true, result: [], result_info: { cursor } })),
+      },
+    );
+    if (typeof cursor === 'string' && cursor.length <= 4096 && !cursor.includes('\n'))
+      assert.equal(
+        (await request('GET', '/storage/kv/namespaces/selected/keys')).result_info.cursor,
+        cursor,
+      );
+    else await assert.rejects(request('GET', '/storage/kv/namespaces/selected/keys'));
+  }
+});

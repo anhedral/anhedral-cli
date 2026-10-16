@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../project-config.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
 import { existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
@@ -6,7 +7,8 @@ import { createRecipeContext } from '../registry/context.js';
 import type { StandardOptions } from '../registry/types.js';
 import { inspectWorkspaceGraph } from '../workspace-graph.js';
 import { writeStandardRoot } from './workspace.js';
-import { json } from './files.js';
+import { normalizeSharedLint } from './lint.js';
+import { configureVoidDelivery } from './void.js';
 
 /** Only used in a fresh staged workspace. Existing applications are never overlaid. */
 export async function composeStack(
@@ -23,14 +25,24 @@ export async function composeStack(
   for (const item of registry.items) {
     if (item.installer === 'recipe') await installStackItem(item, context);
   }
+  normalizeSharedLint(root);
   writeStandardRoot(root, options, registry);
+  configureVoidDelivery(root);
   for (const item of registry.items) {
     for (const target of item.targets) {
-      if (!existsSync(path.join(root, target)))
+      if (
+        !existsSync(path.join(root, target)) &&
+        !(
+          target.endsWith('/wrangler.jsonc') &&
+          existsSync(
+            path.join(root, target.replace('/wrangler.jsonc', '/anhedral.cloudflare.json')),
+          )
+        )
+      )
         throw new Error(`Registry target missing: ${item.name} -> ${target}.`);
     }
   }
-  json(root, 'anhedral.registry.json', {
+  writeProjectSection(root, 'registry', {
     ...registry,
     status: 'scaffolded',
     workspaces: inspectWorkspaceGraph(root),

@@ -82,7 +82,16 @@ try {
   assert.match(quietFailure.stdout, /Command failed \(exit 7\)/);
   assert.equal(quietFailure.stderr, '', 'quiet mode must suppress child diagnostics');
 
-  console.log('Command execution buffering regressions passed');
+  const hanging = path.join(temporaryRoot, 'hanging.mjs');
+  writeFileSync(hanging, 'setInterval(() => {}, 1000);');
+  for (const mode of [{}, { ANHEDRAL_VERBOSE: '1' }, { ANHEDRAL_QUIET: '1' }]) {
+    const started = Date.now();
+    const timeout = runExecFile([hanging], { ...mode, ANHEDRAL_COMMAND_TIMEOUT_MS: '100' });
+    assert.equal(timeout.status, 1);
+    assert.match(timeout.stdout, /Command timed out/);
+    assert.ok(Date.now() - started < 5000, 'deadline must bound execution');
+  }
+  console.log('Command execution buffering and timeout regressions passed');
 } finally {
   rmSync(temporaryRoot, { recursive: true, force: true });
 }

@@ -1,3 +1,4 @@
+import { usesVoidSelection } from './runtime-policy.js';
 import { scaffoldStyling } from './scaffold/styling.js';
 import { resourceName } from './render.js';
 import { STACK_DEPENDENCIES } from './dependencies.js';
@@ -6,6 +7,7 @@ import { GENERATOR_VERSION } from './version.js';
 import { scaffoldWeb } from './scaffold/web.js';
 import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
+import { scaffoldNeonRealtime } from './scaffold/neon-realtime.js';
 import { scaffoldBetterAuth, scaffoldClerk } from './scaffold/auth.js';
 import {
   scaffoldRealtime,
@@ -42,6 +44,10 @@ function packageSource(
   dependencies: Record<string, string>,
 ): PackageRecipe {
   return { name, source, dependencies };
+}
+function runtimeConfiguration({ runtimeApp, options }: RecipeContext): string {
+  const legacy = !usesVoidSelection(options.products, options.hosting);
+  return `apps/${runtimeApp}/${legacy ? 'wrangler.jsonc' : 'anhedral.cloudflare.json'}`;
 }
 type ItemConfiguration = Pick<ItemDefinition, 'type' | 'description' | 'targets'> &
   Partial<Omit<ItemDefinition, 'name' | 'version' | 'type' | 'description' | 'targets'>>;
@@ -160,7 +166,7 @@ const PRODUCT_ITEMS = defineItems({
   },
   neon: {
     type: 'package',
-    description: 'Direct Neon HTTP and Drizzle PostgreSQL starter',
+    description: 'Reusable server database package with Neon HTTP, Drizzle and explicit migrations',
     targets: ['packages/db'],
     selection: { conflicts: ['d1'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
@@ -168,17 +174,46 @@ const PRODUCT_ITEMS = defineItems({
       'PostgreSQL persistence through direct Neon HTTP and Drizzle',
       ['Neon integration or API'],
       ['Client-owned Neon project/branch access'],
-      ['Server-side DATABASE_URL; separate environment roles'],
+      [
+        'Server-side DATABASE_URL; direct DATABASE_URL_UNPOOLED for migrations; separate environment roles',
+      ],
       ['Neon project/branches, database roles and reviewed migrations'],
       ['Migration, runtime connectivity and authorization; HTTP has no interactive transactions'],
     ),
     install: scaffoldDatabase,
-    environment: ['DATABASE_URL'],
+    environment: ['DATABASE_URL', 'DATABASE_URL_UNPOOLED'],
     runtime: 'server',
+    resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
+  },
+  'neon-realtime': {
+    type: 'integration',
+    description:
+      'Neon live SQL with server-sealed Drizzle queries and a browser-safe subscription client (beta)',
+    targets: ['packages/neon-realtime'],
+    selection: { requiresAny: ['neon'] },
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'neon'],
+    fallbackDependency: 'neon',
+    runtime: 'server',
+    environment: ['NEON_REALTIME_SECRET', 'NEON_REALTIME_URL'],
+    setup: requirements(
+      'Live PostgreSQL query results on the selected Neon branch',
+      ['Neon Console or Neon CLI', 'Browser control'],
+      ['Client-owned Neon project and branch with Realtime beta availability'],
+      ['Server-only NEON_REALTIME_SECRET; public NEON_REALTIME_URL; existing server DATABASE_URL'],
+      [
+        'Manually enable Realtime and logical replication on the selected branch; configure allowed browser origins',
+        'Tables with stable replica identity; authorized deterministic SELECT queries sealed on the server',
+      ],
+      [
+        'Authorized row isolation, access revocation, capability renewal, disconnect/reconnect and subscription cleanup',
+        'Beta has no RLS or performance guarantees; database compute and egress remain billable',
+      ],
+    ),
+    install: scaffoldNeonRealtime,
   },
   d1: {
     type: 'package',
-    description: 'Drizzle D1 database and migration tooling',
+    description: 'Reusable Drizzle D1 database package and explicit migration tooling',
     targets: ['packages/db'],
     selection: { conflicts: ['neon'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
@@ -197,11 +232,12 @@ const PRODUCT_ITEMS = defineItems({
           binding: 'DB',
           database_name: resourceName(options.name, 'db'),
           database_id: 'REPLACE_WITH_D1_ID',
-          migrations_dir: '../../packages/db/migrations',
+          migrations_dir: '../../packages/db/drizzle',
         },
       ],
     }),
     runtime: 'worker',
+    resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
   },
   'local-data': {
     type: 'package',
@@ -319,7 +355,7 @@ export interface LocalDataStore {
     configure: () => ({ kv_namespaces: [{ binding: 'CONFIG', id: 'REPLACE_WITH_KV_ID' }] }),
     installer: 'configuration',
     runtime: 'worker',
-    resolveTargets: ({ runtimeApp }) => [`apps/${runtimeApp}/wrangler.jsonc`],
+    resolveTargets: (context) => [runtimeConfiguration(context)],
   },
   realtime: {
     type: 'service',
@@ -354,9 +390,11 @@ export interface LocalDataStore {
       queues: { producers: [{ binding: 'JOBS', queue: resourceName(options.name, 'jobs') }] },
     }),
     runtime: 'optional-worker',
-    resolveTargets: ({ runtimeApp, has }) => [
+    resolveTargets: (context) => [
       'apps/jobs',
-      ...(has('hono') || has('vinext') || has('next') ? [`apps/${runtimeApp}/wrangler.jsonc`] : []),
+      ...(context.has('hono') || context.has('vinext') || context.has('next')
+        ? [runtimeConfiguration(context)]
+        : []),
     ],
   },
   cron: {
@@ -447,7 +485,7 @@ export interface LocalDataStore {
     configure: () => ({ ai: { binding: 'AI' } }),
     installer: 'configuration',
     runtime: 'worker',
-    resolveTargets: ({ runtimeApp }) => [`apps/${runtimeApp}/wrangler.jsonc`],
+    resolveTargets: (context) => [runtimeConfiguration(context)],
   },
   resend: {
     type: 'package',
@@ -624,8 +662,8 @@ export const STANDARD_PRODUCTS = Object.freeze(Object.keys(PRODUCT_ITEMS) as Sta
 const FOUNDATION_ITEMS = defineItems({
   workspace: {
     type: 'foundation',
-    description: 'pnpm and Turborepo workspace, task graph and shared checks',
-    targets: ['package.json', 'pnpm-workspace.yaml', 'turbo.json', 'scripts/security'],
+    description: 'pnpm workspace with one root lockfile, pinned Turborepo and shared checks',
+    targets: ['package.json', 'pnpm-workspace.yaml', 'turbo.json'],
     registryDependencies: [],
   },
   typescript: {

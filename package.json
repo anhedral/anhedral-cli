@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "Build and deliver applications with Cloudflare-first Vinext, selected services, optional Next.js on Vercel, and verified release evidence.",
   "type": "module",
   "exports": {
@@ -16,18 +16,18 @@
   },
   "files": [
     "dist",
-    "assets/anhedral-stack.svg",
-    "assets/anhedral-stack-technical.svg",
-    "assets/anhedral-mark.svg",
+    "assets/patches/braces@3.0.3.patch",
+    "assets/patches/LICENSE.braces",
+    "assets/patches/node-forge@1.4.0.patch",
+    "assets/patches/LICENSE.node-forge",
+    "assets/patches/audit-deps.mjs",
     "LICENSE",
     "README.md",
-    "assets/anhedral.svg",
-    "assets/favicon.ico",
-    "docs/application-stack-standard.md",
+    "docs/stack-standard.md",
     "docs/delivery-workflow.md",
+    "docs/void-verification.md",
     "docs/provider-configuration.md",
     "docs/cli-design.md",
-    "assets/security",
     "docs/plugin-ui.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
@@ -65,25 +65,25 @@
     "test:pack:exact": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
     "test:packlist": "pnpm build && node tests/test-packlist.js",
     "test:release-tooling": "node tests/test-release-tooling.test.mjs",
-    "test:all": "pnpm build && pnpm lint && pnpm check:security && pnpm audit:osv && pnpm test:unit && node tests/test-packed-cli.js && node tests/test-packlist.js",
+    "test:all": "pnpm build && pnpm lint && pnpm check:security && pnpm audit:osv && pnpm test:unit && pnpm test:patch && node tests/test-packed-cli.js && node tests/test-packlist.js",
     "release:check": "pnpm test:all",
     "release:pack": "pnpm build && pnpm plugin:build && node scripts/create-release-artifact.mjs && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:verify": "node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:smoke": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
-    "docs:stack-map": "node scripts/render-master-stack-map.mjs",
-    "docs:technical-stack-map": "node scripts/render-master-stack-map.mjs --technical",
-    "docs:stack-maps": "pnpm docs:stack-map && pnpm docs:technical-stack-map",
     "test:standard": "pnpm build && node --test tests/test-standard.test.mjs",
-    "test:unit": "node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
+    "test:unit": "node scripts/prepare-test-runtime.mjs && node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
     "test:integration": "pnpm build && node tests/test-generated-apps.mjs",
+    "test:runtime:void": "node tests/test-void-runtime.mjs",
+    "test:runtime:void:generated": "node tests/test-void-runtime-generated.mjs",
     "test:live:delivery": "pnpm build && node tests/test-live-delivery.mjs",
     "test:live:vercel": "pnpm build && node tests/test-live-vercel.mjs",
     "test:live:vercel:git": "pnpm build && node tests/test-live-vercel-git.mjs",
-    "format": "prettier --write src scripts tests plugin-app",
-    "format:check": "prettier --check src scripts tests plugin-app",
-    "plugin:build": "pnpm --dir plugin-app build",
-    "plugin:check": "pnpm --dir plugin-app check",
-    "plugin:preview": "pnpm --dir plugin-app start"
+    "format": "prettier --write src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\"",
+    "format:check": "prettier --check src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\"",
+    "plugin:build": "pnpm --dir plugins/codex/inspector build",
+    "plugin:check": "pnpm --dir plugins/codex/inspector check",
+    "plugin:preview": "pnpm --dir plugins/codex/inspector start",
+    "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs"
   },
   "keywords": [
     "cli",
@@ -107,10 +107,12 @@
   "devDependencies": {
     "@types/node": "20.19.43",
     "prettier": "3.9.10",
-    "simple-icons": "16.27.0",
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "jsonc-parser": "3.3.1"
+    "@neondatabase/serverless": "1.2.0",
+    "jsonc-parser": "3.3.1",
+    "zod": "4.6.6",
+    "yaml": "2.9.1"
   }
 }

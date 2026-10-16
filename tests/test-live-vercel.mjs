@@ -42,7 +42,7 @@ const git = (...args) =>
     },
   });
 try {
-  await scaffoldStandardProject(parseStandardOptions('new', [root, '--next', '--no-git']));
+  await scaffoldStandardProject(parseStandardOptions([root, '--next', '--no-git']));
   put(
     'apps/web/app/page.tsx',
     `import Link from 'next/link';\nexport default function Page() { return <main><h1>Anhedral native Next.js QA</h1><Link href="/about">About this app</Link></main>; }\n`,

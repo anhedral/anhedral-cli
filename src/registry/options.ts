@@ -49,15 +49,12 @@ function parseStandardFlags(remaining: readonly string[]) {
   return { products, hosting, hostingSpecified, gitSpecified };
 }
 
-export function parseStandardOptions(
-  command: 'new' | 'init',
-  args: readonly string[],
-): StandardOptions {
+export function parseStandardOptions(args: readonly string[]): StandardOptions {
   const remaining = [...args];
   const hasDirectory = remaining[0] && !remaining[0].startsWith('-');
-  const directory = command === 'new' || hasDirectory ? remaining.shift() : process.cwd();
+  const directory = hasDirectory ? remaining.shift() : process.cwd();
   if (!directory || directory.startsWith('-'))
-    throw new Error('new requires a destination directory.');
+    throw new Error('Specify a valid initialization directory.');
   const root = path.resolve(directory);
   const { products, hosting, hostingSpecified, gitSpecified } = parseStandardFlags(remaining);
   resolveStandardProducts(products, hosting, hostingSpecified);
@@ -69,6 +66,6 @@ export function parseStandardOptions(
     skipInstall: remaining.includes('--skip-install'),
     dryRun: remaining.includes('--dry-run'),
     json: remaining.includes('--json'),
-    initializeGit: gitSpecified ?? (command === 'new' || Boolean(hasDirectory)),
+    initializeGit: gitSpecified ?? Boolean(hasDirectory),
   };
 }

@@ -111,6 +111,7 @@ try {
   console.log(
     `Prepared ${path.relative(repoRoot, tarballPath)} (${metadata.integrity}, ${metadata.entryCount} files)`,
   );
+  console.log(`Prepared ${metadata.plugin.filename} (${metadata.plugin.integrity})`);
 } finally {
   rmSync(npmCache, { recursive: true, force: true });
 }

@@ -158,12 +158,26 @@ export const NEXT_VERCEL_VERSION = '16.4.0';
 export const NEXT_OPENNEXT_VERSION = '16.3.8';
 
 export const STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=@typescript-eslint/parser
+  '@typescript-eslint/parser': '8.71.2',
+  // renovate: datasource=npm depName=@typescript-eslint/eslint-plugin
+  '@typescript-eslint/eslint-plugin': '8.71.2',
+  // renovate: datasource=npm depName=@next/eslint-plugin-next
+  '@next/eslint-plugin-next': '16.4.2',
+  // renovate: datasource=npm depName=turbo
+  turbo: '2.11.7',
+  // renovate: datasource=npm depName=tsx
+  tsx: '4.23.15',
   // renovate: datasource=npm depName=better-auth
   'better-auth': '1.7.7',
   // renovate: datasource=npm depName=@better-auth/drizzle-adapter
   '@better-auth/drizzle-adapter': '1.7.7',
   // renovate: datasource=npm depName=@neondatabase/serverless
   '@neondatabase/serverless': '1.2.0',
+  // renovate: datasource=npm depName=@neon/realtime
+  '@neon/realtime': '0.1.0',
+  // renovate: datasource=npm depName=@neon/realtime-drizzle
+  '@neon/realtime-drizzle': '0.1.0',
   // renovate: datasource=npm depName=drizzle-orm
   'drizzle-orm': '0.45.4',
   // renovate: datasource=npm depName=@clerk/nextjs
@@ -238,3 +252,39 @@ export const WORKER_DEV_PORTS = {
   scheduled: { http: 8790, inspector: 9234 },
   workflows: { http: 8791, inspector: 9235 },
 } as const;
+
+/** Compatible security overrides are catalog pins and must be audited too. */
+export const SECURITY_OVERRIDE_DEPENDENCIES = {
+  // renovate: datasource=npm depName=@vitejs/plugin-react
+  '@vitejs/plugin-react': '5.2.0',
+  // renovate: datasource=npm depName=sharp
+  sharp: '0.35.5',
+  // renovate: datasource=npm depName=source-map-js
+  'source-map-js': '1.2.2',
+  // renovate: datasource=npm depName=shell-quote
+  'shell-quote': '1.12.0',
+  // renovate: datasource=npm depName=tmp
+  tmp: '0.2.7',
+  // renovate: datasource=npm depName=adm-zip
+  'adm-zip': '0.6.1',
+  // renovate: datasource=npm depName=baseline-browser-mapping
+  'baseline-browser-mapping': '2.11.27',
+  // renovate: datasource=npm depName=browserslist
+  browserslist: '4.29.3',
+  // renovate: datasource=npm depName=esbuild
+  esbuild: '0.25.12',
+} as const;
+
+// Keep each compatible major independently reviewed.
+// renovate: datasource=npm depName=glob
+export const GLOB_10_OVERRIDE_VERSION = '10.5.0';
+// renovate: datasource=npm depName=glob
+export const GLOB_11_OVERRIDE_VERSION = '11.1.0';
+// renovate: datasource=npm depName=brace-expansion
+export const BRACE_EXPANSION_1_OVERRIDE_VERSION = '1.1.21';
+// renovate: datasource=npm depName=brace-expansion
+export const BRACE_EXPANSION_2_OVERRIDE_VERSION = '2.1.7';
+// No blanket 3.x override: GHSA-3jxr-9vmj-r5cp lists no repaired 3.x
+// release, and supported locked profiles do not consume that major.
+// renovate: datasource=npm depName=brace-expansion
+export const BRACE_EXPANSION_5_OVERRIDE_VERSION = '5.0.12';

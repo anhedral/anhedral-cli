@@ -23,20 +23,50 @@ export function formatResult(command: string, value: unknown): string {
   const next = (action: unknown) => {
     if (string(action)) lines.push(`Next: ${string(action)}`);
   };
-  if (command === 'init' || command === 'new') {
+  if (command === 'init') {
     lines.push(
       data.generated ? `Created ${string(data.root)}.` : `Stack preview for ${string(data.root)}.`,
       `Stack: ${names(data.products)}.`,
       `Hosting: ${string(data.hosting)}.`,
       '',
     );
+    const catalog = record(data.catalog);
+    if (catalog.state === 'registered') lines.push('Registered in your local Anhedral dashboard.');
+    if (catalog.state === 'pending') next(catalog.nextAction);
     if (data.generated)
       lines.push(
-        'Review the generated source and anhedral.providers.json.',
+        'Review the generated source and provider settings in anhedral.json (providers).',
         'In the project directory, start development with pnpm dev. Run pnpm check before delivery.',
         'Next: anhedral auth, then connect the intended hosting account and preview anhedral ship --dry-run.',
       );
     else lines.push('No files, provider resources or deployments were created.');
+  } else if (command === 'services') {
+    if (Array.isArray(data.services)) {
+      lines.push(`${data.services.length} local service entries.`);
+      for (const service of entries(data.services))
+        lines.push(`  ${string(service.key)}${service.state ? ` — ${string(service.state)}` : ''}`);
+    } else if (Array.isArray(data.points)) {
+      lines.push(
+        `Analytics: ${string(data.source)}.`,
+        `Window: ${string(data.start)} to ${string(data.end)} (UTC).`,
+        `${data.points.length} provider data points.`,
+        'Use --json for the complete aggregate values.',
+      );
+    } else if (Array.isArray(data.rows)) {
+      lines.push(
+        `Read ${data.rows.length} rows.`,
+        `Private data${data.masked ? '; sensitive fields are masked' : ''}. Use --json to inspect values.`,
+      );
+    } else if (string(data.token)) {
+      lines.push(
+        `Deletion plan: ${string(data.kind)} ${string(data.name)}.`,
+        string(data.impact),
+        `Affected apps: ${names(data.applications) || 'None recorded'}.`,
+        `Expires: ${string(data.expiresAt)}.`,
+        'Use --json for the single-use confirmation token; deleting requires the exact resource name.',
+      );
+    } else if (Array.isArray(value)) lines.push(`Tables: ${names(value) || 'None'}.`);
+    else lines.push(`Service: ${string(data.state) || 'Checked'}.`, string(data.message));
   } else if (command === 'add') {
     lines.push(
       data.dryRun ? 'Addition preview.' : 'Stack parts added.',

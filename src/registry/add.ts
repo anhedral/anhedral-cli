@@ -1,9 +1,15 @@
+import {
+  PROJECT_CONFIG_FILE,
+  readProjectSection,
+  writeProjectSection,
+  hasProjectSection,
+} from '../project-config.js';
+import { configureDependencyPatches } from '../dependency-patches.js';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
-import { configureSecurityBackports } from '../security-backports.js';
 import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
 import { registerVercelApplication } from '../vercel.js';
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { applyEdits, modify, parse } from 'jsonc-parser';
@@ -13,11 +19,13 @@ import { GENERATOR_VERSION } from '../version.js';
 import { runStagedTransaction } from '../transaction.js';
 import { inspectWorkspaceGraph } from '../workspace-graph.js';
 import { execFile } from '../util.js';
-import { json, put, readJson } from '../scaffold/files.js';
+import { supportsVoidRuntime, usesVoidSelection } from '../runtime-policy.js';
+import { put } from '../scaffold/files.js';
 import { writeStandardRoot } from '../scaffold/workspace.js';
+import { configureVoidDelivery, refreshVoidEnvironment } from '../scaffold/void.js';
 import { createRecipeContext } from './context.js';
 import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
-import { sourceFiles } from './receipt.js';
+import { sourceFiles, configurationFingerprints } from './receipt.js';
 import type { StandardOptions, StandardProduct, StandardRunner } from './types.js';
 import {
   sourcePreview,
@@ -54,25 +62,46 @@ export async function addStackItems(
   if (!request.dryRun) assertWorkspaceRuntime(run);
   root = realpathSync(root);
   if (!request.items.length) throw new Error('Select at least one registry item.');
-  const plan = readJson(root, 'anhedral.setup.json');
+  const plan = readProjectSection(root, 'setup');
   validateSetupPlan(plan);
   if (plan.cliVersion !== GENERATOR_VERSION)
     throw new Error('Use the project CLI version before adding recipes.');
   if (!inspectProject(root).localReady)
     throw new Error('Run doctor and resolve project provenance or workspace errors before add.');
-  const receipt = readJson(root, 'anhedral.registry.json');
+  const receipt = readProjectSection(root, 'registry');
   if (!receipt.files || typeof receipt.files !== 'object' || Array.isArray(receipt.files))
-    throw new Error(
-      'This project has no scaffold fingerprints; migrate it deliberately before using add.',
-    );
+    throw new Error('Add requires current scaffold fingerprints.');
   const baseline = receipt.files as Record<string, string>;
+  if (
+    !receipt.configuration ||
+    typeof receipt.configuration !== 'object' ||
+    Array.isArray(receipt.configuration)
+  )
+    throw new Error('Add requires current configuration fingerprints.');
+  const originalConfiguration = configurationFingerprints(root);
   const selected = new Set<StandardProduct>(plan.products);
   for (const id of request.items) {
     if (!(STANDARD_PRODUCTS as readonly string[]).includes(id))
       throw new Error(`Unknown stack product: ${id}.`);
     selected.add(id as StandardProduct);
   }
+  if (
+    (selected.has('queues') || selected.has('basin')) &&
+    hasProjectSection(root, 'cloudflare') &&
+    readProjectSection(root, 'cloudflare').deliveryEngine === 'void'
+  )
+    throw new Error(
+      'Queues with dead-letter recovery and Basin require Wrangler delivery. They cannot be added to a Void project.',
+    );
   resolveStandardProducts(selected, plan.hosting, false);
+  const voidSelected = usesVoidSelection([...selected], plan.hosting);
+  if (
+    !request.dryRun &&
+    voidSelected &&
+    run === execFile &&
+    !supportsVoidRuntime(process.versions.node)
+  )
+    throw new Error('Cloudflare workspaces using Void require Node.js 24.21.0 or newer.');
   const options: StandardOptions = {
     root,
     name: plan.name ?? path.basename(root),
@@ -93,12 +122,12 @@ export async function addStackItems(
     const before = oldItems.get(item.name);
     if (before && before.targets.some((target) => !item.targets.includes(target)))
       throw new Error(
-        `Adding this selection relocates ${item.name}; migrate its existing source explicitly.`,
+        `Adding this selection relocates ${item.name}; additions must preserve existing runtime ownership.`,
       );
   }
   const before = sourceFiles(root);
   const receiptText = readBoundedFile(
-    path.join(root, 'anhedral.registry.json'),
+    path.join(root, PROJECT_CONFIG_FILE),
     MAX_PROJECT_JSON_BYTES,
   ).toString('utf8');
   const commitPaths: string[] = [];
@@ -132,7 +161,7 @@ export async function addStackItems(
   await runStagedTransaction(root, {
     dryRun: !!request.dryRun,
     commitPaths,
-    seedPaths: [...before.keys(), 'anhedral.registry.json'],
+    seedPaths: [...before.keys(), PROJECT_CONFIG_FILE],
     build: async (stage) => {
       const context = createRecipeContext(stage, options);
       for (const item of registry.items) Object.assign(context.bindings, item.bindings);
@@ -147,7 +176,8 @@ export async function addStackItems(
         (item) => !isDeepStrictEqual(oldItems.get(item.name), item) && item.bindings,
       );
       if (configurationItems.length) {
-        const file = `apps/${context.runtimeApp}/wrangler.jsonc`;
+        const directory = `apps/${context.runtimeApp}`;
+        const file = `${directory}/${existsSync(path.join(stage, directory, 'anhedral.cloudflare.json')) ? 'anhedral.cloudflare.json' : 'wrangler.jsonc'}`;
         let content = readFileSync(path.join(stage, file), 'utf8');
         const config = parse(content) as Record<string, unknown>;
         for (const item of configurationItems)
@@ -166,10 +196,16 @@ export async function addStackItems(
         put(stage, file, content);
       }
       writeStandardRoot(stage, options, registry, true);
+      if (voidSelected) {
+        configureVoidDelivery(stage);
+        refreshVoidEnvironment(stage);
+      }
       if (options.products.includes('next') && options.hosting === 'vercel')
         registerVercelApplication(stage);
       if (
-        [...sourceFiles(stage).keys()].some((file) => /^apps\/[^/]+\/wrangler\.jsonc$/.test(file))
+        [...sourceFiles(stage).keys()].some((file) =>
+          /^apps\/[^/]+\/(?:wrangler\.jsonc|anhedral\.cloudflare\.json)$/.test(file),
+        )
       )
         registerApplication(stage, true);
       if (!request.dryRun)
@@ -178,7 +214,7 @@ export async function addStackItems(
           ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],
           stage,
         );
-      if (!request.dryRun && configureSecurityBackports(stage))
+      if (!request.dryRun && configureDependencyPatches(stage))
         run(
           'pnpm',
           ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],
@@ -188,14 +224,19 @@ export async function addStackItems(
       const files = { ...baseline };
       for (const [file, hash] of after) {
         if (before.get(file) === hash) continue;
-        if (
-          before.has(file) &&
-          baseline[file] !== before.get(file) &&
-          file !== 'anhedral.project.json'
-        )
-          conflicts.push(file);
+        if (before.has(file) && baseline[file] !== before.get(file)) conflicts.push(file);
         commitPaths.push(file);
         files[file] = hash;
+      }
+      const configuration = configurationFingerprints(stage);
+      for (const [section, hash] of Object.entries(originalConfiguration)) {
+        // Hosting registration preserves existing user fields while adding new targets.
+        if (
+          section !== 'cloudflare' &&
+          hash !== receipt.configuration[section] &&
+          configuration[section] !== hash
+        )
+          conflicts.push(`${PROJECT_CONFIG_FILE} (${section})`);
       }
       // Never delete preexisting source as a side effect of an addition.
       for (const file of before.keys()) if (!after.has(file)) conflicts.push(file);
@@ -203,14 +244,15 @@ export async function addStackItems(
         throw new Error(
           `Addition conflicts with edited or untracked source: ${conflicts.join(', ')}. No files were installed.`,
         );
-      json(stage, 'anhedral.registry.json', {
+      writeProjectSection(stage, 'registry', {
         ...registry,
         status: 'scaffolded',
         resourcesProvisioned: false,
         workspaces: inspectWorkspaceGraph(stage),
         files,
+        configuration,
       });
-      commitPaths.push('anhedral.registry.json');
+      commitPaths.push(PROJECT_CONFIG_FILE);
       if (request.preview && result.previews) {
         const preview = request.preview;
         const selected = [...commitPaths]
@@ -232,14 +274,29 @@ export async function addStackItems(
       // Detect concurrent changes even to source that this addition would otherwise preserve.
       if (
         !isDeepStrictEqual(sourceFiles(root), before) ||
-        readBoundedFile(path.join(root, 'anhedral.registry.json'), MAX_PROJECT_JSON_BYTES).toString(
+        readBoundedFile(path.join(root, PROJECT_CONFIG_FILE), MAX_PROJECT_JSON_BYTES).toString(
           'utf8',
         ) !== receiptText
       )
         throw new Error('Workspace changed during addition; retry after reviewing source.');
     },
     afterCommit: () => {
-      if (!request.skipInstall) run('pnpm', ['install', '--frozen-lockfile'], root);
+      if (request.skipInstall) return;
+      const lockPath = path.join(root, 'pnpm-lock.yaml');
+      const lock = readBoundedFile(lockPath, 16 * 1024 * 1024);
+      const modules = path.join(root, 'node_modules');
+      const metadata = lstatSync(modules, { throwIfNoEntry: false });
+      if (metadata && (!metadata.isDirectory() || metadata.isSymbolicLink()))
+        throw new Error('Dependency installation requires a real project node_modules directory.');
+      // pnpm 10 can retain skipped optional packages after a new recipe makes
+      // them required. Rebuild generated links from the reviewed lock while
+      // retaining the separate content-addressed package store.
+      rmSync(modules, { recursive: true, force: true });
+      run('pnpm', ['install', '--frozen-lockfile'], root);
+      if (!readBoundedFile(lockPath, 16 * 1024 * 1024).equals(lock))
+        throw new Error(
+          'Frozen dependency installation changed the reviewed lockfile; review it before continuing.',
+        );
     },
   });
   return result;

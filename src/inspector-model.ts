@@ -59,11 +59,13 @@ export interface ResourceEvidence {
   name: string;
   id: string;
   reused: boolean | null;
+  createdByProject?: boolean | null;
   recordedAt: string | null;
 }
 /** Browser-safe projection. Read time never substitutes for provider evidence time. */
 export interface ProjectInspection {
   schemaVersion: 1;
+  lifecycle?: import('./project-lifecycle.js').ProjectLifecycle;
   name: string;
   inspectedAt: string;
   authentication: { state: 'not-checked' };
@@ -93,10 +95,18 @@ export interface ProjectInspection {
   targets: InspectionSection<TargetEvidence[]>;
   integrations: InspectionSection<IntegrationEvidence[]>;
   cloudflareResources: InspectionSection<ResourceEvidence[]>;
+  serviceDeletions?: InspectionSection<
+    {
+      resourceId: string;
+      kind: string;
+      name: string;
+      state: 'pending' | 'deleted' | 'uncertain';
+      recordedAt: string | null;
+    }[]
+  >;
   readiness: InspectionSection<{
     localReady: boolean;
     checks: { id: string; ok: boolean; detail: string }[];
   }>;
   operation: InspectionSection<LifecycleOperation | null>;
 }
-export type ApplicationInspection = ProjectInspection;

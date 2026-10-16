@@ -1,3 +1,10 @@
+import {
+  readProjectSection,
+  writeProjectSection,
+  hasProjectSection,
+} from '../dist/project-config.js';
+import { createSetupPlan } from '../dist/capabilities.js';
+import { parseStandardOptions } from '../dist/registry/options.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -19,7 +26,11 @@ const account = 'a'.repeat(32),
   commit = 'b'.repeat(40);
 function fixture(targets = ['api', 'web']) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-delivery-test-'));
-  writeFileSync(path.join(root, 'anhedral.setup.json'), JSON.stringify({ hosting: 'cloudflare' }));
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--hono', '--vinext'])),
+  );
   writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'test-app' }));
   for (const id of targets) {
     mkdirSync(path.join(root, 'apps', id), { recursive: true });
@@ -107,11 +118,25 @@ test('identity is stable, JSONC is supported, and delivery planning is read-only
       first.targets.map((x) => x.id),
       ['api', 'web'],
     );
+    assert.equal(first.deliveryEngine, 'wrangler');
     assert.equal(first.accountId, null);
     assert.equal(first.audience, 'unconfigured');
-    const before = readFileSync(path.join(root, 'anhedral.project.json'), 'utf8');
+    const before = readFileSync(path.join(root, 'anhedral.json'), 'utf8');
     assert.equal(planDelivery(root).resourcesProvisioned, false);
-    assert.equal(readFileSync(path.join(root, 'anhedral.project.json'), 'utf8'), before);
+    assert.equal(readFileSync(path.join(root, 'anhedral.json'), 'utf8'), before);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+test('delivery requires an explicit recognized engine in the current application manifest', () => {
+  const root = fixture();
+  try {
+    const project = readProjectSection(root, 'cloudflare');
+    for (const engine of [undefined, 'unknown']) {
+      writeProjectSection(root, 'cloudflare', { ...project, deliveryEngine: engine });
+      assert.throws(() => planDelivery(root), /Invalid application manifest/);
+      assert.equal(readProjectSection(root, 'cloudflare').deliveryEngine, engine);
+    }
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -413,7 +438,7 @@ test('fresh-clone recovery records provider evidence without inventing releases 
   try {
     const { run, calls } = runner(root);
     await connected(root, run);
-    const before = readFileSync(path.join(root, 'anhedral.project.json'), 'utf8');
+    const before = readFileSync(path.join(root, 'anhedral.json'), 'utf8');
     const request = async (method, endpoint) => {
       assert.equal(method, 'GET');
       assert.equal(endpoint, '/workers/scripts/test-web/settings');
@@ -427,7 +452,7 @@ test('fresh-clone recovery records provider evidence without inventing releases 
     assert.deepEqual(snapshot.provider[0].versions, [
       { versionId: 'version-web', percentage: 100 },
     ]);
-    assert.equal(readFileSync(path.join(root, 'anhedral.project.json'), 'utf8'), before);
+    assert.equal(readFileSync(path.join(root, 'anhedral.json'), 'utf8'), before);
     assert.equal((await applicationStatus(root)).releases.length, 0);
     assert.equal(
       calls.some((call) => call.args.includes('deploy') || call.args.includes('rollback')),
@@ -508,6 +533,27 @@ test('private recovery cannot create missing Access protection', async () => {
     await assert.rejects(recoverApplication(root, run, request), /immutable Worker ID/);
     assert.ok(calls.every((method) => method === 'GET'));
     assert.equal((await applicationStatus(root)).releases.length, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('registration rejects incomplete or inconsistent setup before writing application state', () => {
+  const root = fixture();
+  const file = path.join(root, 'anhedral.json');
+  try {
+    rmSync(file);
+    const setup = createSetupPlan(parseStandardOptions([root, '--hono']));
+    for (const invalid of [{ hosting: 'cloudflare' }, { ...setup, products: ['unknown'] }]) {
+      writeProjectSection(root, 'setup', invalid);
+      const before = readFileSync(path.join(root, '.gitignore'), 'utf8');
+      assert.throws(
+        () => registerApplication(root),
+        /Unsupported setup plan|Unknown setup capabilities/,
+      );
+      assert.equal(readFileSync(path.join(root, '.gitignore'), 'utf8'), before);
+      assert.equal(hasProjectSection(root, 'cloudflare'), false);
+    }
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

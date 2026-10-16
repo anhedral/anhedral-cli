@@ -1,7 +1,12 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { json, readJson } from '../scaffold/files.js';
+import {
+  PROJECT_CONFIG_FILE,
+  readProjectConfig,
+  readProjectSection,
+  writeProjectSection,
+} from '../project-config.js';
 
 const excluded = new Set([
   '.pnpm-store',
@@ -11,6 +16,9 @@ const excluded = new Set([
   '.next',
   '.open-next',
   '.wrangler',
+  '.void',
+  '.vinext',
+  '.void-wrangler.jsonc',
   '.turbo',
   'dist',
   '.output',
@@ -20,7 +28,7 @@ const excluded = new Set([
   '.anhedral-audit-report.json',
   '.anhedral.lock',
   '.anhedral-txn',
-  'anhedral.registry.json',
+  PROJECT_CONFIG_FILE,
 ]);
 export function sourceFiles(root: string): Map<string, string> {
   const files = new Map<string, string>();
@@ -28,6 +36,8 @@ export function sourceFiles(root: string): Map<string, string> {
     for (const entry of readdirSync(path.join(root, directory), { withFileTypes: true })) {
       if (excluded.has(entry.name)) continue;
       const relative = directory ? `${directory}/${entry.name}` : entry.name;
+      // Deployment mirrors are disposable; reviewed SQL lives in packages/db/drizzle.
+      if (/^apps\/[^/]+\/db\/migrations$/.test(relative)) continue;
       // Local credentials are never seeded into an addition transaction or fingerprint receipt.
       if (/^(?:\.env|\.dev\.vars)(?:\.|$)/.test(entry.name) && !entry.name.endsWith('.example'))
         continue;
@@ -45,10 +55,21 @@ export function sourceFiles(root: string): Map<string, string> {
   visit('');
   return files;
 }
+export function configurationFingerprints(root: string): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(readProjectConfig(root))
+      .filter(([section]) => !['schemaVersion', 'registry'].includes(section))
+      .map(([section, value]) => [
+        section,
+        createHash('sha256').update(JSON.stringify(value)).digest('hex'),
+      ]),
+  );
+}
 export function recordScaffoldFiles(root: string): void {
-  const receipt = readJson(root, 'anhedral.registry.json');
-  json(root, 'anhedral.registry.json', {
+  const receipt = readProjectSection(root, 'registry');
+  writeProjectSection(root, 'registry', {
     ...receipt,
     files: Object.fromEntries(sourceFiles(root)),
+    configuration: configurationFingerprints(root),
   });
 }

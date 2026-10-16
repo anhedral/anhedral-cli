@@ -29,7 +29,8 @@ test('every command has unique typed flags, valid arity and derived help', () =>
       command.options.filter((option) => !option.hidden).map(optionHelp),
     );
   }
-  assert.equal(commandDefinition('new'), COMMANDS.init);
+  assert.equal(commandDefinition('new'), undefined);
+  assert.equal(commandHelp('new'), undefined);
   assert.equal(commandDefinition('unrecognized'), undefined);
   for (const option of GLOBAL_OPTIONS) assert.ok(commandHelp('ship').includes(optionHelp(option)));
 });
@@ -77,7 +78,7 @@ test('optional previews, repeatable members and product switches remain supporte
     ]),
   );
   assert.doesNotThrow(() =>
-    validateCommand('new', ['destination', '--expo', '--neon', '--dry-run']),
+    validateCommand('init', ['destination', '--expo', '--neon', '--dry-run']),
   );
   assert.doesNotThrow(() => validateCommand('init', ['--hosting=cloudflare', '--hono']));
   invalid('ship', ['--dryrun'], /Did you mean --dry-run/);

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { existsSync, lstatSync, mkdirSync, realpathSync } from 'node:fs';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import { atomicJson, type DeliveryRunner } from '../project-state.js';
@@ -41,14 +42,14 @@ interface Operation {
   status: 'pending' | 'complete';
   value?: MinimalReceipt;
   credentialFields?: CredentialField[];
-  descriptor?: OperationDescriptor;
+  descriptor: OperationDescriptor;
 }
 interface ProviderState {
   config: string;
   operations: Record<string, Operation>;
 }
 interface State {
-  schemaVersion: 1 | 2;
+  schemaVersion: 2;
   providers: Partial<Record<IntegrationProvider, ProviderState>>;
 }
 
@@ -60,7 +61,7 @@ function record(value: unknown): value is Record<string, unknown> {
 function validState(value: unknown): value is State {
   if (
     !record(value) ||
-    !(value.schemaVersion === 1 || value.schemaVersion === 2) ||
+    value.schemaVersion !== 2 ||
     Object.keys(value).some((key) => !['schemaVersion', 'providers'].includes(key)) ||
     !record(value.providers)
   )
@@ -80,21 +81,14 @@ function validState(value: unknown): value is State {
         !/^[a-f0-9]{64}$/.test(key) ||
         !record(operation) ||
         Object.keys(operation).some(
-          (field) =>
-            !(
-              value.schemaVersion === 1
-                ? ['status', 'value']
-                : ['status', 'value', 'credentialFields', 'descriptor']
-            ).includes(field),
+          (field) => !['status', 'value', 'credentialFields', 'descriptor'].includes(field),
         )
       )
         return false;
-      if (operation.descriptor !== undefined && !validDescriptor(operation.descriptor))
-        return false;
+      if (!validDescriptor(operation.descriptor)) return false;
       if (operation.status === 'pending')
         return !Object.hasOwn(operation, 'value') && !Object.hasOwn(operation, 'credentialFields');
       if (operation.status !== 'complete' || !record(operation.value)) return false;
-      if (value.schemaVersion === 1) return true;
       return (
         validReceipt(id as IntegrationProvider, operation.value) &&
         (operation.credentialFields === undefined ||
@@ -191,19 +185,15 @@ export function readProviderStateStatus(directory: string) {
       operations: Object.entries(provider.operations).map(([operation, saved]) => ({
         operation,
         status: saved.status,
-        ...(saved.value
-          ? { resources: splitReceipt(id as IntegrationProvider, saved.value).receipt }
-          : {}),
-        ...(saved.descriptor ? { descriptor: saved.descriptor } : {}),
-        recovery: !saved.descriptor
-          ? 'unknown-descriptor'
-          : ['sending-key', 'webhook', 'service-account'].includes(saved.descriptor.key)
-            ? 'requires-one-time-credential'
-            : ['project', 'application', 'domain', 'web-app', 'ios-app', 'android-app'].includes(
-                  saved.descriptor.key,
-                )
-              ? 'verified-resource'
-              : 'unsupported-operation',
+        ...(saved.value ? { resources: saved.value } : {}),
+        descriptor: saved.descriptor,
+        recovery: ['sending-key', 'webhook', 'service-account'].includes(saved.descriptor.key)
+          ? 'requires-one-time-credential'
+          : ['project', 'application', 'domain', 'web-app', 'ios-app', 'android-app'].includes(
+                saved.descriptor.key,
+              )
+            ? 'verified-resource'
+            : 'unsupported-operation',
       })),
     })),
   };
@@ -235,7 +225,6 @@ export class ProvisioningState {
       : { schemaVersion: 2, providers: {} };
     if (!validState(state)) throw new Error('Invalid provider state.');
     this.state = state;
-    if (state.schemaVersion === 1) this.migrate();
     this.assertCredentials();
   }
   private assertCredentials(): void {
@@ -258,38 +247,11 @@ export class ProvisioningState {
     if (!Object.keys(entries).length) return;
     const provider = (this.credentials.providers[id] ??= {});
     const previous = provider[operation];
-    if (previous && digest(previous) !== digest(entries))
+    // Compare the private credential records directly; credential values must not
+    // flow through the SHA-256 helper used for public operation fingerprints.
+    if (previous && !isDeepStrictEqual(previous, entries))
       throw new Error('Provider credential state conflicts with the saved creation result.');
     provider[operation] = entries;
-  }
-  private migrate(): void {
-    const migrated: State = { schemaVersion: 2, providers: {} };
-    for (const id of INTEGRATION_PROVIDERS) {
-      const provider = this.state.providers[id];
-      if (!provider) continue;
-      const operations: Record<string, Operation> = {};
-      for (const [key, saved] of Object.entries(provider.operations)) {
-        if (saved.status === 'pending') operations[key] = { status: 'pending' };
-        else {
-          const { receipt, credentials } = splitReceipt(id, saved.value);
-          this.retainCredentials(id, key, credentials);
-          operations[key] = {
-            status: 'complete',
-            value: receipt,
-            ...(Object.keys(credentials).length
-              ? { credentialFields: Object.keys(credentials) as CredentialField[] }
-              : {}),
-          };
-        }
-      }
-      migrated.providers[id] = { config: provider.config, operations };
-    }
-    // Credentials first: if the receipt write fails, the original schema 1 response
-    // remains intact and a retry can safely repeat this local migration.
-    this.write(this.credentialsFile, this.credentials);
-    this.write(this.file, migrated);
-    this.state.schemaVersion = 2;
-    this.state.providers = migrated.providers;
   }
   /** No configurations, credentials, provider payloads or mutation bodies in status. */
   status() {
@@ -329,10 +291,6 @@ export class ProvisioningState {
     if (!saved || saved.status !== 'pending')
       throw new Error(
         'Only an explicitly identified pending provider operation can be reconciled.',
-      );
-    if (!saved.descriptor)
-      throw new Error(
-        'This legacy pending operation has no trusted descriptor. Inspect the provider and retain its journal; automatic recovery is unavailable.',
       );
     const receipt = await verifyRecoveredResource(id, saved.descriptor, resource, settings, api);
     beforeCommit();

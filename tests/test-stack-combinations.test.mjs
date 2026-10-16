@@ -28,7 +28,7 @@ const runtimes = [
 ];
 const rejectedSelection = /Choose one|requires|select it explicitly|--hosting applies/;
 const optionsFor = (directory, runtime, products) =>
-  parseStandardOptions('new', [
+  parseStandardOptions([
     directory,
     ...runtime,
     ...products.map((product) => `--${product}`),
@@ -123,7 +123,7 @@ test('every option generates coherent targets, workspaces, environment and synta
         generated++;
         rmSync(root, { recursive: true, force: true });
       }
-    assert.equal(generated, 162);
+    assert.equal(generated, 166);
     for (const product of STANDARD_PRODUCTS) assert.ok(covered.has(product), product);
   } finally {
     rmSync(temporary, { recursive: true, force: true });
@@ -164,7 +164,10 @@ test('every pair of options resolves deterministically across the supported runt
         }
         accepted++;
       }
-  assert.equal(accepted + rejected, 2457);
+  assert.equal(
+    accepted + rejected,
+    (runtimes.length * STANDARD_PRODUCTS.length * (STANDARD_PRODUCTS.length - 1)) / 2,
+  );
   assert.ok(accepted > 1500);
 });
 

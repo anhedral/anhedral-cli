@@ -4,6 +4,7 @@ import { STACK_DEPENDENCIES, NEXT_VERCEL_VERSION, NEXT_OPENNEXT_VERSION } from '
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { configureVinext } from '../vinext.js';
+import { writeWebLint } from './lint.js';
 import type { RecipeContext } from '../registry/types.js';
 import { json, put, readJson, patchPackage, workerConfig, type PackageManifest } from './files.js';
 function cleanWorkspaceManifest(root: string, directory: string): void {
@@ -84,13 +85,14 @@ function isThemeShortcut(event: KeyboardEvent) {
 
 export function scaffoldWeb({ root, options, bindings, runtimeApp, has }: RecipeContext): void {
   cleanShadcnStarter(root);
-  put(
-    root,
-    'apps/web/eslint.config.js',
-    'import { nextJsConfig } from "@workspace/eslint-config/next-js";\nexport default [...nextJsConfig, { ignores: [".open-next/**", ".wrangler/**", "cloudflare-env.d.ts"] }];\n',
-  );
+  writeWebLint(root);
   patchPackage(root, 'apps/web/package.json', {
     scripts: { typecheck: 'tsc --noEmit', lint: 'eslint . --max-warnings 0' },
+    devDependencies: {
+      '@next/eslint-plugin-next': STACK_DEPENDENCIES['@next/eslint-plugin-next'],
+      '@typescript-eslint/parser': STACK_DEPENDENCIES['@typescript-eslint/parser'],
+      '@typescript-eslint/eslint-plugin': STACK_DEPENDENCIES['@typescript-eslint/eslint-plugin'],
+    },
   });
   if (has('vinext')) {
     configureVinext(root, resourceName(options.name, 'web'), runtimeApp === 'web' ? bindings : {});

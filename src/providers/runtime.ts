@@ -2,6 +2,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
+import { readProjectSection } from '../project-config.js';
 import { atomicJson, readConfig, type DeliveryRunner } from '../project-state.js';
 import { digest } from './api.js';
 import { validateSetupPlan } from '../readiness.js';
@@ -9,9 +10,15 @@ import { isIP } from 'node:net';
 import { providerConfiguration } from './config.js';
 
 export type RuntimeValues = Record<string, string>;
+function serverRuntimeFile(root: string, runtime: string, hosting: string): string {
+  const directory = `apps/${runtime}`;
+  if (runtime === 'web' && hosting === 'vercel') return `${directory}/.env.local`;
+  return `${directory}/${existsSync(path.join(root, directory, 'void.config.ts')) ? '.env' : '.dev.vars'}`;
+}
 export const RUNTIME_KEYS = [
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL',
+  'NEON_REALTIME_SECRET',
   'DATABASE_URL',
   'CLERK_SECRET_KEY',
   'CLERK_PUBLISHABLE_KEY',
@@ -46,11 +53,7 @@ function validateValues(values: RuntimeValues): void {
 
 export function runtimeTargets(root: string, values: RuntimeValues): Record<string, RuntimeValues> {
   validateValues(values);
-  const setup: unknown = JSON.parse(
-    readBoundedFile(path.join(root, 'anhedral.setup.json'), MAX_PROJECT_JSON_BYTES).toString(
-      'utf8',
-    ),
-  );
+  const setup: unknown = readProjectSection(root, 'setup');
   validateSetupPlan(setup);
   const targets: Record<string, RuntimeValues> = {};
   const runtime = setup.products.includes('hono') ? 'api' : 'web';
@@ -58,20 +61,16 @@ export function runtimeTargets(root: string, values: RuntimeValues): Record<stri
     Object.entries(values).filter(([key]) => !key.startsWith('EXPO_PUBLIC_')),
   );
   if (existsSync(path.join(root, `apps/${runtime}`)))
-    targets[
-      `apps/${runtime}/${runtime === 'web' && setup.hosting === 'vercel' ? '.env.local' : '.dev.vars'}`
-    ] = server;
+    targets[serverRuntimeFile(root, runtime, setup.hosting)] = server;
   if (
     runtime === 'api' &&
     existsSync(path.join(root, 'apps/web')) &&
     values.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   )
-    targets[`apps/web/${setup.hosting === 'vercel' ? '.env.local' : '.dev.vars'}`] = {
+    targets[serverRuntimeFile(root, 'web', setup.hosting)] = {
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: values.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
       ...(values.CLERK_SECRET_KEY ? { CLERK_SECRET_KEY: values.CLERK_SECRET_KEY } : {}),
     };
-  if (values.DATABASE_URL && existsSync(path.join(root, 'packages/db')))
-    targets['packages/db/.env'] = { DATABASE_URL: values.DATABASE_URL };
   if (setup.products.includes('expo')) {
     const mobile = Object.fromEntries(
       Object.entries(values).filter(([key]) => key.startsWith('EXPO_PUBLIC_')),
@@ -216,26 +215,26 @@ function publicAuthOrigin(value: string): boolean {
 }
 
 /** Read application-owned credentials separately from integration receipts. Never write,
- * return unrelated environment keys, or copy authentication secrets to other targets. */
+ * return unrelated environment keys, or copy server secrets to other targets. */
 export async function applicationRuntime(
   root: string,
   run: DeliveryRunner,
 ): Promise<Record<string, RuntimeValues>> {
   root = realpathSync(root);
-  const setup: unknown = JSON.parse(
-    readBoundedFile(path.join(root, 'anhedral.setup.json'), MAX_PROJECT_JSON_BYTES).toString(
-      'utf8',
-    ),
-  );
+  const setup: unknown = readProjectSection(root, 'setup');
   validateSetupPlan(setup);
-  if (!setup.products.includes('better-auth')) return {};
+  const betterAuth = setup.products.includes('better-auth');
+  const neonRealtime = setup.products.includes('neon-realtime');
+  const keys = [
+    ...(betterAuth ? ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'] : []),
+    ...(neonRealtime ? ['NEON_REALTIME_SECRET'] : []),
+  ];
+  if (!keys.length) return {};
   const runtime = setup.products.includes('hono') ? 'api' : 'web';
-  const relative = `apps/${runtime}/${runtime === 'web' && setup.hosting === 'vercel' ? '.env.local' : '.dev.vars'}`;
+  const relative = serverRuntimeFile(root, runtime, setup.hosting);
   const file = path.join(root, relative);
   if (!existsSync(file))
-    throw new Error(
-      `Configure BETTER_AUTH_SECRET and BETTER_AUTH_URL in ignored ${relative} before shipping.`,
-    );
+    throw new Error(`Configure ${keys.join(' and ')} in ignored ${relative} before shipping.`);
   if (
     realpathSync(path.dirname(file)) !== path.dirname(file) ||
     !lstatSync(file).isFile() ||
@@ -252,35 +251,46 @@ export async function applicationRuntime(
   )
     throw new Error('Ignore application runtime files before shipping.');
   if (
-    relative.endsWith('/.dev.vars') &&
-    existsSync(path.join(path.dirname(file), 'wrangler.jsonc'))
+    !relative.endsWith('/.env.local') &&
+    (existsSync(path.join(path.dirname(file), 'wrangler.jsonc')) ||
+      existsSync(path.join(path.dirname(file), 'anhedral.cloudflare.json')))
   ) {
     const config = readConfig(path.dirname(file));
     if (
       config.vars &&
       typeof config.vars === 'object' &&
-      ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'].some((key) =>
-        Object.hasOwn(config.vars as object, key),
-      )
+      keys.some((key) => Object.hasOwn(config.vars as object, key))
     )
       throw new Error(
-        'Remove Better Auth values from tracked Wrangler vars, review and commit that change, then configure the private runtime file before shipping.',
+        `Remove ${neonRealtime ? 'application runtime' : 'Better Auth'} values from tracked Wrangler vars, review and commit that change, then configure the private runtime file before shipping.`,
       );
   }
   const content = readBoundedFile(file, MAX_PROJECT_JSON_BYTES).toString('utf8');
-  const secret = applicationValue(content, 'BETTER_AUTH_SECRET');
-  if (
-    secret.length < 32 ||
-    /change.?me|replace.?me|placeholder|your.?secret|example|generate.?me/i.test(secret) ||
-    new Set(secret).size < 8
-  )
-    throw new Error(
-      'BETTER_AUTH_SECRET requires a generated nonplaceholder secret of at least 32 characters.',
-    );
-  const origin = applicationValue(content, 'BETTER_AUTH_URL');
-  if (!publicAuthOrigin(origin))
-    throw new Error(
-      'BETTER_AUTH_URL must be an HTTPS public origin without credentials, path, query or fragment.',
-    );
-  return { [relative]: { BETTER_AUTH_SECRET: secret, BETTER_AUTH_URL: origin } };
+  const values: RuntimeValues = {};
+  if (betterAuth) {
+    const secret = applicationValue(content, 'BETTER_AUTH_SECRET');
+    if (
+      secret.length < 32 ||
+      /change.?me|replace.?me|placeholder|your.?secret|example|generate.?me/i.test(secret) ||
+      new Set(secret).size < 8
+    )
+      throw new Error(
+        'BETTER_AUTH_SECRET requires a generated nonplaceholder secret of at least 32 characters.',
+      );
+    const origin = applicationValue(content, 'BETTER_AUTH_URL');
+    if (!publicAuthOrigin(origin))
+      throw new Error(
+        'BETTER_AUTH_URL must be an HTTPS public origin without credentials, path, query or fragment.',
+      );
+    Object.assign(values, { BETTER_AUTH_SECRET: secret, BETTER_AUTH_URL: origin });
+  }
+  if (neonRealtime) {
+    const secret = applicationValue(content, 'NEON_REALTIME_SECRET');
+    if (/change.?me|replace.?me|placeholder|your.?secret|example|generate.?me/i.test(secret))
+      throw new Error(
+        'Configure the nonplaceholder NEON_REALTIME_SECRET from the intended Neon Realtime service.',
+      );
+    values.NEON_REALTIME_SECRET = secret;
+  }
+  return { [relative]: values };
 }

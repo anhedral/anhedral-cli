@@ -30,6 +30,7 @@ jobs:
           - '20.19.0'
           - '22.12.0'
           - '24.18.0'
+          - '24.21.0'
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -57,12 +58,14 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: plugin-runtime
-          path: plugins/anhedral/runtime
+          path: plugins/codex/distribution/runtime
 
       - name: Run unit tests
-        env:
-          ANHEDRAL_REQUIRE_PLUGIN: '1'
         run: pnpm test:unit
+
+      - name: Verify reviewed dependency patches and preserve advisory visibility
+        if: ${{ matrix.node == '24.21.0' }}
+        run: pnpm test:patch
 
       - name: Check source hygiene and static security policy
         if: ${{ matrix.node == '20.19.0' }}
@@ -80,6 +83,24 @@ jobs:
         if: ${{ matrix.node == '20.19.0' }}
         run: node tests/test-packlist.js
 
+      - name: Build and verify Linux release candidate
+        if: ${{ matrix.node == '24.21.0' }}
+        run: |
+          node scripts/create-release-artifact.mjs
+          pnpm release:artifact:verify
+          pnpm release:artifact:smoke
+
+      - name: Share verified release candidate for review
+        if: ${{ matrix.node == '24.21.0' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-candidate
+          path: .artifacts/release/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
   e2e-stable:
     name: E2E Stable
     runs-on: ubuntu-latest
@@ -93,7 +114,7 @@ jobs:
           version: 10.34.5
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: '24.18.0'
+          node-version: '24.21.0'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build && node tests/test-packed-cli.js
@@ -106,7 +127,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
-        node: ['20.19.0', '22.12.0', '24.18.0']
+        node: ['20.19.0', '22.12.0', '24.18.0', '24.21.0']
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -133,7 +154,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['22.13.0', '24.18.0']
+        node: ['22.13.0', '24.21.0']
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -145,17 +166,23 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
-          cache-dependency-path: plugin-app/pnpm-lock.yaml
+          cache-dependency-path: plugins/codex/inspector/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --dir plugin-app install --frozen-lockfile
+      - run: pnpm --dir plugins/codex/inspector install --frozen-lockfile
       - run: pnpm plugin:check
-      - run: pnpm --dir plugin-app audit --audit-level low
+      - run: pnpm --dir plugins/codex/inspector audit --audit-level low
+      - name: Install dashboard test browser
+        if: ${{ matrix.node == '24.21.0' }}
+        run: pnpm --dir plugins/codex/inspector exec playwright install --with-deps chromium
+      - name: Test dashboard interactions and responsive themes
+        if: ${{ matrix.node == '24.21.0' }}
+        run: pnpm --dir plugins/codex/inspector test:browser
       - name: Share verified runtime with portable CLI checks
-        if: ${{ matrix.node == '24.18.0' }}
+        if: ${{ matrix.node == '24.21.0' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: plugin-runtime
-          path: plugins/anhedral/runtime
+          path: plugins/codex/distribution/runtime
           if-no-files-found: error
           retention-days: 1
 
@@ -183,9 +210,9 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         profile: ${{ fromJSON(needs.registry-matrix.outputs.profiles) }}
-        node: ['22.13.0', '24.18.0']
+        node: ['24.21.0']
         include:
-          - { os: macos-latest, profile: desktop, node: '24.18.0' }
+          - { os: macos-latest, profile: desktop, node: '24.21.0' }
     env:
       WRANGLER_SEND_METRICS: 'false'
       NEXT_TELEMETRY_DISABLED: '1'

@@ -1,3 +1,4 @@
+import { test } from 'node:test';
 import { releaseDirectory } from '../scripts/release-directory.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -22,11 +23,6 @@ import {
   validateReleaseDeclaration,
   validateWorkflowPolicy,
 } from '../scripts/check-release-policy.mjs';
-import {
-  compareStableVersions,
-  resolveReleaseVersion,
-  prepareAutomaticRelease,
-} from '../scripts/prepare-auto-release.mjs';
 import { scanTarball, scanText } from '../scripts/secret-scanner.mjs';
 import { resolveSpawnCommand } from '../scripts/spawn-command.mjs';
 
@@ -35,11 +31,10 @@ const repoRoot = path.resolve(__dirname, '..');
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-release-tooling-'));
 
 function runScript(script, args = [], env = {}) {
-  // Synthetic historical artifacts must not inherit the production release's pins.
+  // Synthetic artifacts must not inherit the production release's pins.
   const fixtureEnvironment = { ...process.env };
   for (const name of Object.keys(fixtureEnvironment)) {
-    if (name === 'ANHEDRAL_REQUIRE_PLUGIN' || name.startsWith('ANHEDRAL_EXPECTED_'))
-      delete fixtureEnvironment[name];
+    if (name.startsWith('ANHEDRAL_EXPECTED_')) delete fixtureEnvironment[name];
   }
   return spawnSync(process.execPath, [path.join(repoRoot, 'scripts', script), ...args], {
     cwd: repoRoot,
@@ -173,21 +168,6 @@ try {
   assert.equal(isValidSemver('1.0'), false);
   assert.equal(isValidSemver('01.0.0'), false);
   assert.equal(isValidSemver('1.0.0-01'), false);
-  assert.equal(compareStableVersions('0.4.1', '0.4.0') > 0, true);
-  assert.equal(compareStableVersions('1.0.0', '0.99.99') > 0, true);
-  assert.deepEqual(resolveReleaseVersion('0.4.0', '0.4.0'), {
-    version: '0.4.1',
-    automatic: true,
-  });
-  assert.deepEqual(resolveReleaseVersion('0.5.0', '0.4.0'), {
-    version: '0.5.0',
-    automatic: false,
-  });
-  assert.deepEqual(resolveReleaseVersion('0.4.0', '0.4.0', false), {
-    version: '0.4.0',
-    automatic: false,
-  });
-  assert.throws(() => resolveReleaseVersion('0.3.0', '0.4.0'), /behind npm version/);
   assert.deepEqual(validateReleaseDeclaration({ version: '2.3.4' }), []);
   assert.match(validateReleaseDeclaration({ version: '2.3' }).join('\n'), /SemVer/);
   assert.deepEqual(
@@ -200,76 +180,6 @@ try {
       "export const GENERATOR_VERSION = '2.3.3';\n",
     ).join('\n'),
     /does not match package\.json/,
-  );
-  const preparationRoot = path.join(temporaryRoot, 'preparation');
-  mkdirSync(path.join(preparationRoot, 'src'), { recursive: true });
-  writeFileSync(path.join(preparationRoot, 'package.json'), JSON.stringify({ version: '0.4.0' }));
-  writeFileSync(
-    path.join(preparationRoot, 'src/version.ts'),
-    "export const GENERATOR_VERSION = '0.4.0';\n",
-  );
-  mkdirSync(path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references'), {
-    recursive: true,
-  });
-  writeFileSync(
-    path.join(preparationRoot, 'plugins/anhedral/plugin.json'),
-    JSON.stringify({ version: '0.4.0' }),
-  );
-  writeFileSync(
-    path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/capabilities.json'),
-    JSON.stringify({ cliVersion: '0.4.0' }),
-  );
-  writeFileSync(
-    path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/stack-registry.json'),
-    JSON.stringify({ cliVersion: '0.4.0', items: [{ name: 'workspace', version: '0.4.0' }] }),
-  );
-  mkdirSync(path.join(preparationRoot, '.agents/plugins'), { recursive: true });
-  writeFileSync(
-    path.join(preparationRoot, '.agents/plugins/marketplace.json'),
-    JSON.stringify({
-      plugins: [{ name: 'anhedral', source: { source: 'git-subdir', ref: 'plugin-v0.4.0' } }],
-    }),
-  );
-  assert.deepEqual(prepareAutomaticRelease(preparationRoot, '0.4.0'), {
-    version: '0.4.1',
-    automatic: true,
-  });
-  assert.equal(
-    JSON.parse(readFileSync(path.join(preparationRoot, 'package.json'), 'utf8')).version,
-    '0.4.1',
-  );
-  assert.equal(
-    JSON.parse(readFileSync(path.join(preparationRoot, 'plugins/anhedral/plugin.json'), 'utf8'))
-      .version,
-    '0.4.1',
-  );
-  assert.equal(
-    JSON.parse(
-      readFileSync(
-        path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/capabilities.json'),
-        'utf8',
-      ),
-    ).cliVersion,
-    '0.4.1',
-  );
-  const preparedStack = JSON.parse(
-    readFileSync(
-      path.join(preparationRoot, 'plugins/anhedral/skills/anhedral/references/stack-registry.json'),
-    ),
-  );
-  assert.equal(preparedStack.cliVersion, '0.4.1');
-  assert.equal(preparedStack.items[0].version, '0.4.1');
-  assert.equal(
-    JSON.parse(readFileSync(path.join(preparationRoot, '.agents/plugins/marketplace.json')))
-      .plugins[0].source.ref,
-    'plugin-v0.4.1',
-  );
-  assert.deepEqual(
-    validateGeneratorVersion(
-      { version: '0.4.1' },
-      readFileSync(path.join(preparationRoot, 'src/version.ts'), 'utf8'),
-    ),
-    [],
   );
   assert.deepEqual(checkReleasePolicy(repoRoot), []);
 
@@ -343,8 +253,8 @@ try {
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace(
-      "  RELEASE_NODE_VERSION: '24.18.0'",
-      "  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true\n  RELEASE_NODE_VERSION: '24.18.0'",
+      "  RELEASE_NODE_VERSION: '24.21.0'",
+      "  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true\n  RELEASE_NODE_VERSION: '24.21.0'",
     ),
   );
   assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /temporary force override/);
@@ -429,7 +339,7 @@ try {
   writeFileSync(path.join(workflowPolicyDirectory, 'release-on-main.yml'), releaseOnMainWorkflow);
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replace("  ANHEDRAL_REQUIRE_PLUGIN: '1'", ''),
+    releaseWorkflow.replace('ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY:', 'UNPINNED_PLUGIN:'),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
@@ -532,6 +442,18 @@ try {
   const metadata = artifactMetadata(contents);
   const metadataPath = writeMetadata(artifactRoot, metadata);
   writeFileSync(path.join(artifactRoot, metadata.filename), contents);
+  const pluginContents = Buffer.from('deterministic plugin artifact');
+  metadata.plugin = {
+    schemaVersion: 1,
+    version: metadata.version,
+    cliVersion: metadata.version,
+    filename: `anhedral-plugin-${metadata.version}.zip`,
+    integrity: sha512Sri(pluginContents),
+    size: pluginContents.length,
+  };
+  writeFileSync(path.join(artifactRoot, metadata.plugin.filename), pluginContents);
+  writeFileSync(path.join(artifactRoot, 'plugin-metadata.json'), JSON.stringify(metadata.plugin));
+  writeMetadata(artifactRoot, metadata);
   assert.equal(runScript('verify-release-artifact.mjs', [metadataPath]).status, 0);
 
   writeFileSync(path.join(artifactRoot, metadata.filename), Buffer.from('tampered artifact'));
@@ -626,3 +548,65 @@ console.error(response.message || 'registry unavailable'); process.exit(response
 }
 
 console.log('Release tooling negative-path tests passed');
+
+test('secret scanning distinguishes dynamic URI builders from literal credentials and limits vendor author exemptions', () => {
+  const dynamic =
+    'postgresql://' +
+    '${encodeURIComponent(config.user)}' +
+    ':' +
+    '${encodeURIComponent(config.password)}' +
+    '@' +
+    '${encodeURIComponent(config.host)}';
+  assert.deepEqual(
+    scanText('plugins/codex/distribution/runtime/server.mjs', Buffer.from(dynamic)),
+    [],
+  );
+  const mixed = 'postgresql://' + '${user}' + ':' + 'privatePassword12345' + '@' + '${host}';
+  assert.ok(
+    scanText('plugins/codex/distribution/runtime/server.mjs', Buffer.from(mixed)).some(
+      (finding) => finding.pattern === 'credentialed-database-uri',
+    ),
+  );
+  const author = ['brian.m.carlson', 'gmail.com'].join('@');
+  assert.deepEqual(
+    scanText(
+      'plugins/codex/distribution/runtime/server.mjs',
+      Buffer.from('author: "Brian Carlson <' + author + '>"'),
+    ),
+    [],
+  );
+  assert.ok(
+    scanText(
+      'plugins/codex/distribution/runtime/server.mjs',
+      Buffer.from('customer: "' + author + '"'),
+    ).some((finding) => finding.pattern === 'email-address'),
+  );
+  assert.ok(
+    scanText('other.mjs', Buffer.from('author: "Brian Carlson <' + author + '>"')).some(
+      (finding) => finding.pattern === 'email-address',
+    ),
+  );
+});
+
+test('Node type update policies follow each package runtime without cross-package restrictions', () => {
+  const renovate = JSON.parse(readFileSync(path.join(repoRoot, 'renovate.json'), 'utf8'));
+  const rules = renovate.packageRules.filter((rule) =>
+    rule.matchPackageNames?.includes('@types/node'),
+  );
+  assert.equal(rules.length, 2);
+  const rootRule = rules.find((rule) => rule.matchFileNames?.includes('package.json'));
+  const inspectorRule = rules.find((rule) =>
+    rule.matchFileNames?.includes('plugins/codex/inspector/package.json'),
+  );
+  assert.deepEqual(rootRule.matchFileNames, ['package.json']);
+  assert.equal(rootRule.allowedVersions, '<21');
+  assert.deepEqual(inspectorRule.matchFileNames, ['plugins/codex/inspector/package.json']);
+  assert.equal(inspectorRule.allowedVersions, '>=24 <25');
+  for (const [file, major] of [
+    ['package.json', 20],
+    ['plugins/codex/inspector/package.json', 24],
+  ]) {
+    const manifest = JSON.parse(readFileSync(path.join(repoRoot, file), 'utf8'));
+    assert.equal(Number(manifest.devDependencies['@types/node'].split('.')[0]), major);
+  }
+});

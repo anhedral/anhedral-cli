@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { writeFile } from './util.js';
+import { isMap, parseDocument } from 'yaml';
 
 function policyBlock(key: string): RegExp {
   const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -22,55 +23,21 @@ export function setPnpmPolicy(root: string, policy: Record<string, unknown>): vo
   writeFile(file, source);
 }
 
-/** Merge reviewed patches without deleting starter-maintained mappings. */
-export function mergePnpmPatches(root: string, patches: Record<string, string>): void {
-  const file = path.join(root, 'pnpm-workspace.yaml');
-  const source = existsSync(file) ? readFileSync(file, 'utf8') : '';
-  const blocks = [...source.matchAll(policyBlock('patchedDependencies'))];
-  if (blocks.length > 1) throw new Error('Duplicate patchedDependencies configuration');
-  const block = blocks[0]?.[0] ?? '';
-  const existing = patchRows(block, patches);
-  const replacement =
-    'patchedDependencies:\n' +
-    existing +
-    Object.entries(patches)
-      .map(([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}\n`)
-      .join('');
-  const remaining = source.replace(policyBlock('patchedDependencies'), '');
-  writeFile(
-    file,
-    remaining + `${remaining.endsWith('\n') || !remaining ? '' : '\n'}${replacement}`,
-  );
-}
-
-function patchRows(block: string, patches: Record<string, string>): string {
-  if (!block) return '';
-  const [header, ...rows] = block.split(/\r?\n/);
-  const value = header!.slice(header!.indexOf(':') + 1).trim();
-  if (value && !value.startsWith('#')) {
-    const object: unknown = JSON.parse(value);
-    if (
-      !object ||
-      Array.isArray(object) ||
-      typeof object !== 'object' ||
-      Object.values(object).some((entry) => typeof entry !== 'string')
-    )
-      throw new Error('Unsupported patchedDependencies mapping');
-    return Object.entries(object)
-      .filter(([key]) => !Object.hasOwn(patches, key))
-      .map(([key, entry]) => `  ${JSON.stringify(key)}: ${JSON.stringify(entry)}\n`)
-      .join('');
+/** Extend a pnpm patch map without replacing unrelated patches or YAML comments. */
+export function pnpmPatchPolicy(source: string, coordinate: string, patch: string): string {
+  const document = parseDocument(source);
+  if (document.errors.length || !isMap(document.contents))
+    throw new Error('Invalid pnpm workspace YAML; preserve and review its patch configuration.');
+  let mapping = document.get('patchedDependencies', true);
+  if (mapping === undefined) {
+    document.set('patchedDependencies', document.createNode({}));
+    mapping = document.get('patchedDependencies', true);
   }
-  return rows
-    .filter((row) => {
-      if (!row.trim() || row.trimStart().startsWith('#')) return true;
-      const match = row.match(
-        /^  (?:"([^"\\]+)"|'([^']+)'|([^\s:'"]+)):\s*(?:"[^"\\]+"|'[^']+'|[^\s{}[\]&*!|>]+)(?:\s+#.*)?\s*$/,
-      );
-      if (!match) throw new Error('Unsupported patchedDependencies mapping');
-      return !Object.hasOwn(patches, match[1] ?? match[2] ?? match[3]!);
-    })
-    .filter((row, index, rows) => row || index < rows.length - 1)
-    .map((row) => `${row}\n`)
-    .join('');
+  if (!isMap(mapping)) throw new Error('patchedDependencies must be an explicit YAML mapping.');
+  const previous = mapping.get(coordinate);
+  if (previous !== undefined && previous !== patch)
+    throw new Error(`A different customer patch is already configured for ${coordinate}.`);
+  if (previous === patch) return source;
+  mapping.set(coordinate, patch);
+  return document.toString({ lineWidth: 0 });
 }

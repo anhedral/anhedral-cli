@@ -6,9 +6,9 @@ Codex implements the product; the CLI supplies scaffolding, selected resource re
 
 ## Plan and implement
 
-1. Choose only needed components from the [stack standard](application-stack-standard.md). Record decisions, ownership, environment/cost assumptions and actual connections in the application's `docs/architecture.md`.
+1. Choose only needed components from the [stack standard](https://github.com/anhedral/anhedral-cli/blob/main/docs/stack-standard.md). Record decisions, ownership, environment/cost assumptions and actual connections in the application's `docs/architecture.md`.
 2. Match installed plugin, registry `cliVersion` and executable versions. Check Node/pnpm, Git identity, toolchains and customer provider access. For unpublished development use `pnpm build` and `node dist/bin.js`; never silently substitute `@latest`.
-3. Inspect `init <unused-directory> <flags> --dry-run --json`, then generate with those choices. Review README, AGENTS, setup manifests and resolved lockfile. For initialized apps, preview `add <directory> <items...> --dry-run --json`; additions protect edited source and record registry provenance. Select only items from the bundled Anhedral catalog. If a web addition reports `filesChecked: false`, the preview covers selection and targets only; the actual transaction checks generated-file conflicts before committing. Older projects and runtime relocation require explicit migration. `doctor --providers --json` checks access without configuring infrastructure or certifying production.
+3. Inspect `init <unused-directory> <flags> --dry-run --json`, then generate with those choices. Review README, AGENTS, setup manifests and resolved lockfile. For initialized apps, preview `anhedral --cwd <directory> add <items...> --dry-run --json`; additions protect edited source and record registry provenance. Select only items from the bundled Anhedral catalog. If a web addition reports `filesChecked: false`, the preview covers selection and targets only; the actual transaction checks generated-file conflicts before committing. Additions require current registry receipts and preserve the selected runtime layout. `doctor --providers --json` checks access without configuring infrastructure or certifying production.
 4. Implement screens, APIs, persistence, authorization and integration behavior. Replace placeholders with working flows. Configure real secrets, origins and reviewed migrations using provider tools; starters do not establish setup completion. Keep credentials out of source, logs and handoffs.
 
 ## Provider authentication
@@ -17,7 +17,7 @@ Run `anhedral auth <directory>` for the selected stack. `--status` checks existi
 
 ## Source and release authority
 
-Complete the selected integrations' nonsecret account/resource choices in `anhedral.providers.json`. See [provider configuration](provider-configuration.md) for supported adapters, management credentials, private runtime files, retry behavior, provider prerequisites and verification limits. `ship --dry-run` previews their missing settings without provider operations.
+Complete the selected integrations' nonsecret account/resource choices in the `providers` section of `anhedral.json`. See [provider configuration](provider-configuration.md) for supported adapters, management credentials, private runtime files, retry behavior, provider prerequisites and verification limits. `ship --dry-run` previews their missing settings without provider operations.
 
 Use customer-owned accounts and a reviewed clean commit. Default to a private repository in the selected account; organizations require selection.
 
@@ -31,19 +31,20 @@ Choose one release path per change: checked `ship`, or checks followed by an aut
 
 ## Cloudflare delivery
 
-Vinext/Workers is the default web recipe. Explicit Next.js on Workers uses `--next --hosting=cloudflare`. Select persistence, identity and AI from the standard. Cloudflare manifests use `anhedral.project.json`. Default `ship` coordinates Cloudflare services before the Vercel web app in mixed projects. Use `--provider cloudflare` or `--provider vercel` to operate on one hosting target explicitly; standalone `provision` is Cloudflare-only.
+Vinext/Workers is the default web recipe. Explicit Next.js on Workers uses `--next --hosting=cloudflare`. Select persistence, identity and AI from the standard. Cloudflare delivery reads the `cloudflare` section of `anhedral.json`. Default `ship` coordinates Cloudflare services before the Vercel web app in mixed projects. Use `--provider cloudflare` or `--provider vercel` to operate on one hosting target explicitly; standalone `provision` is Cloudflare-only. Supported Cloudflare selections use Void, while explicit OpenNext, queue/DLQ and Basin selections use Wrangler.
 
 ```sh
 anhedral connect my-app --audience private --allow-email owner@example.com
 anhedral provision my-app --dry-run --json
-anhedral provision my-app --json
 anhedral ship my-app --dry-run --json
 anhedral ship my-app --json
 ```
 
 Connect verifies the sole accessible or explicitly selected `--account` and preserves audience/account choices. Public access requires authorization. Private hosting needs Zero Trust and scoped Access/Workers permissions; verify routes, domains and previews before and after deployment. Whole-Worker Access does not cover WebSockets: design and verify private realtime separately.
 
-Provision reconciles D1, private R2, KV and Queues/dead-letter queues; it does not implement schemas or integrations. Full `ship` also configures the selected integration adapters and private Basin streams. Review database migrations and application-specific integrations separately; developer-added Hyperdrive, Basin sinks and transforms need an explicit provider workflow. The Neon starter uses direct serverless HTTP with a server-side DATABASE_URL. Reconcile partial operations before retrying. Shipping requires clean source, checks account/bindings, runs application checks and confirms active versions/traffic. Multiple Workers are not an atomic release; web deploys last by default.
+For Void projects, `provision` reports the resource plan and defers writes to Void deployment. It never runs Anhedral's resource creator in parallel. The migration owner prepares an ignored, byte-identical validation copy from `packages/db/drizzle`; Void validates its apply set against the shared SQL. Other consumers receive no migration copy. Generate and review SQL with the shared Drizzle configuration first; Void does not inspect shared-package schema drift automatically. Void deploys targets serially, records actual IDs in each app's `void.lock.json`, and applies reviewed deployment migrations. The first activation may require reviewing and committing new locks before shipping a clean release; successful target activation is recorded separately from source completion and product verification. Subsequent deployments reuse the committed identities. Wrangler provisioning reconciles D1, private R2, KV and Queues/dead-letter queues; it does not implement schemas or integrations. Full `ship` also configures the selected integration adapters and private Basin streams. Review database migrations and application-specific integrations separately; developer-added Hyperdrive, Basin sinks and transforms need an explicit provider workflow. Void apps use `anhedral.cloudflare.json`, `void.config.ts` and `env.ts`; copy `env.example` to the app's private `.env`. Do not add `.env.local`, `.env.production`, `.env.example` or `.dev.vars` alongside Void's local environment file. Secret commands use noninteractive stdin; public build variables stay in the build environment. Vite clients use `VITE_*`; the pinned Vinext plugin loads the app `.env` for local builds and maps `NEXT_PUBLIC_*` into client bundles. Supply the selected public values during production builds; server-secret uploads do not configure client bundles. The Neon starter uses direct serverless HTTP with a server-side DATABASE_URL. Reconcile partial operations before retrying. Shipping requires clean source, checks account/bindings, runs application checks and confirms active versions/traffic. Void's pinned structured JSONL receipt is correlated with the active Cloudflare version independently; diagnostic prose is never a success receipt. Missing/ambiguous receipts or provider drift stop acceptance. Multiple Workers are not an atomic release; web deploys last by default. Code rollback delegates to Void for Void projects and does not undo database migrations or incompatible Durable Object class changes.
+
+See [Void verification and handoff](void-verification.md) for the pinned evidence contract, reproducible checks, live acceptance results and outstanding gates.
 
 ## Native Next.js/Vercel delivery
 
@@ -94,4 +95,4 @@ Before release, check the exact candidate's runtime, current dependency advisori
 
 ### Interrupted local delivery locks
 
-Use `anhedral recover --lock [directory]` only after an interrupted command. This releases a lock only when its recorded process is proven dead on the same host. It never replays provider operations or deletes delivery receipts. Inspect status and receipts before retrying. Live, foreign, legacy, malformed, and uncertain locks are preserved. A leftover `.anhedral/ship.guard` requires manual inspection; the CLI cannot safely infer its ownership. Do not combine local lock recovery with `--provider` or `--refresh`.
+Use `anhedral recover --lock [directory]` only after an interrupted command. This releases a lock only when its recorded process is proven dead on the same host. It never replays provider operations or deletes delivery receipts. Inspect status and receipts before retrying. Live, foreign, malformed, and uncertain locks are preserved. A leftover `.anhedral/ship.guard` requires manual inspection; the CLI cannot safely infer its ownership. Do not combine local lock recovery with `--provider` or `--refresh`.

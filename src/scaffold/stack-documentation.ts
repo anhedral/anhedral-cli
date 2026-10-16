@@ -44,7 +44,7 @@ export function writeStackDocumentation(root: string, registry: ResolvedStackReg
     [
       '# Selected stack',
       '',
-      `Generated from the bundled Anhedral ${registry.cliVersion} registry. This file is refreshed by add. Keep product decisions in docs/architecture.md and acceptance evidence in docs/verification.md.`,
+      `Generated from the bundled Anhedral ${registry.cliVersion} registry. Project configuration lives in anhedral.json; setup and registry record the current selection and generated source, providers holds integration settings, and cloudflare/vercel hold selected hosting configuration. This document is refreshed by add. Keep product decisions in docs/architecture.md and acceptance evidence in docs/verification.md.`,
       '',
       'These are scaffolds and integration boundaries. Provider access, migrations, authorization and live behavior require the setup and checks listed below.',
       ...(ports.length

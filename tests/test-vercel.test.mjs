@@ -1,3 +1,4 @@
+import { readProjectSection, writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -17,6 +18,7 @@ import {
   planVercelDelivery,
   shipVercelApplication,
   vercelApplicationStatus,
+  vercelServiceMetrics,
   verifyVercelApplication,
   rollbackVercelApplication,
   adoptVercelApplication,
@@ -78,7 +80,7 @@ test('Vercel configures production variables through a private file, verifies pa
 function fixture() {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-vercel-test-'));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
-  writeFileSync(path.join(root, 'anhedral.setup.json'), JSON.stringify({ hosting: 'vercel' }));
+  writeProjectSection(root, 'setup', { hosting: 'vercel' });
   writeFileSync(
     path.join(root, 'package.json'),
     JSON.stringify({ name: 'customer-app', scripts: { 'test:live': 'node tests/live.mjs' } }),
@@ -133,7 +135,7 @@ function provider(root, options = {}) {
       if (args[0] === 'show')
         return options.uncommittedManifest
           ? '{}'
-          : readFileSync(path.join(root, 'anhedral.web.json'), 'utf8');
+          : readFileSync(path.join(root, 'anhedral.json'), 'utf8');
       if (args[0] === 'ls-remote')
         return `${options.remoteDrift ? 'c'.repeat(40) : commit}\trefs/heads/main`;
       if (args.includes('--show-toplevel')) return root;
@@ -204,8 +206,7 @@ function provider(root, options = {}) {
               }
             : undefined,
           meta: {
-            anhedralProject: JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8'))
-              .id,
+            anhedralProject: readProjectSection(root, 'vercel').id,
             anhedralCommit: options.wrongCommit ? 'c'.repeat(40) : commit,
           },
         });
@@ -415,10 +416,7 @@ test('Vercel Git connection verifies the remote provider link and keeps account 
           connect(root, mock.run, { git: true }),
           /GitHub repository connection/,
         );
-        assert.equal(
-          JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8')).projectId,
-          projectId,
-        );
+        assert.equal(readProjectSection(root, 'vercel').projectId, projectId);
       } else {
         await connect(root, mock.run, { git: true });
         assert.ok(
@@ -455,10 +453,11 @@ test('Vercel retains Git identity and rejects later provider or origin drift bef
     const options = {};
     const mock = provider(root, options);
     await connect(root, mock.run, { git: true });
-    assert.deepEqual(
-      JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8')).repository,
-      { repoId: 123, nameWithOwner: 'customer/customer-app', productionBranch: 'main' },
-    );
+    assert.deepEqual(readProjectSection(root, 'vercel').repository, {
+      repoId: 123,
+      nameWithOwner: 'customer/customer-app',
+      productionBranch: 'main',
+    });
     await shipVercelApplication(root, mock.run);
     await verifyVercelApplication(root, mock.run);
     options.drift = true;
@@ -495,10 +494,7 @@ test('Vercel private creation enables all-deployment authentication before linki
     assert.equal(result.planActivated, false);
     assert.equal(result.project.audience, 'private');
     const patch = mock.calls.find((call) => call.args[2] === 'api' && call.args.includes('PATCH'));
-    assert.deepEqual(
-      JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8')).audience,
-      'private',
-    );
+    assert.deepEqual(readProjectSection(root, 'vercel').audience, 'private');
     assert.ok(patch);
     assert.ok(mock.calls.indexOf(patch) < mock.calls.findIndex((call) => call.args[2] === 'link'));
   } finally {
@@ -633,6 +629,47 @@ test('Idempotent adoption refuses a production change during its refresh', async
       'stale',
     );
     assert.equal((await vercelApplicationStatus(root)).releases.length, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Vercel analytics verifies the selected project and rejects out-of-window or malformed results', async () => {
+  const root = fixture();
+  const mock = provider(root);
+  let malformed = false;
+  let queries = 0;
+  const run = async (command, args, cwd, env) => {
+    if (args[2] === 'api' && args[3].startsWith('/v1/query/web-analytics/visits/aggregate?')) {
+      queries++;
+      const params = new URL(args[3], 'https://api.vercel.com').searchParams;
+      assert.equal(params.get('projectId'), projectId);
+      assert.equal(params.get('teamId'), team);
+      assert.equal(params.get('by'), 'day');
+      assert.ok(args.includes(team));
+      return JSON.stringify({
+        version: 1,
+        query: { since: params.get('since') },
+        data: [
+          {
+            timestamp: malformed ? '2000-01-01T00:00:00Z' : params.get('since') + 'T00:00:00Z',
+            pageviews: 3,
+            visitors: 2,
+          },
+        ],
+      });
+    }
+    return mock.run(command, args, cwd, env);
+  };
+  try {
+    await connect(root, mock.run);
+    const result = await vercelServiceMetrics(root, 24, run);
+    assert.equal(result.points[0].values.pageviews, 3);
+    assert.equal(result.timezone, 'UTC');
+    malformed = true;
+    await assert.rejects(vercelServiceMetrics(root, 24, run), /Invalid Vercel analytics/);
+    await assert.rejects(vercelServiceMetrics(root, 1, run), /complete UTC days/);
+    assert.equal(queries, 2);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

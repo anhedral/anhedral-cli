@@ -1,3 +1,6 @@
+import { readProjectSection, writeProjectSection } from '../dist/project-config.js';
+import { createSetupPlan } from '../dist/capabilities.js';
+import { parseStandardOptions } from '../dist/registry/options.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
@@ -50,7 +53,11 @@ function fixture(config = {}) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-resource-test-'));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
   writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'example' }));
-  writeFileSync(path.join(root, 'anhedral.setup.json'), JSON.stringify({ hosting: 'cloudflare' }));
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--hono', '--vinext'])),
+  );
   writeFileSync(
     path.join(root, 'apps/web/package.json'),
     JSON.stringify({ scripts: { deploy: 'wrangler deploy' } }),
@@ -117,6 +124,10 @@ test('resource plans are read-only and provisioning is idempotent with comment-p
     const before = api.calls.filter((call) => call.method === 'POST').length;
     const second = await provisionApplication(root, false, run, api.request);
     assert.ok(second.resources.every((item) => item.reused));
+    assert.ok(
+      second.resources.every((item) => item.createdByProject),
+      'Creation ownership survives idempotent provisioning retries',
+    );
     assert.equal(api.calls.filter((call) => call.method === 'POST').length, before);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -309,6 +320,32 @@ test('provisioning refuses a stale binding plan after asynchronous configuration
         .binding,
       'OTHER',
     );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Void alone provisions new project resources; Anhedral never invokes a second resource writer', async () => {
+  const root = fixture({
+    d1_databases: [
+      { binding: 'DB', database_name: 'example-db', database_id: 'REPLACE_WITH_D1_ID' },
+    ],
+  });
+  try {
+    const project = readProjectSection(root, 'cloudflare');
+    project.deliveryEngine = 'void';
+    writeProjectSection(root, 'cloudflare', project);
+    const before = readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8');
+    const result = await provisionApplication(
+      root,
+      false,
+      async () => assert.fail('No provider CLI before Void'),
+      async () => assert.fail('No provider API before Void'),
+    );
+    assert.equal(result.writer, 'void');
+    assert.equal(result.deferredToDeployment, true);
+    assert.equal(result.mutation, false);
+    assert.equal(readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8'), before);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

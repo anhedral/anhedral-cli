@@ -40,11 +40,11 @@ export const verification = ${table}('verification', {
   writeFile(path.join(root, 'packages/db/src/schema.ts'), schema);
   if (!postgres) {
     writeFile(
-      path.join(root, 'packages/db/migrations/meta/0000_snapshot.json'),
+      path.join(root, 'packages/db/drizzle/meta/0000_snapshot.json'),
       JSON.stringify(betterAuthSqliteSnapshot, null, 2) + '\n',
     );
     writeFile(
-      path.join(root, 'packages/db/migrations/meta/_journal.json'),
+      path.join(root, 'packages/db/drizzle/meta/_journal.json'),
       JSON.stringify(
         {
           version: '7',
@@ -66,7 +66,7 @@ export const verification = ${table}('verification', {
   }
   if (!postgres)
     writeFile(
-      path.join(root, 'packages/db/migrations/0000_better_auth.sql'),
+      path.join(root, 'packages/db/drizzle/0000_better_auth.sql'),
       'CREATE TABLE `account` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`account_id` text NOT NULL,\n\t`provider_id` text NOT NULL,\n\t`user_id` text NOT NULL,\n\t`access_token` text,\n\t`refresh_token` text,\n\t`id_token` text,\n\t`access_token_expires_at` integer,\n\t`refresh_token_expires_at` integer,\n\t`scope` text,\n\t`password` text,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL,\n\tFOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade\n);\n--> statement-breakpoint\nCREATE INDEX `account_user_id_idx` ON `account` (`user_id`);--> statement-breakpoint\nCREATE TABLE `session` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`expires_at` integer NOT NULL,\n\t`token` text NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL,\n\t`ip_address` text,\n\t`user_agent` text,\n\t`user_id` text NOT NULL,\n\tFOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `session_token_unique` ON `session` (`token`);--> statement-breakpoint\nCREATE INDEX `session_user_id_idx` ON `session` (`user_id`);--> statement-breakpoint\nCREATE TABLE `user` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`name` text NOT NULL,\n\t`email` text NOT NULL,\n\t`email_verified` integer DEFAULT false NOT NULL,\n\t`image` text,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint\nCREATE TABLE `verification` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`identifier` text NOT NULL,\n\t`value` text NOT NULL,\n\t`expires_at` integer NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n);\n--> statement-breakpoint\nCREATE INDEX `verification_identifier_idx` ON `verification` (`identifier`);',
     );
 }

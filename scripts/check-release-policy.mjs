@@ -211,7 +211,6 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
       '.github/workflows/release-on-main.yml: dispatch must pin the exact reviewed main commit',
     );
   if (
-    !/ANHEDRAL_REQUIRE_PLUGIN: '1'/.test(releaseWorkflow) ||
     !/ANHEDRAL_EXPECTED_INTEGRITY: \$\{\{ inputs\.cli_integrity \}\}/.test(releaseWorkflow) ||
     !/ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: \$\{\{ inputs\.plugin_integrity \}\}/.test(
       releaseWorkflow,
@@ -368,18 +367,18 @@ export function validateWorkflowPolicy(root) {
 
 function validatePluginRelease(root, version) {
   const manifest = JSON.parse(
-    readFileSync(path.join(root, 'plugins/anhedral/plugin.json'), 'utf8'),
+    readFileSync(path.join(root, 'plugins/codex/distribution/plugin.json'), 'utf8'),
   );
   const registry = JSON.parse(
     readFileSync(
-      path.join(root, 'plugins/anhedral/skills/anhedral/references/capabilities.json'),
+      path.join(root, 'plugins/codex/distribution/skills/anhedral/references/capabilities.json'),
       'utf8',
     ),
   );
   const failures = [];
   const stack = JSON.parse(
     readFileSync(
-      path.join(root, 'plugins/anhedral/skills/anhedral/references/stack-registry.json'),
+      path.join(root, 'plugins/codex/distribution/skills/anhedral/references/stack-registry.json'),
       'utf8',
     ),
   );
@@ -390,6 +389,8 @@ function validatePluginRelease(root, version) {
   if (
     entry?.source?.source !== 'git-subdir' ||
     entry.source.url !== 'https://github.com/anhedral/anhedral-cli.git' ||
+    // Immutable release tags retain their public installation path. Checkout
+    // source lives in plugins/codex/distribution and is packed into that tag tree.
     entry.source.path !== './plugins/anhedral' ||
     entry.source.ref !== `plugin-v${version}` ||
     entry.policy?.installation !== 'AVAILABLE' ||

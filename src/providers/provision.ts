@@ -46,7 +46,7 @@ export async function provisionSelectedProviders(
   for (const provider of plan.providers) {
     if (provider.missing.length)
       throw new Error(
-        `${provider.provider}: complete anhedral.providers.json (${provider.missing.join(', ')}).`,
+        `${provider.provider}: complete anhedral.json providers configuration (${provider.missing.join(', ')}).`,
       );
     if (!environment[provider.credential])
       throw new Error(`${provider.provider}: supply ${provider.credential} before provisioning.`);

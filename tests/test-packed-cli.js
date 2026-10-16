@@ -45,7 +45,7 @@ function runInstalledScaffold(installRoot) {
   const projectRoot = path.join(installRoot, 'packed-project');
   const plan = run(
     binPath,
-    ['new', projectRoot, '--hono', '--neon', '--r2', '--dry-run', '--json'],
+    ['init', projectRoot, '--hono', '--neon', '--r2', '--dry-run', '--json'],
     installRoot,
   );
   const resolved = JSON.parse(plan.stdout);
@@ -99,10 +99,45 @@ try {
   const packageJson = JSON.parse(
     readFileSync(path.join(installRoot, 'node_modules/anhedral/package.json'), 'utf8'),
   );
+  const patch = readFileSync(
+    path.join(installRoot, 'node_modules/anhedral/assets/patches/braces@3.0.3.patch'),
+    'utf8',
+  );
+  assert.match(patch, /diff --git/);
+  assert.ok(
+    existsSync(path.join(installRoot, 'node_modules/anhedral/assets/patches/LICENSE.braces')),
+  );
   assert.equal(packageJson.bin.anhedral, 'dist/bin.js');
   assert.equal(packageJson.types, './dist/index.d.ts');
   assert.match(runInstalledCli(installRoot).stdout, /anhedral init/);
   runInstalledScaffold(installRoot);
+  run(
+    process.execPath,
+    [
+      '--input-type=module',
+      '--eval',
+      `
+    import assert from 'node:assert/strict';
+    import fs from 'node:fs';
+    import path from 'node:path';
+    import { pathToFileURL } from 'node:url';
+    const installed = path.resolve('node_modules/anhedral');
+    const { configureDependencyPatches, writeDependencyAudit } = await import(pathToFileURL(path.join(installed, 'dist/dependency-patches.js')));
+    const root = path.resolve('installed-patch-probe');
+    fs.mkdirSync(root);
+    fs.writeFileSync(path.join(root, 'package.json'), '{}');
+    fs.writeFileSync(path.join(root, 'pnpm-workspace.yaml'), 'packages: []' + String.fromCharCode(10));
+    fs.writeFileSync(path.join(root, 'pnpm-lock.yaml'), ['packages:', '  braces@3.0.3:', '  node-forge@1.4.0:', ''].join(String.fromCharCode(10)));
+    writeDependencyAudit(root);
+    assert.deepEqual(fs.readFileSync(path.join(root, 'scripts/audit-deps.mjs')), fs.readFileSync(path.join(installed, 'assets/patches/audit-deps.mjs')));
+    assert.equal(configureDependencyPatches(root), true);
+    for (const name of ['braces@3.0.3.patch', 'LICENSE.braces', 'node-forge@1.4.0.patch', 'LICENSE.node-forge'])
+      assert.deepEqual(fs.readFileSync(path.join(root, 'patches', name)), fs.readFileSync(path.join(installed, 'assets/patches', name)));
+    assert.equal(configureDependencyPatches(root), false);
+  `,
+    ],
+    installRoot,
+  );
   const imported = run(
     process.execPath,
     [

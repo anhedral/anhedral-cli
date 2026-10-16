@@ -3,6 +3,7 @@ import path from 'node:path';
 import { execFile, appendGitignore } from '../util.js';
 import { bootstrapArguments } from '../registry/bootstrap.js';
 import type { StandardRunner } from '../registry/types.js';
+import { supportsWorkspaceRuntime } from '../runtime-policy.js';
 
 export function assertBootstrapPlatform(run: StandardRunner, platform = process.platform): void {
   if (platform === 'win32' && run === execFile)
@@ -14,8 +15,7 @@ export function assertBootstrapPlatform(run: StandardRunner, platform = process.
 /** Planning and diagnostics support older Node releases; generated dependencies do not. */
 export function assertWorkspaceRuntime(run: StandardRunner, version = process.versions.node): void {
   if (run !== execFile) return;
-  const [major, minor] = version.split('.').map(Number);
-  if (!((major === 22 && minor >= 13) || major >= 24))
+  if (!supportsWorkspaceRuntime(version))
     throw new Error(
       'Generated workspaces require Node.js 22.13+ on the 22.x line or Node.js 24+. Planning and doctor remain available on older CLI-supported versions.',
     );

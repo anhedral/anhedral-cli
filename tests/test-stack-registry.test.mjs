@@ -1,3 +1,4 @@
+import { readProjectSection } from '../dist/project-config.js';
 import { bootstrap } from './support/workspace-bootstrap.mjs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -18,8 +19,7 @@ import {
 } from '../dist/index.js';
 
 const names = (plan) => plan.items.map((item) => item.name);
-const resolve = (args) =>
-  resolveStackRegistry(parseStandardOptions('new', ['registry-test', ...args]));
+const resolve = (args) => resolveStackRegistry(parseStandardOptions(['registry-test', ...args]));
 
 test('every supported product is registered and shares selection rules with setup metadata', () => {
   for (const name of STANDARD_PRODUCTS) {
@@ -40,6 +40,7 @@ test('runtime and database dependencies precede auth and resolve deterministical
     '--expo',
     '--hono',
     '--neon',
+    '--neon-realtime',
     '--better-auth',
     '--stripe',
     '--revenuecat',
@@ -118,7 +119,7 @@ test('registry inspection and planning work offline and do not create files', ()
     ])
       assert.equal(run(...args, '--json').status, 1);
     const planned = path.join(root, 'app');
-    const result = run('new', planned, '--better-auth', '--dry-run', '--json');
+    const result = run('init', planned, '--better-auth', '--dry-run', '--json');
     assert.equal(result.status, 0, result.stderr);
     assert.ok(names(JSON.parse(result.stdout).registry).includes('d1'));
     assert.equal(existsSync(planned), false);
@@ -165,6 +166,7 @@ test('recipes compose all compatible products without package collisions, and in
     '--wxt',
     '--hono',
     '--neon',
+    '--neon-realtime',
     '--better-auth',
     '--r2',
     '--kv',
@@ -200,8 +202,8 @@ test('recipes compose all compatible products without package collisions, and in
   console.log = () => {};
   try {
     const target = path.join(root, 'composed');
-    await scaffoldStandardProject(parseStandardOptions('new', [target, ...flags]), runner(false));
-    const installed = JSON.parse(readFileSync(path.join(target, 'anhedral.registry.json'), 'utf8'));
+    await scaffoldStandardProject(parseStandardOptions([target, ...flags]), runner(false));
+    const installed = readProjectSection(target, 'registry');
     const workspaces = installed.workspaces.map((item) => item.directory);
     for (const directory of [
       'apps/web',
@@ -228,7 +230,7 @@ test('recipes compose all compatible products without package collisions, and in
     const invalid = path.join(root, 'invalid');
     await assert.rejects(
       scaffoldStandardProject(
-        parseStandardOptions('new', [invalid, '--next', '--skip-install', '--no-git', '--json']),
+        parseStandardOptions([invalid, '--next', '--skip-install', '--no-git', '--json']),
         runner(true),
       ),
       /Missing workspace dependency/,

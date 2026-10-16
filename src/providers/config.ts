@@ -1,6 +1,5 @@
-import path from 'node:path';
-import { existsSync, realpathSync } from 'node:fs';
-import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
+import { realpathSync } from 'node:fs';
+import { hasProjectSection, readProjectSection } from '../project-config.js';
 import { validateSetupPlan } from '../readiness.js';
 
 import {
@@ -102,14 +101,13 @@ export function validateProviderConfiguration(
 
 export function providerConfiguration(root: string): ProviderConfiguration {
   root = realpathSync(root);
-  const file = path.join(root, 'anhedral.providers.json');
   const selected = selectedIntegrations(root);
-  if (!existsSync(file)) return { schemaVersion: 1, providers: {} };
+  if (!hasProjectSection(root, 'providers')) return { schemaVersion: 1, providers: {} };
   let value: unknown;
   try {
-    value = JSON.parse(readBoundedFile(file, MAX_PROJECT_JSON_BYTES).toString('utf8'));
+    value = readProjectSection(root, 'providers');
   } catch {
-    throw new Error('Invalid anhedral.providers.json.');
+    throw new Error('Invalid anhedral.json providers configuration.');
   }
   validateProviderConfiguration(value, selected);
   return value;
@@ -186,11 +184,7 @@ export function providerRequirements(id: IntegrationProvider, config: ProviderSe
 }
 
 export function selectedIntegrations(root: string): IntegrationProvider[] {
-  const setup: unknown = JSON.parse(
-    readBoundedFile(path.join(root, 'anhedral.setup.json'), MAX_PROJECT_JSON_BYTES).toString(
-      'utf8',
-    ),
-  );
+  const setup: unknown = readProjectSection(root, 'setup');
   validateSetupPlan(setup);
   return INTEGRATION_PROVIDERS.filter(
     (id) => setup.products.includes(id) || (id === 'openai' && setup.products.includes('ai-sdk')),

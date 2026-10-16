@@ -1,3 +1,4 @@
+import { readProjectSection, writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -50,13 +51,19 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     const installed = path.join(temporary, 'node_modules/anhedral');
     mkdirSync(installed, { recursive: true });
     cpSync(path.join(root, 'dist'), path.join(installed, 'dist'), { recursive: true });
-    cpSync(path.join(root, 'assets'), path.join(installed, 'assets'), { recursive: true });
+    cpSync(path.join(root, 'assets/patches'), path.join(installed, 'assets/patches'), {
+      recursive: true,
+    });
     cpSync(path.join(root, 'package.json'), path.join(installed, 'package.json'));
-    cpSync(
-      path.join(root, 'node_modules/jsonc-parser'),
-      path.join(temporary, 'node_modules/jsonc-parser'),
-      { recursive: true, dereference: true },
-    );
+    for (const dependency of Object.keys(
+      JSON.parse(readFileSync(path.join(root, 'package.json'))).dependencies,
+    )) {
+      cpSync(
+        path.join(root, 'node_modules', dependency),
+        path.join(temporary, 'node_modules', dependency),
+        { recursive: true, dereference: true },
+      );
+    }
     const cli = path.join(installed, 'dist/bin.js');
     const run = (...args) =>
       spawnSync(process.execPath, [cli, ...args], { cwd: temporary, encoding: 'utf8' });
@@ -68,17 +75,20 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     assert.equal(successful('--version').trim(), manifest.version);
     assert.equal(registry.cliVersion, manifest.version);
     assert.equal(metadata.cliVersion, manifest.version);
-    for (const document of ['application-stack-standard.md', 'delivery-workflow.md']) {
+    for (const [document, source] of [
+      ['application-stack-standard.md', 'stack-standard.md'],
+      ['delivery-workflow.md', 'delivery-workflow.md'],
+    ]) {
       assert.equal(
         readFileSync(path.join(references, document), 'utf8'),
-        readFileSync(path.join(root, 'docs', document), 'utf8'),
+        readFileSync(path.join(root, 'docs', source), 'utf8'),
       );
     }
     assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [
       'Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about.',
     ]);
     const app = path.join(temporary, 'my-first-app');
-    const plan = JSON.parse(successful('new', app, '--dry-run', '--json'));
+    const plan = JSON.parse(successful('init', app, '--dry-run', '--json'));
     assert.deepEqual(plan.products, ['vinext']);
     assert.equal(plan.hosting, 'cloudflare');
     assert.equal(existsSync(app), false, 'Planning must not create the app');
@@ -89,7 +99,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     assert.deepEqual(JSON.parse(successful('registry', 'list', '--json')), stackRegistry);
     assert.deepEqual(plan.registry, api.resolveStackRegistry(plan));
     // The official network bootstrap is replaced here; generated overlays and the CLI are real.
-    const options = api.parseStandardOptions('new', [app, '--skip-install', '--no-git', '--json']);
+    const options = api.parseStandardOptions([app, '--skip-install', '--no-git', '--json']);
     const log = console.log;
     console.log = () => {};
     try {
@@ -170,10 +180,9 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     const blocked = run('ship', app, '--json');
     assert.equal(blocked.status, 1, 'An unconnected starter must not be represented as shipped');
     assert.equal(JSON.parse(successful('status', app, '--json')).releases.length, 0);
-    const setupFile = path.join(app, 'anhedral.setup.json');
-    const setup = JSON.parse(readFileSync(setupFile));
+    const setup = readProjectSection(app, 'setup');
     setup.cliVersion = '0.0.0';
-    writeFileSync(setupFile, JSON.stringify(setup));
+    writeProjectSection(app, 'setup', setup);
     const stale = run('doctor', app, '--json');
     assert.equal(stale.status, 1);
     assert.equal(JSON.parse(stale.stdout).localReady, false, 'Version drift must fail readiness');

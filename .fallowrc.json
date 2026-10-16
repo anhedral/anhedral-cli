@@ -10,6 +10,7 @@
   ],
   "ignorePatterns": [
     "dist/**",
-    ".artifacts/**"
+    ".artifacts/**",
+    "plugins/codex/inspector/**"
   ]
 }

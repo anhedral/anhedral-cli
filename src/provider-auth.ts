@@ -1,9 +1,8 @@
-import path from 'node:path';
 import type { StandardProduct } from './stack-registry.js';
 import { EAS_CLI_VERSION, STACK_DEPENDENCIES } from './dependencies.js';
 import { realpathSync } from 'node:fs';
 import { spawn } from 'node:child_process';
-import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from './bounded-file.js';
+import { readProjectSection } from './project-config.js';
 import { validateSetupPlan } from './readiness.js';
 import { resolveCommand } from './command.js';
 import { defaultRunner, type DeliveryRunner } from './project-state.js';
@@ -97,11 +96,7 @@ export function requiredProviders(root: string): ProviderAuth[] {
   root = realpathSync(root);
   let plan: unknown;
   try {
-    plan = JSON.parse(
-      readBoundedFile(path.join(root, 'anhedral.setup.json'), MAX_PROJECT_JSON_BYTES).toString(
-        'utf8',
-      ),
-    );
+    plan = readProjectSection(root, 'setup');
     validateSetupPlan(plan);
   } catch {
     throw new Error('A valid Anhedral setup plan is required before authentication.');

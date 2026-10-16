@@ -3,6 +3,19 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { writeFile } from './util.js';
 
+// Vinext externalizes its generated manifests relative to each RSC chunk.
+// Keep those chunks beside the real root modules, including Void's wrapper entry.
+export const VINEXT_SERVER_OUTPUT_PLUGIN = `{
+  name: 'anhedral:vinext-server-modules',
+  apply: 'build',
+  enforce: 'post',
+  outputOptions(output) {
+    if (this.environment.name === 'rsc') {
+      return { ...output, chunkFileNames: '[name]-[hash].js' };
+    }
+  },
+}`;
+
 // Official Vinext App Router integration using the supported Wrangler/Vite adapter.
 // Wrangler's generated dist/server config preserves binding IDs and built assets.
 export function configureVinext(
@@ -33,7 +46,7 @@ export function configureVinext(
     `import { defineConfig } from 'vite';
 import vinext from 'vinext';
 import { cloudflare } from '@cloudflare/vite-plugin';
-export default defineConfig({ plugins: [vinext(), cloudflare({ viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] } })] });
+export default defineConfig({ plugins: [vinext(), cloudflare({ viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] } }), ${VINEXT_SERVER_OUTPUT_PLUGIN}] });
 `,
   );
   put(

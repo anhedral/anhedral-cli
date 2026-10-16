@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomBytes } from 'node:crypto';
@@ -18,11 +19,10 @@ import { applicationRuntime, runtimeTargets } from '../dist/providers/runtime.js
 const secret = randomBytes(32).toString('hex');
 function fixture(flags = ['--vinext', '--better-auth']) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-app-runtime-'));
-  writeFileSync(
-    path.join(root, 'anhedral.setup.json'),
-    JSON.stringify(
-      createSetupPlan(parseStandardOptions('new', [root, '--skip-install', ...flags])),
-    ),
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--skip-install', ...flags])),
   );
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
   mkdirSync(path.join(root, 'apps/api'), { recursive: true });
@@ -36,6 +36,22 @@ function write(
 ) {
   writeFileSync(path.join(root, relative), entries, { mode: 0o600 });
 }
+test('Void runtime uses the app .env while legacy and native consumers retain their own conventions', async () => {
+  const root = fixture(['--vinext', '--hono', '--better-auth']);
+  try {
+    writeFileSync(path.join(root, 'apps/api/void.config.ts'), 'export default {};\n');
+    write(root, 'apps/api/.env');
+    const values = await applicationRuntime(root, run);
+    assert.deepEqual(Object.keys(values), ['apps/api/.env']);
+    assert.equal(values['apps/api/.env'].BETTER_AUTH_SECRET, secret);
+    const targets = runtimeTargets(root, { OPENAI_API_KEY: 'runtime-key' });
+    assert.equal(targets['apps/api/.env'].OPENAI_API_KEY, 'runtime-key');
+    assert.equal(targets['apps/api/.dev.vars'], undefined);
+    assert.equal(targets['apps/web/.env'], undefined);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 for (const [flags, relative] of [
   [['--vinext', '--better-auth'], 'apps/web/.dev.vars'],
   [['--next', '--hosting=vercel', '--better-auth', '--neon'], 'apps/web/.env.local'],

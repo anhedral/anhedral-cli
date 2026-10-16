@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -167,7 +168,7 @@ for (const [provider, key] of [
     );
   });
 }
-test('status redacts legacy responses and never creates or migrates files', () => {
+test('status rejects unsupported receipt schemas without rewriting files', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-recovery-status-'));
   try {
     assert.deepEqual(integrationStatus(root), { schemaVersion: 2, providers: [], mutation: false });
@@ -189,8 +190,7 @@ test('status redacts legacy responses and never creates or migrates files', () =
       },
     });
     const before = readFileSync(file, 'utf8');
-    const result = readProviderStateStatus(root);
-    assert.equal(JSON.stringify(result).includes('private-token'), false);
+    assert.throws(() => readProviderStateStatus(root), /Invalid provider state/);
     assert.equal(readFileSync(file, 'utf8'), before);
     assert.deepEqual(readdirSync(root), ['providers.json']);
   } finally {
@@ -201,16 +201,12 @@ test('status redacts legacy responses and never creates or migrates files', () =
 async function pendingFixture() {
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-recovery-flow-')));
   const settings = { domain: 'customer.com' };
-  writeFileSync(
-    path.join(root, 'anhedral.setup.json'),
-    JSON.stringify(
-      createSetupPlan(parseStandardOptions('new', [root, '--hono', '--resend', '--skip-install'])),
-    ),
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--hono', '--resend', '--skip-install'])),
   );
-  writeFileSync(
-    path.join(root, 'anhedral.providers.json'),
-    JSON.stringify({ schemaVersion: 1, providers: { resend: settings } }),
-  );
+  writeProjectSection(root, 'providers', { schemaVersion: 1, providers: { resend: settings } });
   const directory = path.join(root, '.anhedral');
   mkdirSync(directory);
   const state = new ProvisioningState(directory);
@@ -287,10 +283,10 @@ test('configuration changed during verification keeps operation pending', async 
         { provider: 'resend', operation, resourceId: 'domain_1' },
         run,
         async () => {
-          writeFileSync(
-            path.join(root, 'anhedral.providers.json'),
-            JSON.stringify({ schemaVersion: 1, providers: { resend: { domain: 'foreign.com' } } }),
-          );
+          writeProjectSection(root, 'providers', {
+            schemaVersion: 1,
+            providers: { resend: { domain: 'foreign.com' } },
+          });
           return new Response(JSON.stringify({ id: 'domain_1', name: 'customer.com' }));
         },
         { RESEND_API_KEY: 'management-key' },
@@ -302,16 +298,16 @@ test('configuration changed during verification keeps operation pending', async 
     rmSync(root, { recursive: true, force: true });
   }
 });
-test('legacy pending descriptor cannot be guessed or automatically replayed', async () => {
+test('pending operations without a trusted descriptor are rejected without replay', async () => {
   const { root, directory, operation, run, settings } = await pendingFixture();
   try {
     atomicJson(path.join(directory, 'providers.json'), {
-      schemaVersion: 1,
+      schemaVersion: 2,
       providers: {
         resend: { config: digest(settings), operations: { [operation]: { status: 'pending' } } },
       },
     });
-    assert.equal(integrationStatus(root).providers[0].operations[0].recovery, 'unknown-descriptor');
+    assert.throws(() => integrationStatus(root), /Invalid provider state/);
     await assert.rejects(
       recoverIntegrationResource(
         root,
@@ -322,9 +318,14 @@ test('legacy pending descriptor cannot be guessed or automatically replayed', as
         },
         { RESEND_API_KEY: 'management-key' },
       ),
-      /no trusted descriptor/,
+      /Invalid provider state/,
     );
-    assert.equal(integrationStatus(root).providers[0].operations[0].status, 'pending');
+    assert.equal(
+      JSON.parse(readFileSync(path.join(directory, 'providers.json'))).providers.resend.operations[
+        operation
+      ].status,
+      'pending',
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

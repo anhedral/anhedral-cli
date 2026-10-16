@@ -1,8 +1,10 @@
+import { readProjectSection, writeProjectSection } from '../dist/project-config.js';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -110,7 +112,7 @@ async function project(root, flags = ['--hono']) {
   console.log = () => {};
   try {
     await scaffoldStandardProject(
-      parseStandardOptions('new', [root, ...flags, '--skip-install', '--no-git']),
+      parseStandardOptions([root, ...flags, '--skip-install', '--no-git']),
       runner,
     );
   } finally {
@@ -136,12 +138,30 @@ test('add composes bundled bindings while preserving product code', async () => 
     await addStackItems(root, { items: ['r2'], skipInstall: true }, runner);
     assert.equal(readFileSync(file, 'utf8'), source);
     assert.ok(
-      JSON.parse(readFileSync(path.join(root, 'apps/api/wrangler.jsonc'), 'utf8')).r2_buckets,
+      JSON.parse(readFileSync(path.join(root, 'apps/api/anhedral.cloudflare.json'), 'utf8'))
+        .r2_buckets,
     );
     assert.equal(inspectProject(root).localReady, true);
     const again = await addStackItems(root, { items: ['r2'], skipInstall: true }, runner);
     assert.deepEqual(again.conflicts, []);
     assert.equal(readFileSync(file, 'utf8'), source);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('Void additions refuse unsupported provisioning contracts without mixing delivery engines', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-void-boundary-'));
+  const root = path.join(temp, 'app');
+  try {
+    await project(root);
+    const before = sourceFiles(root);
+    for (const item of ['queues', 'basin'])
+      await assert.rejects(
+        addStackItems(root, { items: [item], dryRun: true, skipInstall: true }, runner),
+        /cannot be added to a Void project/,
+      );
+    assert.deepEqual(sourceFiles(root), before);
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }
@@ -191,21 +211,55 @@ test('add introduces native and web applications using the shared shadcn foundat
   try {
     await project(root, ['--expo']);
     await addStackItems(root, { items: ['vinext'], skipInstall: true }, runner);
+    assert.ok(existsSync(path.join(root, 'apps/web/void.config.ts')));
+    assert.equal(existsSync(path.join(root, 'apps/web/wrangler.jsonc')), false);
     assert.ok(existsSync(path.join(root, 'apps/mobile/package.json')));
     assert.ok(existsSync(path.join(root, 'packages/ui/package.json')));
     assert.equal(inspectProject(root).localReady, true);
-    const manifestFile = path.join(root, 'anhedral.project.json');
-    const connected = JSON.parse(readFileSync(manifestFile, 'utf8'));
+    const connected = readProjectSection(root, 'cloudflare');
     connected.accountId = 'a'.repeat(32);
     connected.audience = 'public';
-    writeFileSync(manifestFile, JSON.stringify(connected, null, 2) + '\n');
+    writeProjectSection(root, 'cloudflare', connected);
     await addStackItems(root, { items: ['electron', 'hono'], skipInstall: true }, runner);
-    const delivery = JSON.parse(readFileSync(path.join(root, 'anhedral.project.json'), 'utf8'));
+    const delivery = readProjectSection(root, 'cloudflare');
     assert.equal(delivery.accountId, 'a'.repeat(32));
     assert.deepEqual(
       delivery.targets.map((target) => target.id),
       ['api', 'web'],
     );
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('adding the first Cloudflare runtime uses the selected delivery engine', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-delivery-engine-'));
+  try {
+    for (const [name, items, engine] of [
+      ['void', ['hono', 'kv'], 'void'],
+      ['wrangler', ['hono', 'queues'], 'wrangler'],
+    ]) {
+      const root = path.join(temp, name);
+      await project(root, ['--expo']);
+      await addStackItems(root, { items, skipInstall: true }, runner);
+      const manifest = readProjectSection(root, 'cloudflare');
+      assert.equal(manifest.deliveryEngine ?? 'wrangler', engine);
+      assert.equal(existsSync(path.join(root, 'apps/api/void.config.ts')), engine === 'void');
+      assert.equal(existsSync(path.join(root, 'apps/api/wrangler.jsonc')), engine === 'wrangler');
+      assert.equal(inspectProject(root).localReady, true);
+      if (engine === 'void') {
+        assert.equal(
+          JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).engines.node,
+          '>=24.21.0',
+        );
+        await addStackItems(root, { items: ['resend'], skipInstall: true }, runner);
+        assert.equal(
+          JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).engines.node,
+          '>=24.21.0',
+        );
+        assert.equal(inspectProject(root).localReady, true);
+      }
+    }
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }
@@ -246,10 +300,9 @@ test('doctor rejects receipts with external content instead of accepting it as b
   const root = path.join(temp, 'app');
   try {
     await project(root);
-    const file = path.join(root, 'anhedral.registry.json');
-    const receipt = JSON.parse(readFileSync(file, 'utf8'));
+    const receipt = readProjectSection(root, 'registry');
     receipt.remoteItems = [{ name: 'external' }];
-    writeFileSync(file, JSON.stringify(receipt));
+    writeProjectSection(root, 'registry', receipt);
     assert.equal(inspectProject(root).localReady, false);
     await assert.rejects(addStackItems(root, { items: ['r2'] }, runner), /doctor/);
   } finally {
@@ -263,7 +316,7 @@ test('web additions preview without running the upstream generator or changing s
   try {
     await project(root, ['--expo']);
     const before = sourceFiles(root);
-    const receipt = readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8');
+    const receipt = readFileSync(path.join(root, 'anhedral.json'), 'utf8');
     const preview = await addStackItems(root, { items: ['vinext'], dryRun: true }, () => {
       assert.fail('A dry run must not execute a command');
     });
@@ -271,7 +324,7 @@ test('web additions preview without running the upstream generator or changing s
     assert.equal(preview.filesChecked, false);
     assert.ok(preview.targets.includes('apps/web'));
     assert.deepEqual(sourceFiles(root), before);
-    assert.equal(readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8'), receipt);
+    assert.equal(readFileSync(path.join(root, 'anhedral.json'), 'utf8'), receipt);
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }
@@ -282,10 +335,21 @@ test('bundled addition prepares dependencies after script-free staged lock resol
   const root = path.join(temp, 'app');
   try {
     await project(root);
+    mkdirSync(path.join(root, 'node_modules'));
+    writeFileSync(path.join(root, 'node_modules/.modules.yaml'), 'skipped: [tslib@2.8.1]\n');
+    mkdirSync(path.join(root, '.pnpm-store'));
+    writeFileSync(path.join(root, '.pnpm-store/retained'), 'package store');
     const commands = [];
     await addStackItems(root, { items: ['wxt'] }, (command, args, cwd) => {
       commands.push({ command, args, cwd });
       if (args.includes('--lockfile-only')) runner(command, args, cwd);
+      if (args.includes('--frozen-lockfile')) {
+        assert.equal(existsSync(path.join(root, 'node_modules')), false);
+        assert.equal(
+          readFileSync(path.join(root, '.pnpm-store/retained'), 'utf8'),
+          'package store',
+        );
+      }
     });
     assert.ok(commands.slice(0, -1).every(({ args }) => args.includes('--ignore-scripts')));
     assert.deepEqual(commands.at(-1), {
@@ -299,9 +363,137 @@ test('bundled addition prepares dependencies after script-free staged lock resol
   }
 });
 
+test('addition refuses a linked dependency cache without touching its target', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-linked-cache-'));
+  const root = path.join(temp, 'app');
+  try {
+    await project(root);
+    const outside = path.join(temp, 'outside');
+    mkdirSync(outside);
+    writeFileSync(path.join(outside, 'retained'), 'customer content');
+    symlinkSync(
+      outside,
+      path.join(root, 'node_modules'),
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
+    await assert.rejects(
+      addStackItems(root, { items: ['r2'] }, runner),
+      /real project node_modules/,
+    );
+    assert.equal(readFileSync(path.join(outside, 'retained'), 'utf8'), 'customer content');
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('addition rejects lockfile changes during the frozen dependency installation', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-lock-drift-'));
+  const root = path.join(temp, 'app');
+  try {
+    await project(root);
+    await assert.rejects(
+      addStackItems(root, { items: ['r2'] }, (command, args, cwd) => {
+        if (args.includes('--frozen-lockfile'))
+          writeFileSync(path.join(cwd, 'pnpm-lock.yaml'), 'lockfileVersion: "9.0"\n# changed\n');
+        else runner(command, args, cwd);
+      }),
+      /changed the reviewed lockfile/,
+    );
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
 test('the shared bootstrap blocks native Windows for the default runner', async () => {
   const { assertBootstrapPlatform } = await import('../dist/scaffold/bootstrap.js');
   const { execFile } = await import('../dist/util.js');
   assert.throws(() => assertBootstrapPlatform(execFile, 'win32'), /inside WSL/);
   assert.doesNotThrow(() => assertBootstrapPlatform(execFile, 'linux'));
+});
+
+test('source receipts and additions exclude generated Void and Vinext state', async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-add-runtime-state-'));
+  const root = path.join(temporary, 'project');
+  try {
+    await project(root);
+    const before = sourceFiles(root);
+    for (const file of [
+      'apps/api/.void/project.json',
+      'apps/api/.void-wrangler.jsonc',
+      'apps/api/db/migrations/0000.sql',
+      'apps/api/.vinext/fonts/font.woff2',
+    ]) {
+      mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+      writeFileSync(path.join(root, file), 'disposable runtime state');
+    }
+    // Generated cache symlinks must not prevent an otherwise valid addition.
+    symlinkSync(root, path.join(root, 'apps/api/.void/workspace'));
+    assert.deepEqual(sourceFiles(root), before);
+    const result = await addStackItems(root, { items: ['resend'], dryRun: true }, runner);
+    assert.deepEqual(result.conflicts, []);
+    assert.ok(result.files.includes('packages/email/src/index.ts'));
+    assert.deepEqual(sourceFiles(root), before);
+    writeFileSync(path.join(root, 'apps/api/db/schema.ts'), '// user source\n');
+    assert.ok(sourceFiles(root).has('apps/api/db/schema.ts'));
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('a native-only registration selects its first Cloudflare engine without changing its identity', async () => {
+  const { registerApplication } = await import('../dist/project-state.js');
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-native-registration-'));
+  const root = path.join(temp, 'project');
+  try {
+    await project(root, ['--expo']);
+    const original = registerApplication(root);
+    assert.deepEqual(original.targets, []);
+    original.accountId = 'a'.repeat(32);
+    original.audience = 'private';
+    original.access = { emails: ['owner@example.com'] };
+    writeProjectSection(root, 'cloudflare', original);
+    await addStackItems(root, { items: ['hono'], skipInstall: true }, runner);
+    const actual = readProjectSection(root, 'cloudflare');
+    assert.equal(actual.deliveryEngine, 'void');
+    assert.equal(actual.id, original.id);
+    assert.equal(actual.accountId, original.accountId);
+    assert.equal(actual.audience, original.audience);
+    assert.deepEqual(actual.access, original.access);
+    assert.deepEqual(
+      actual.targets.map((target) => target.id),
+      ['api'],
+    );
+    assert.equal(existsSync(path.join(root, 'apps/api/void.config.ts')), true);
+    assert.equal(inspectProject(root).localReady, true);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('one-file additions preserve provider settings, detect edited sections, and keep previews read-only', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-onefile-'));
+  const root = path.join(temp, 'project');
+  try {
+    await project(root, ['--hono', '--resend']);
+    const providers = readProjectSection(root, 'providers');
+    providers.providers.resend.domain = 'mail.example.invalid';
+    writeProjectSection(root, 'providers', providers);
+    const file = path.join(root, 'anhedral.json');
+    const before = readFileSync(file, 'utf8');
+    await addStackItems(root, { items: ['r2'], dryRun: true }, runner);
+    assert.equal(readFileSync(file, 'utf8'), before);
+    await addStackItems(root, { items: ['r2'], skipInstall: true }, runner);
+    assert.deepEqual(readProjectSection(root, 'providers'), providers);
+    const standard = readProjectSection(root, 'standard');
+    standard.bootstrap.command = 'customer-owned bootstrap';
+    writeProjectSection(root, 'standard', standard);
+    const edited = readFileSync(file, 'utf8');
+    await assert.rejects(
+      addStackItems(root, { items: ['kv'], skipInstall: true }, runner),
+      /anhedral.json \(standard\)/,
+    );
+    assert.equal(readFileSync(file, 'utf8'), edited);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
 });
