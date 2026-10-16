@@ -127,6 +127,11 @@ test('generated Stream management requests preserve explicit privacy and redact 
         Response.json(null),
         Response.json({ success: false, errors: [{ message: 'publish-secret' }] }),
         Response.json({ success: true, result: { uid } }),
+        Response.json({ success: true, result: { uid, webRTC: null } }),
+        Response.json({
+          success: true,
+          result: { uid, webRTC: { url: 'publish-secret' }, webRTCPlayback: { url: 42 } },
+        }),
       ]) {
         globalThis.fetch = async () => response;
         await assert.rejects(stream.getLiveInput(uid), (error) => {

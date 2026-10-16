@@ -35,6 +35,21 @@ export interface StreamLiveInput {
   webRTCPlayback: { url: string };
 }
 
+function readString(value: unknown): string {
+  if (typeof value !== 'string') throw new Error('Stream did not return a WebRTC live input.');
+  return value;
+}
+
+function readEndpoint(endpoint?: { url?: unknown } | null): { url: string } {
+  return { url: readString(endpoint?.url) };
+}
+
+function readLiveInput(body: { success?: boolean; result?: Partial<StreamLiveInput> } | null): StreamLiveInput {
+  if (body?.success !== true) throw new Error('Stream live input request was unsuccessful.');
+  const input = body.result ?? {};
+  return { uid: readString(input.uid), webRTC: readEndpoint(input.webRTC), webRTCPlayback: readEndpoint(input.webRTCPlayback) };
+}
+
 export function createStream(options: { accountId: string; apiToken: string }) {
   if (!/^[a-f0-9]{32}$/i.test(options.accountId) || !options.apiToken.trim()) {
     throw new Error('Configure server-only STREAM_ACCOUNT_ID and STREAM_API_TOKEN.');
@@ -52,12 +67,7 @@ export function createStream(options: { accountId: string; apiToken: string }) {
     const body = await response.json().catch(() => {
       throw new Error('Stream returned an invalid JSON response.');
     }) as { success?: boolean; result?: Partial<StreamLiveInput> } | null;
-    const input = body?.result;
-    if (body?.success !== true || typeof input?.uid !== 'string' ||
-        typeof input.webRTC?.url !== 'string' || typeof input.webRTCPlayback?.url !== 'string') {
-      throw new Error('Stream did not return a WebRTC live input.');
-    }
-    return { uid: input.uid, webRTC: { url: input.webRTC.url }, webRTCPlayback: { url: input.webRTCPlayback.url } };
+    return readLiveInput(body);
   }
   return {
     // Call only after creator authorization and quota checks. Persist uid; do not create on every page load.
