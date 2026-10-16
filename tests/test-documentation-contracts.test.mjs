@@ -27,14 +27,14 @@ test('plugin instructions and documentation do not imply credentials enable unim
   assert.match(read('docs/cli-design.md'), /help text is never parsed/);
 });
 
-test('Cloudflare delivery documentation distinguishes Void activation checkpoints from legacy provisioning', () => {
+test('Cloudflare delivery documentation distinguishes Void activation checkpoints from Wrangler provisioning', () => {
   const overview = read('README.md');
   const providers = read('docs/provider-configuration.md');
   assert.match(overview, /Void can activate a target before recording new resource identities/);
-  assert.match(providers, /If legacy resource provisioning changes tracked binding IDs/);
+  assert.match(providers, /If Wrangler resource provisioning changes tracked binding IDs/);
   assert.match(providers, /Void may already activate targets/);
   assert.match(providers, /noninteractive `void secret put` with stdin/);
-  assert.match(providers, /Legacy Cloudflare delivery instead uploads runtime credentials/);
+  assert.match(providers, /Wrangler Cloudflare delivery uploads runtime credentials/);
 });
 
 test('generated-profile CI uses a runtime compatible with the pinned Void minimum', () => {

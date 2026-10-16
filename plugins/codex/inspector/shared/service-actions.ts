@@ -1,12 +1,8 @@
 import { z } from 'zod';
-export const SERVICE_TOOLS = [
-  'refresh_service',
-  'get_service_metrics',
-  'list_service_tables',
-  'browse_service_data',
-  'plan_service_deletion',
-  'delete_service',
-] as const;
+import { SERVICE_TOOL_ACTIONS } from '../../../../src/service-model.ts';
+export const SERVICE_TOOLS = Object.keys(
+  SERVICE_TOOL_ACTIONS,
+) as (keyof typeof SERVICE_TOOL_ACTIONS)[];
 export type ServiceTool = (typeof SERVICE_TOOLS)[number];
 /** Results containing private rows, schema names or confirmation evidence stay app-only. */
 export const PRIVATE_SERVICE_TOOLS: readonly ServiceTool[] = [

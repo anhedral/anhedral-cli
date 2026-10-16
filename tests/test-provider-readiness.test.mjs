@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
@@ -35,14 +36,12 @@ test('provider doctor separates local prerequisites from production acceptance a
 test('unconfigured providers are blocked without automatically signing in or connecting', async () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-provider-readiness-'));
   try {
-    writeFileSync(
-      path.join(root, 'anhedral.web.json'),
-      JSON.stringify({ projectId: null, teamId: null, audience: 'unconfigured' }),
-    );
-    writeFileSync(
-      path.join(root, 'anhedral.project.json'),
-      JSON.stringify({ accountId: null, audience: 'unconfigured' }),
-    );
+    writeProjectSection(root, 'vercel', {
+      projectId: null,
+      teamId: null,
+      audience: 'unconfigured',
+    });
+    writeProjectSection(root, 'cloudflare', { accountId: null, audience: 'unconfigured' });
     const calls = [];
     const report = await inspectProviderReadiness(root, runner(calls));
     assert.deepEqual(

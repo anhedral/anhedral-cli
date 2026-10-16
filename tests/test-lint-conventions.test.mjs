@@ -120,7 +120,7 @@ async function scaffold(root, flags) {
   console.log = () => {};
   try {
     await scaffoldStandardProject(
-      parseStandardOptions('new', [root, '--skip-install', '--no-git', '--json', ...flags]),
+      parseStandardOptions([root, '--skip-install', '--no-git', '--json', ...flags]),
       runner,
     );
   } finally {

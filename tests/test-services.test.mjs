@@ -1,3 +1,6 @@
+import { writeProjectSection } from '../dist/project-config.js';
+import { serviceOperation } from '../dist/service-operations.js';
+import { runServiceCommand } from '../dist/services-command.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, realpathSync, rmSync } from 'node:fs';
@@ -27,12 +30,13 @@ async function fixture(run) {
     d1_databases: [{ binding: 'DB', database_id: 'database-id', database_name: 'fixture-data' }],
   });
   const projectId = '00000000-0000-4000-8000-000000000001';
-  save('anhedral.project.json', {
+  writeProjectSection(root, 'cloudflare', {
     schemaVersion: 1,
     id: projectId,
     name: 'fixture',
     ownership: 'customer',
     provider: 'cloudflare',
+    deliveryEngine: 'wrangler',
     accountId: 'a'.repeat(32),
     audience: 'public',
     targets: [{ id: 'api', directory: 'apps/api', workerName: 'fixture-api' }],
@@ -72,7 +76,7 @@ test('automatic registration reuses one catalog identity and never rolls back so
     const second = registerGeneratedProject(root, { ANHEDRAL_PLUGIN_DATA: directory });
     assert.equal(first.state, 'registered');
     assert.equal(first.id, second.id);
-    writeFileSync(path.join(directory, 'sites.lock'), 'busy');
+    writeFileSync(path.join(directory, 'projects.lock'), 'busy');
     assert.equal(
       registerGeneratedProject(root, { ANHEDRAL_PLUGIN_DATA: directory }).state,
       'pending',
@@ -115,7 +119,9 @@ test('D1 browsing uses bounded SQL, validates schema identifiers, and masks priv
             meta: { changes: 0, changed_db: false },
             results: body.sql.includes('sqlite_schema')
               ? [{ name: 'notes' }]
-              : [{ id: 1, email: 'secret@example.com', text: 'sk_test_secret' }],
+              : body.sql.startsWith('PRAGMA')
+                ? [{ name: 'id' }, { name: 'email' }, { name: 'text' }]
+                : [{ id: 1, email: 'secret@example.com', text: 'sk_test_secret' }],
           },
         ],
       };
@@ -124,6 +130,9 @@ test('D1 browsing uses bounded SQL, validates schema identifiers, and masks priv
     assert.equal(data.masked, true);
     assert.deepEqual(data.rows, [[1, '[masked]', '[masked]']]);
     assert.deepEqual(calls.at(-1).body.params, [26, 0]);
+    assert.match(calls.at(-1).body.sql, /'\[masked\]' AS \"email\"/);
+    assert.match(calls.at(-1).body.sql, /ORDER BY 1, 2, 3/);
+    assert.doesNotMatch(calls.at(-1).body.sql, /SELECT \*/);
     await assert.rejects(browseServiceData(service, query, 'notes;DELETE'), /existing supported/);
     await assert.rejects(browseServiceData(service, query, 'notes', -1), /bounded/);
     await assert.rejects(
@@ -305,10 +314,16 @@ test('expired tokens cannot mutate resources and unknown dependency schemas bloc
 
 test('recreating a source directory records a new app identity and does not retarget the old catalog entry', async () =>
   fixture(({ root, save }) => {
-    save('anhedral.app.json', { schemaVersion: 1, id: '00000000-0000-4000-8000-000000000011' });
+    writeProjectSection(root, 'identity', {
+      schemaVersion: 1,
+      id: '00000000-0000-4000-8000-000000000011',
+    });
     const store = new ProjectStore(path.join(root, 'catalog'));
     const old = store.register(root);
-    save('anhedral.app.json', { schemaVersion: 1, id: '00000000-0000-4000-8000-000000000012' });
+    writeProjectSection(root, 'identity', {
+      schemaVersion: 1,
+      id: '00000000-0000-4000-8000-000000000012',
+    });
     const current = store.register(root);
     assert.notEqual(current, old);
     assert.throws(() => store.context(old), /unavailable/);
@@ -319,18 +334,19 @@ test('recreating a source directory records a new app identity and does not reta
     assert.equal(store.context(current).directory, realpathSync(root));
   }));
 
-test('legacy catalog migration preserves identities and does not resurrect forgotten apps', async () =>
-  fixture(({ root }) => {
-    const legacy = new ProjectStore(path.join(root, 'legacy'));
-    const id = legacy.register(root, 'Original name');
-    const shared = new ProjectStore(path.join(root, 'shared'));
-    shared.importLegacy(legacy);
-    assert.equal(shared.context(id).name, 'Original name');
-    shared.call('forget_project', { id });
-    shared.importLegacy(legacy);
-    assert.equal(shared.snapshot().projects.length, 0);
-    assert.equal(legacy.context(id).name, 'Original name');
-    writeFileSync(legacy.file, '{invalid');
-    shared.importLegacy(legacy);
-    assert.equal(shared.snapshot().projects.length, 0);
+test('CLI service selectors include orphan receipts and share the normalized service operation', async () =>
+  fixture(async ({ root, save, service, request }) => {
+    save('apps/api/wrangler.jsonc', { name: 'fixture-api' });
+    const listing = await runServiceCommand(root, ['list']);
+    const key = `receipt:d1:${service.id}`;
+    assert.ok(listing.services.some((entry) => entry.key === key && entry.capabilities.status));
+    const result = await serviceOperation(
+      root,
+      'status',
+      key,
+      {},
+      { request: async () => request },
+    );
+    assert.equal(result.status.state, 'available');
+    assert.equal(result.status.name, service.name);
   }));

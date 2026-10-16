@@ -10,9 +10,11 @@ This records the implementation's evidence and remaining acceptance work. It is 
 - Workspace package manager: `pnpm@10.34.5`.
 - The published Void package distribution and its bundled documentation were inspected. Installed executable version and app dependency pin must agree.
 
-New supported Cloudflare applications select Void explicitly in `anhedral.project.json`. Existing manifests without an engine marker retain Wrangler. OpenNext, queue/DLQ and Basin selections currently retain the legacy engine; this transition does not establish native Void framework compatibility for those recipes.
+Current Cloudflare configuration requires an explicit `deliveryEngine` in the `cloudflare` section of `anhedral.json`. Supported Void profiles select `void`; explicit OpenNext, Queues/DLQ and Basin profiles select `wrangler`. Missing or unsupported markers are rejected. No existing-project migration workflow is provided.
 
-## Local evidence
+## Historical local evidence: initial Void integration
+
+These results describe the earlier integration snapshot. They do not certify the current uncommitted candidate; subsequent local reviews are recorded in the repository’s `docs/verification.md` and `docs/codebase-review.md`.
 
 The initial Void/coherence local CLI suite passed **608 of 608 tests**, with zero failures. The inspector suite passed **60 of 60 tests**. Build, typecheck, formatting, source hygiene, static security policy, packed CLI smoke and package allowlist checks passed. The corrected OSV audit passed for **85 unique locked and direct-catalog package versions**; the inspector dependency audit also reported no known vulnerabilities. This does not audit every generated application’s transitive dependency graph.
 
@@ -24,7 +26,7 @@ The earlier generated dependency audit passed with a local `braces` backport and
 
 Additional regression coverage includes non-object JSONL records, canonical configuration/lock merging, and resolved bindings with authored placeholders. The final integrated count above includes this regression coverage.
 
-The automated checks cover the pinned JSONL receipt format, rejection of stale/foreign/incomplete/ambiguous receipts, independent provider version confirmation, source cleanliness, compatibility with legacy manifests, private policy reconciliation, and the lock-review checkpoint. Mocked Cloudflare responses establish control flow; they do not establish provider/runtime compatibility.
+The automated checks cover the pinned JSONL receipt format, rejection of stale/foreign/incomplete/ambiguous receipts, independent provider version confirmation, source cleanliness, explicit current engine validation, private policy reconciliation, and the lock-review checkpoint. Mocked Cloudflare responses establish control flow; they do not establish provider/runtime compatibility.
 
 ## Deployment evidence contract
 
@@ -175,3 +177,9 @@ Removing only generated root `node_modules` and running an ordinary frozen insta
 Actual additions now rematerialize that generated cache before frozen installation and check that the lock bytes remain unchanged. Linked or non-directory cache paths are rejected before cleanup. Source, reviewed patches and lock ownership remain intact. The alternate `--fix-lockfile` command was rejected because it rewrote the reviewed lock despite `--frozen-lockfile`; `--force` is not used.
 
 The final cache-regression run passed all 652 CLI tests without skips, 60 inspector tests, lint and static security policy. Focused cases cover stale generated cache removal with package-store preservation, linked-cache refusal and frozen-lock byte drift.
+
+## Simplified dependency patch policy (2026-10-16)
+
+This supersedes the installed-tree and runtime audit-gate design described in the historical checkpoints above. `src/dependency-patches.ts` installs both exact-version patches and notices while preserving customer policy and source files. Generated audits retain the raw pnpm report and accept only the two reviewed advisory/version pairs, with the effective pnpm patch mapping and bundled patch checksum. Frozen pnpm installation applies the patches and checks lockfile consistency. The audit no longer traverses installed dependencies, hashes package trees, or executes package code.
+
+Runtime coverage lives in this repository: the braces fixture checks depth/cycle guards and normal glob/watch consumers; the forge fixture checks valid and malformed signatures through Node and both browser bundles. Both fixtures check frozen installation and changed-patch rejection. Audit-policy tests use deterministic reports to cover unknown advisories, other versions, critical findings, malformed reports, command errors, missing/wrong mappings, and changed patch bytes. Live advisory-service availability is independent of these regression tests; generated `pnpm audit:deps` still queries the actual service.

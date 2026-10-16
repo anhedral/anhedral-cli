@@ -2,7 +2,13 @@ import type { ApplicationProject, DeliveryRunner } from './project-state.js';
 
 export interface CloudflareResponse {
   result: unknown;
-  result_info?: { page?: number; total_pages?: number; count?: number; per_page?: number };
+  result_info?: {
+    page?: number;
+    total_pages?: number;
+    count?: number;
+    per_page?: number;
+    cursor?: string;
+  };
 }
 export type CloudflareRequest = (
   method: 'GET' | 'POST' | 'DELETE',
@@ -69,6 +75,15 @@ function responseInfo(value: unknown): CloudflareResponse['result_info'] {
   if (value === undefined || value === null) return undefined;
   if (!object(value)) throw new Error('Cloudflare returned unsupported pagination.');
   const info: NonNullable<CloudflareResponse['result_info']> = {};
+  if (value.cursor !== undefined) {
+    if (
+      typeof value.cursor !== 'string' ||
+      value.cursor.length > 4096 ||
+      /[\x00-\x1f\x7f]/.test(value.cursor)
+    )
+      throw new Error('Cloudflare returned an invalid pagination cursor.');
+    info.cursor = value.cursor;
+  }
   for (const field of ['page', 'total_pages', 'count', 'per_page'] as const) {
     const entry = value[field];
     if (entry !== undefined) {

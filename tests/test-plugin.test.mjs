@@ -66,7 +66,7 @@ for (const name of [
 const mcp = JSON.parse(files.get('mcp.json')).mcpServers['anhedral-projects'];
 assert.equal(mcp.type, 'stdio');
 assert.deepEqual(mcp.args, ['${PLUGIN_ROOT}/runtime/server.mjs', 'serve']);
-assert.equal(mcp.env.ANHEDRAL_LEGACY_PLUGIN_DATA, '${PLUGIN_DATA}/sites');
+assert.equal(mcp.env, undefined);
 for (const legacy of ['server.mjs', 'assets/control-panel.html'])
   assert.equal(files.has(legacy), false, `Default plugin must exclude ${legacy}`);
 const manifest = JSON.parse(files.get('plugin.json'));
@@ -103,6 +103,36 @@ try {
   );
   writeFileSync(path.join(temporary, 'package.json'), JSON.stringify({ version: '0.0.0' }));
   assert.throws(() => buildPluginArchive(temporary), /versions must match/);
+  writeFileSync(
+    path.join(temporary, 'package.json'),
+    readFileSync(path.join(root, 'package.json')),
+  );
+  const distribution = path.join(temporary, 'plugins/codex/distribution');
+  for (const name of [
+    'mcp.json',
+    'skills/anhedral/SKILL.md',
+    'skills/anhedral/references/plugin-ui.md',
+    'runtime/server.mjs',
+  ]) {
+    const file = path.join(distribution, name);
+    const contents = readFileSync(file);
+    rmSync(file);
+    try {
+      assert.throws(() => buildPluginArchive(temporary), /missing required file/);
+    } finally {
+      writeFileSync(file, contents);
+    }
+  }
+  const mcpFile = path.join(distribution, 'mcp.json');
+  const mcpBytes = readFileSync(mcpFile);
+  const foreignEntrypoint = JSON.parse(mcpBytes);
+  foreignEntrypoint.mcpServers['anhedral-projects'].args = ['outside/server.mjs', 'serve'];
+  writeFileSync(mcpFile, JSON.stringify(foreignEntrypoint));
+  assert.throws(() => buildPluginArchive(temporary), /bundled projects runtime/);
+  writeFileSync(mcpFile, mcpBytes);
+  const assetFile = path.join(distribution, 'assets/anhedral-mark-dark.svg');
+  rmSync(assetFile);
+  assert.throws(() => buildPluginArchive(temporary), /must reference a bundled asset/);
 } finally {
   rmSync(temporary, { recursive: true, force: true });
 }

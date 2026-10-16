@@ -1,4 +1,6 @@
+import { hasProjectSection, readProjectSection, writeProjectSection } from './project-config.js';
 import { githubRepository } from './repository.js';
+import { providerProjectName } from './render.js';
 import {
   existsSync,
   mkdirSync,
@@ -20,7 +22,7 @@ import {
 
 // Keep provider commands reproducible independently of globally installed tooling.
 const cli = ['dlx', 'vercel@62.7.0'];
-const manifest = 'anhedral.web.json';
+const manifest = 'anhedral.json';
 export interface WebProject {
   schemaVersion: 1;
   id: string;
@@ -90,13 +92,14 @@ function webDirectory(root: string): string {
 export function registerVercelApplication(root: string): WebProject {
   root = realpathSync(root);
   webDirectory(root);
-  if (existsSync(path.join(root, manifest))) return readWeb(root);
-  const setup = JSON.parse(readFileSync(path.join(root, 'anhedral.setup.json'), 'utf8'));
+  if (hasProjectSection(root, 'vercel')) return readWeb(root);
+  const setup = readProjectSection(root, 'setup');
   if (setup.hosting !== 'vercel')
     throw new Error('This application did not select Vercel web hosting.');
-  const name = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).name;
-  if (typeof name !== 'string' || !/^[a-z0-9][a-z0-9-]{0,62}$/.test(name))
-    throw new Error('Invalid Vercel project name.');
+  const packageName = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).name;
+  if (typeof packageName !== 'string' || !packageName)
+    throw new Error('A package name is required to register the Vercel project.');
+  const name = providerProjectName(packageName);
   const project: WebProject = {
     schemaVersion: 1,
     id: randomUUID(),
@@ -116,12 +119,12 @@ export function registerVercelApplication(root: string): WebProject {
     if (!source.split(/\r?\n/).includes(entry))
       source += (source && !source.endsWith('\n') ? '\n' : '') + entry + '\n';
   writeFileSync(ignore, source);
-  atomicJson(path.join(root, manifest), project);
+  writeProjectSection(root, 'vercel', project);
   return project;
 }
 function readWeb(root: string): WebProject {
   webDirectory(root);
-  const project = JSON.parse(readFileSync(path.join(root, manifest), 'utf8')) as WebProject;
+  const project = readProjectSection(root, 'vercel') as WebProject;
   if (
     project.schemaVersion !== 1 ||
     !/^[a-f0-9-]{36}$/.test(project.id) ||
@@ -441,7 +444,7 @@ export async function connectVercelApplication(
     const linkingEnv = env(connected);
     delete linkingEnv.VERCEL_PROJECT_ID;
     delete linkingEnv.VERCEL_ORG_ID;
-    atomicJson(path.join(root, manifest), connected);
+    writeProjectSection(root, 'vercel', connected);
     await run(
       'pnpm',
       [
@@ -458,7 +461,7 @@ export async function connectVercelApplication(
       linkingEnv,
     );
     const inspected = await inspect(root, connected, run);
-    atomicJson(path.join(root, manifest), connected);
+    writeProjectSection(root, 'vercel', connected);
     if (repository) {
       const matches = (link: ProviderProject['link']) => matchesRepository(link, repository);
       if (inspected.link && !matches(inspected.link))
@@ -503,7 +506,7 @@ export async function connectVercelApplication(
         ...(linked?.productionBranch ? { productionBranch: linked.productionBranch } : {}),
       };
     }
-    atomicJson(path.join(root, manifest), connected);
+    writeProjectSection(root, 'vercel', connected);
     return { project: connected, plan, planActivated: false };
   });
 }
@@ -621,7 +624,12 @@ async function committedManifest(
   const commit = await source(root, run);
   let recorded;
   try {
-    recorded = JSON.parse(await run('git', ['show', `HEAD:${manifest}`], root, env(project)));
+    const configuration = JSON.parse(
+      await run('git', ['show', `HEAD:${manifest}`], root, env(project)),
+    );
+    if (configuration.schemaVersion !== 1)
+      throw new Error('Invalid committed project configuration.');
+    recorded = configuration.vercel;
   } catch {
     throw new Error('Commit the Vercel identity manifest before adoption or recovery.');
   }
@@ -800,7 +808,7 @@ export function planVercelDelivery(root: string) {
     project,
     checks: ['pnpm run check'],
     deployment: ['pnpm', ...cli, 'deploy', '--prod', '--yes'],
-    cloudflareServices: existsSync(path.join(root, 'anhedral.project.json'))
+    cloudflareServices: hasProjectSection(root, 'cloudflare')
       ? 'Default ship deploys Cloudflare services first. Explicit --provider vercel ships only the web app; verify its service dependencies separately.'
       : 'none',
     mutation: false,

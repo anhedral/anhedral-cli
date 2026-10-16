@@ -1,3 +1,4 @@
+import { readProjectSection, writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import fs from 'node:fs';
@@ -26,14 +27,19 @@ function fixture() {
   save('packages/db/package.json', { name: '@app/db' });
   save('packages/types/package.json', { name: '@app/types' });
   const plan = createSetupPlan(
-    parseStandardOptions('new', [root, '--hono', '--neon', '--resend', '--skip-install']),
+    parseStandardOptions([root, '--hono', '--neon', '--resend', '--skip-install']),
   );
-  save('anhedral.setup.json', plan);
-  save('anhedral.standard.json', { schemaVersion: 1, products: plan.products, hosting: null });
-  save('anhedral.project.json', {
+  writeProjectSection(root, 'setup', plan);
+  writeProjectSection(root, 'standard', {
+    schemaVersion: 1,
+    products: plan.products,
+    hosting: null,
+  });
+  writeProjectSection(root, 'cloudflare', {
     schemaVersion: 1,
     id: projectId,
     provider: 'cloudflare',
+    deliveryEngine: 'wrangler',
     ownership: 'customer',
     accountId: 'a'.repeat(32),
     audience: 'private',
@@ -248,8 +254,8 @@ test('source symlinks and oversized files are isolated without loading private t
     const outside = fs.mkdtempSync(path.join(tmpdir(), 'anhedral-inspector-external-'));
     try {
       fs.writeFileSync(path.join(outside, 'secret'), secret);
-      fs.rmSync(path.join(root, 'anhedral.setup.json'));
-      fs.symlinkSync(path.join(outside, 'secret'), path.join(root, 'anhedral.setup.json'));
+      fs.rmSync(path.join(root, 'anhedral.json'));
+      fs.symlinkSync(path.join(outside, 'secret'), path.join(root, 'anhedral.json'));
       save('.anhedral/releases.json', 'x'.repeat(256 * 1024 + 1));
       const result = inspectApplication(root);
       assert.equal(result.selection.state, 'unavailable');
@@ -268,9 +274,9 @@ test('partial Cloudflare failure preserves deployment acknowledged for an earlie
   const { root, save, clean } = fixture();
   try {
     save('apps/web/package.json', { name: '@app/web' });
-    const project = JSON.parse(fs.readFileSync(path.join(root, 'anhedral.project.json')));
+    const project = readProjectSection(root, 'cloudflare');
     project.targets.push({ id: 'web', directory: 'apps/web', workerName: 'example-web' });
-    save('anhedral.project.json', project);
+    writeProjectSection(root, 'cloudflare', project);
     journal(save, [release('failed')]);
     const targets = inspectApplication(root).targets.data;
     const api = targets.find((target) => target.id === 'cloudflare:api');

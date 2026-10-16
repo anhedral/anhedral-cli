@@ -9,11 +9,12 @@ Anhedral scaffolds ordinary TypeScript applications in a pnpm/Turborepo monorepo
 | Workspace | pnpm/Turborepo, TypeScript, ESLint, shared UI | Official pinned shadcn monorepo bootstrap, workspace configuration and checks |
 | Web | Vinext; Next.js | React, Tailwind, shadcn/ui and Lucide; Vinext on Workers by default, native Next.js on Vercel or explicit OpenNext on Workers |
 | API | Hono | OpenAPI Worker application with selected service bindings |
-| Cloudflare delivery | Void; explicit legacy Wrangler paths | Void provisions and publishes; Anhedral composes, controls audience policy and independently verifies |
+| Cloudflare delivery | Void; explicit Wrangler profiles | Void provisions and publishes; Anhedral composes, controls audience policy and independently verifies |
 | Mobile | Expo | React Native Reusables and NativeWind; native builds require platform toolchains |
 | Desktop | Electron | React application; packaging, signing and distribution require platform-specific setup |
 | Browser extension | WXT | React popup and Chrome side panel; installation and store distribution are separate steps |
 | Data | D1, Neon, local data | Drizzle schemas for D1/Neon; direct Neon serverless HTTP; device-local data foundations |
+| Live Postgres queries | Neon Realtime (`--neon-realtime`) | Optional server/client factories and Drizzle adapter; branch setup and authorized query flows remain application work |
 | Identity | Better Auth, Clerk | Server/client configuration and selected schema or provider middleware |
 | Worker services | R2, KV, realtime, Queues, cron, Workflows | Private storage bindings, cache/config bindings, Durable Object WebSocket rooms and job/schedule foundations |
 | AI | Workers AI, OpenAI, AI SDK | Server-side inference bindings or SDK factories |
@@ -36,11 +37,9 @@ Database-backed selections create the server-only `@workspace/db` package:
 
 Only server consumers depend on `@workspace/db`; browser, mobile and extension interfaces use API contracts and endpoints. Reusable auth and other selected integrations remain independent packages. Each server is responsible for authentication, resource authorization and its environment. The database factory never loads environment files or migrates during application startup.
 
-Run `pnpm db:generate` to generate SQL and review it before `pnpm db:migrate`. Both tasks disable Turbo caching and are excluded from build/check dependencies. D1 defaults to local migration; `pnpm db:migrate -- --remote` explicitly targets the configured database in the selected server Worker's `anhedral.cloudflare.json` (or `wrangler.jsonc` for legacy OpenNext). The Worker migration directory points to `packages/db/drizzle`. A single database migration owner coordinates all consumers.
+Run `pnpm db:generate` to generate SQL and review it before `pnpm db:migrate`. Both tasks disable Turbo caching and are excluded from build/check dependencies. D1 defaults to local migration; `pnpm db:migrate -- --remote` explicitly targets the configured database in the selected server Worker's `anhedral.cloudflare.json` (or `wrangler.jsonc` for Wrangler profiles). The Worker migration directory points to `packages/db/drizzle`. A single database migration owner coordinates all consumers.
 
 Neon runtime queries keep the HTTP adapter and server-supplied `DATABASE_URL`. Migrations use a transactional WebSocket connection and a direct `DATABASE_URL_UNPOOLED`, supplied through the environment or `packages/db/.env.local`/`.env`. Generation does not require credentials; migration does. Test against the intended development branch before applying production changes. Provisioning runtime credentials does not automatically supply migration credentials.
-
-Existing projects with `packages/db/migrations` require a deliberate move of SQL, metadata, configuration and deployment references. Do not regenerate or replay already-applied migrations to change the directory convention.
 
 These are scaffolding recipes, not completed application features. Database migrations, authorization, provider resources, webhooks, email domains, product behavior and monitoring initialization require application-specific implementation and verification. Environment examples contain names and placeholders, never provider credentials.
 
@@ -49,22 +48,46 @@ Inspect exact current requirements before generation:
 ```sh
 anhedral registry list --json
 anhedral registry view better-auth --json
-anhedral new my-app --hono --d1 --better-auth --r2 --dry-run --json
+anhedral init my-app --hono --d1 --better-auth --r2 --dry-run --json
 ```
 
 The default selects only Vinext on Cloudflare Workers, delivered through Void, plus the shared workspace and UI foundation. Add capabilities because the application needs them. The resolver adds required dependencies and rejects incompatible choices, including conflicting web frameworks, databases and identity providers. `--all` is unsupported. Native Next.js selects Vercel unless Cloudflare hosting is explicit. Some services require a Worker application; inspect the plan rather than assuming every selection can run on every client.
 
+## Neon Realtime
+
+Select `--neon-realtime` when the product needs live Postgres query results. It adds Neon when no database was selected and requires a server runtime; an explicit conflicting database is rejected. `--realtime` continues to mean Cloudflare Durable Object WebSocket rooms, which can be selected independently.
+
+The recipe creates `packages/neon-realtime` with separate `@workspace/neon-realtime/server` and `/client` exports. The server factory receives private `NEON_REALTIME_SECRET` and `DATABASE_URL` and uses the Drizzle adapter; the client factory receives the public `NEON_REALTIME_URL`. Keep database credentials and sealing code out of browser/native bundles. Follow the generated package README for usage and framework-specific public environment mapping.
+
+Manually enable Realtime on the intended Neon branch, allow the exact client origins and configure its secret and URL. The CLI does not automate Realtime provisioning. Authenticate each sealing request, derive user/tenant scope from verified identity and construct bounded, read-only queries on the server. No arbitrary SQL endpoint or complete subscription flow is generated. Clients subscribe with short-lived sealed queries; implement authorized renewal and test denied users and membership changes.
+
+[Neon Realtime](https://neon.com/docs/realtime/overview) is beta and currently has no RLS support. Application authorization must be expressed in the scoped queries you seal. See [query authorization](https://neon.com/docs/realtime/guides/queries#authorization) and [branch setup](https://neon.com/docs/realtime/quickstart). Local recipe checks do not establish live subscription, renewal or cross-tenant acceptance.
+
 ## Source layout and composition
 
-Use `apps/*` for applications and services, and `packages/*` for shared code. Generated `docs/stack.md` lists the resolved options, destinations, environment names and setup requirements. `anhedral.setup.json` records setup requirements; `anhedral.registry.json` records recipe versions, generated-file fingerprints and workspace references.
+Use `apps/*` for applications and services, and `packages/*` for shared code. Generated `docs/stack.md` lists the resolved options, destinations, environment names and setup requirements. The `setup` section of `anhedral.json` records setup requirements; its `registry` section records recipe versions, generated-file fingerprints and workspace references.
+
+The root `anhedral.json` is the single committed Anhedral configuration document. Its envelope has `schemaVersion: 1`; each named section retains its own domain schema version and validation. The CLI updates only the section it owns and preserves the other sections.
+
+| Section | Purpose |
+| --- | --- |
+| `identity` | Stable local application ID used by the project catalog |
+| `setup` | Selected products, hosting, environment requirements and owner setup |
+| `standard` | Scaffold conventions and version provenance |
+| `registry` | Recipe versions, generated-file fingerprints and workspace references |
+| `providers` | Nonsecret integration settings and selected provider resources |
+| `cloudflare` | Cloudflare delivery engine, account, audience and targets |
+| `vercel` | Vercel repository, project, team and audience |
+
+Only selected hosting sections are present. Keep credentials and delivery history in ignored runtime files and `.anhedral/`; they do not belong in `anhedral.json`. Per-app `anhedral.cloudflare.json`, `void.config.ts`, `void.lock.json` and native tool configuration remain with their owning applications.
 
 The catalog in `src/stack-registry.ts` owns recipe identity and composition rules. Dependencies and the official shadcn bootstrap are pinned in `src/dependencies.ts`. Recipes under `src/scaffold/` compose the resolved selection inside a staging transaction. Workspace names must be unique, references must resolve, and dependency cycles fail before commit.
 
-Incremental `add` uses only the bundled catalog maintained with the CLI. External registries and custom registry payloads are unsupported. Additions preserve edited and untracked source, refresh generated stack documentation and record provenance. Runtime relocation and older projects without compatible receipts require deliberate migration.
+Incremental `add` uses only the bundled catalog maintained with the CLI. External registries and custom registry payloads are unsupported. Additions preserve edited and untracked source, refresh generated stack documentation and record provenance. Additions require current registry receipts and preserve the selected runtime layout.
 
 ```sh
-anhedral add my-app resend stripe --dry-run --json
-anhedral add my-app resend stripe
+anhedral --cwd my-app add resend stripe --dry-run --json
+anhedral --cwd my-app add resend stripe
 anhedral doctor my-app --json
 ```
 
@@ -84,17 +107,17 @@ Void is the default Cloudflare delivery engine for new supported projects. Adopt
 | Audience requirements, hosting-policy orchestration and application authorization | Supported readiness and operational deployment primitives |
 | Source provenance, independent provider checks and end-to-end product acceptance | Worker publication, deployment diagnostics and supported code rollback |
 
-**Versions and configuration.** Pin `void@0.27.0` in each deployable app and require Node.js `>=24.21.0`. The adapter checks both the dependency pin and installed executable before execution. Record the delivery engine in `anhedral.project.json`. Each app keeps canonical declarations in `anhedral.cloudflare.json`, with `void.config.ts`, `env.ts` and `env.example`. Void generates its Cloudflare configuration and records resource identities in `void.lock.json`; generated defaults must not redefine authored capabilities or migration ownership.
+**Versions and configuration.** Pin `void@0.27.0` in each deployable app and require Node.js `>=24.21.0`. The adapter checks both the dependency pin and installed executable before execution. Record the delivery engine in the `cloudflare` section of `anhedral.json`. Each app keeps canonical declarations in `anhedral.cloudflare.json`, with `void.config.ts`, `env.ts` and `env.example`. Void generates its Cloudflare configuration and records resource identities in `void.lock.json`; generated defaults must not redefine authored capabilities or migration ownership.
 
-**One engine per Cloudflare workspace.** Existing projects without an explicit Void marker retain Wrangler. Explicit Next.js/OpenNext on Cloudflare, Queues with dead-letter recovery and Basin selections also retain legacy delivery until their complete provisioning contracts are supported. Adding these capabilities to a Void workspace requires a deliberate engine migration; additive composition refuses to mix engines. Installing a newer CLI does not migrate existing hosting. `planVoidDelivery` remains a read-only migration review API. Native Next.js on Vercel retains its independent delivery path. Named Cloudflare environments are not flattened automatically; migrate deliberately to separate committed target configurations.
+**One engine per Cloudflare workspace.** Explicit Next.js/OpenNext on Cloudflare, Queues with dead-letter recovery and Basin selections use Wrangler. Other supported Cloudflare selections use Void. Additive composition refuses choices that require switching the workspace engine. Native Next.js on Vercel uses its independent delivery path. Each Cloudflare target uses its own committed configuration; named Wrangler environments are unsupported by Void delivery.
 
 **Explicit resources and one writer.** Registry composition determines each server's capabilities. Shared packages receive bindings or connections through factories. Resource inference assists development; it does not establish transitive package discovery or capability isolation. Compare resolved/generated bindings against the selected capabilities, including auth- and migration-driven requirements. Anhedral `provision` reports the Void resource plan and defers creation to Void deployment. Deploy targets serially and serialize initial provisioning; never run a parallel Anhedral resource creator. Preserve existing D1/private R2 identities and independently inspect provider state after resolution.
 
-**One migration owner.** Keep authoritative schemas, SQL, snapshots and journals in `packages/db`. Determine ownership from canonical authored configuration, not a resolved lock: Void may add conventional migration directories to database consumers. Exactly one server applies shared D1 migrations; other servers consume the binding without acquiring ownership. An explicit owner may be selected during migration planning. The deployment adapter prepares an ignored, ownership-checked, byte-identical app-local validation copy for Void 0.27.0; it refuses edited or unowned copies. The configured apply directory remains `packages/db/drizzle`, and the copy never becomes another source of migrations. Keep custom Drizzle generation and SQL review because Void does not automatically detect drift in `packages/db/src/schema.ts`. Preserve Neon's HTTP runtime adapter and separate transactional migration connection; adopting Void does not select Hyperdrive or `void/db`.
+**One migration owner.** Keep authoritative schemas, SQL, snapshots and journals in `packages/db`. Determine ownership from canonical authored configuration, not a resolved lock: Void may add conventional migration directories to database consumers. Exactly one server applies shared D1 migrations; other servers consume the binding without acquiring ownership. The deployment adapter prepares an ignored, ownership-checked, byte-identical app-local validation copy for Void 0.27.0; it refuses edited or unowned copies. The configured apply directory remains `packages/db/drizzle`, and the copy never becomes another source of migrations. Keep custom Drizzle generation and SQL review because Void does not automatically detect drift in `packages/db/src/schema.ts`. Preserve Neon's HTTP runtime adapter and separate transactional migration connection; adopting Void does not select Hyperdrive or `void/db`.
 
 **Credentials and environments.** Provider authentication is separate from account selection, write permissions, Zero Trust setup and visitor identity. The adapter uses an explicitly supplied `CLOUDFLARE_API_TOKEN`, or retrieves structured Wrangler credentials and passes them only through the Void child process's environment. Credential values never become command arguments, source or deployment evidence. Wrangler login alone does not establish Access permissions. Establish private hosting protection before product publication.
 
-Void reads one `.env` at each deployable app's project root and declares variables in `env.ts`. Use `env.example`; do not introduce unsupported `.env.*` companions or `.dev.vars` into that app. Map existing environment conventions deliberately. Production server secrets use noninteractive stdin; bulk sync is avoided because the pinned command prompts even in CI. Reject empty values, NUL bytes and terminal newlines rather than silently changing secret bytes. Exclude public `VITE_*`, `NEXT_PUBLIC_*` and `EXPO_PUBLIC_*` values from server-secret uploads. Public build-variable mappings require explicit review. Keep Neon migration credentials separate from runtime secrets.
+Void reads one `.env` at each deployable app's project root and declares variables in `env.ts`. Use `env.example`; do not introduce unsupported `.env.*` companions or `.dev.vars` into that app. Production server secrets use noninteractive stdin; bulk sync is avoided because the pinned command prompts even in CI. Reject empty values, NUL bytes and terminal newlines rather than silently changing secret bytes. Exclude public `VITE_*`, `NEXT_PUBLIC_*` and `EXPO_PUBLIC_*` values from server-secret uploads. Vite clients expose `VITE_*` values at build time. The pinned Vinext plugin loads the app `.env` for local builds and maps `NEXT_PUBLIC_*` values into client bundles. Supply the selected public values in the production build environment; runtime server-secret uploads do not configure client bundles. Keep Neon migration credentials separate from runtime secrets.
 
 **Activation, locks and verification.** Distinguish provisioned, uploaded, activated, ready and product-verified states. A failed command can leave resources or an active Worker. Initial activation may change only the allowed target `void.lock.json` files. Retain independently confirmed receipts and return `configuration-required`, with `activated: true` and `deployed: false`; review and commit the identities, then ship a clean committed release before product verification. Only recorded lock changes may carry across later targets; unrelated source edits still stop delivery. Commit locks before another checkout or CI deploys.
 
@@ -133,18 +156,18 @@ When installing a capability addition, Anhedral regenerates the root `node_modul
 
 Framework-specific lint dependencies belong to the consuming application. The shared `packages/eslint-config` retains generic TypeScript, React, Hooks and Turbo rules; web applications declare their own Next API lint plugin and configuration. API and native-only workspaces must not inherit Next-specific tooling solely because the bootstrap started from a Next template.
 
-Generated `pnpm audit:deps` runs the standard pnpm audit through a verification gate and preserves its unmodified JSON in `.anhedral-audit-report.json`. High and critical findings fail except for the two reviewed, exact-version mitigations below. The gate permits `GHSA-vfj7-8cjw-p6xm` for verified patched `braces@3.0.3` and `GHSA-86w9-cpqp-85rv` for verified patched `node-forge@1.4.0`; it preserves both upstream findings and blocks unrelated advisories. Review the resolved lockfile for each generated profile: a clean CLI lockfile or direct-version catalog audit does not establish that a generated application’s transitive dependencies are clean. Removing an unused dependency path does not resolve other paths to the same vulnerable package.
+Generated `pnpm audit:deps` runs the standard pnpm audit through a narrow patch policy and preserves its unmodified JSON in `.anhedral-audit-report.json`. High and critical findings fail except for the two reviewed, exact-version mitigations below. The gate permits `GHSA-vfj7-8cjw-p6xm` for configured reviewed `braces@3.0.3` and `GHSA-86w9-cpqp-85rv` for configured reviewed `node-forge@1.4.0`; it preserves both upstream findings and blocks unrelated advisories. Review the resolved lockfile for each generated profile: a clean CLI lockfile or direct-version catalog audit does not establish that a generated application’s transitive dependencies are clean. Removing an unused dependency path does not resolve other paths to the same vulnerable package.
 
 ### Temporary braces mitigation
 
 When the resolved graph contains `braces@3.0.3`, new generation and actual additions copy the bundled `assets/patches/braces@3.0.3.patch` into `patches/`, merge an exact `patchedDependencies` mapping into `pnpm-workspace.yaml`, and resolve the lock again before frozen installation. Existing customer patch maps and files are preserved; conflicts require deliberate maintenance. Other versions do not receive this patch. Commit both the patch and updated workspace/lock files.
 
-This is a local mitigation for [CVE-2026-93687](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm): nested brace/parenthesis parsing and direct AST traversal are limited to depth 100, and cyclic child/expansion-parent paths are rejected. It does not add expansion-width/range limits or replace the upstream glob API. The gate still prints the affected upstream advisory. It permits that finding only after checking the exact bundled patch checksum, the complete installed bytes of every discovered braces copy, and bounded depth/cycle regression checks. Missing, unpatched, modified or different-version copies fail. Outside the two reviewed exact-version mitigations, high and critical advisories remain blocking.
+This is a local mitigation for [CVE-2026-93687](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm): nested brace/parenthesis parsing and direct AST traversal are limited to depth 100, and cyclic child/expansion-parent paths are rejected. It does not add expansion-width/range limits or replace the upstream glob API. The policy retains the affected upstream advisory and permits it only with the exact reviewed patch checksum and effective pnpm patch mapping. Frozen pnpm installation owns patch application and lockfile consistency. Depth/cycle runtime regressions run in this repository’s tests, rather than in generated applications. Outside the two reviewed exact-version mitigations, high and critical advisories remain blocking.
 
-Review the mitigation on every release. Remove it when a verified supported upstream fix or compatible consumer migration makes it unnecessary; test existing application patterns before changing the limit. `pnpm test:patch` exercises a real frozen installation, normal glob/watch behavior, verified-advisory handling and tamper rejection. The upstream MIT notice is distributed alongside the patch.
+Review the mitigation on every release. Remove it when a verified supported upstream fix or compatible consumer migration makes it unnecessary; test existing application patterns before changing the limit. `pnpm test:patch` exercises real frozen installations, runtime regressions, normal glob/watch behavior and changed-patch rejection. Focused unit tests cover exact-advisory handling. The upstream MIT notice is distributed alongside the patch.
 
 ### Temporary node-forge mitigation
 
 The same conditional staging and conflict checks apply to `node-forge@1.4.0`. Its patch rejects extra nested DigestAlgorithm elements and nonempty DER NULL parameters in RSA PKCS#1 v1.5 verification, covering `lib/rsa.js` and both shipped minified browser bundles. It preserves the published APIs and includes the upstream BSD license notice.
 
-The gate permits the exact advisory only after checking the patch checksum and complete bytes of every installed copy, then exercising valid and malformed signatures through all three entrypoints with pure JavaScript RSA verification. Unpatched browser bundles are not accepted. The upstream advisory still has no official patched release; this is a tested local mitigation and must be retired when a compatible verified upstream fix becomes available. Commit the generated patch, attributes, workspace policy and resolved lockfile.
+The policy permits the exact advisory only with the reviewed patch checksum and effective pnpm patch mapping. Repository installation tests exercise valid and malformed signatures through all three entrypoints with pure JavaScript RSA verification. Generated audits do not scan installed dependency trees or execute dependency runtime probes. The upstream advisory still has no official patched release; this is a tested local mitigation and must be retired when a compatible verified upstream fix becomes available. Commit the generated patch, attributes, workspace policy and resolved lockfile.

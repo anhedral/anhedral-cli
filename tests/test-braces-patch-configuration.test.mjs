@@ -1,3 +1,4 @@
+import { readProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -18,11 +19,7 @@ import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.
 import { addStackItems } from '../dist/registry/add.js';
 import { sourceFiles } from '../dist/registry/receipt.js';
 import { bootstrap } from './support/workspace-bootstrap.mjs';
-import {
-  configureBracesPatch,
-  configureDependencyPatches,
-  writeDependencyAudit,
-} from '../dist/braces-patch.js';
+import { configureDependencyPatches, writeDependencyAudit } from '../dist/dependency-patches.js';
 
 const patch = 'patches/braces@3.0.3.patch';
 function fixture(
@@ -43,7 +40,7 @@ test('exact braces patch preserves unrelated YAML and patches, uses bundled byte
   const f = fixture();
   try {
     const before = parse(f.policy());
-    assert.equal(configureBracesPatch(f.root), true);
+    assert.equal(configureDependencyPatches(f.root), true);
     const source = f.policy();
     const after = parse(source);
     assert.deepEqual(after.packages, before.packages);
@@ -60,7 +57,6 @@ test('exact braces patch preserves unrelated YAML and patches, uses bundled byte
       readFileSync(path.join(f.root, 'patches/LICENSE.braces')),
       readFileSync(new URL('../assets/patches/LICENSE.braces', import.meta.url)),
     );
-    assert.equal(configureBracesPatch(f.root), false);
     assert.equal(configureDependencyPatches(f.root), false);
     assert.equal(f.policy(), source);
   } finally {
@@ -75,7 +71,7 @@ for (const version of ['3.0.2', '3.0.4', '3.0.30', '3x0x3'])
     );
     try {
       const before = f.policy();
-      assert.equal(configureBracesPatch(f.root), false);
+      assert.equal(configureDependencyPatches(f.root), false);
       assert.equal(f.policy(), before);
       assert.equal(existsSync(path.join(f.root, 'patches')), false);
     } finally {
@@ -103,7 +99,7 @@ test('flow-style workspace patch mappings remain intact', () => {
       path.join(f.root, 'pnpm-workspace.yaml'),
       "packages: ['apps/*']\npatchedDependencies: { 'custom@1.0.0': 'patches/custom.patch' }\n",
     );
-    configureBracesPatch(f.root);
+    configureDependencyPatches(f.root);
     assert.deepEqual(parse(f.policy()).patchedDependencies, {
       'custom@1.0.0': 'patches/custom.patch',
       'braces@3.0.3': patch,
@@ -121,13 +117,13 @@ test('customer patch mappings and files are never overwritten', () => {
       'patchedDependencies:\n  braces@3.0.3: patches/custom-braces.patch\n',
     );
     const before = f.policy();
-    assert.throws(() => configureBracesPatch(f.root), /different customer patch/);
+    assert.throws(() => configureDependencyPatches(f.root), /different customer patch/);
     assert.equal(f.policy(), before);
     assert.equal(existsSync(path.join(f.root, 'patches')), false);
     writeFileSync(path.join(f.root, 'pnpm-workspace.yaml'), 'packages: [apps/*]\n');
     mkdirSync(path.join(f.root, 'patches'));
     writeFileSync(path.join(f.root, patch), 'customer patch content');
-    assert.throws(() => configureBracesPatch(f.root), /different customer content/);
+    assert.throws(() => configureDependencyPatches(f.root), /different customer content/);
     assert.equal(readFileSync(path.join(f.root, patch), 'utf8'), 'customer patch content');
     assert.equal(f.policy(), 'packages: [apps/*]\n');
   } finally {
@@ -143,7 +139,7 @@ test('legacy package-level patch maps are refused rather than shadowed', () => {
       JSON.stringify({ pnpm: { patchedDependencies: { 'custom@1.0.0': 'patches/custom.patch' } } }),
     );
     const before = f.policy();
-    assert.throws(() => configureBracesPatch(f.root), /must not be shadowed/);
+    assert.throws(() => configureDependencyPatches(f.root), /must not be shadowed/);
     assert.equal(f.policy(), before);
     assert.equal(existsSync(path.join(f.root, 'patches')), false);
   } finally {
@@ -157,13 +153,13 @@ test('patch files and directories cannot redirect writes through symlinks', () =
   try {
     const before = f.policy();
     symlinkSync(outside, path.join(f.root, 'patches'), 'dir');
-    assert.throws(() => configureBracesPatch(f.root), /real directory/);
+    assert.throws(() => configureDependencyPatches(f.root), /real directory/);
     assert.equal(existsSync(path.join(outside, 'braces@3.0.3.patch')), false);
     rmSync(path.join(f.root, 'patches'));
     mkdirSync(path.join(f.root, 'patches'));
     writeFileSync(path.join(outside, 'customer.patch'), 'unchanged');
     symlinkSync(path.join(outside, 'customer.patch'), path.join(f.root, patch));
-    assert.throws(() => configureBracesPatch(f.root), /regular file/);
+    assert.throws(() => configureDependencyPatches(f.root), /regular file/);
     assert.equal(readFileSync(path.join(outside, 'customer.patch'), 'utf8'), 'unchanged');
     assert.equal(f.policy(), before);
   } finally {
@@ -241,7 +237,7 @@ async function quietly(action) {
   }
 }
 function assertPatchReceipt(root) {
-  const receipt = JSON.parse(readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8'));
+  const receipt = readProjectSection(root, 'registry');
   for (const file of [
     patch,
     'patches/LICENSE.braces',
@@ -265,7 +261,7 @@ test('init resolves again with the exact patch before frozen install and fingerp
     const events = [];
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions('new', [root, '--hono', '--no-git', '--json']),
+        parseStandardOptions([root, '--hono', '--no-git', '--json']),
         resolutionRunner(events),
       ),
     );
@@ -286,7 +282,7 @@ test('init fingerprints both reviewed dependency patch assets before frozen inst
     const events = [];
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions('new', [root, '--hono', '--no-git', '--json']),
+        parseStandardOptions([root, '--hono', '--no-git', '--json']),
         resolutionRunner(
           events,
           () => true,
@@ -319,7 +315,7 @@ test('add previews never resolve or write a patch; actual add resolves again and
     const run = resolutionRunner(events, () => introduceBraces);
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions('new', [root, '--hono', '--skip-install', '--no-git', '--json']),
+        parseStandardOptions([root, '--hono', '--skip-install', '--no-git', '--json']),
         run,
       ),
     );
@@ -359,7 +355,10 @@ test('a conflicting license notice refuses configuration without writing the pat
     const notice = path.join(f.root, 'patches/LICENSE.braces');
     writeFileSync(notice, 'customer notice');
     const before = f.policy();
-    assert.throws(() => configureBracesPatch(f.root), /license notice.*different customer content/);
+    assert.throws(
+      () => configureDependencyPatches(f.root),
+      /license notice.*different customer content/,
+    );
     assert.equal(existsSync(path.join(f.root, patch)), false);
     assert.equal(readFileSync(notice, 'utf8'), 'customer notice');
     assert.equal(f.policy(), before);
@@ -374,7 +373,7 @@ test('generated Git attributes preserve customer rules and keep patch bytes stab
     const attributes = path.join(f.root, '.gitattributes');
     const existing = '# customer rules\r\n*.bin binary\r\n*.patch text eol=crlf\r\n';
     writeFileSync(attributes, existing);
-    configureBracesPatch(f.root);
+    configureDependencyPatches(f.root);
     const contents = readFileSync(attributes, 'utf8');
     assert.ok(contents.startsWith(existing));
     assert.ok(
@@ -382,7 +381,7 @@ test('generated Git attributes preserve customer rules and keep patch bytes stab
         '/patches/braces@3.0.3.patch text eol=lf -whitespace\r\n/patches/LICENSE.braces text eol=lf\r\n',
       ),
     );
-    assert.equal(configureBracesPatch(f.root), false);
+    assert.equal(configureDependencyPatches(f.root), false);
     assert.equal(readFileSync(attributes, 'utf8'), contents);
     const git = (args) => {
       const result = spawnSync('git', ['-c', 'core.autocrlf=true', ...args], { cwd: f.root });
@@ -423,7 +422,7 @@ test('Git attributes symlinks are refused before writing patch files or policy',
     writeFileSync(target, '*.patch binary\n');
     symlinkSync(target, path.join(f.root, '.gitattributes'));
     const before = f.policy();
-    assert.throws(() => configureBracesPatch(f.root), /regular file/);
+    assert.throws(() => configureDependencyPatches(f.root), /regular file/);
     assert.equal(existsSync(path.join(f.root, patch)), false);
     assert.equal(f.policy(), before);
     assert.equal(readFileSync(target, 'utf8'), '*.patch binary\n');
@@ -444,7 +443,7 @@ test('every generated profile receives the audit gate even without braces or a l
       readFileSync(new URL('../assets/patches/audit-deps.mjs', import.meta.url)),
     );
     writeDependencyAudit(f.root);
-    assert.equal(configureBracesPatch(f.root), false);
+    assert.equal(configureDependencyPatches(f.root), false);
     assert.equal(existsSync(path.join(f.root, patch)), false);
     assert.equal(f.policy(), before);
   } finally {
@@ -480,7 +479,7 @@ test('add refuses edited generated audit scripts before committing unrelated cha
     const run = resolutionRunner([], () => false);
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions('new', [root, '--hono', '--skip-install', '--no-git', '--json']),
+        parseStandardOptions([root, '--hono', '--skip-install', '--no-git', '--json']),
         run,
       ),
     );

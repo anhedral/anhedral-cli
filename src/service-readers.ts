@@ -121,6 +121,7 @@ export async function browseServiceData(
   table: string,
   offset = 0,
   limit = 25,
+  cursor?: string,
 ): Promise<ServiceData> {
   if (
     !Number.isSafeInteger(offset) ||
@@ -131,10 +132,13 @@ export async function browseServiceData(
     limit > 100
   )
     throw new Error('Choose a bounded data page.');
+  if (cursor !== undefined && (cursor.length > 4096 || /[\x00-\x1f\x7f]/.test(cursor)))
+    throw new Error('Choose a bounded metadata cursor.');
   if (service.kind === 'kv') {
     if (offset !== 0 || table !== 'keys')
-      throw new Error('KV metadata supports the first page only; key values are not read.');
-    const response = await request('GET', `${serviceEndpoint(service)}/keys?limit=${limit}`);
+      throw new Error('KV metadata uses cursors; key values are not read.');
+    const query = new URLSearchParams({ limit: String(limit), ...(cursor ? { cursor } : {}) });
+    const response = await request('GET', `${serviceEndpoint(service)}/keys?${query}`);
     if (!Array.isArray(response.result) || response.result.length > limit)
       throw new Error('Unsupported KV metadata.');
     return {
@@ -148,25 +152,43 @@ export async function browseServiceData(
         ];
       }),
       offset,
-      hasMore: response.result.length === limit,
+      hasMore: Boolean(response.result_info?.cursor),
+      ...(response.result_info?.cursor ? { nextCursor: response.result_info.cursor } : {}),
       masked: true,
     };
   }
+  if (cursor !== undefined) throw new Error('Database pages use offsets, not metadata cursors.');
   if (
     service.kind !== 'd1' ||
     !/^[a-zA-Z_][a-zA-Z0-9_]{0,127}$/.test(table) ||
     !(await listServiceTables(service, request)).includes(table)
   )
     throw new Error('Choose an existing supported database table.');
-  const rows = await d1Query(service, request, `SELECT * FROM "${table}" LIMIT ? OFFSET ?`, [
-    limit + 1,
-    offset,
-  ]);
-  const columns = rows.length ? Object.keys(rows[0]) : [];
-  if (columns.length > 200) throw new Error('Table exceeds its column limit.');
-  let masked = false;
+  const fields = await d1Query(service, request, `PRAGMA table_info("${table}")`);
+  if (!fields.length || fields.length > 50)
+    throw new Error('Table exceeds its supported column limit.');
+  const columns = fields.map((field) => {
+    if (typeof field.name !== 'string' || !/^[a-zA-Z_][a-zA-Z0-9_]{0,127}$/.test(field.name))
+      throw new Error('Unsupported database column.');
+    return field.name;
+  });
   const sensitive =
     /password|secret|token|email|phone|address|authorization|cookie|session|private|credential/i;
+  const projection = columns
+    .map((column) =>
+      sensitive.test(column)
+        ? `'[masked]' AS "${column}"`
+        : `CASE WHEN typeof("${column}") IN ('text', 'blob') THEN substr(CAST("${column}" AS TEXT), 1, 1000) ELSE "${column}" END AS "${column}"`,
+    )
+    .join(', ');
+  const ordering = columns.map((_, index) => index + 1).join(', ');
+  const rows = await d1Query(
+    service,
+    request,
+    `SELECT ${projection} FROM "${table}" ORDER BY ${ordering} LIMIT ? OFFSET ?`,
+    [limit + 1, offset],
+  );
+  let masked = columns.some((column) => sensitive.test(column));
   const outputRows = rows.slice(0, limit).map((row) =>
     columns.map((column) => {
       const value = row[column];

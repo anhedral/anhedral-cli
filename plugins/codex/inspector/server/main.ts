@@ -1,5 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
-import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import { catalogDirectory } from '../../../../src/catalog-registration.ts';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import { ProjectStore, catalogFailure } from './store.ts';
@@ -7,15 +6,6 @@ import { createDashboardServer } from './mcp.ts';
 import { createPreviewServer } from './preview.ts';
 const directory = catalogDirectory();
 const store = new ProjectStore(directory);
-const legacyDirectory = process.env.ANHEDRAL_LEGACY_PLUGIN_DATA;
-if (legacyDirectory && existsSync(path.join(legacyDirectory, 'sites.json'))) {
-  try {
-    store.importLegacy(new ProjectStore(legacyDirectory));
-  } catch (error) {
-    console.error(JSON.stringify(catalogFailure(error)));
-    throw new Error('Restore the previous catalog before opening the dashboard.');
-  }
-}
 const mode = process.argv[2] ?? 'serve';
 if (mode === 'register') {
   const root = process.argv[3];

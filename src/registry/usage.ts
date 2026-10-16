@@ -12,10 +12,6 @@ const primary = ['init', 'auth', 'ship', 'add', 'registry', 'inspect', 'doctor',
 const common = GLOBAL_OPTIONS.map(optionHelp);
 
 export function commandHelp(command: string): string | undefined {
-  if (command === 'new')
-    return commandHelp('init')
-      ?.replace('Usage: anhedral init', 'Usage: anhedral new')
-      .concat('\nCompatibility alias: new requires a destination directory.\n');
   const entry = COMMAND_HELP[command];
   if (!entry) return undefined;
   return `${entry.description}\n\nUsage: anhedral ${entry.usage}\n\nOptions:\n${[...entry.options, ...common].map((option) => `  ${option}`).join('\n')}\n\nExamples:\n${entry.examples.map((example) => `  anhedral ${example}`).join('\n')}${entry.note ? `\n\n${entry.note}` : ''}\n`;
@@ -28,4 +24,4 @@ export const STANDARD_USAGE = `Anhedral\nScaffold source, authenticate your prov
   .map(([name, entry]) => `  ${name.padEnd(12)}${entry.description}`)
   .join(
     '\n',
-  )}\n\nDefault: Vinext on Cloudflare Workers, from the official shadcn pnpm/Turborepo monorepo.\nExamples:\n  anhedral init client-app\n  anhedral auth client-app\n  anhedral ship client-app --dry-run\n\nUse anhedral <command> --help for options and examples.\nUse anhedral help <command> for the same focused help.\nGlobal options:\n${common.map((option) => `  ${option}`).join('\n')}\n  -v, --version  Show the CLI version.\n\nnew remains a compatibility alias for init with an explicit destination.\n`;
+  )}\n\nDefault: Vinext on Cloudflare Workers, from the official shadcn pnpm/Turborepo monorepo.\nExamples:\n  anhedral init client-app\n  anhedral auth client-app\n  anhedral ship client-app --dry-run\n\nUse anhedral <command> --help for options and examples.\nUse anhedral help <command> for the same focused help.\nGlobal options:\n${common.map((option) => `  ${option}`).join('\n')}\n  -v, --version  Show the CLI version.\n`;

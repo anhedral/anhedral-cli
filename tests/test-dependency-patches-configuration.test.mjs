@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parse } from 'yaml';
-import { configureDependencyPatches } from '../dist/braces-patch.js';
+import { configureDependencyPatches } from '../dist/dependency-patches.js';
 
 const coordinates = ['braces@3.0.3', 'node-forge@1.4.0'];
 function fixture(packages = coordinates) {

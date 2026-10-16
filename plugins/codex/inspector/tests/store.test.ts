@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../../../../src/project-config.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -68,11 +69,8 @@ test('project projection exposes environment names and recorded configuration wi
     const id = store.register(root);
     mkdirSync(path.join(root, 'apps', 'web'), { recursive: true });
     mkdirSync(path.join(root, '.anhedral'));
-    writeFileSync(path.join(root, 'anhedral.project.json'), JSON.stringify(cloudflareProject));
-    writeFileSync(
-      path.join(root, 'anhedral.standard.json'),
-      JSON.stringify({ products: ['vinext', 'd1'] }),
-    );
+    writeProjectSection(root, 'cloudflare', cloudflareProject);
+    writeProjectSection(root, 'standard', { products: ['vinext', 'd1'] });
     writeFileSync(
       path.join(root, 'apps/web/wrangler.jsonc'),
       '{"d1_databases":[{"binding":"DB","database_id":"REPLACE_WITH_DATABASE_ID"}],"triggers":{"crons":["0 * * * *"]}}',
@@ -121,7 +119,7 @@ test('foreign receipts and links outside a registered root become unavailable, n
   fixture(({ root, data, store }) => {
     const id = store.register(root);
     mkdirSync(path.join(root, '.anhedral'));
-    writeFileSync(path.join(root, 'anhedral.project.json'), JSON.stringify(cloudflareProject));
+    writeProjectSection(root, 'cloudflare', cloudflareProject);
     writeFileSync(
       path.join(root, '.anhedral/releases.json'),
       '{"schemaVersion":1,"projectId":"foreign","releases":[]}',
@@ -136,16 +134,16 @@ test('foreign receipts and links outside a registered root become unavailable, n
   }));
 test('invalid and oversized catalogs fail closed without returning JSON values', () =>
   fixture(({ data, store }) => {
-    writeFileSync(path.join(data, 'sites.json'), '{"private-data"');
+    writeFileSync(path.join(data, 'projects.json'), '{"private-data"');
     assert.throws(() => store.snapshot(), /catalog is invalid/);
-    writeFileSync(path.join(data, 'sites.json'), 'x'.repeat(1024 * 1024 + 1));
+    writeFileSync(path.join(data, 'projects.json'), 'x'.repeat(1024 * 1024 + 1));
     assert.throws(() => store.snapshot(), /catalog is invalid/);
   }));
 test('deployment receipt projection rejects credentialed and token-bearing URLs', () =>
   fixture(({ root, store }) => {
     const id = store.register(root);
     mkdirSync(path.join(root, '.anhedral'));
-    writeFileSync(path.join(root, 'anhedral.project.json'), JSON.stringify(cloudflareProject));
+    writeProjectSection(root, 'cloudflare', cloudflareProject);
     for (const url of [
       'javascript:alert(1)',
       'https://user:secret@example.com',
@@ -185,10 +183,10 @@ test('deployment receipt projection rejects credentialed and token-bearing URLs'
 test('concurrent catalog writers fail closed and preserve the existing catalog', () =>
   fixture(({ root, data, store }) => {
     store.register(root);
-    writeFileSync(path.join(data, 'sites.lock'), 'another writer');
+    writeFileSync(path.join(data, 'projects.lock'), 'another writer');
     assert.throws(() => store.call('set_view', { view: 'grid' }), /catalog is busy/);
     assert.equal(store.snapshot().preferences.view, 'list');
-    rmSync(path.join(data, 'sites.lock'));
+    rmSync(path.join(data, 'projects.lock'));
     store.call('set_view', { view: 'grid' });
     assert.equal(store.snapshot().preferences.view, 'grid');
   }));
@@ -196,7 +194,7 @@ test('concurrent catalog writers fail closed and preserve the existing catalog',
 test('unknown operations and arguments fail before any catalog mutation', () =>
   fixture(({ store, root, data }) => {
     const id = store.register(root);
-    const original = readFileSync(path.join(data, 'sites.json'));
+    const original = readFileSync(path.join(data, 'projects.json'));
     for (const [tool, args] of [
       ['unknown_operation', { id }],
       ['list_projects', { id }],
@@ -204,30 +202,29 @@ test('unknown operations and arguments fail before any catalog mutation', () =>
       ['forget_project', { id, name: 'unexpected' }],
     ] as const)
       assert.throws(() => store.call(tool as never, args as never));
-    assert.deepEqual(readFileSync(path.join(data, 'sites.json')), original);
+    assert.deepEqual(readFileSync(path.join(data, 'projects.json')), original);
     assert.equal(store.snapshot().projects[0].id, id);
   }));
 
 test('oversized catalog writes preserve the previous catalog', () =>
   fixture(({ store, root, data }) => {
     store.register(root);
-    const original = readFileSync(path.join(data, 'sites.json'));
+    const original = readFileSync(path.join(data, 'projects.json'));
     const catalog = JSON.parse(original.toString());
-    catalog.sites[0].root = 'x'.repeat(1024 * 1024);
+    catalog.projects[0].root = 'x'.repeat(1024 * 1024);
     assert.throws(
       () => (store as unknown as { write(value: unknown): void }).write(catalog),
       /storage limit/,
     );
-    assert.deepEqual(readFileSync(path.join(data, 'sites.json')), original);
+    assert.deepEqual(readFileSync(path.join(data, 'projects.json')), original);
   }));
 
 test('invalid release evidence is isolated while missing source manifests remain unavailable', () =>
   fixture(({ store, root }) => {
     const id = store.register(root);
     mkdirSync(path.join(root, '.anhedral'));
-    const project = path.join(root, 'anhedral.project.json');
     const history = path.join(root, '.anhedral/releases.json');
-    writeFileSync(project, JSON.stringify(cloudflareProject));
+    writeProjectSection(root, 'cloudflare', cloudflareProject);
     const release = {
       id: 'release',
       state: 'checked',
@@ -247,7 +244,7 @@ test('invalid release evidence is isolated while missing source manifests remain
       store.call('get_project', { id }).projects[0].inspection?.targets.data[0].error,
       undefined,
     );
-    writeFileSync(project, '{}');
+    writeProjectSection(root, 'cloudflare', {});
     assert.ok(store.call('get_project', { id }).projects[0].inspection?.targets.data[0].error);
     rmSync(path.join(root, 'package.json'));
     assert.equal(store.call('get_project', { id }).projects[0].status, 'unavailable');
@@ -257,7 +254,7 @@ test('recorded deployment evidence cannot mask a missing source manifest', () =>
   fixture(({ store, root }) => {
     const id = store.register(root);
     mkdirSync(path.join(root, '.anhedral'));
-    writeFileSync(path.join(root, 'anhedral.project.json'), JSON.stringify(cloudflareProject));
+    writeProjectSection(root, 'cloudflare', cloudflareProject);
     writeFileSync(
       path.join(root, '.anhedral/releases.json'),
       JSON.stringify({
@@ -296,7 +293,7 @@ test('catalog errors provide actionable codes without including untrusted input'
         return true;
       },
     );
-    writeFileSync(path.join(data, 'sites.json'), '{"secret":"sensitive-invalid-data"');
+    writeFileSync(path.join(data, 'projects.json'), '{"secret":"sensitive-invalid-data"');
     assert.throws(
       () => store.snapshot(),
       (error: unknown) => {
@@ -312,7 +309,7 @@ test('explicit catalog recovery removes only a proven dead same-host lock', () =
     store.register(root);
     const dead = spawnSync(process.execPath, ['-e', '']);
     assert.ok(dead.pid);
-    const file = path.join(data, 'sites.lock');
+    const file = path.join(data, 'projects.lock');
     writeFileSync(
       file,
       JSON.stringify({
@@ -332,7 +329,7 @@ test('explicit catalog recovery removes only a proven dead same-host lock', () =
 for (const kind of ['live', 'foreign host', 'legacy', 'malformed'] as const)
   test(`catalog recovery preserves ${kind} lock without proof of stale ownership`, () =>
     fixture(({ store, data }) => {
-      const file = path.join(data, 'sites.lock');
+      const file = path.join(data, 'projects.lock');
       const value =
         kind === 'legacy'
           ? ''

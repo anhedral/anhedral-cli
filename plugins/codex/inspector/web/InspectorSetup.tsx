@@ -160,7 +160,7 @@ export function Setup({
         <Action
           busy={busy}
           request={request}
-          text="Review anhedral.providers.json and the selected targets for this project. Explain missing account, domain, region and resource choices. Prepare a setup plan without login, provisioning, paid activation or deployment."
+          text="Review the providers section of anhedral.json and the selected targets for this project. Explain missing account, domain, region and resource choices. Prepare a setup plan without login, provisioning, paid activation or deployment."
         >
           Review setup
         </Action>

@@ -149,7 +149,7 @@ try {
     GIT_COMMITTER_EMAIL: `${user.id}+${user.login}${String.fromCharCode(64)}users.noreply.github.com`,
   };
   phase('scaffold and implement protected HTTP acceptance checks');
-  await scaffoldStandardProject(parseStandardOptions('new', [root, '--next', '--no-git']));
+  await scaffoldStandardProject(parseStandardOptions([root, '--next', '--no-git']));
   put(
     'apps/web/app/page.tsx',
     'import Link from "next/link";\nexport default function Page() { return <main><h1>Anhedral Git-owned application</h1><Link href="/about">About</Link></main>; }\n',

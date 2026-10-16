@@ -10,9 +10,9 @@ You own the code, provider accounts, infrastructure, data, and billing. The CLI 
 
 ## Get started
 
-New Cloudflare workspaces use Void 0.27.0 and require Node.js 24.21.0+ and pnpm 10.34.5. Native-only and explicit OpenNext, queue and Basin workspaces retain their existing runtime requirements. Initialize on Linux, macOS, or WSL.
+Supported Cloudflare workspaces use Void 0.27.0 and require Node.js 24.21.0+ and pnpm 10.34.5. Explicit OpenNext, Queues and Basin selections use Wrangler. Other workspace profiles require Node.js 22.13+ on 22.x or Node.js 24+. Initialize on Linux, macOS, or WSL.
 
-Void owns Cloudflare provisioning, secret uploads and deployment. Anhedral retains stack composition, shared packages, customer ownership and independent release/product verification. Existing Wrangler projects keep their engine; initialization does not deploy or migrate an existing application.
+Void owns Cloudflare provisioning, secret uploads and deployment. Anhedral retains stack composition, shared packages, customer ownership and independent release/product verification. Explicit OpenNext, Queues and Basin profiles use Anhedral’s Wrangler delivery path. Initialization creates source without deploying it.
 
 ```sh
 npm install --global anhedral
@@ -51,6 +51,10 @@ anhedral registry list
 anhedral registry view resend --json
 ```
 
+Optional `--neon-realtime` adds Neon live SQL foundations with separate server/client exports in `packages/neon-realtime`; it selects Neon and needs a server runtime. `--realtime` remains Cloudflare Durable Object WebSocket rooms. Neon Realtime is beta: enable the intended branch, allowed origins and secret manually, then implement authenticated, scoped query sealing and subscriptions. Initialization does not provision or verify Realtime. See the [stack standard](docs/stack-standard.md#neon-realtime).
+
+The project keeps Anhedral metadata in one committed root `anhedral.json`, with named sections for identity, stack selection, registry provenance, integrations and selected hosting. Credentials and delivery history remain in ignored runtime files and `.anhedral/`.
+
 The bundled registry contains recipes maintained and tested by Anhedral. Generated source belongs to your project and stays editable. External registries are unsupported. Preview additions before applying them:
 
 ```sh
@@ -75,7 +79,7 @@ anhedral verify --json
 
 Replace the example email with the intended member. Private Workers hosting requires Cloudflare Zero Trust and the necessary Access permissions. Authentication does not establish every provisioning permission or complete service setup.
 
-With legacy Wrangler delivery, changed resource IDs stop `ship` before deployment for review and a commit. Void can activate a target before recording new resource identities in `void.lock.json`; it then returns `configuration-required` with the activation receipts retained. Review and commit those locks, then ship the clean configuration. It never commits source automatically. Shipping runs project checks and records delivery results. `verify` exercises your application's live acceptance test; a successful scaffold or deployment alone does not prove its features work.
+For Wrangler profiles, changed resource IDs stop `ship` before deployment for review and a commit. Void can activate a target before recording new resource identities in `void.lock.json`; it then returns `configuration-required` with the activation receipts retained. Review and commit those locks, then ship the clean configuration. It never commits source automatically. Shipping runs project checks and records delivery results. `verify` exercises your application's live acceptance test; a successful scaffold or deployment alone does not prove its features work.
 
 Provider eligibility, subscriptions, usage limits, and charges remain your responsibility. Some setup requires owner action. Expo delivery returns EAS build links; it does not submit apps to stores.
 
@@ -112,7 +116,7 @@ pnpm test:all
 pnpm test:integration
 ```
 
-For the inspector, also run `pnpm --dir plugins/codex/inspector install --frozen-lockfile` and `pnpm plugin:check`. Development builds require matching CLI and plugin versions; they do not update installed releases automatically.
+The root test command reuses a verified inspector runtime or installs its frozen dependencies and builds it when missing/stale. Preparing that runtime requires Node 22.13+ on 22.x or Node 24+; older CLI test lanes consume the verified CI runtime artifact. For inspector-specific checks, run `pnpm --dir plugins/codex/inspector install --frozen-lockfile` and `pnpm plugin:check`. Development builds require matching CLI and plugin versions; they do not update installed releases automatically.
 
 Focused fixes, tests, and documentation contributions are welcome. See [contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md), [code of conduct](https://github.com/anhedral/anhedral-cli/blob/main/.github/CODE_OF_CONDUCT.md), and [security reporting](https://github.com/anhedral/anhedral-cli/blob/main/.github/SECURITY.md). Report reproducible problems in [issues](https://github.com/anhedral/anhedral-cli/issues) and vulnerabilities through [private reporting](https://github.com/anhedral/anhedral-cli/security/advisories/new).
 

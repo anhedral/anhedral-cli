@@ -1,3 +1,6 @@
+import { readProjectSection, writeProjectSection } from '../dist/project-config.js';
+import { createSetupPlan } from '../dist/capabilities.js';
+import { parseStandardOptions } from '../dist/registry/options.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
@@ -50,7 +53,11 @@ function fixture(config = {}) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-resource-test-'));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
   writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'example' }));
-  writeFileSync(path.join(root, 'anhedral.setup.json'), JSON.stringify({ hosting: 'cloudflare' }));
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--hono', '--vinext'])),
+  );
   writeFileSync(
     path.join(root, 'apps/web/package.json'),
     JSON.stringify({ scripts: { deploy: 'wrangler deploy' } }),
@@ -325,10 +332,9 @@ test('Void alone provisions new project resources; Anhedral never invokes a seco
     ],
   });
   try {
-    const file = path.join(root, 'anhedral.project.json');
-    const project = JSON.parse(readFileSync(file, 'utf8'));
+    const project = readProjectSection(root, 'cloudflare');
     project.deliveryEngine = 'void';
-    writeFileSync(file, JSON.stringify(project));
+    writeProjectSection(root, 'cloudflare', project);
     const before = readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8');
     const result = await provisionApplication(
       root,

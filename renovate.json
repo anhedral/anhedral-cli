@@ -39,8 +39,16 @@
     },
     {
       "matchPackageNames": ["@types/node"],
+      "matchFileNames": ["package.json"],
       "allowedVersions": "<21",
       "groupName": "Node 20 type definitions",
+      "automerge": false
+    },
+    {
+      "matchPackageNames": ["@types/node"],
+      "matchFileNames": ["plugins/codex/inspector/package.json"],
+      "allowedVersions": ">=24 <25",
+      "groupName": "Inspector Node 24 type definitions",
       "automerge": false
     },
     {
@@ -67,7 +75,7 @@
       "managerFilePatterns": ["/^src\\/dependencies\\.ts$/", "/^src\\/void\\.ts$/"],
       "matchStrings": [
         "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+(?:['\\\"]?[^:'\\\"]+['\\\"]?): '(?<currentValue>[^']+)'",
-        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+export const [A-Z_]+ = '(?<currentValue>[^']+)'"
+        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+export const [A-Z0-9_]+ = '(?<currentValue>[^']+)'"
       ]
     },
     {

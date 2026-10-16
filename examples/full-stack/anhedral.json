@@ -1,0 +1,2219 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "schemaVersion": 1,
+    "id": "b39d8410-f4aa-4b1f-9a99-a289309d42be"
+  },
+  "standard": {
+    "schemaVersion": 1,
+    "standard": "anhedral-application-stack",
+    "products": [
+      "basin",
+      "better-auth",
+      "cron",
+      "d1",
+      "hono",
+      "kv",
+      "posthog",
+      "queues",
+      "r2",
+      "realtime",
+      "resend",
+      "sentry",
+      "stripe",
+      "vinext",
+      "workers-ai",
+      "workflows"
+    ],
+    "hosting": "cloudflare",
+    "bootstrap": {
+      "command": "pnpm dlx shadcn@4.21.4 init --monorepo --template next",
+      "upstreamPackageManager": "pnpm@9.0.6"
+    },
+    "status": "starter",
+    "resourcesProvisioned": false
+  },
+  "setup": {
+    "schemaVersion": 1,
+    "cliVersion": "0.11.1",
+    "registryVersion": 1,
+    "standard": "anhedral-application-stack",
+    "root": ".",
+    "name": "full-stack",
+    "products": [
+      "basin",
+      "better-auth",
+      "cron",
+      "d1",
+      "hono",
+      "kv",
+      "posthog",
+      "queues",
+      "r2",
+      "realtime",
+      "resend",
+      "sentry",
+      "stripe",
+      "vinext",
+      "workers-ai",
+      "workflows"
+    ],
+    "hosting": "cloudflare",
+    "registry": {
+      "schemaVersion": 1,
+      "name": "anhedral",
+      "cliVersion": "0.11.1",
+      "items": [
+        {
+          "name": "workspace",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [],
+          "environment": [],
+          "installer": "bootstrap",
+          "type": "foundation",
+          "description": "pnpm workspace with one root lockfile, pinned Turborepo and shared checks",
+          "targets": [
+            "package.json",
+            "pnpm-workspace.yaml",
+            "turbo.json"
+          ]
+        },
+        {
+          "name": "typescript",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace"
+          ],
+          "environment": [],
+          "installer": "bootstrap",
+          "type": "foundation",
+          "description": "Shared TypeScript configuration",
+          "targets": [
+            "packages/typescript-config"
+          ]
+        },
+        {
+          "name": "eslint",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace"
+          ],
+          "environment": [],
+          "installer": "bootstrap",
+          "type": "foundation",
+          "description": "Shared ESLint configuration",
+          "targets": [
+            "packages/eslint-config"
+          ]
+        },
+        {
+          "name": "hono",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "application",
+          "description": "Shared Hono OpenAPI Worker",
+          "targets": [
+            "apps/api"
+          ],
+          "setup": {
+            "purpose": "Shared OpenAPI backend",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare Workers deployment access"
+            ],
+            "credentials": [],
+            "resources": [
+              "API Worker; application routes and authorization"
+            ],
+            "verify": [
+              "Contract validation, unauthenticated rejection and resource ownership"
+            ]
+          }
+        },
+        {
+          "name": "posthog",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [
+            "POSTHOG_API_KEY",
+            "POSTHOG_HOST"
+          ],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Server-side product analytics factory",
+          "targets": [
+            "packages/analytics"
+          ],
+          "setup": {
+            "purpose": "Specialized product analytics",
+            "tools": [
+              "PostHog integration or API"
+            ],
+            "access": [
+              "Client-owned PostHog project access"
+            ],
+            "credentials": [
+              "POSTHOG_API_KEY; POSTHOG_HOST; separate privileged key if needed"
+            ],
+            "resources": [
+              "Analytics client factory; implement consent, event schema and privacy filtering"
+            ],
+            "verify": [
+              "Event receipt, consent behavior and redaction of private data"
+            ]
+          },
+          "package": {
+            "name": "analytics",
+            "source": "import { PostHog } from 'posthog-node';\nexport function createAnalytics(apiKey: string, host: string) { return new PostHog(apiKey, { host }); }\n",
+            "dependencies": {
+              "posthog-node": "5.55.2"
+            }
+          }
+        },
+        {
+          "name": "basin",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono",
+            "posthog"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Cloudflare analytical stream binding and event helper",
+          "targets": [
+            "packages/basin"
+          ],
+          "setup": {
+            "purpose": "Cloudflare analytical events",
+            "tools": [
+              "Wrangler",
+              "Cloudflare integration or API"
+            ],
+            "access": [
+              "Cloudflare analytics/Pipelines access; plan supporting selected services; Pipelines Setup grant for managed R2 sink setup"
+            ],
+            "credentials": [],
+            "resources": [
+              "Basin dataset/stream, ANALYTICS binding, optional private R2 sink and authorized sink writes"
+            ],
+            "verify": [
+              "Private ingestion, event delivery, query results and archive retrieval when selected"
+            ]
+          },
+          "package": {
+            "name": "basin",
+            "source": "export interface EventStream { send(events: Record<string, unknown>[]): Promise<void> }\nexport async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) {\n  await stream.send(events);\n}\n",
+            "dependencies": {}
+          },
+          "runtime": "worker",
+          "bindings": {
+            "pipelines": [
+              {
+                "binding": "ANALYTICS",
+                "stream": "REPLACE_WITH_BASIN_STREAM_ID"
+              }
+            ]
+          }
+        },
+        {
+          "name": "d1",
+          "version": "0.11.1",
+          "selection": {
+            "conflicts": [
+              "neon"
+            ]
+          },
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Reusable Drizzle D1 database package and explicit migration tooling",
+          "targets": [
+            "packages/db",
+            "apps/api"
+          ],
+          "setup": {
+            "purpose": "SQLite-compatible hosted persistence",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare D1 access"
+            ],
+            "credentials": [],
+            "resources": [
+              "D1 database, DB binding and reviewed migrations"
+            ],
+            "verify": [
+              "Migration, constraints, transactional behavior and runtime queries"
+            ]
+          },
+          "runtime": "worker",
+          "bindings": {
+            "d1_databases": [
+              {
+                "binding": "DB",
+                "database_name": "full-stack-db",
+                "database_id": "REPLACE_WITH_D1_ID",
+                "migrations_dir": "../../packages/db/drizzle"
+              }
+            ]
+          }
+        },
+        {
+          "name": "better-auth",
+          "version": "0.11.1",
+          "selection": {
+            "conflicts": [
+              "clerk"
+            ],
+            "requiresAny": [
+              "neon",
+              "d1"
+            ]
+          },
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono",
+            "d1"
+          ],
+          "environment": [
+            "BETTER_AUTH_SECRET",
+            "BETTER_AUTH_URL"
+          ],
+          "installer": "recipe",
+          "type": "integration",
+          "description": "Database-backed identity schema and runtime routes",
+          "targets": [
+            "packages/auth",
+            "packages/db",
+            "apps/api"
+          ],
+          "setup": {
+            "purpose": "Application-managed identity",
+            "tools": [
+              "Selected database tooling"
+            ],
+            "access": [
+              "Selected database migration/runtime access"
+            ],
+            "credentials": [
+              "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
+            ],
+            "resources": [
+              "Selected Neon or D1 database, auth schema, trusted origins and application routes"
+            ],
+            "verify": [
+              "Sign-in/out, session expiry, sign-up policy and resource authorization"
+            ]
+          },
+          "runtime": "server"
+        },
+        {
+          "name": "cron",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "service",
+          "description": "Scheduled Worker",
+          "targets": [
+            "apps/scheduled"
+          ],
+          "setup": {
+            "purpose": "Scheduled work",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare Worker deployment access"
+            ],
+            "credentials": [],
+            "resources": [
+              "Scheduled Worker and environment-specific Cron Triggers"
+            ],
+            "verify": [
+              "Schedule, idempotency, failure visibility and overlapping runs"
+            ]
+          }
+        },
+        {
+          "name": "kv",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono"
+          ],
+          "environment": [],
+          "installer": "configuration",
+          "type": "integration",
+          "description": "Eventually consistent cache binding",
+          "targets": [
+            "apps/api/wrangler.jsonc"
+          ],
+          "setup": {
+            "purpose": "Eventually consistent cache/configuration",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare KV namespace access"
+            ],
+            "credentials": [],
+            "resources": [
+              "KV namespace and CONFIG binding"
+            ],
+            "verify": [
+              "TTL and propagation behavior; never use KV as transactional authority"
+            ]
+          },
+          "runtime": "worker",
+          "bindings": {
+            "kv_namespaces": [
+              {
+                "binding": "CONFIG",
+                "id": "REPLACE_WITH_KV_ID"
+              }
+            ]
+          }
+        },
+        {
+          "name": "queues",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "service",
+          "description": "Queue producer binding, consumer and dead-letter handling",
+          "targets": [
+            "apps/jobs",
+            "apps/api/wrangler.jsonc"
+          ],
+          "setup": {
+            "purpose": "Deferred jobs",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare Queues configuration access"
+            ],
+            "credentials": [],
+            "resources": [
+              "Queue, producer/consumer bindings and failure handling"
+            ],
+            "verify": [
+              "Retries, idempotency, concurrency and dead-letter recovery"
+            ]
+          },
+          "runtime": "optional-worker",
+          "bindings": {
+            "queues": {
+              "producers": [
+                {
+                  "binding": "JOBS",
+                  "queue": "full-stack-jobs"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "r2",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "integration",
+          "description": "Private file binding and authorization guidance",
+          "targets": [
+            "apps/api/private-files.md"
+          ],
+          "setup": {
+            "purpose": "Private remote files",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare R2 bucket/binding access"
+            ],
+            "credentials": [],
+            "resources": [
+              "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+            ],
+            "verify": [
+              "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+            ]
+          },
+          "runtime": "worker",
+          "bindings": {
+            "r2_buckets": [
+              {
+                "binding": "FILES",
+                "bucket_name": "full-stack-private-files"
+              }
+            ]
+          }
+        },
+        {
+          "name": "realtime",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "service",
+          "description": "Durable Object room Worker with authorization boundary",
+          "targets": [
+            "apps/realtime"
+          ],
+          "setup": {
+            "purpose": "Rooms and collaboration",
+            "tools": [
+              "Wrangler",
+              "Browser control"
+            ],
+            "access": [
+              "Cloudflare Durable Objects deployment access"
+            ],
+            "credentials": [],
+            "resources": [
+              "Realtime Worker, Durable Object namespace/migration and WebSocket authorization"
+            ],
+            "verify": [
+              "Authorized room isolation, disconnect/reconnect and deployed WebSockets"
+            ]
+          }
+        },
+        {
+          "name": "resend",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [
+            "RESEND_API_KEY"
+          ],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Server-side email SDK factory",
+          "targets": [
+            "packages/email"
+          ],
+          "setup": {
+            "purpose": "Outbound application email",
+            "tools": [
+              "Resend integration or API"
+            ],
+            "access": [
+              "Client-owned Resend project; sending-domain DNS access"
+            ],
+            "credentials": [
+              "RESEND_API_KEY; webhook secret when used"
+            ],
+            "resources": [
+              "Verified sending domain, sender and server integration"
+            ],
+            "verify": [
+              "Delivery, suppression/bounce handling and webhook verification; inbound routing is separate"
+            ]
+          },
+          "package": {
+            "name": "email",
+            "source": "import { Resend } from 'resend';\nexport function createEmail(apiKey: string) { return new Resend(apiKey); }\n",
+            "dependencies": {
+              "resend": "6.32.1"
+            }
+          }
+        },
+        {
+          "name": "sentry",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [
+            "SENTRY_DSN"
+          ],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Platform-specific monitoring integration boundary",
+          "targets": [
+            "packages/observability"
+          ],
+          "setup": {
+            "purpose": "Additional runtime/crash diagnostics",
+            "tools": [
+              "Sentry integration or API"
+            ],
+            "access": [
+              "Client-owned Sentry project access"
+            ],
+            "credentials": [
+              "SENTRY_DSN; source-map upload token when required"
+            ],
+            "resources": [
+              "Integration boundary; install/init runtime SDKs and configure private source-map uploads"
+            ],
+            "verify": [
+              "Captured runtime errors, source maps, privacy filtering and alert delivery"
+            ]
+          },
+          "package": {
+            "name": "observability",
+            "source": "// Initialize the platform-specific Sentry SDK in each application's runtime entrypoint.\nexport const redactFields = ['authorization', 'cookie', 'password', 'token'];\n",
+            "dependencies": {}
+          }
+        },
+        {
+          "name": "stripe",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [
+            "STRIPE_SECRET_KEY",
+            "STRIPE_WEBHOOK_SECRET"
+          ],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Server-side billing SDK factory",
+          "targets": [
+            "packages/billing"
+          ],
+          "setup": {
+            "purpose": "Web payments and subscriptions",
+            "tools": [
+              "Stripe integration or CLI"
+            ],
+            "access": [
+              "Client-owned Stripe account; test/live access as required"
+            ],
+            "credentials": [
+              "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
+            ],
+            "resources": [
+              "Products/prices, signed webhooks and entitlement implementation"
+            ],
+            "verify": [
+              "Test purchase/cancellation, webhook replay and transactional idempotency"
+            ]
+          },
+          "package": {
+            "name": "billing",
+            "source": "import Stripe from 'stripe';\nexport function createBilling(apiKey: string) { return new Stripe(apiKey); }\n",
+            "dependencies": {
+              "stripe": "20.4.1"
+            }
+          }
+        },
+        {
+          "name": "ui",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [],
+          "installer": "bootstrap",
+          "type": "foundation",
+          "description": "Shared shadcn/ui, React, Tailwind and Lucide foundation for web apps",
+          "targets": [
+            "packages/ui"
+          ]
+        },
+        {
+          "name": "vinext",
+          "version": "0.11.1",
+          "selection": {
+            "conflicts": [
+              "next"
+            ]
+          },
+          "registryDependencies": [
+            "ui"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "application",
+          "description": "Vinext web application on Cloudflare Workers",
+          "targets": [
+            "apps/web"
+          ],
+          "setup": {
+            "purpose": "Web application on Cloudflare",
+            "tools": [
+              "Browser control",
+              "Wrangler"
+            ],
+            "access": [],
+            "credentials": [],
+            "resources": [
+              "Vinext React application and Cloudflare Worker"
+            ],
+            "verify": [
+              "Web flows, accessibility, production Worker build and deployed preview"
+            ]
+          }
+        },
+        {
+          "name": "workers-ai",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono"
+          ],
+          "environment": [],
+          "installer": "configuration",
+          "type": "integration",
+          "description": "Workers AI runtime binding",
+          "targets": [
+            "apps/api/wrangler.jsonc"
+          ],
+          "setup": {
+            "purpose": "Cloudflare-hosted inference",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare Workers AI model access"
+            ],
+            "credentials": [],
+            "resources": [
+              "AI binding and selected model invocation"
+            ],
+            "verify": [
+              "Supported model behavior, authorization and usage limits"
+            ]
+          },
+          "runtime": "worker",
+          "bindings": {
+            "ai": {
+              "binding": "AI"
+            }
+          }
+        },
+        {
+          "name": "workflows",
+          "version": "0.11.1",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "service",
+          "description": "Durable multi-step Worker",
+          "targets": [
+            "apps/workflows"
+          ],
+          "setup": {
+            "purpose": "Durable multi-step processing",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare Workflows deployment access"
+            ],
+            "credentials": [],
+            "resources": [
+              "Workflow Worker/binding and resumable steps"
+            ],
+            "verify": [
+              "Retry/resume, idempotency, cancellation and failure recovery"
+            ]
+          }
+        }
+      ]
+    },
+    "bootstrap": [
+      "pnpm",
+      "dlx",
+      "shadcn@4.21.4",
+      "init",
+      "--monorepo",
+      "--template",
+      "next"
+    ],
+    "dryRun": false,
+    "setup": {
+      "tools": [
+        "Git",
+        "Node.js 22.13+ on 22.x, or Node.js 24+ for generated workspaces",
+        "pnpm 10.34.5",
+        "GitHub integration or gh",
+        "Fallow",
+        "Cloudflare security audit skill",
+        "Cloudflare integration or API",
+        "Void",
+        "Wrangler",
+        "Selected database tooling",
+        "PostHog integration or API",
+        "Browser control",
+        "Resend integration or API",
+        "Sentry integration or API",
+        "Stripe integration or CLI"
+      ],
+      "access": [
+        "User-owned GitHub repository and CI access",
+        "Client-owned Cloudflare account; account ID; scoped OAuth/API access; service-compatible plan; DNS access only when needed"
+      ],
+      "capabilities": [
+        {
+          "id": "basin",
+          "purpose": "Cloudflare analytical events",
+          "tools": [
+            "Wrangler",
+            "Cloudflare integration or API"
+          ],
+          "access": [
+            "Cloudflare analytics/Pipelines access; plan supporting selected services; Pipelines Setup grant for managed R2 sink setup"
+          ],
+          "credentials": [],
+          "resources": [
+            "Basin dataset/stream, ANALYTICS binding, optional private R2 sink and authorized sink writes"
+          ],
+          "verify": [
+            "Private ingestion, event delivery, query results and archive retrieval when selected"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "better-auth",
+          "purpose": "Application-managed identity",
+          "tools": [
+            "Selected database tooling"
+          ],
+          "access": [
+            "Selected database migration/runtime access"
+          ],
+          "credentials": [
+            "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
+          ],
+          "resources": [
+            "Selected Neon or D1 database, auth schema, trusted origins and application routes"
+          ],
+          "verify": [
+            "Sign-in/out, session expiry, sign-up policy and resource authorization"
+          ],
+          "selection": {
+            "conflicts": [
+              "clerk"
+            ],
+            "requiresAny": [
+              "neon",
+              "d1"
+            ]
+          },
+          "status": "starter"
+        },
+        {
+          "id": "cron",
+          "purpose": "Scheduled work",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Worker deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Scheduled Worker and environment-specific Cron Triggers"
+          ],
+          "verify": [
+            "Schedule, idempotency, failure visibility and overlapping runs"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "d1",
+          "purpose": "SQLite-compatible hosted persistence",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare D1 access"
+          ],
+          "credentials": [],
+          "resources": [
+            "D1 database, DB binding and reviewed migrations"
+          ],
+          "verify": [
+            "Migration, constraints, transactional behavior and runtime queries"
+          ],
+          "selection": {
+            "conflicts": [
+              "neon"
+            ]
+          },
+          "status": "starter"
+        },
+        {
+          "id": "hono",
+          "purpose": "Shared OpenAPI backend",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workers deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "API Worker; application routes and authorization"
+          ],
+          "verify": [
+            "Contract validation, unauthenticated rejection and resource ownership"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "kv",
+          "purpose": "Eventually consistent cache/configuration",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare KV namespace access"
+          ],
+          "credentials": [],
+          "resources": [
+            "KV namespace and CONFIG binding"
+          ],
+          "verify": [
+            "TTL and propagation behavior; never use KV as transactional authority"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "posthog",
+          "purpose": "Specialized product analytics",
+          "tools": [
+            "PostHog integration or API"
+          ],
+          "access": [
+            "Client-owned PostHog project access"
+          ],
+          "credentials": [
+            "POSTHOG_API_KEY; POSTHOG_HOST; separate privileged key if needed"
+          ],
+          "resources": [
+            "Analytics client factory; implement consent, event schema and privacy filtering"
+          ],
+          "verify": [
+            "Event receipt, consent behavior and redaction of private data"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "queues",
+          "purpose": "Deferred jobs",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Queues configuration access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Queue, producer/consumer bindings and failure handling"
+          ],
+          "verify": [
+            "Retries, idempotency, concurrency and dead-letter recovery"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "r2",
+          "purpose": "Private remote files",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare R2 bucket/binding access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+          ],
+          "verify": [
+            "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "realtime",
+          "purpose": "Rooms and collaboration",
+          "tools": [
+            "Wrangler",
+            "Browser control"
+          ],
+          "access": [
+            "Cloudflare Durable Objects deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Realtime Worker, Durable Object namespace/migration and WebSocket authorization"
+          ],
+          "verify": [
+            "Authorized room isolation, disconnect/reconnect and deployed WebSockets"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "resend",
+          "purpose": "Outbound application email",
+          "tools": [
+            "Resend integration or API"
+          ],
+          "access": [
+            "Client-owned Resend project; sending-domain DNS access"
+          ],
+          "credentials": [
+            "RESEND_API_KEY; webhook secret when used"
+          ],
+          "resources": [
+            "Verified sending domain, sender and server integration"
+          ],
+          "verify": [
+            "Delivery, suppression/bounce handling and webhook verification; inbound routing is separate"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "sentry",
+          "purpose": "Additional runtime/crash diagnostics",
+          "tools": [
+            "Sentry integration or API"
+          ],
+          "access": [
+            "Client-owned Sentry project access"
+          ],
+          "credentials": [
+            "SENTRY_DSN; source-map upload token when required"
+          ],
+          "resources": [
+            "Integration boundary; install/init runtime SDKs and configure private source-map uploads"
+          ],
+          "verify": [
+            "Captured runtime errors, source maps, privacy filtering and alert delivery"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "stripe",
+          "purpose": "Web payments and subscriptions",
+          "tools": [
+            "Stripe integration or CLI"
+          ],
+          "access": [
+            "Client-owned Stripe account; test/live access as required"
+          ],
+          "credentials": [
+            "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
+          ],
+          "resources": [
+            "Products/prices, signed webhooks and entitlement implementation"
+          ],
+          "verify": [
+            "Test purchase/cancellation, webhook replay and transactional idempotency"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "vinext",
+          "purpose": "Web application on Cloudflare",
+          "tools": [
+            "Browser control",
+            "Wrangler"
+          ],
+          "access": [],
+          "credentials": [],
+          "resources": [
+            "Vinext React application and Cloudflare Worker"
+          ],
+          "verify": [
+            "Web flows, accessibility, production Worker build and deployed preview"
+          ],
+          "selection": {
+            "conflicts": [
+              "next"
+            ]
+          },
+          "status": "starter"
+        },
+        {
+          "id": "workers-ai",
+          "purpose": "Cloudflare-hosted inference",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workers AI model access"
+          ],
+          "credentials": [],
+          "resources": [
+            "AI binding and selected model invocation"
+          ],
+          "verify": [
+            "Supported model behavior, authorization and usage limits"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "workflows",
+          "purpose": "Durable multi-step processing",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workflows deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Workflow Worker/binding and resumable steps"
+          ],
+          "verify": [
+            "Retry/resume, idempotency, cancellation and failure recovery"
+          ],
+          "selection": {},
+          "status": "starter"
+        }
+      ],
+      "completion": [
+        "Guide GitHub authentication, own local Git checkout, reviewed initial commit and private user-owned remote; verify the selected deployment source connection",
+        "Discover available plugins and fallbacks; verify the selected account and scope",
+        "Configure separate environments, bindings and server-side secrets",
+        "Implement starter behavior and meaningful tests",
+        "Run pnpm check plus platform/provider verification",
+        "Verify deployed preview; obtain required production authorization; record rollback and operating ownership"
+      ],
+      "resourcesProvisioned": false
+    }
+  },
+  "providers": {
+    "schemaVersion": 1,
+    "providers": {
+      "resend": {
+        "domain": ""
+      },
+      "stripe": {
+        "accountId": "",
+        "mode": "test"
+      },
+      "sentry": {
+        "name": "full-stack",
+        "organization": "",
+        "team": "",
+        "project": "full-stack",
+        "platform": "javascript-nextjs"
+      },
+      "posthog": {
+        "name": "full-stack",
+        "organizationId": "",
+        "region": ""
+      }
+    }
+  },
+  "cloudflare": {
+    "schemaVersion": 1,
+    "id": "e9c8c7b5-356e-4669-ac77-c88aa2e0182f",
+    "name": "full-stack",
+    "ownership": "customer",
+    "provider": "cloudflare",
+    "deliveryEngine": "wrangler",
+    "accountId": null,
+    "audience": "unconfigured",
+    "targets": [
+      {
+        "id": "api",
+        "directory": "apps/api",
+        "workerName": "full-stack-api"
+      },
+      {
+        "id": "jobs",
+        "directory": "apps/jobs",
+        "workerName": "full-stack-jobs"
+      },
+      {
+        "id": "realtime",
+        "directory": "apps/realtime",
+        "workerName": "full-stack-realtime"
+      },
+      {
+        "id": "scheduled",
+        "directory": "apps/scheduled",
+        "workerName": "full-stack-scheduled"
+      },
+      {
+        "id": "workflows",
+        "directory": "apps/workflows",
+        "workerName": "full-stack-workflows"
+      },
+      {
+        "id": "web",
+        "directory": "apps/web",
+        "workerName": "full-stack-web"
+      }
+    ]
+  },
+  "registry": {
+    "schemaVersion": 1,
+    "name": "anhedral",
+    "cliVersion": "0.11.1",
+    "items": [
+      {
+        "name": "workspace",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [],
+        "environment": [],
+        "installer": "bootstrap",
+        "type": "foundation",
+        "description": "pnpm workspace with one root lockfile, pinned Turborepo and shared checks",
+        "targets": [
+          "package.json",
+          "pnpm-workspace.yaml",
+          "turbo.json"
+        ]
+      },
+      {
+        "name": "typescript",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace"
+        ],
+        "environment": [],
+        "installer": "bootstrap",
+        "type": "foundation",
+        "description": "Shared TypeScript configuration",
+        "targets": [
+          "packages/typescript-config"
+        ]
+      },
+      {
+        "name": "eslint",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace"
+        ],
+        "environment": [],
+        "installer": "bootstrap",
+        "type": "foundation",
+        "description": "Shared ESLint configuration",
+        "targets": [
+          "packages/eslint-config"
+        ]
+      },
+      {
+        "name": "hono",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "application",
+        "description": "Shared Hono OpenAPI Worker",
+        "targets": [
+          "apps/api"
+        ],
+        "setup": {
+          "purpose": "Shared OpenAPI backend",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workers deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "API Worker; application routes and authorization"
+          ],
+          "verify": [
+            "Contract validation, unauthenticated rejection and resource ownership"
+          ]
+        }
+      },
+      {
+        "name": "posthog",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [
+          "POSTHOG_API_KEY",
+          "POSTHOG_HOST"
+        ],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Server-side product analytics factory",
+        "targets": [
+          "packages/analytics"
+        ],
+        "setup": {
+          "purpose": "Specialized product analytics",
+          "tools": [
+            "PostHog integration or API"
+          ],
+          "access": [
+            "Client-owned PostHog project access"
+          ],
+          "credentials": [
+            "POSTHOG_API_KEY; POSTHOG_HOST; separate privileged key if needed"
+          ],
+          "resources": [
+            "Analytics client factory; implement consent, event schema and privacy filtering"
+          ],
+          "verify": [
+            "Event receipt, consent behavior and redaction of private data"
+          ]
+        },
+        "package": {
+          "name": "analytics",
+          "source": "import { PostHog } from 'posthog-node';\nexport function createAnalytics(apiKey: string, host: string) { return new PostHog(apiKey, { host }); }\n",
+          "dependencies": {
+            "posthog-node": "5.55.2"
+          }
+        }
+      },
+      {
+        "name": "basin",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono",
+          "posthog"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Cloudflare analytical stream binding and event helper",
+        "targets": [
+          "packages/basin"
+        ],
+        "setup": {
+          "purpose": "Cloudflare analytical events",
+          "tools": [
+            "Wrangler",
+            "Cloudflare integration or API"
+          ],
+          "access": [
+            "Cloudflare analytics/Pipelines access; plan supporting selected services; Pipelines Setup grant for managed R2 sink setup"
+          ],
+          "credentials": [],
+          "resources": [
+            "Basin dataset/stream, ANALYTICS binding, optional private R2 sink and authorized sink writes"
+          ],
+          "verify": [
+            "Private ingestion, event delivery, query results and archive retrieval when selected"
+          ]
+        },
+        "package": {
+          "name": "basin",
+          "source": "export interface EventStream { send(events: Record<string, unknown>[]): Promise<void> }\nexport async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) {\n  await stream.send(events);\n}\n",
+          "dependencies": {}
+        },
+        "runtime": "worker",
+        "bindings": {
+          "pipelines": [
+            {
+              "binding": "ANALYTICS",
+              "stream": "REPLACE_WITH_BASIN_STREAM_ID"
+            }
+          ]
+        }
+      },
+      {
+        "name": "d1",
+        "version": "0.11.1",
+        "selection": {
+          "conflicts": [
+            "neon"
+          ]
+        },
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Reusable Drizzle D1 database package and explicit migration tooling",
+        "targets": [
+          "packages/db",
+          "apps/api"
+        ],
+        "setup": {
+          "purpose": "SQLite-compatible hosted persistence",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare D1 access"
+          ],
+          "credentials": [],
+          "resources": [
+            "D1 database, DB binding and reviewed migrations"
+          ],
+          "verify": [
+            "Migration, constraints, transactional behavior and runtime queries"
+          ]
+        },
+        "runtime": "worker",
+        "bindings": {
+          "d1_databases": [
+            {
+              "binding": "DB",
+              "database_name": "full-stack-db",
+              "database_id": "REPLACE_WITH_D1_ID",
+              "migrations_dir": "../../packages/db/drizzle"
+            }
+          ]
+        }
+      },
+      {
+        "name": "better-auth",
+        "version": "0.11.1",
+        "selection": {
+          "conflicts": [
+            "clerk"
+          ],
+          "requiresAny": [
+            "neon",
+            "d1"
+          ]
+        },
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono",
+          "d1"
+        ],
+        "environment": [
+          "BETTER_AUTH_SECRET",
+          "BETTER_AUTH_URL"
+        ],
+        "installer": "recipe",
+        "type": "integration",
+        "description": "Database-backed identity schema and runtime routes",
+        "targets": [
+          "packages/auth",
+          "packages/db",
+          "apps/api"
+        ],
+        "setup": {
+          "purpose": "Application-managed identity",
+          "tools": [
+            "Selected database tooling"
+          ],
+          "access": [
+            "Selected database migration/runtime access"
+          ],
+          "credentials": [
+            "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
+          ],
+          "resources": [
+            "Selected Neon or D1 database, auth schema, trusted origins and application routes"
+          ],
+          "verify": [
+            "Sign-in/out, session expiry, sign-up policy and resource authorization"
+          ]
+        },
+        "runtime": "server"
+      },
+      {
+        "name": "cron",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "service",
+        "description": "Scheduled Worker",
+        "targets": [
+          "apps/scheduled"
+        ],
+        "setup": {
+          "purpose": "Scheduled work",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Worker deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Scheduled Worker and environment-specific Cron Triggers"
+          ],
+          "verify": [
+            "Schedule, idempotency, failure visibility and overlapping runs"
+          ]
+        }
+      },
+      {
+        "name": "kv",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono"
+        ],
+        "environment": [],
+        "installer": "configuration",
+        "type": "integration",
+        "description": "Eventually consistent cache binding",
+        "targets": [
+          "apps/api/wrangler.jsonc"
+        ],
+        "setup": {
+          "purpose": "Eventually consistent cache/configuration",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare KV namespace access"
+          ],
+          "credentials": [],
+          "resources": [
+            "KV namespace and CONFIG binding"
+          ],
+          "verify": [
+            "TTL and propagation behavior; never use KV as transactional authority"
+          ]
+        },
+        "runtime": "worker",
+        "bindings": {
+          "kv_namespaces": [
+            {
+              "binding": "CONFIG",
+              "id": "REPLACE_WITH_KV_ID"
+            }
+          ]
+        }
+      },
+      {
+        "name": "queues",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "service",
+        "description": "Queue producer binding, consumer and dead-letter handling",
+        "targets": [
+          "apps/jobs",
+          "apps/api/wrangler.jsonc"
+        ],
+        "setup": {
+          "purpose": "Deferred jobs",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Queues configuration access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Queue, producer/consumer bindings and failure handling"
+          ],
+          "verify": [
+            "Retries, idempotency, concurrency and dead-letter recovery"
+          ]
+        },
+        "runtime": "optional-worker",
+        "bindings": {
+          "queues": {
+            "producers": [
+              {
+                "binding": "JOBS",
+                "queue": "full-stack-jobs"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "r2",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "integration",
+        "description": "Private file binding and authorization guidance",
+        "targets": [
+          "apps/api/private-files.md"
+        ],
+        "setup": {
+          "purpose": "Private remote files",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare R2 bucket/binding access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+          ],
+          "verify": [
+            "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+          ]
+        },
+        "runtime": "worker",
+        "bindings": {
+          "r2_buckets": [
+            {
+              "binding": "FILES",
+              "bucket_name": "full-stack-private-files"
+            }
+          ]
+        }
+      },
+      {
+        "name": "realtime",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "service",
+        "description": "Durable Object room Worker with authorization boundary",
+        "targets": [
+          "apps/realtime"
+        ],
+        "setup": {
+          "purpose": "Rooms and collaboration",
+          "tools": [
+            "Wrangler",
+            "Browser control"
+          ],
+          "access": [
+            "Cloudflare Durable Objects deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Realtime Worker, Durable Object namespace/migration and WebSocket authorization"
+          ],
+          "verify": [
+            "Authorized room isolation, disconnect/reconnect and deployed WebSockets"
+          ]
+        }
+      },
+      {
+        "name": "resend",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [
+          "RESEND_API_KEY"
+        ],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Server-side email SDK factory",
+        "targets": [
+          "packages/email"
+        ],
+        "setup": {
+          "purpose": "Outbound application email",
+          "tools": [
+            "Resend integration or API"
+          ],
+          "access": [
+            "Client-owned Resend project; sending-domain DNS access"
+          ],
+          "credentials": [
+            "RESEND_API_KEY; webhook secret when used"
+          ],
+          "resources": [
+            "Verified sending domain, sender and server integration"
+          ],
+          "verify": [
+            "Delivery, suppression/bounce handling and webhook verification; inbound routing is separate"
+          ]
+        },
+        "package": {
+          "name": "email",
+          "source": "import { Resend } from 'resend';\nexport function createEmail(apiKey: string) { return new Resend(apiKey); }\n",
+          "dependencies": {
+            "resend": "6.32.1"
+          }
+        }
+      },
+      {
+        "name": "sentry",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [
+          "SENTRY_DSN"
+        ],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Platform-specific monitoring integration boundary",
+        "targets": [
+          "packages/observability"
+        ],
+        "setup": {
+          "purpose": "Additional runtime/crash diagnostics",
+          "tools": [
+            "Sentry integration or API"
+          ],
+          "access": [
+            "Client-owned Sentry project access"
+          ],
+          "credentials": [
+            "SENTRY_DSN; source-map upload token when required"
+          ],
+          "resources": [
+            "Integration boundary; install/init runtime SDKs and configure private source-map uploads"
+          ],
+          "verify": [
+            "Captured runtime errors, source maps, privacy filtering and alert delivery"
+          ]
+        },
+        "package": {
+          "name": "observability",
+          "source": "// Initialize the platform-specific Sentry SDK in each application's runtime entrypoint.\nexport const redactFields = ['authorization', 'cookie', 'password', 'token'];\n",
+          "dependencies": {}
+        }
+      },
+      {
+        "name": "stripe",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [
+          "STRIPE_SECRET_KEY",
+          "STRIPE_WEBHOOK_SECRET"
+        ],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Server-side billing SDK factory",
+        "targets": [
+          "packages/billing"
+        ],
+        "setup": {
+          "purpose": "Web payments and subscriptions",
+          "tools": [
+            "Stripe integration or CLI"
+          ],
+          "access": [
+            "Client-owned Stripe account; test/live access as required"
+          ],
+          "credentials": [
+            "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
+          ],
+          "resources": [
+            "Products/prices, signed webhooks and entitlement implementation"
+          ],
+          "verify": [
+            "Test purchase/cancellation, webhook replay and transactional idempotency"
+          ]
+        },
+        "package": {
+          "name": "billing",
+          "source": "import Stripe from 'stripe';\nexport function createBilling(apiKey: string) { return new Stripe(apiKey); }\n",
+          "dependencies": {
+            "stripe": "20.4.1"
+          }
+        }
+      },
+      {
+        "name": "ui",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [],
+        "installer": "bootstrap",
+        "type": "foundation",
+        "description": "Shared shadcn/ui, React, Tailwind and Lucide foundation for web apps",
+        "targets": [
+          "packages/ui"
+        ]
+      },
+      {
+        "name": "vinext",
+        "version": "0.11.1",
+        "selection": {
+          "conflicts": [
+            "next"
+          ]
+        },
+        "registryDependencies": [
+          "ui"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "application",
+        "description": "Vinext web application on Cloudflare Workers",
+        "targets": [
+          "apps/web"
+        ],
+        "setup": {
+          "purpose": "Web application on Cloudflare",
+          "tools": [
+            "Browser control",
+            "Wrangler"
+          ],
+          "access": [],
+          "credentials": [],
+          "resources": [
+            "Vinext React application and Cloudflare Worker"
+          ],
+          "verify": [
+            "Web flows, accessibility, production Worker build and deployed preview"
+          ]
+        }
+      },
+      {
+        "name": "workers-ai",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono"
+        ],
+        "environment": [],
+        "installer": "configuration",
+        "type": "integration",
+        "description": "Workers AI runtime binding",
+        "targets": [
+          "apps/api/wrangler.jsonc"
+        ],
+        "setup": {
+          "purpose": "Cloudflare-hosted inference",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workers AI model access"
+          ],
+          "credentials": [],
+          "resources": [
+            "AI binding and selected model invocation"
+          ],
+          "verify": [
+            "Supported model behavior, authorization and usage limits"
+          ]
+        },
+        "runtime": "worker",
+        "bindings": {
+          "ai": {
+            "binding": "AI"
+          }
+        }
+      },
+      {
+        "name": "workflows",
+        "version": "0.11.1",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "service",
+        "description": "Durable multi-step Worker",
+        "targets": [
+          "apps/workflows"
+        ],
+        "setup": {
+          "purpose": "Durable multi-step processing",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workflows deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Workflow Worker/binding and resumable steps"
+          ],
+          "verify": [
+            "Retry/resume, idempotency, cancellation and failure recovery"
+          ]
+        }
+      }
+    ],
+    "status": "scaffolded",
+    "workspaces": [
+      {
+        "name": "@workspace/analytics",
+        "directory": "packages/analytics",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/api",
+        "directory": "apps/api",
+        "dependencies": [
+          "@workspace/auth",
+          "@workspace/db",
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/auth",
+        "directory": "packages/auth",
+        "dependencies": [
+          "@workspace/db",
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/basin",
+        "directory": "packages/basin",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/billing",
+        "directory": "packages/billing",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/db",
+        "directory": "packages/db",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/email",
+        "directory": "packages/email",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/eslint-config",
+        "directory": "packages/eslint-config",
+        "dependencies": []
+      },
+      {
+        "name": "@workspace/jobs",
+        "directory": "apps/jobs",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/observability",
+        "directory": "packages/observability",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/realtime",
+        "directory": "apps/realtime",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/scheduled",
+        "directory": "apps/scheduled",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/typescript-config",
+        "directory": "packages/typescript-config",
+        "dependencies": []
+      },
+      {
+        "name": "@workspace/ui",
+        "directory": "packages/ui",
+        "dependencies": [
+          "@workspace/eslint-config",
+          "@workspace/typescript-config"
+        ]
+      },
+      {
+        "name": "@workspace/workflows",
+        "directory": "apps/workflows",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "web",
+        "directory": "apps/web",
+        "dependencies": [
+          "@workspace/eslint-config",
+          "@workspace/typescript-config",
+          "@workspace/ui"
+        ]
+      }
+    ],
+    "resourcesProvisioned": false,
+    "files": {
+      ".env.example": "d09d1c0f8ca90165322d96e883e2fc623cc5481283354b49ce02134a3c24dc64",
+      ".fallowrc.json": "b09aa6975ae6c8d30800085b0ad4404f9fc60b4365fa8627d2a863a8f82d246a",
+      ".github/workflows/check.yml": "f4e8349229f2bd85532b22be5d7c28088049b892f924f6638b9bebe824280431",
+      ".gitignore": "a2491401c69b94239dce443eefb94b3b772c25ff58a573030d3854e0b4da9b69",
+      ".npmrc": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".prettierignore": "af8057ae38f97ead3dc0b4d5dad97e403b25b64092c48bba0774afe2c9a5e9ce",
+      ".prettierrc": "25c74a55c10a4dbb662117240b8d07a5afb191bded12c4e9ede104c2cf1733c2",
+      "AGENTS.md": "4f5d336cb6644908541d0776e4a8bc07d247cc0dedde322ac0cf251ac99aae5e",
+      "LICENSE.template.md": "1564074e13439397221ffd522e2e504d56561994a23d371aa5e3ad43e4f5423f",
+      "README.md": "341504986e18a263a691f8229668bb45b2688a0c5292fbc3989d3c4c4cd03c21",
+      "apps/api/.dev.vars.example": "21cdd8773b5e4f0cf45f48abd2b152107dc780e1bda0d6a5125940f502c2dde2",
+      "apps/api/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "apps/api/package.json": "3e263ff8f5d892e6ae46dcb2f2d795e9cf07703b7e99d0ff12acf8f8465affd7",
+      "apps/api/private-files.md": "14b42c3f6527ac1ab9bb4e60cbf8b10cb2790e4085309aaf26343fdd67f02c3d",
+      "apps/api/src/index.ts": "c4e121883b5565d37137cd7d12ea860e5946e09cd21451228b78e48b464e2e79",
+      "apps/api/src/secrets.d.ts": "c758d77d3fa6f8baef55d190842e6908aa80767e5dfc4da417862714c07b00ff",
+      "apps/api/tsconfig.json": "58c4b3ed6eab335a55ae891135a62692c3bd276190394e0c90e059d8fc089266",
+      "apps/api/wrangler.jsonc": "a532bdb29a53f8f8ab60881fd51b7d0b54722564e6108ec0599f9d55f97b9bf3",
+      "apps/jobs/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "apps/jobs/package.json": "c3a81a8a720288bd8179973af715e4bd1436cd0f540e4cbe1be03d2798983122",
+      "apps/jobs/src/index.ts": "c64c4475a2aed8f19d79825342312817329af6df43bb1e4d4404798e17ca86fe",
+      "apps/jobs/tsconfig.json": "58c4b3ed6eab335a55ae891135a62692c3bd276190394e0c90e059d8fc089266",
+      "apps/jobs/wrangler.jsonc": "e0b39d0233d0c6aeb5378973f8521ac7e7a852c981ffdd43c6b707c7aa9d9d1a",
+      "apps/realtime/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "apps/realtime/package.json": "a5a831098391baa12c222c4c14fa344f065e4db3e91b09cf2cdb7d23b48171ff",
+      "apps/realtime/src/index.ts": "36a0210037e713c7575ceee024e2a2dee6a05f62700e3e470c934a96173c6d67",
+      "apps/realtime/tsconfig.json": "58c4b3ed6eab335a55ae891135a62692c3bd276190394e0c90e059d8fc089266",
+      "apps/realtime/wrangler.jsonc": "a974747f3bf3ca34272a89b1395a873ce284b7b108a7d86c1e30da4f14c4116e",
+      "apps/scheduled/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "apps/scheduled/package.json": "7456d99b9b21aa3564756c801ef207bd73db095712870eec35a97fce4e6fd4fa",
+      "apps/scheduled/src/index.ts": "124d18dd4bd283b6d58fd9cbd24bad54ad5f065ae312ef8f4e4053535e8ecc74",
+      "apps/scheduled/tsconfig.json": "58c4b3ed6eab335a55ae891135a62692c3bd276190394e0c90e059d8fc089266",
+      "apps/scheduled/wrangler.jsonc": "1642e15039e086d9bdc57186ed859947a77bc1d13c1f322e94b461980b122325",
+      "apps/web/.dev.vars.example": "260926617ad4d9b2a37f4d89d876ccf79a6505d3aee70b5007240721379ec403",
+      "apps/web/app/favicon.ico": "2b8ad2d33455a8f736fc3a8ebf8f0bdea8848ad4c0db48a2833bd0f9cd775932",
+      "apps/web/app/layout.tsx": "5779cdb10e63f96e61f297bb20a0896f9620e3aa68be3ba57d423e6e6521522d",
+      "apps/web/app/page.tsx": "2898793e7c023e93d696c314398343513d6c68572aa468778831cda176e8f2c6",
+      "apps/web/components/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/web/components/theme-provider.tsx": "e10fa2c58242391956be4eae7e6cd6ffd5f09b7f50811744e890e3a120c7906b",
+      "apps/web/components.json": "4d5f699e07533f8b6fa0c04959c9c441b9cc5bf18f69b17bddf58c5c402ce49b",
+      "apps/web/eslint.config.js": "279966b4f93334b8cb9cf6088436772379dea8b03553760e448fc905bcd3c259",
+      "apps/web/hooks/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/web/lib/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/web/next.config.ts": "037587cea907aaf3f1e2bc9b218f6edc38c437fdbae81b1e2c5079c2c7171f0f",
+      "apps/web/package.json": "044f47bf3e9ab8a4b1167434afce817d862c91670d70ac76e1ea97b60d418d07",
+      "apps/web/postcss.config.mjs": "177be1ba81ed1c12fa4c01dc3e7a42c595087be302f1308ff5e6f26fb499d186",
+      "apps/web/tsconfig.json": "45b5b984c023dcc512f677823ec2befb0a6e474af107bd505b5061cc521658f8",
+      "apps/web/vinext-env.d.ts": "88187bc2b45190b88c91628711c55a6bac2ee6d3d896ece9c62d51c9f327da73",
+      "apps/web/vite.config.ts": "f68ed8edb41d4a64077d9c037d93e6c4454f7a620e72cffaaf660c79bb7d5d95",
+      "apps/web/wrangler.jsonc": "7a2a9df0a583cd3bc5aa51a933228277fa8ca29ea7130abe9127f8e0a660cdae",
+      "apps/workflows/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "apps/workflows/package.json": "3aab9c9b97027f56d552fd047020d041e66f1013eabbeee31aafc97fd88e77e6",
+      "apps/workflows/src/index.ts": "4c780e5a467da7a78efe05e1498634a913d307b9f0285a669591ca1c4fa41d92",
+      "apps/workflows/tsconfig.json": "58c4b3ed6eab335a55ae891135a62692c3bd276190394e0c90e059d8fc089266",
+      "apps/workflows/wrangler.jsonc": "afbfe835c81eba3a706e70ca84e9f4732c315b974bd1b4c8552df24483b4fe27",
+      "docs/example.md": "85ddb9aa921301e6578d28426d844bb1a79b275cb01a180162efaab7faaec844",
+      "docs/stack.md": "61a0c1951a042625e49dc0800fb9b138188210599c6ad7fff052318e80e71992",
+      "package.json": "d64dbb3a1c68674ab83a2117876f9bade26fb74b8bfb5d76f0e55451d423a772",
+      "packages/analytics/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/analytics/package.json": "4452221fbc08b849e3f71a61ff8c3eda58385e596d62df01fd0f827083cda51f",
+      "packages/analytics/src/index.ts": "1d8c030929c81a106259993d5f9d242a954fd3f1f4af2c59e9906a37cea2b8f9",
+      "packages/analytics/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/auth/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/auth/package.json": "1c93257ef62c295082b6f8acdd80684866ddb0dadc9d8ab1ce6e7fb8b6800676",
+      "packages/auth/src/index.ts": "2b046ecdcd40073c9a8d49734bbd8a7b80e26f9115004c809ec80c9eaedb50ba",
+      "packages/auth/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/basin/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/basin/package.json": "c4e8630f027f0c97c2c383e388031c88f85dd053cf73e51441829ca54e1b0c41",
+      "packages/basin/src/index.ts": "dd7b817ef289dd0fbf5f35f553c3f36ba87d7cc7584a5acf7ac86e2d050a54b2",
+      "packages/basin/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/billing/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/billing/package.json": "0ba05c00526589940cb74396ea47893ef90cd2a8f88bbc519600cfc6ab8296b7",
+      "packages/billing/src/index.ts": "e8414af1fcc47ce8344dc8bce4c4317657b4223768b25cb7552f723825c82e1f",
+      "packages/billing/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/db/drizzle/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "packages/db/drizzle/0000_better_auth.sql": "f5c32739908622bb2c7db513e2b171d8bc3ec770860268ce7f2151502d87c994",
+      "packages/db/drizzle/meta/0000_snapshot.json": "37c605d8b98138ad25de4feeada605cb62b39096afce0e9a1e7ad7be5408806e",
+      "packages/db/drizzle/meta/_journal.json": "e13685a9f53924c861ac8cfcaf8f95aa670062f344243e89f0d95c2f0d84a911",
+      "packages/db/drizzle.config.ts": "34f4ffbc8aa50fe5055c8f0a5e109e335fee2bbd86d64bd3f4cf0a77be695c2a",
+      "packages/db/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/db/package.json": "e9a3a35afa23319df59748dafed519415fe6b383510d2962e3320dd1a805975b",
+      "packages/db/src/index.ts": "4bd9b0423bc11377d8b4dcaedc49a95517325f8671c74192236d26520429673f",
+      "packages/db/src/migrate.ts": "ddabfeaf6de7f5a448fbddc6427e41c8bd21e5784b8a0147d167d8349d6338da",
+      "packages/db/src/schema.ts": "c0a5cc4b909d5857f8a1b87c3a1edd78e5d3d317c444370b51f47839aadbcc19",
+      "packages/db/tsconfig.json": "dbfbbd34ae2674fce6ecaaf106f38890a9ed811cacec5bcab3f348a38cb4a00b",
+      "packages/email/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/email/package.json": "c17ade5b7edbc24629bc7a7122db685de4f6637040d5d8b325e279bf187429fd",
+      "packages/email/src/index.ts": "4fa6abdea114c6eff0eafc24742d5c5d5f869603f8dd434e3976cd664ccd2258",
+      "packages/email/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/eslint-config/README.md": "5ccc9e04a77ac04308e61a11d3bab11470a7fd15855e535f1d08b320a1e6f374",
+      "packages/eslint-config/base.js": "a7426bde87e7438b97b232dbc8dfe3aec9f790771bd5333b6c89b1e6006f8810",
+      "packages/eslint-config/package.json": "e384e8f7123e12db4c8ff5defd52c41492e392bb2bf5bb58939431a076fd1f4c",
+      "packages/eslint-config/react-internal.js": "d4d552c215bd5bd65ba14c9fd16d00815c8e5e0681c4a7daff7f6f2c4f752a20",
+      "packages/observability/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/observability/package.json": "f25624966facd79e04e7f64c5fdc74c6ee06458c9c148bddc64f848732dd6d21",
+      "packages/observability/src/index.ts": "620dfd583867afda3fb3871902004526ce4a411b638d26a7e2f6137888e9d108",
+      "packages/observability/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/typescript-config/README.md": "350d287d62eb70b4cbec06f06688ba9fa9d17c77d9c3e26e4ac354523dd09987",
+      "packages/typescript-config/base.json": "2cc3a29b47bd6f90030004b0f2732ecbd20326c7ffc7581ac91e83b96e02a016",
+      "packages/typescript-config/nextjs.json": "bad41c66b08c3f9768b9695b4e49317b770225412c43d9bc2b082118c2051225",
+      "packages/typescript-config/package.json": "f742c2ef5d77ecf007f17db06128cfdc532c53c6e3756b428ef98028aa1c00e2",
+      "packages/typescript-config/react-library.json": "3806006c8b35567db58cdef8cc3528301548db6197141c5d04cf35c2430b6a49",
+      "packages/ui/components.json": "b291008cb035430d3e3ee09a64736db0fcecd1c85c406592b91f74186bba499d",
+      "packages/ui/eslint.config.js": "5da646c7663f513cc466324f336d93fe12a866a6acb208c4ce6c9eb2157c8198",
+      "packages/ui/package.json": "6599fb02c6fb4fefe4bba9937f2b17e53b1854b2d91a45498b25a6b2984a747c",
+      "packages/ui/postcss.config.mjs": "36540b4e3711ce38adec0fe1b577554c9a6b6514a74f8fefbe43a724946f8a63",
+      "packages/ui/src/components/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "packages/ui/src/components/service-card.tsx": "2e7acae8d9ade19332c7146b4a6efd310d265408b8150182a45894da7ba98e66",
+      "packages/ui/src/hooks/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "packages/ui/src/lib/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "packages/ui/src/styles/globals.css": "4ce8627d1fcb8b923cf735d5e8b954f7128f268852559128f6b9219ef6ca5de0",
+      "packages/ui/tsconfig.json": "0da3bd156b85ec6904ec115fcab9ec19a255c86214303518363b6c7e6ebf4cb4",
+      "packages/ui/tsconfig.lint.json": "b4e05541f046e41f36cd3dc49f7374c958c462e8fc390ba076b5fd81e7904a32",
+      "pnpm-workspace.yaml": "4e9b06e2ad1dfc18b57a9310a555ead1df909081270586a0ade28293dd74ea80",
+      "scripts/audit-deps.mjs": "7a47be7e02b215290b65fb7e8e9dd746089f72de7250090514537e3fadbff34d",
+      "scripts/audit.mjs": "848f5d1a98241d94611f8de83fd8c77b8c0f99096f8b20f7d1aa690024bef118",
+      "tsconfig.json": "7c607ee14a7e9d82256eab4e3b6c54cc85ffafffa181645367b9607c75b33eb9",
+      "turbo.json": "5c3a8b1be71c3d03675ffe1989f0c7616f721b9b50eb25a9ee2d8a4ae3d70327"
+    },
+    "configuration": {
+      "identity": "8e2df332cf382e6e1ae23e0ccc286ca21f03a085614c40d0675e3bd55edf22be",
+      "standard": "803893a8cf10aef34f6a8c11998af105bf086ace76e56e7ce7980c2faf5779bb",
+      "setup": "d7b2ba4fbecd15e96b294d137b6503b1cfdee0e2619125a15ea58691fcdf07de",
+      "providers": "8cb2981b29d289b847bbb47e95cabcf6e14c3333ce74c95a59f3d98a12a01932",
+      "cloudflare": "4f7d32f95766e45c9330155af684e876eb9e1f451ba141d10af9caec9afde684"
+    }
+  }
+}

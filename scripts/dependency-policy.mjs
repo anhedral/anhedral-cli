@@ -1,6 +1,7 @@
 import ts from 'typescript';
 
 const dependencyGroups = new Set(['dependencies', 'devDependencies', 'optionalDependencies']);
+const managedDependencyGroups = new Set([...dependencyGroups, 'overrides']);
 const recipeArguments = new Map([
   ['sharedPackage', 3],
   ['worker', 4],
@@ -28,11 +29,11 @@ export function findUncataloguedDependencyPins(source, filename) {
     if (ts.isObjectLiteralExpression(node)) {
       const parent = node.parent;
       const propertyMap =
-        ts.isPropertyAssignment(parent) && dependencyGroups.has(nameOf(parent.name));
+        ts.isPropertyAssignment(parent) && managedDependencyGroups.has(nameOf(parent.name));
       const assignmentMap =
         ts.isBinaryExpression(parent) &&
         ts.isPropertyAccessExpression(parent.left) &&
-        dependencyGroups.has(parent.left.name.text);
+        managedDependencyGroups.has(parent.left.name.text);
       const recipeMap =
         ts.isCallExpression(parent) &&
         ts.isIdentifier(parent.expression) &&

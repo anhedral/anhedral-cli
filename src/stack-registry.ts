@@ -1,3 +1,4 @@
+import { usesVoidSelection } from './runtime-policy.js';
 import { scaffoldStyling } from './scaffold/styling.js';
 import { resourceName } from './render.js';
 import { STACK_DEPENDENCIES } from './dependencies.js';
@@ -6,6 +7,7 @@ import { GENERATOR_VERSION } from './version.js';
 import { scaffoldWeb } from './scaffold/web.js';
 import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
+import { scaffoldNeonRealtime } from './scaffold/neon-realtime.js';
 import { scaffoldBetterAuth, scaffoldClerk } from './scaffold/auth.js';
 import {
   scaffoldRealtime,
@@ -43,8 +45,8 @@ function packageSource(
 ): PackageRecipe {
   return { name, source, dependencies };
 }
-function runtimeConfiguration({ runtimeApp, options, has }: RecipeContext): string {
-  const legacy = (has('next') && options.hosting === 'cloudflare') || has('queues') || has('basin');
+function runtimeConfiguration({ runtimeApp, options }: RecipeContext): string {
+  const legacy = !usesVoidSelection(options.products, options.hosting);
   return `apps/${runtimeApp}/${legacy ? 'wrangler.jsonc' : 'anhedral.cloudflare.json'}`;
 }
 type ItemConfiguration = Pick<ItemDefinition, 'type' | 'description' | 'targets'> &
@@ -182,6 +184,32 @@ const PRODUCT_ITEMS = defineItems({
     environment: ['DATABASE_URL', 'DATABASE_URL_UNPOOLED'],
     runtime: 'server',
     resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
+  },
+  'neon-realtime': {
+    type: 'integration',
+    description:
+      'Neon live SQL with server-sealed Drizzle queries and a browser-safe subscription client (beta)',
+    targets: ['packages/neon-realtime'],
+    selection: { requiresAny: ['neon'] },
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'neon'],
+    fallbackDependency: 'neon',
+    runtime: 'server',
+    environment: ['NEON_REALTIME_SECRET', 'NEON_REALTIME_URL'],
+    setup: requirements(
+      'Live PostgreSQL query results on the selected Neon branch',
+      ['Neon Console or Neon CLI', 'Browser control'],
+      ['Client-owned Neon project and branch with Realtime beta availability'],
+      ['Server-only NEON_REALTIME_SECRET; public NEON_REALTIME_URL; existing server DATABASE_URL'],
+      [
+        'Manually enable Realtime and logical replication on the selected branch; configure allowed browser origins',
+        'Tables with stable replica identity; authorized deterministic SELECT queries sealed on the server',
+      ],
+      [
+        'Authorized row isolation, access revocation, capability renewal, disconnect/reconnect and subscription cleanup',
+        'Beta has no RLS or performance guarantees; database compute and egress remain billable',
+      ],
+    ),
+    install: scaffoldNeonRealtime,
   },
   d1: {
     type: 'package',

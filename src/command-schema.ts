@@ -49,7 +49,7 @@ export function optionHelp(option: CommandOption): string {
 }
 
 export function commandDefinition(command: string | undefined): CommandDefinition | undefined {
-  return COMMANDS[command === 'new' ? 'init' : (command ?? '')];
+  return COMMANDS[command ?? ''];
 }
 
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
@@ -133,7 +133,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       'integrations status --json',
       'integrations recover --provider neon --operation recorded-hash --resource existing-id',
     ],
-    note: 'Status is read-only. Recovery verifies provider identity before updating a local receipt. Legacy unknown operations and unrecoverable one-time credentials remain blocked.',
+    note: 'Status is read-only. Recovery verifies provider identity before updating a local receipt. Unsupported receipt schemas are rejected. Recovery cannot reconstruct missing one-time credentials.',
   },
   init: {
     description: 'Scaffold a project from the bundled stack registry.',
@@ -179,7 +179,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       { flag: '--non-interactive', description: 'Never open an interactive login.' },
     ],
     examples: ['auth', 'auth --status --json', 'auth --provider neon'],
-    note: 'Management keys come from the environment. Login does not establish all write permissions or complete provider setup. Complete anhedral.providers.json before shipping.',
+    note: 'Management keys come from the environment. Login does not establish all write permissions or complete provider setup. Complete provider settings in anhedral.json (providers) before shipping.',
   },
   ship: {
     description: 'Provision, configure and deploy the supported selected stack.',
@@ -210,7 +210,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   },
   add: {
     description: 'Add bundled stack parts while preserving edited source.',
-    usage: 'add [directory] <items...> [options]',
+    usage: 'add <items...> [options]',
     options: [
       { flag: '--dry-run', description: 'Preview changed paths without installing them.' },
       {
@@ -229,7 +229,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     ],
     examples: [
       'add resend',
-      'add client-app resend --dry-run',
+      '--cwd client-app add resend --dry-run',
       'add resend --diff --cwd client-app',
     ],
     note: 'Source previews are local and bounded. A new web bootstrap cannot be previewed offline; the plan reports that limitation. Edited-source conflicts require review; there is no force overwrite.',

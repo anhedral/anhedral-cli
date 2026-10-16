@@ -1,3 +1,4 @@
+import { readProjectSection, writeProjectSection } from '../../../../src/project-config.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -33,22 +34,23 @@ function fixture(run: (root: string, save: (file: string, value: unknown) => voi
   save('package.json', { name: 'mixed-application' });
   save('apps/api/package.json', { name: '@example/api' });
   save('apps/web/package.json', { name: '@example/web' });
-  save('anhedral.standard.json', {
+  writeProjectSection(root, 'standard', {
     schemaVersion: 1,
     products: ['next', 'hono'],
     hosting: 'vercel',
   });
-  save('anhedral.project.json', {
+  writeProjectSection(root, 'cloudflare', {
     schemaVersion: 1,
     id: cloudflareId,
     name: 'mixed-application',
     ownership: 'customer',
     provider: 'cloudflare',
+    deliveryEngine: 'wrangler',
     accountId: 'a'.repeat(32),
     audience: 'public',
     targets: [{ id: 'api', directory: 'apps/api', workerName: 'example-api' }],
   });
-  save('anhedral.web.json', {
+  writeProjectSection(root, 'vercel', {
     schemaVersion: 1,
     id: vercelId,
     name: 'mixed-application',
@@ -140,9 +142,9 @@ test('foreign Cloudflare journal isolates its error while retaining Vercel and w
 
 test('an overall deployment receipt cannot prove success for an unrecorded Cloudflare target', () =>
   fixture((root, save) => {
-    const manifest = JSON.parse(fs.readFileSync(path.join(root, 'anhedral.project.json'), 'utf8'));
+    const manifest = readProjectSection<any>(root, 'cloudflare');
     manifest.targets.push({ id: 'worker', directory: 'apps/worker', workerName: 'example-worker' });
-    save('anhedral.project.json', manifest);
+    writeProjectSection(root, 'cloudflare', manifest);
     save('apps/worker/package.json', { name: '@example/worker' });
     const result = inspectApplication(root);
     assert.deepEqual(inspectionSchema.parse(result), result);
@@ -295,4 +297,28 @@ test('inspection never opens private credential files, mutates files, or contact
       globalThis.fetch = originalFetch;
       syncBuiltinESMExports();
     }
+  }));
+
+test('malformed consolidated hosting sections preserve independent valid evidence', () =>
+  fixture((root) => {
+    writeProjectSection(root, 'cloudflare', { schemaVersion: 999 });
+    const result = inspectApplication(root);
+    assert.ok(result.targets.data.find((target) => target.id === 'cloudflare:unavailable')?.error);
+    assert.equal(
+      result.targets.data.find((target) => target.id === 'vercel:web')?.latestAttempt?.state,
+      'deployed',
+    );
+    assert.equal(result.workspaces.state, 'available');
+  }));
+
+test('unknown consolidated envelope schemas refuse metadata without hiding workspace evidence', () =>
+  fixture((root) => {
+    const file = path.join(root, 'anhedral.json');
+    const configuration = JSON.parse(fs.readFileSync(file, 'utf8'));
+    configuration.schemaVersion = 999;
+    fs.writeFileSync(file, JSON.stringify(configuration));
+    const result = inspectApplication(root);
+    assert.equal(result.selection.state, 'unavailable');
+    assert.ok(result.targets.data.every((target) => target.error));
+    assert.equal(result.workspaces.state, 'available');
   }));

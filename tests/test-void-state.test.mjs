@@ -1,3 +1,6 @@
+import { writeProjectSection } from '../dist/project-config.js';
+import { createSetupPlan } from '../dist/capabilities.js';
+import { parseStandardOptions } from '../dist/registry/options.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseVoidDeploymentLog } from '../dist/void-state.js';
@@ -75,9 +78,10 @@ test('Void delivery validates resolved bindings rather than authored placeholder
   try {
     mkdirSync(directory, { recursive: true });
     writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'test-app' }));
-    writeFileSync(
-      path.join(root, 'anhedral.setup.json'),
-      JSON.stringify({ hosting: 'cloudflare' }),
+    writeProjectSection(
+      root,
+      'setup',
+      createSetupPlan(parseStandardOptions([root, '--hono', '--vinext'])),
     );
     writeFileSync(
       path.join(directory, 'package.json'),
@@ -115,9 +119,10 @@ test('Void delivery refuses multiple shared migration owners before provider ope
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-void-owners-'));
   try {
     writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'test-app' }));
-    writeFileSync(
-      path.join(root, 'anhedral.setup.json'),
-      JSON.stringify({ hosting: 'cloudflare' }),
+    writeProjectSection(
+      root,
+      'setup',
+      createSetupPlan(parseStandardOptions([root, '--hono', '--vinext'])),
     );
     for (const id of ['api', 'web']) {
       const directory = path.join(root, 'apps', id);
@@ -144,6 +149,17 @@ test('Void delivery refuses multiple shared migration owners before provider ope
     }
     registerApplication(root);
     assert.throws(() => planDelivery(root), /one D1 migration owner/);
+    const file = path.join(root, 'apps/web/anhedral.cloudflare.json');
+    const consumer = JSON.parse((await import('node:fs')).readFileSync(file, 'utf8'));
+    delete consumer.d1_databases[0].migrations_dir;
+    writeFileSync(file, JSON.stringify(consumer));
+    const resolved = structuredClone(consumer);
+    resolved.d1_databases[0].migrations_dir = './db/migrations';
+    writeFileSync(
+      path.join(root, 'apps/web/void.lock.json'),
+      JSON.stringify({ version: 1, source: consumer, resolved, text: JSON.stringify(resolved) }),
+    );
+    assert.doesNotThrow(() => planDelivery(root));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -10,14 +10,9 @@ interface ReviewedPatch {
   packageName: string;
   license: string;
 }
-const bracesPatch: ReviewedPatch = {
-  coordinate: 'braces@3.0.3',
-  packageName: 'braces',
-  license: 'LICENSE.braces',
-};
 // Additional coordinates require reviewed fixes for every shipped entry point.
 const reviewedPatches: readonly ReviewedPatch[] = [
-  bracesPatch,
+  { coordinate: 'braces@3.0.3', packageName: 'braces', license: 'LICENSE.braces' },
   { coordinate: 'node-forge@1.4.0', packageName: 'node-forge', license: 'LICENSE.node-forge' },
 ];
 const lockMaximum = 16 * 1024 * 1024;
@@ -44,13 +39,13 @@ function patchAttributes(source: string, selected: readonly ReviewedPatch[]): st
 }
 
 /**
- * Apply only the explicitly reviewed temporary patch to the exact resolved
+ * Apply only explicitly reviewed temporary patches to the exact resolved
  * package. Standard pnpm audit remains unchanged and reports its advisory.
  */
-function configureSelectedPatches(root: string, patches: readonly ReviewedPatch[]): boolean {
+export function configureDependencyPatches(root: string): boolean {
   root = realpathSync(root);
   const lock = readBoundedFile(path.join(root, 'pnpm-lock.yaml'), lockMaximum).toString('utf8');
-  const selected = patches.filter(({ coordinate }) => {
+  const selected = reviewedPatches.filter(({ coordinate }) => {
     const escaped = [...coordinate]
       .map((character) => ('.^$|?*+()[]{}\\'.includes(character) ? `\\${character}` : character))
       .join('');
@@ -119,16 +114,6 @@ function configureSelectedPatches(root: string, patches: readonly ReviewedPatch[
     else writeFileSync(attributesFile, attributesAfter, { flag: 'wx', mode: 0o644 });
   }
   return true;
-}
-
-/** Apply all enabled reviewed exact-version dependency patches as one validated update. */
-export function configureDependencyPatches(root: string): boolean {
-  return configureSelectedPatches(root, reviewedPatches);
-}
-
-/** Compatibility entry point for consumers requesting only the braces backport. */
-export function configureBracesPatch(root: string): boolean {
-  return configureSelectedPatches(root, [bracesPatch]);
 }
 
 /** Install the standard audit gate for every profile, including braces-free apps. */

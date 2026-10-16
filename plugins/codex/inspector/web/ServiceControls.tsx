@@ -220,7 +220,7 @@ export function ServiceControls({
           {result.data && (
             <>
               <p className="section-note">
-                Private data stays in this view. Sensitive column names are masked. Read{' '}
+                Private data stays in this view. Values in sensitive columns are masked. Read{' '}
                 {new Date(result.data.fetchedAt).toLocaleString()}.
               </p>
               <div className="service-table-scroll">
@@ -244,7 +244,7 @@ export function ServiceControls({
                 </table>
               </div>
               {!result.data.rows.length && <p>This table is empty.</p>}
-              {r2 && result.data.hasMore && (
+              {(r2 || kv) && result.data.hasMore && (
                 <Button
                   size="sm"
                   color="secondary"
@@ -254,7 +254,7 @@ export function ServiceControls({
                     void run('browse_service_data', { table, cursor: result.data!.nextCursor })
                   }
                 >
-                  Next objects
+                  {r2 ? 'Next objects' : 'Next keys'}
                 </Button>
               )}
               {(database || neon) && (

@@ -54,7 +54,14 @@ export function resolveStandardProducts(
   for (const id of selected) getStackDefinition(id);
   if (![...selected].some((id) => getStackDefinition(id).type === 'application'))
     selected.add(hosting === 'vercel' ? 'next' : 'vinext');
-  for (const id of selected) {
+  // Resolve single-provider defaults before alternatives (e.g. Realtime's Neon
+  // before Better Auth chooses a database), independently of CLI flag order.
+  const defaults = [...selected].sort(
+    (left, right) =>
+      (getStackDefinition(left).selection.requiresAny?.length ?? 0) -
+        (getStackDefinition(right).selection.requiresAny?.length ?? 0) || left.localeCompare(right),
+  );
+  for (const id of defaults) {
     const definition = getStackDefinition(id);
     const alternatives = definition.selection.requiresAny ?? [];
     if (

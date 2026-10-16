@@ -74,12 +74,50 @@ export function buildPluginArchive(root) {
     stack.items.some((item) => item.version !== packageJson.version)
   )
     throw new Error('Plugin and CLI release versions must match. Run pnpm build.');
-  if (lstatSync(path.join(pluginRoot, 'mcp.json'), { throwIfNoEntry: false }))
-    verifyPluginRuntime(root);
+  const files = pluginFiles(pluginRoot);
+  const names = new Set(files.map((file) => file.name));
+  for (const name of [
+    'LICENSE',
+    'mcp.json',
+    'skills/anhedral/SKILL.md',
+    ...[
+      'application-stack-standard.md',
+      'delivery-workflow.md',
+      'provider-configuration.md',
+      'plugin-ui.md',
+      'void-verification.md',
+    ].map((name) => `skills/anhedral/references/${name}`),
+    'runtime/build.json',
+    'runtime/server.mjs',
+    'runtime/dashboard.html',
+    'runtime/THIRD_PARTY_NOTICES.txt',
+  ]) {
+    if (!names.has(name)) throw new Error(`Plugin distribution is missing required file: ${name}`);
+  }
+  const server = JSON.parse(
+    files.find((file) => file.name === 'mcp.json').contents.toString('utf8'),
+  ).mcpServers?.['anhedral-projects'];
+  if (
+    server?.type !== 'stdio' ||
+    server.command !== 'node' ||
+    JSON.stringify(server.args) !== JSON.stringify(['${PLUGIN_ROOT}/runtime/server.mjs', 'serve'])
+  )
+    throw new Error('Plugin MCP entrypoint must launch the bundled projects runtime.');
+  const interface_ = manifest.extensions?.['com.openai']?.interface;
+  for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
+    const asset = interface_?.[field];
+    if (
+      typeof asset !== 'string' ||
+      !/^\.\/assets\/[a-zA-Z0-9_.-]+$/.test(asset) ||
+      !names.has(asset.slice(2))
+    )
+      throw new Error(`Plugin interface ${field} must reference a bundled asset.`);
+  }
+  verifyPluginRuntime(root);
   const local = [],
     central = [];
   let offset = 0;
-  for (const file of pluginFiles(pluginRoot)) {
+  for (const file of files) {
     const entry = zipEntry(file, offset);
     local.push(entry.local);
     central.push(entry.central);

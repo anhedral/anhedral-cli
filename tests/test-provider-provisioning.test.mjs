@@ -1,3 +1,4 @@
+import { readProjectConfig, writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -201,8 +202,8 @@ function fixture(provider) {
     `--${provider}`,
     ...(provider === 'revenuecat' ? ['--stripe', '--expo'] : []),
   ];
-  const setup = createSetupPlan(parseStandardOptions('new', [root, '--skip-install', ...flags]));
-  writeFileSync(path.join(root, 'anhedral.setup.json'), JSON.stringify(setup));
+  const setup = createSetupPlan(parseStandardOptions([root, '--skip-install', ...flags]));
+  writeProjectSection(root, 'setup', setup);
   const configuration = {
     schemaVersion: 1,
     providers: {
@@ -210,7 +211,7 @@ function fixture(provider) {
       ...(provider === 'revenuecat' ? { stripe: { accountId: 'acct_1', mode: 'test' } } : {}),
     },
   };
-  writeFileSync(path.join(root, 'anhedral.providers.json'), JSON.stringify(configuration));
+  writeProjectSection(root, 'providers', configuration);
   for (const directory of ['apps/api', 'apps/web', 'apps/mobile', 'packages/db'])
     mkdirSync(path.join(root, directory), { recursive: true });
   return root;
@@ -306,18 +307,15 @@ test('preflight rejects credentials in tracked configuration, missing credential
       provisionSelectedProviders(root, false, runner(root), send, {}),
       /NEON_API_KEY/,
     );
-    writeFileSync(
-      path.join(root, 'anhedral.providers.json'),
-      JSON.stringify({
-        schemaVersion: 1,
-        providers: { neon: { ...scenarios.neon.settings, token: secret } },
-      }),
-    );
+    writeProjectSection(root, 'providers', {
+      schemaVersion: 1,
+      providers: { neon: { ...scenarios.neon.settings, token: secret } },
+    });
     assert.throws(() => planProviderProvisioning(root), /Credentials belong/);
-    writeFileSync(
-      path.join(root, 'anhedral.providers.json'),
-      JSON.stringify({ schemaVersion: 1, providers: { stripe: scenarios.stripe.settings } }),
-    );
+    writeProjectSection(root, 'providers', {
+      schemaVersion: 1,
+      providers: { stripe: scenarios.stripe.settings },
+    });
     assert.throws(() => planProviderProvisioning(root), /unselected/);
     assert.equal(calls, 0);
     assert.equal(existsSync(path.join(root, '.anhedral')), false);
@@ -629,7 +627,7 @@ for (const values of [
   });
 }
 
-test('runtime detects duplicate keys and preflights all destinations before writing earlier files', async () => {
+test('runtime detects duplicate keys and refuses tracked environment destinations before writing', async () => {
   const root = fixture('neon');
   try {
     writeFileSync(
@@ -642,8 +640,8 @@ test('runtime detects duplicate keys and preflights all destinations before writ
     );
     rmSync(path.join(root, 'apps/api/.dev.vars'));
     const run = async (command, args) =>
-      args.includes('ls-files') && args.at(-1) === 'packages/db/.env'
-        ? 'packages/db/.env'
+      args.includes('ls-files') && args.at(-1) === 'apps/api/.dev.vars'
+        ? 'apps/api/.dev.vars'
         : runner(root)(command, args);
     await assert.rejects(configureRuntime(root, { DATABASE_URL: secret }, run), /not be tracked/);
     assert.equal(existsSync(path.join(root, 'apps/api/.dev.vars')), false);
@@ -666,7 +664,10 @@ for (const configuration of [
   test(`provider configuration fails closed: ${JSON.stringify(configuration)}`, () => {
     const root = fixture('neon');
     try {
-      writeFileSync(path.join(root, 'anhedral.providers.json'), JSON.stringify(configuration));
+      writeFileSync(
+        path.join(root, 'anhedral.json'),
+        JSON.stringify({ ...readProjectConfig(root), providers: configuration }),
+      );
       assert.throws(() => planProviderProvisioning(root), /Invalid|Unsupported/);
       assert.equal(existsSync(path.join(root, '.anhedral')), false);
     } finally {
@@ -684,20 +685,17 @@ for (const webhookUrl of [
   test(`Stripe webhook configuration rejects unsafe URL ${webhookUrl}`, () => {
     const root = fixture('stripe');
     try {
-      writeFileSync(
-        path.join(root, 'anhedral.providers.json'),
-        JSON.stringify({
-          schemaVersion: 1,
-          providers: {
-            stripe: {
-              accountId: 'acct_1',
-              mode: 'test',
-              webhookUrl,
-              webhookEvents: ['checkout.session.completed'],
-            },
+      writeProjectSection(root, 'providers', {
+        schemaVersion: 1,
+        providers: {
+          stripe: {
+            accountId: 'acct_1',
+            mode: 'test',
+            webhookUrl,
+            webhookEvents: ['checkout.session.completed'],
           },
-        }),
-      );
+        },
+      });
       assert.throws(() => planProviderProvisioning(root), /Webhook URL/);
       assert.equal(existsSync(path.join(root, '.anhedral')), false);
     } finally {

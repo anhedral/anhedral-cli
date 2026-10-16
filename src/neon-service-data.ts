@@ -126,7 +126,7 @@ export async function browseNeonData(
     )
     .join(', ');
   const rows = await read(
-    `SELECT ${projection} FROM public.${identifier(table)} LIMIT $1 OFFSET $2`,
+    `SELECT ${projection} FROM public.${identifier(table)} ORDER BY ${columns.map((_, index) => index + 1).join(', ')} LIMIT $1 OFFSET $2`,
     [26, offset],
   );
   let masked = columns.some((column) => sensitive.test(column));

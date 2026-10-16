@@ -1,6 +1,7 @@
 import { inspectApplication } from './project-inspector.js';
 import { readApplication } from './project-state.js';
 import type { ServiceDescriptor, ServiceKind } from './service-model.js';
+import type { ProjectInspection } from './inspector-model.js';
 const kinds: Record<string, ServiceKind> = {
   D1: 'd1',
   KV: 'kv',
@@ -8,6 +9,20 @@ const kinds: Record<string, ServiceKind> = {
   'Queue producer': 'queue',
   'Queue consumer': 'queue',
 };
+
+export function unboundResourceSelectors(inspection: ProjectInspection): string[] {
+  return inspection.cloudflareResources.data
+    .filter(
+      (resource) =>
+        !inspection.configuration.data.bindings.some(
+          (binding) =>
+            kinds[binding.kind] === resource.kind &&
+            (binding.resourceId === resource.id ||
+              (['r2', 'queue'].includes(resource.kind) && binding.resourceId === resource.name)),
+        ),
+    )
+    .map((resource) => `receipt:${resource.kind}:${resource.id}`);
+}
 export function resolveService(root: string, key: string): ServiceDescriptor {
   const inspection = inspectApplication(root);
   const project = readApplication(root);

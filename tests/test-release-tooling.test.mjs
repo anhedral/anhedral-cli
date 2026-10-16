@@ -31,11 +31,10 @@ const repoRoot = path.resolve(__dirname, '..');
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-release-tooling-'));
 
 function runScript(script, args = [], env = {}) {
-  // Synthetic historical artifacts must not inherit the production release's pins.
+  // Synthetic artifacts must not inherit the production release's pins.
   const fixtureEnvironment = { ...process.env };
   for (const name of Object.keys(fixtureEnvironment)) {
-    if (name === 'ANHEDRAL_REQUIRE_PLUGIN' || name.startsWith('ANHEDRAL_EXPECTED_'))
-      delete fixtureEnvironment[name];
+    if (name.startsWith('ANHEDRAL_EXPECTED_')) delete fixtureEnvironment[name];
   }
   return spawnSync(process.execPath, [path.join(repoRoot, 'scripts', script), ...args], {
     cwd: repoRoot,
@@ -340,7 +339,7 @@ try {
   writeFileSync(path.join(workflowPolicyDirectory, 'release-on-main.yml'), releaseOnMainWorkflow);
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replace("  ANHEDRAL_REQUIRE_PLUGIN: '1'", ''),
+    releaseWorkflow.replace('ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY:', 'UNPINNED_PLUGIN:'),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
@@ -443,6 +442,18 @@ try {
   const metadata = artifactMetadata(contents);
   const metadataPath = writeMetadata(artifactRoot, metadata);
   writeFileSync(path.join(artifactRoot, metadata.filename), contents);
+  const pluginContents = Buffer.from('deterministic plugin artifact');
+  metadata.plugin = {
+    schemaVersion: 1,
+    version: metadata.version,
+    cliVersion: metadata.version,
+    filename: `anhedral-plugin-${metadata.version}.zip`,
+    integrity: sha512Sri(pluginContents),
+    size: pluginContents.length,
+  };
+  writeFileSync(path.join(artifactRoot, metadata.plugin.filename), pluginContents);
+  writeFileSync(path.join(artifactRoot, 'plugin-metadata.json'), JSON.stringify(metadata.plugin));
+  writeMetadata(artifactRoot, metadata);
   assert.equal(runScript('verify-release-artifact.mjs', [metadataPath]).status, 0);
 
   writeFileSync(path.join(artifactRoot, metadata.filename), Buffer.from('tampered artifact'));
@@ -575,4 +586,27 @@ test('secret scanning distinguishes dynamic URI builders from literal credential
       (finding) => finding.pattern === 'email-address',
     ),
   );
+});
+
+test('Node type update policies follow each package runtime without cross-package restrictions', () => {
+  const renovate = JSON.parse(readFileSync(path.join(repoRoot, 'renovate.json'), 'utf8'));
+  const rules = renovate.packageRules.filter((rule) =>
+    rule.matchPackageNames?.includes('@types/node'),
+  );
+  assert.equal(rules.length, 2);
+  const rootRule = rules.find((rule) => rule.matchFileNames?.includes('package.json'));
+  const inspectorRule = rules.find((rule) =>
+    rule.matchFileNames?.includes('plugins/codex/inspector/package.json'),
+  );
+  assert.deepEqual(rootRule.matchFileNames, ['package.json']);
+  assert.equal(rootRule.allowedVersions, '<21');
+  assert.deepEqual(inspectorRule.matchFileNames, ['plugins/codex/inspector/package.json']);
+  assert.equal(inspectorRule.allowedVersions, '>=24 <25');
+  for (const [file, major] of [
+    ['package.json', 20],
+    ['plugins/codex/inspector/package.json', 24],
+  ]) {
+    const manifest = JSON.parse(readFileSync(path.join(repoRoot, file), 'utf8'));
+    assert.equal(Number(manifest.devDependencies['@types/node'].split('.')[0]), major);
+  }
 });

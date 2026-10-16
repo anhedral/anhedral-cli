@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
@@ -20,10 +21,7 @@ function fixture() {
       },
     }),
   );
-  writeFileSync(
-    path.join(root, 'anhedral.setup.json'),
-    JSON.stringify(createSetupPlan(parseStandardOptions('new', [root, '--expo']))),
-  );
+  writeProjectSection(root, 'setup', createSetupPlan(parseStandardOptions([root, '--expo'])));
   writeFileSync(
     path.join(root, 'apps/mobile/eas.json'),
     JSON.stringify({

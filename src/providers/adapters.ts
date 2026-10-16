@@ -72,7 +72,10 @@ async function neon(context: AdapterContext): Promise<AdapterResult> {
     !parsed.hostname.endsWith('.neon.tech')
   )
     throw new Error('Neon returned an unexpected database connection.');
-  return result({ project: id }, { DATABASE_URL: uri });
+  return result({ project: id }, { DATABASE_URL: uri }, [
+    'Configure DATABASE_URL_UNPOOLED with the intended direct migration connection in ignored packages/db/.env; runtime provisioning does not configure migration credentials.',
+    'Run pnpm db:generate, review the SQL, then run pnpm db:migrate against the intended database before testing authentication or application data.',
+  ]);
 }
 
 async function clerk(context: AdapterContext): Promise<AdapterResult> {

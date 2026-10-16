@@ -60,7 +60,7 @@ const git = (...args) =>
   }).trim();
 try {
   console.log('Generating the real framework + D1 foundation');
-  const options = parseStandardOptions('new', [root, '--d1', '--hosting=cloudflare']);
+  const options = parseStandardOptions([root, '--d1', '--hosting=cloudflare']);
   await scaffoldStandardProject(options);
   put(
     'packages/db/src/schema.ts',

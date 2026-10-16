@@ -11,14 +11,11 @@ import { MAX_PROJECT_JSON_BYTES } from '../dist/bounded-file.js';
 test('project JSON reads reject malformed content without echoing its values', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-json-'));
   try {
-    writeFileSync(
-      path.join(root, 'anhedral.setup.json'),
-      '{"private":"example-sensitive-value" broken',
-    );
+    writeFileSync(path.join(root, 'anhedral.json'), '{"private":"example-sensitive-value" broken');
     assert.throws(
-      () => readJson(root, 'anhedral.setup.json'),
+      () => readJson(root, 'anhedral.json'),
       (error) => {
-        assert.equal(error.message, 'Invalid JSON in anhedral.setup.json.');
+        assert.equal(error.message, 'Invalid JSON in anhedral.json.');
         assert.ok(!error.message.includes('example-sensitive-value'));
         return true;
       },
@@ -41,7 +38,7 @@ test('project JSON and workspace manifests reject pipes, directories and oversiz
     ]) {
       const root = path.join(temporary, kind);
       mkdirSync(path.join(root, 'apps/api'), { recursive: true });
-      for (const file of ['anhedral.setup.json', 'apps/api/package.json']) {
+      for (const file of ['anhedral.json', 'apps/api/package.json']) {
         const target = path.join(root, file);
         if (kind === 'directory') mkdirSync(target);
         if (kind === 'oversized') writeFileSync(target, ' '.repeat(MAX_PROJECT_JSON_BYTES + 1));
@@ -58,7 +55,7 @@ test('project JSON and workspace manifests reject pipes, directories and oversiz
         import { inspectWorkspaceGraph } from ${JSON.stringify(graph)};
         import { inspectProject } from ${JSON.stringify(readiness)};
         const root = ${JSON.stringify(root)};
-        assert.throws(() => readJson(root, 'anhedral.setup.json'), /regular file|size limit/);
+        assert.throws(() => readJson(root, 'anhedral.json'), /regular file|size limit/);
         assert.throws(() => inspectWorkspaceGraph(root), /regular file|size limit/);
         assert.equal(inspectProject(root).localReady, false);
       `,

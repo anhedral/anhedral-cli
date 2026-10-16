@@ -246,3 +246,24 @@ test('Cloudflare analytics rejects account drift, REST routes and partial GraphQ
   );
   assert.equal(calls, 1);
 });
+
+test('Cloudflare preserves bounded metadata cursors and rejects invalid provider pagination', async () => {
+  for (const cursor of ['next+page', '', 'x'.repeat(4097), 'bad\nvalue', 12]) {
+    const request = await cloudflareRequest(
+      { accountId },
+      '/tmp',
+      credentials,
+      {},
+      {
+        send: async () =>
+          new Response(JSON.stringify({ success: true, result: [], result_info: { cursor } })),
+      },
+    );
+    if (typeof cursor === 'string' && cursor.length <= 4096 && !cursor.includes('\n'))
+      assert.equal(
+        (await request('GET', '/storage/kv/namespaces/selected/keys')).result_info.cursor,
+        cursor,
+      );
+    else await assert.rejects(request('GET', '/storage/kv/namespaces/selected/keys'));
+  }
+});

@@ -1,3 +1,4 @@
+import { writeProjectSection, readProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -22,11 +23,10 @@ async function fixture() {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-ship-test-'));
   mkdirSync(path.join(root, 'apps/api'), { recursive: true });
   writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'example' }));
-  writeFileSync(
-    path.join(root, 'anhedral.setup.json'),
-    JSON.stringify(
-      createSetupPlan(parseStandardOptions('new', [root, '--hono', '--d1', '--skip-install'])),
-    ),
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--hono', '--d1', '--skip-install'])),
   );
   writeFileSync(
     path.join(root, 'apps/api/package.json'),
@@ -79,9 +79,6 @@ test('ship previews provisioning without writes and stops before deployment when
     assert.equal(preview.mutation, false);
     assert.equal(preview.resourcesProvisioned, false);
     assert.equal(preview.provisioning.resources.length, 1);
-    assert.equal(preview.voidCandidate.engine, 'void');
-    assert.equal(preview.voidCandidate.mutation, false);
-    assert.equal(preview.voidCandidate.activation, 'runtime-validation-required');
     assert.equal(commands.length, 0);
     assert.equal(requests.length, 0);
     const result = await shipCloudflareApplication(root, false, run, request);
@@ -156,31 +153,27 @@ test('selected-stack ship provisions Neon, configures ignored credentials and de
     return new Response(JSON.stringify(payload));
   };
   try {
-    writeFileSync(
-      path.join(root, 'anhedral.setup.json'),
-      JSON.stringify(
-        createSetupPlan(parseStandardOptions('new', [root, '--hono', '--neon', '--skip-install'])),
-      ),
+    writeProjectSection(
+      root,
+      'setup',
+      createSetupPlan(parseStandardOptions([root, '--hono', '--neon', '--skip-install'])),
     );
     writeFileSync(
       path.join(root, 'apps/api/wrangler.jsonc'),
       JSON.stringify({ name: 'example-api' }),
     );
-    writeFileSync(
-      path.join(root, 'anhedral.providers.json'),
-      JSON.stringify({
-        schemaVersion: 1,
-        providers: {
-          neon: {
-            name: 'example',
-            organizationId: 'org-1',
-            region: 'aws-us-east-1',
-            database: 'app',
-            role: 'app',
-          },
+    writeProjectSection(root, 'providers', {
+      schemaVersion: 1,
+      providers: {
+        neon: {
+          name: 'example',
+          organizationId: 'org-1',
+          region: 'aws-us-east-1',
+          database: 'app',
+          role: 'app',
         },
-      }),
-    );
+      },
+    });
     const result = await shipCloudflareApplication(
       root,
       false,
@@ -323,12 +316,11 @@ test('Better Auth prerequisites stop before provider mutations and valid auth ke
     return { result: [] };
   };
   try {
-    writeFileSync(
-      path.join(root, 'anhedral.setup.json'),
-      JSON.stringify(
-        createSetupPlan(
-          parseStandardOptions('new', [root, '--hono', '--d1', '--better-auth', '--skip-install']),
-        ),
+    writeProjectSection(
+      root,
+      'setup',
+      createSetupPlan(
+        parseStandardOptions([root, '--hono', '--d1', '--better-auth', '--skip-install']),
       ),
     );
     writeFileSync(
@@ -374,26 +366,20 @@ async function mixedFixture() {
     path.join(root, 'apps/web/package.json'),
     JSON.stringify({ scripts: { build: 'next build' } }),
   );
-  writeFileSync(
-    path.join(root, 'anhedral.setup.json'),
-    JSON.stringify(
-      createSetupPlan(
-        parseStandardOptions('new', [root, '--next', '--hono', '--d1', '--skip-install']),
-      ),
-    ),
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--next', '--hono', '--d1', '--skip-install'])),
   );
   const web = registerVercelApplication(root);
-  writeFileSync(
-    path.join(root, 'anhedral.web.json'),
-    JSON.stringify({
-      ...web,
-      teamId: 'team_Customer',
-      projectId: 'prj_Application',
-      scope: 'customer',
-      audience: 'public',
-      use: 'personal',
-    }),
-  );
+  writeProjectSection(root, 'vercel', {
+    ...web,
+    teamId: 'team_Customer',
+    projectId: 'prj_Application',
+    scope: 'customer',
+    audience: 'public',
+    use: 'personal',
+  });
   return root;
 }
 
@@ -412,8 +398,8 @@ test('mixed stack preview orders dependencies without provider calls and blocks 
     ]);
     assert.equal(plan.mutation, false);
     assert.equal(calls, 0);
-    const web = JSON.parse(readFileSync(path.join(root, 'anhedral.web.json')));
-    writeFileSync(path.join(root, 'anhedral.web.json'), JSON.stringify({ ...web, teamId: null }));
+    const web = readProjectSection(root, 'vercel');
+    writeProjectSection(root, 'vercel', { ...web, teamId: null });
     await assert.rejects(shipSelectedStack(root, false, run), /Connect both/);
     assert.equal(calls, 0);
   } finally {
@@ -484,7 +470,7 @@ test('mixed stack verifies Cloudflare before deploying Vercel and retains both r
   const root = await mixedFixture();
   let servicesVerified = false;
   let webDeployed = false;
-  const web = JSON.parse(readFileSync(path.join(root, 'anhedral.web.json')));
+  const web = readProjectSection(root, 'vercel');
   try {
     writeFileSync(
       path.join(root, 'apps/api/wrangler.jsonc'),
@@ -597,15 +583,14 @@ async function voidFixture(options = {}) {
       scripts: { deploy: 'void deploy --platform cloudflare' },
     }),
   );
-  const manifest = JSON.parse(readFileSync(path.join(root, 'anhedral.project.json'), 'utf8'));
+  const manifest = readProjectSection(root, 'cloudflare');
   manifest.deliveryEngine = 'void';
-  writeFileSync(path.join(root, 'anhedral.project.json'), JSON.stringify(manifest));
-  writeFileSync(
-    path.join(root, 'anhedral.setup.json'),
-    JSON.stringify(
-      createSetupPlan(
-        parseStandardOptions('new', [root, '--hono', '--d1', '--better-auth', '--skip-install']),
-      ),
+  writeProjectSection(root, 'cloudflare', manifest);
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(
+      parseStandardOptions([root, '--hono', '--d1', '--better-auth', '--skip-install']),
     ),
   );
   const secret = '0123456789abcdef'.repeat(4);

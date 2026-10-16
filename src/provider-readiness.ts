@@ -1,10 +1,12 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { hasProjectSection, readProjectSection } from './project-config.js';
 import path from 'node:path';
 import { inspectProject } from './readiness.js';
 import { defaultRunner, type DeliveryRunner } from './project-state.js';
 import { vercelApplicationStatus } from './vercel.js';
 import { applicationStatus } from './delivery.js';
 import { supportsVoidRuntime, VOID_VERSION } from './void.js';
+import { supportsWorkspaceRuntime } from './runtime-policy.js';
+import { PACKAGE_MANAGER } from './dependencies.js';
 
 /** Explicit opt-in: checks local tools and existing provider context without setup or deployment. */
 export async function inspectProviderReadiness(root: string, run: DeliveryRunner = defaultRunner) {
@@ -30,11 +32,9 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
       checks.push({ id, ok: false, detail, nextAction });
     }
   };
-  const [major, minor] = process.versions.node.split('.').map(Number);
-  const cloudflareManifest = path.join(root, 'anhedral.project.json');
   let voidTargets: { directory: string }[] = [];
   try {
-    const manifest = JSON.parse(readFileSync(cloudflareManifest, 'utf8'));
+    const manifest = readProjectSection(root, 'cloudflare');
     if (manifest.deliveryEngine === 'void' && Array.isArray(manifest.targets))
       voidTargets = manifest.targets.filter(
         (target: { directory?: unknown }) =>
@@ -47,10 +47,10 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
     id: 'node',
     ok: voidTargets.length
       ? supportsVoidRuntime(process.versions.node)
-      : major > 22 || (major === 22 && minor >= 13),
+      : supportsWorkspaceRuntime(process.versions.node),
     detail: voidTargets.length
       ? 'Void applications require Node.js 24.21.0 or newer.'
-      : 'Generated framework apps require Node 22.13 or newer; the CLI itself supports older Node versions.',
+      : 'Generated workspaces require Node 22.13+ on 22.x, or Node 24+.',
   });
   for (const target of voidTargets)
     await check(
@@ -69,9 +69,11 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
     );
   await check(
     'pnpm',
-    async () => /^\d+\.\d+\.\d+/.test((await run('pnpm', ['--version'], root, environment)).trim()),
-    'pnpm is available',
-    'Install the project-pinned pnpm version.',
+    async () =>
+      (await run('pnpm', ['--version'], root, environment)).trim() ===
+      PACKAGE_MANAGER.slice('pnpm@'.length),
+    `${PACKAGE_MANAGER} is available`,
+    `Install ${PACKAGE_MANAGER} before operating this workspace.`,
   );
   await check(
     'git',
@@ -104,13 +106,9 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
     nextAction?: string;
   }[] = [];
   for (const provider of ['vercel', 'cloudflare'] as const) {
-    const file = path.join(
-      root,
-      provider === 'vercel' ? 'anhedral.web.json' : 'anhedral.project.json',
-    );
-    if (!existsSync(file)) continue;
     try {
-      const manifest = JSON.parse(readFileSync(file, 'utf8'));
+      if (!hasProjectSection(root, provider)) continue;
+      const manifest = readProjectSection(root, provider);
       const connected =
         provider === 'vercel' ? manifest.projectId && manifest.teamId : manifest.accountId;
       if (!connected || manifest.audience === 'unconfigured') throw new Error('unconfigured');
@@ -133,7 +131,7 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
         provider,
         connection: 'blocked',
         deployment: 'unverified',
-        nextAction: `Inspect ${path.basename(file)} and sign in to its recorded account. Connect an unconfigured app or run recover for a fresh clone; do not change the audience to bypass access checks.`,
+        nextAction: `Inspect the ${provider} section in anhedral.json and sign in to its recorded account. Connect an unconfigured app or run recover for a fresh clone; do not change the audience to bypass access checks.`,
       });
     }
   }

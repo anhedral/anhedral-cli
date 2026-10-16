@@ -1,3 +1,13 @@
+export const SERVICE_TOOL_ACTIONS = {
+  refresh_service: 'status',
+  get_service_metrics: 'metrics',
+  list_service_tables: 'tables',
+  browse_service_data: 'data',
+  plan_service_deletion: 'delete-plan',
+  delete_service: 'delete',
+} as const;
+export type ServiceAction = (typeof SERVICE_TOOL_ACTIONS)[keyof typeof SERVICE_TOOL_ACTIONS];
+
 export type ServiceKind = 'worker' | 'd1' | 'kv' | 'r2' | 'queue';
 export interface ServiceDescriptor {
   key: string;

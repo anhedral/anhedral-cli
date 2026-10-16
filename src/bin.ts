@@ -14,7 +14,7 @@ import { authenticateProviders } from './provider-auth.js';
 import { runAdd, runRegistry } from './registry/commands.js';
 import { setupRepository } from './repository.js';
 import path from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { hasProjectSection, readProjectSection } from './project-config.js';
 import {
   registerVercelApplication,
   connectVercelApplication,
@@ -252,12 +252,12 @@ async function main(): Promise<void> {
     await runDoctor(args);
     return;
   }
-  if (command !== 'new' && command !== 'init') {
+  if (command !== 'init') {
     throw argumentError(
-      `Unknown command: ${command}. Use init, auth, ship, add, registry, inspect, doctor, repository, register, connect, provision, status, manage, verify, rollback, adopt, recover, new, --help, or --version.`,
+      `Unknown command: ${command}. Use init, auth, ship, add, registry, inspect, doctor, repository, register, connect, provision, status, manage, verify, rollback, adopt, recover, --help, or --version.`,
     );
   }
-  const options = readOptions(command, args);
+  const options = readOptions(args);
   if (options) await scaffoldStandardProject(options, undefined, output);
 }
 
@@ -388,11 +388,10 @@ async function runDelivery(command: string, args: string[]): Promise<void> {
   const web =
     provider === 'vercel' ||
     (provider !== 'cloudflare' &&
-      (existsSync(path.join(root, 'anhedral.web.json')) ||
+      (hasProjectSection(root, 'vercel') ||
         (command === 'register' &&
-          existsSync(path.join(root, 'anhedral.setup.json')) &&
-          JSON.parse(readFileSync(path.join(root, 'anhedral.setup.json'), 'utf8')).hosting ===
-            'vercel')));
+          hasProjectSection(root, 'setup') &&
+          readProjectSection(root, 'setup').hosting === 'vercel')));
   if (command === 'ship' && !provider) {
     result = await shipSelectedStack(root, args.includes('--dry-run'));
     printResult(command, result, output);
@@ -497,9 +496,9 @@ async function runDoctor(args: string[]): Promise<void> {
     process.exitCode = 1;
 }
 
-function readOptions(command: 'new' | 'init', args: string[]) {
+function readOptions(args: string[]) {
   try {
-    return parseStandardOptions(command, args);
+    return parseStandardOptions(args);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(
@@ -544,7 +543,7 @@ try {
             ? 'AUTH_FAILED'
             : command === 'doctor'
               ? 'INVALID_ARGUMENT'
-              : command === 'new' || command === 'init'
+              : command === 'init'
                 ? 'GENERATION_FAILED'
                 : command === 'add'
                   ? 'ADDITION_FAILED'

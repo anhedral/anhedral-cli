@@ -110,6 +110,24 @@ test('invalid commands and flags suggest a correction, preserve JSON errors and 
   }
 });
 
+test('current CLI has one initialization command and selects addition projects with cwd', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-cli-current-grammar-'));
+  try {
+    const removed = run(root, 'new', 'destination', '--dry-run', '--json');
+    assert.equal(removed.status, 1);
+    assert.equal(JSON.parse(removed.stderr).code, 'UNKNOWN_COMMAND');
+    assert.equal(run(root, 'new', '--help').status, 1);
+    assert.doesNotMatch(run(root, '--help').stdout, /compatibility alias/);
+    const positional = run(root, 'add', './destination', 'resend', '--dry-run', '--json');
+    assert.equal(positional.status, 1);
+    assert.equal(JSON.parse(positional.stderr).code, 'INVALID_ARGUMENT');
+    assert.match(JSON.parse(positional.stderr).nextAction, /--cwd/);
+    assert.deepEqual(readdirSync(root), []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('human provider summaries show actionable prerequisites without dumping credentials or raw diagnostics', () => {
   const result = formatResult('ship', {
     state: 'provider-configuration-required',

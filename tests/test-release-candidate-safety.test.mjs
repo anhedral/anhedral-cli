@@ -41,7 +41,6 @@ function candidate() {
       encoding: 'utf8',
       env: {
         ...process.env,
-        ANHEDRAL_REQUIRE_PLUGIN: '1',
         ANHEDRAL_EXPECTED_INTEGRITY: metadata.integrity,
         ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: integrity(plugin),
         ...environment,
@@ -103,17 +102,17 @@ for (const failure of [
     }
   });
 
-test('CLI-only historical verification remains explicit and cannot satisfy the current release gate', () => {
+test('release verification always requires both CLI and plugin archives', () => {
   const fixture = candidate();
   try {
     delete fixture.metadata.plugin;
     writeFileSync(fixture.file, JSON.stringify(fixture.metadata));
     assert.notEqual(fixture.verify().status, 0);
-    assert.equal(
-      fixture.verify({ ANHEDRAL_REQUIRE_PLUGIN: '', ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: '' })
-        .status,
-      0,
-    );
+    const result = fixture.verify({
+      ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: '',
+    });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /requires a verified plugin archive/);
   } finally {
     rmSync(fixture.directory, { recursive: true, force: true });
   }

@@ -1075,3 +1075,13 @@ export async function runStagedTransaction(
     }
   }
 }
+
+/** Serialize short source updates with generation/add transactions as well as other writers. */
+export function withSourceWriteLock<T>(root: string, write: () => T): T {
+  const lock = acquireTransactionLock(root);
+  try {
+    return write();
+  } finally {
+    releaseTransactionLock(lock);
+  }
+}

@@ -46,6 +46,7 @@ test('partial targets, later failed attempts, deletion journals and unknown oper
         {
           id: 'api',
           provider: 'cloudflare',
+          deliveryEngine: 'wrangler',
           application: 'apps/api',
           audience: 'public',
           accountReference: 'selected-account',

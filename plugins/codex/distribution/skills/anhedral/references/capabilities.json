@@ -141,6 +141,32 @@
         ]
       }
     },
+    "neon-realtime": {
+      "purpose": "Live PostgreSQL query results on the selected Neon branch",
+      "tools": [
+        "Neon Console or Neon CLI",
+        "Browser control"
+      ],
+      "access": [
+        "Client-owned Neon project and branch with Realtime beta availability"
+      ],
+      "credentials": [
+        "Server-only NEON_REALTIME_SECRET; public NEON_REALTIME_URL; existing server DATABASE_URL"
+      ],
+      "resources": [
+        "Manually enable Realtime and logical replication on the selected branch; configure allowed browser origins",
+        "Tables with stable replica identity; authorized deterministic SELECT queries sealed on the server"
+      ],
+      "verify": [
+        "Authorized row isolation, access revocation, capability renewal, disconnect/reconnect and subscription cleanup",
+        "Beta has no RLS or performance guarantees; database compute and egress remain billable"
+      ],
+      "selection": {
+        "requiresAny": [
+          "neon"
+        ]
+      }
+    },
     "d1": {
       "purpose": "SQLite-compatible hosted persistence",
       "tools": [

@@ -3,7 +3,8 @@ import { projectLifecycle } from './project-lifecycle.js';
 import path from 'node:path';
 import { existsSync, lstatSync, readdirSync, realpathSync } from 'node:fs';
 import { parse, type ParseError } from 'jsonc-parser';
-import { readBoundedFile } from './bounded-file.js';
+import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from './bounded-file.js';
+import { parseProjectConfig, type ProjectSection } from './project-config.js';
 import { inspectProject, validateSetupPlan } from './readiness.js';
 import { inspectWorkspaceGraph } from './workspace-graph.js';
 import { readLifecycleOperation } from './lifecycle.js';
@@ -168,6 +169,29 @@ export function inspectApplication(root: string): ProjectInspection {
     documents.set(relative, result);
     return result;
   }
+  let configurationRead = false;
+  let projectConfiguration: Record<string, unknown> | null = null;
+  let configurationError: unknown;
+  function projectSection(section: ProjectSection, required = false): JsonObject | null {
+    if (!configurationRead) {
+      configurationRead = true;
+      try {
+        const source = content('anhedral.json', MAX_PROJECT_JSON_BYTES);
+        if (source !== null) projectConfiguration = parseProjectConfig(JSON.parse(source));
+      } catch (error) {
+        configurationError = error;
+      }
+    }
+    if (configurationError) throw configurationError;
+    const value = projectConfiguration?.[section];
+    if (value === undefined) {
+      if (required) throw new Error('Missing project configuration section.');
+      return null;
+    }
+    if (Buffer.byteLength(JSON.stringify(value)) > MAX_FILE)
+      throw new Error('Project configuration section exceeds inspection limit.');
+    return object(value);
+  }
   function apps(): string[] {
     const parent = localFile('apps');
     if (!parent) return [];
@@ -188,7 +212,7 @@ export function inspectApplication(root: string): ProjectInspection {
     { cliVersion: null, products: [], hosting: null },
     'Project selection or scaffold provenance is unavailable. Use the recorded CLI version and inspect source.',
     () => {
-      const setup = document('anhedral.setup.json', true);
+      const setup = projectSection('setup', true);
       if (typeof setup?.cliVersion !== 'string' || !/^\d+\.\d+\.\d+$/.test(setup.cliVersion))
         throw new Error('Invalid CLI version.');
       validateSetupPlan(setup);
@@ -455,10 +479,9 @@ export function inspectApplication(root: string): ProjectInspection {
   function hostingTargets(): TargetEvidence[] {
     const targets: TargetEvidence[] = [];
     for (const provider of ['cloudflare', 'vercel'] as const) {
-      const manifest = provider === 'cloudflare' ? 'anhedral.project.json' : 'anhedral.web.json';
-      if (!localFile(manifest)) continue;
       try {
-        const project = document(manifest, true)!;
+        const project = projectSection(provider);
+        if (!project) continue;
         if (
           project.schemaVersion !== 1 ||
           project.provider !== provider ||
@@ -659,7 +682,7 @@ export function inspectApplication(root: string): ProjectInspection {
     () => {
       const value = document('.anhedral/resources.json');
       if (!value) return [];
-      const project = document('anhedral.project.json', true)!;
+      const project = projectSection('cloudflare', true)!;
       if (
         value.schemaVersion !== 1 ||
         value.projectId !== project.id ||
@@ -686,7 +709,7 @@ export function inspectApplication(root: string): ProjectInspection {
     () => {
       const value = document('.anhedral/service-deletions.json');
       if (!value) return [];
-      const project = document('anhedral.project.json', true)!;
+      const project = projectSection('cloudflare', true)!;
       if (
         value.schemaVersion !== 1 ||
         value.projectId !== project.id ||
@@ -711,12 +734,7 @@ export function inspectApplication(root: string): ProjectInspection {
     { localReady: false, checks: [] },
     'Local prerequisite checks are unavailable. Provider and product readiness are unknown.',
     () => {
-      for (const file of [
-        'anhedral.setup.json',
-        'anhedral.standard.json',
-        'anhedral.registry.json',
-      ])
-        content(file);
+      for (const key of ['setup', 'standard', 'registry'] as const) projectSection(key);
       if (workspaces.state === 'unavailable') throw new Error('Unsafe workspace graph.');
       const result = inspectProject(root);
       return { localReady: result.localReady, checks: result.checks };

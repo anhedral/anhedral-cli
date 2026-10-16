@@ -1,4 +1,5 @@
-import { existsSync, realpathSync, writeFileSync, rmSync } from 'node:fs';
+import { hasProjectSection } from './project-config.js';
+import { realpathSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
@@ -6,7 +7,6 @@ import { defaultRunner, type DeliveryRunner } from './project-state.js';
 import { withLifecycleOperation, type LifecycleSession } from './lifecycle.js';
 import { planDelivery, shipApplication } from './delivery.js';
 import { planProvisioning, provisionApplication } from './provision.js';
-import { planVoidDelivery } from './void.js';
 import { syncVoidSecrets, voidServerSecrets } from './void-execution.js';
 import type { CloudflareRequest } from './cloudflare.js';
 import { planProviderProvisioning, provisionSelectedProviders } from './providers/provision.js';
@@ -36,7 +36,6 @@ async function executeCloudflareApplication(
       provisioning: ReturnType<typeof planProvisioning>;
       mutation: false;
       integrations: ReturnType<typeof planProviderProvisioning>;
-      voidCandidate: ReturnType<typeof planVoidDelivery>;
     })
   | {
       state: 'configuration-required';
@@ -59,7 +58,6 @@ async function executeCloudflareApplication(
       ...deployment,
       provisioning,
       integrations,
-      voidCandidate: planVoidDelivery(root),
       mutation: false,
     };
   if (deployment.project.audience === 'unconfigured' || !deployment.project.accountId)
@@ -302,11 +300,11 @@ export async function shipSelectedStack(
 ) {
   root = realpathSync(root);
   const mixed =
-    existsSync(path.join(root, 'anhedral.web.json')) &&
-    existsSync(path.join(root, 'anhedral.project.json')) &&
+    hasProjectSection(root, 'vercel') &&
+    hasProjectSection(root, 'cloudflare') &&
     readApplication(root).targets.length > 0;
   if (!mixed)
-    return existsSync(path.join(root, 'anhedral.web.json'))
+    return hasProjectSection(root, 'vercel')
       ? shipSelectedVercelApplication(root, dryRun, run, send, providerEnvironment)
       : shipCloudflareApplication(root, dryRun, run, request, send, providerEnvironment);
   const cloudflare = planDelivery(root, true);
@@ -319,7 +317,7 @@ export async function shipSelectedStack(
         { target: 'vercel', after: ['cloudflare'] },
       ],
       targets: [
-        { provider: 'cloudflare', ...cloudflare, voidCandidate: planVoidDelivery(root) },
+        { provider: 'cloudflare', ...cloudflare },
         { provider: 'vercel', ...vercel },
       ],
       integrations: planProviderProvisioning(root),

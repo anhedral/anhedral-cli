@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { CAPABILITY_CONTRACT, formatCapabilityContract } from '../capability-contract.js';
 import { addStackItems } from './add.js';
 import { STACK_REGISTRY, STANDARD_PRODUCTS, getStackItem } from '../stack-registry.js';
@@ -76,23 +75,20 @@ export async function runAdd(args: string[], output: OutputOptions = {}): Promis
     if (arg.startsWith('-')) throw new Error(`Unknown add option: ${arg}.`);
     positional.push(arg);
   }
-  const hasDirectory =
-    positional[0] && !(STANDARD_PRODUCTS as readonly string[]).includes(positional[0]);
-  if (hasDirectory && positional.length === 1) {
-    const correction = suggest(positional[0], STANDARD_PRODUCTS);
-    if (correction)
-      throw new CliArgumentError(
-        `Unknown stack part. Did you mean ${correction}?`,
-        'Run anhedral registry list.',
-      );
-  }
-  const directory = hasDirectory ? positional.shift()! : process.cwd();
   const items = positional;
   if (!items.length)
     throw new Error('Select bundled parts: anhedral add <items...> [--cwd <directory>].');
+  for (const item of items) {
+    if ((STANDARD_PRODUCTS as readonly string[]).includes(item)) continue;
+    const correction = suggest(item, STANDARD_PRODUCTS);
+    throw new CliArgumentError(
+      `Unknown stack part.${correction ? ` Did you mean ${correction}?` : ''}`,
+      'Select a project with --cwd <directory> and run anhedral registry list for bundled parts.',
+    );
+  }
   printResult(
     'add',
-    await addStackItems(path.resolve(directory), {
+    await addStackItems(process.cwd(), {
       items,
       dryRun: args.includes('--dry-run') || Boolean(preview),
       skipInstall: args.includes('--skip-install'),

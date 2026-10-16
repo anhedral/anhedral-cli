@@ -85,6 +85,13 @@ export function identifierSegment(value: string): string {
   return segment || 'app';
 }
 
+/** Provider identity is separate from the npm package/directory name. */
+export function providerProjectName(value: string): string {
+  const normalized = identifierSegment(value);
+  const digest = createHash('sha256').update(value).digest('hex').slice(0, 8);
+  return compactPackageSegment(normalized === value ? normalized : `${normalized}-${digest}`, 63);
+}
+
 /** Keep provider resource names within the shared Workers/R2/Queues naming limits. */
 export function resourceName(projectName: string, suffix: string): string {
   const segment = identifierSegment(projectName);

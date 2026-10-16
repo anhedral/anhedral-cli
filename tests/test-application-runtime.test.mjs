@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomBytes } from 'node:crypto';
@@ -18,11 +19,10 @@ import { applicationRuntime, runtimeTargets } from '../dist/providers/runtime.js
 const secret = randomBytes(32).toString('hex');
 function fixture(flags = ['--vinext', '--better-auth']) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-app-runtime-'));
-  writeFileSync(
-    path.join(root, 'anhedral.setup.json'),
-    JSON.stringify(
-      createSetupPlan(parseStandardOptions('new', [root, '--skip-install', ...flags])),
-    ),
+  writeProjectSection(
+    root,
+    'setup',
+    createSetupPlan(parseStandardOptions([root, '--skip-install', ...flags])),
   );
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
   mkdirSync(path.join(root, 'apps/api'), { recursive: true });

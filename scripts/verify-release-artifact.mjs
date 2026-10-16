@@ -92,14 +92,7 @@ if (size !== metadata.size) {
 console.log(`Verified ${metadata.name}@${metadata.version}: ${metadata.integrity}`);
 
 function verifyPlugin(plugin, version, directory) {
-  if (!plugin) {
-    if (
-      process.env.ANHEDRAL_REQUIRE_PLUGIN === '1' ||
-      process.env.ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY
-    )
-      throw new Error('This release requires a verified plugin archive');
-    return; // Standalone verification retains compatibility with CLI-only historical releases.
-  }
+  if (!plugin) throw new Error('This release requires a verified plugin archive');
   if (
     plugin.schemaVersion !== 1 ||
     !Number.isSafeInteger(plugin.size) ||

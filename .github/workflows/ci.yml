@@ -61,8 +61,6 @@ jobs:
           path: plugins/codex/distribution/runtime
 
       - name: Run unit tests
-        env:
-          ANHEDRAL_REQUIRE_PLUGIN: '1'
         run: pnpm test:unit
 
       - name: Verify reviewed dependency patches and preserve advisory visibility

@@ -23,7 +23,7 @@ export function formatResult(command: string, value: unknown): string {
   const next = (action: unknown) => {
     if (string(action)) lines.push(`Next: ${string(action)}`);
   };
-  if (command === 'init' || command === 'new') {
+  if (command === 'init') {
     lines.push(
       data.generated ? `Created ${string(data.root)}.` : `Stack preview for ${string(data.root)}.`,
       `Stack: ${names(data.products)}.`,
@@ -35,7 +35,7 @@ export function formatResult(command: string, value: unknown): string {
     if (catalog.state === 'pending') next(catalog.nextAction);
     if (data.generated)
       lines.push(
-        'Review the generated source and anhedral.providers.json.',
+        'Review the generated source and provider settings in anhedral.json (providers).',
         'In the project directory, start development with pnpm dev. Run pnpm check before delivery.',
         'Next: anhedral auth, then connect the intended hosting account and preview anhedral ship --dry-run.',
       );

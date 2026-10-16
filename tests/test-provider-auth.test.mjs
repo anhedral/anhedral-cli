@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
@@ -9,8 +10,8 @@ import { authenticateProviders, requiredProviders } from '../dist/provider-auth.
 
 function fixture(flags) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-auth-test-'));
-  const options = parseStandardOptions('new', [root, ...flags, '--skip-install']);
-  writeFileSync(path.join(root, 'anhedral.setup.json'), JSON.stringify(createSetupPlan(options)));
+  const options = parseStandardOptions([root, ...flags, '--skip-install']);
+  writeProjectSection(root, 'setup', createSetupPlan(options));
   return root;
 }
 
@@ -286,10 +287,10 @@ test('PostHog authentication requires the configured region before sending manag
     );
     assert.equal(pending.checks[0].state, 'unverified');
     assert.equal(calls, 0);
-    writeFileSync(
-      path.join(root, 'anhedral.providers.json'),
-      JSON.stringify({ schemaVersion: 1, providers: { posthog: { region: 'eu' } } }),
-    );
+    writeProjectSection(root, 'providers', {
+      schemaVersion: 1,
+      providers: { posthog: { region: 'eu' } },
+    });
     const checked = await authenticateProviders(
       root,
       { provider: 'posthog', status: true },

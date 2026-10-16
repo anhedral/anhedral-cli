@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../project-config.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
 import { existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
@@ -6,7 +7,6 @@ import { createRecipeContext } from '../registry/context.js';
 import type { StandardOptions } from '../registry/types.js';
 import { inspectWorkspaceGraph } from '../workspace-graph.js';
 import { writeStandardRoot } from './workspace.js';
-import { json } from './files.js';
 import { normalizeSharedLint } from './lint.js';
 import { configureVoidDelivery } from './void.js';
 
@@ -42,7 +42,7 @@ export async function composeStack(
         throw new Error(`Registry target missing: ${item.name} -> ${target}.`);
     }
   }
-  json(root, 'anhedral.registry.json', {
+  writeProjectSection(root, 'registry', {
     ...registry,
     status: 'scaffolded',
     workspaces: inspectWorkspaceGraph(root),

@@ -18,6 +18,23 @@ import path from 'node:path';
 
 const FAILURE_TAIL_BYTES = 128 * 1024;
 
+function commandTimeout(): number {
+  const value = Number(process.env.ANHEDRAL_COMMAND_TIMEOUT_MS);
+  return Number.isSafeInteger(value) && value >= 1 && value <= 20 * 60 * 1000
+    ? value
+    : 20 * 60 * 1000;
+}
+
+function commandFailure(cmd: string, status: number | null, error?: Error): Error {
+  const timedOut = (error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT';
+  return new Error(
+    timedOut
+      ? `Command timed out: ${cmd}. Check connectivity and local tooling before retrying.`
+      : `Command failed (exit ${status ?? '?'}): ${cmd}`,
+    error ? { cause: error } : undefined,
+  );
+}
+
 export function writeFile(filePath: string, content: string): void {
   const existed = existsSync(filePath);
   mkdirSync(path.dirname(filePath), { recursive: true });
@@ -72,28 +89,24 @@ function dumpFailure(
     if (stdoutText) process.stderr.write(stdoutText);
     if (stderrText) process.stderr.write(stderrText);
   }
-  throw new Error(
-    `Command failed (exit ${status ?? '?'}): ${cmd}`,
-    spawnError ? { cause: spawnError } : undefined,
-  );
+  throw commandFailure(cmd, status, spawnError);
 }
 
 export function execFile(executable: string, args: readonly string[], cwd: string): void {
   const invocation = resolveCommand(executable, args);
   const quiet = process.env.ANHEDRAL_QUIET === '1';
   const display = [executable, ...args].join(' ');
+  const deadline = { timeout: commandTimeout(), killSignal: 'SIGKILL' as const };
   if (process.env.ANHEDRAL_VERBOSE === '1' && !quiet) {
     console.log(`  $ ${display}`);
     const result = spawnSync(invocation.command, invocation.args, {
       cwd,
       stdio: 'inherit',
       shell: false,
+      ...deadline,
     });
     if (result.error || result.status !== 0) {
-      throw new Error(
-        `Command failed (exit ${result.status ?? '?'}): ${display}`,
-        result.error ? { cause: result.error } : undefined,
-      );
+      throw commandFailure(display, result.status, result.error);
     }
     return;
   }
@@ -108,6 +121,7 @@ export function execFile(executable: string, args: readonly string[], cwd: strin
       cwd,
       shell: false,
       stdio: ['ignore', stdout, stderr],
+      ...deadline,
     });
     closeSync(stdout);
     closeSync(stderr);

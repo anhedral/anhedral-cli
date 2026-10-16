@@ -1,4 +1,9 @@
-import { STACK_DEPENDENCIES } from '../dist/dependencies.js';
+import {
+  readProjectSection,
+  hasProjectSection,
+  readProjectConfig,
+} from '../dist/project-config.js';
+import { STACK_DEPENDENCIES, WORKER_DEV_PORTS } from '../dist/dependencies.js';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { mock, test } from 'node:test';
@@ -83,12 +88,7 @@ function runner(command, args, cwd) {
     writeFileSync(path.join(cwd, 'pnpm-lock.yaml'), 'lockfileVersion: "9.0"\n');
 }
 function options(name, products = []) {
-  return parseStandardOptions('new', [
-    path.join(temp, name),
-    '--skip-install',
-    '--no-git',
-    ...products,
-  ]);
+  return parseStandardOptions([path.join(temp, name), '--skip-install', '--no-git', ...products]);
 }
 function read(root, file) {
   return JSON.parse(readFileSync(path.join(root, file), 'utf8'));
@@ -212,8 +212,13 @@ try {
     undefined,
   );
   assert.equal(existsSync(path.join(vinext.root, 'apps/web/open-next.config.ts')), false);
-  assert.equal(read(vinext.root, 'anhedral.project.json').targets[0].id, 'web');
-  assert.equal(existsSync(path.join(vinext.root, 'anhedral.web.json')), false);
+  assert.equal(readProjectSection(vinext.root, 'cloudflare').targets[0].id, 'web');
+  assert.equal(readProjectConfig(vinext.root).schemaVersion, 1);
+  assert.deepEqual(
+    readdirSync(vinext.root).filter((name) => /^anhedral(?:\..+)?\.json$/.test(name)),
+    ['anhedral.json'],
+  );
+  assert.equal(hasProjectSection(vinext.root, 'vercel'), false);
   const vinextAuth = options('vinext-auth', ['--better-auth']);
   await scaffoldStandardProject(vinextAuth, runner);
   assert.ok(vinextAuth.products.includes('d1'));
@@ -274,7 +279,7 @@ try {
     read(vinextAuth.root, 'apps/web/package.json').dependencies['react-server-dom-webpack'],
     '19.2.8',
   );
-  const native = parseStandardOptions('new', [
+  const native = parseStandardOptions([
     path.join(temp, 'native'),
     '--next',
     '--skip-install',
@@ -292,8 +297,8 @@ try {
     /cacheComponents: true, partialPrefetching: true/,
   );
   assert.equal(existsSync(path.join(native.root, 'apps/web/wrangler.jsonc')), false);
-  assert.equal(read(native.root, 'anhedral.web.json').provider, 'vercel');
-  const nativeAuth = parseStandardOptions('new', [
+  assert.equal(readProjectSection(native.root, 'vercel').provider, 'vercel');
+  const nativeAuth = parseStandardOptions([
     path.join(temp, 'native-auth'),
     '--next',
     '--neon',
@@ -311,7 +316,7 @@ try {
     readFileSync(path.join(nativeAuth.root, 'apps/web/app/api/auth/[...all]/route.ts'), 'utf8'),
     /process.env.DATABASE_URL/,
   );
-  const mixed = parseStandardOptions('new', [
+  const mixed = parseStandardOptions([
     path.join(temp, 'mixed'),
     '--next',
     '--d1',
@@ -320,15 +325,15 @@ try {
   ]);
   assert.ok(mixed.products.includes('hono'));
   await scaffoldStandardProject(mixed, runner);
-  assert.equal(read(mixed.root, 'anhedral.project.json').targets[0].id, 'api');
-  assert.equal(read(mixed.root, 'anhedral.web.json').provider, 'vercel');
+  assert.equal(readProjectSection(mixed.root, 'cloudflare').targets[0].id, 'api');
+  assert.equal(readProjectSection(mixed.root, 'vercel').provider, 'vercel');
   const web = options('web', ['--next', '--hosting=cloudflare']);
   await scaffoldStandardProject(web, runner);
-  assert.equal(read(web.root, 'anhedral.setup.json').root, web.root);
-  assert.equal(read(web.root, 'anhedral.setup.json').setup.resourcesProvisioned, false);
-  assert.deepEqual(read(web.root, 'anhedral.providers.json'), { schemaVersion: 1, providers: {} });
+  assert.equal(readProjectSection(web.root, 'setup').root, web.root);
+  assert.equal(readProjectSection(web.root, 'setup').setup.resourcesProvisioned, false);
+  assert.deepEqual(readProjectSection(web.root, 'providers'), { schemaVersion: 1, providers: {} });
   assert.deepEqual(
-    read(web.root, 'anhedral.setup.json').setup.capabilities.map(({ status }) => status),
+    readProjectSection(web.root, 'setup').setup.capabilities.map(({ status }) => status),
     ['starter'],
   );
   assert.equal(read(web.root, 'apps/web/package.json').dependencies.next, '16.3.8');
@@ -377,8 +382,8 @@ try {
   const clerk = options('clerk', ['--clerk']);
   await scaffoldStandardProject(clerk, runner);
   const layout = readFileSync(path.join(clerk.root, 'apps/web/app/layout.tsx'), 'utf8');
-  assert.deepEqual(Object.keys(read(clerk.root, 'anhedral.providers.json').providers), ['clerk']);
-  assert.equal(read(clerk.root, 'anhedral.providers.json').providers.clerk.workspaceId, '');
+  assert.deepEqual(Object.keys(readProjectSection(clerk.root, 'providers').providers), ['clerk']);
+  assert.equal(readProjectSection(clerk.root, 'providers').providers.clerk.workspaceId, '');
   const compiledLayout = ts.transpileModule(layout, {
     fileName: 'layout.tsx',
     compilerOptions: { jsx: ts.JsxEmit.Preserve },
@@ -453,6 +458,13 @@ try {
     assert.match(
       readFileSync(path.join(voidServices.root, `apps/${app}/vite.config.ts`), 'utf8'),
       /VOID_CLOUDFLARE_DEPLOY_BUILD/,
+    );
+    const vite = readFileSync(path.join(voidServices.root, `apps/${app}/vite.config.ts`), 'utf8');
+    assert.match(vite, new RegExp(`inspectorPort: ${WORKER_DEV_PORTS[app].inspector}\\b`));
+    assert.match(vite, new RegExp(`port: ${WORKER_DEV_PORTS[app].http}, strictPort: true`));
+    assert.match(
+      readFileSync(path.join(voidServices.root, `apps/${app}/routes/README.md`), 'utf8'),
+      /builds src\/void-entry\.ts/,
     );
   }
   assert.match(
@@ -573,7 +585,7 @@ try {
   assert.match(readFileSync(path.join(preserved.root, '.gitignore'), 'utf8'), /client-secret/);
   const cli = spawnSync(
     process.execPath,
-    ['dist/bin.js', 'new', path.join(temp, 'cli'), '--dry-run', '--json'],
+    ['dist/bin.js', 'init', path.join(temp, 'cli'), '--dry-run', '--json'],
     { encoding: 'utf8' },
   );
   assert.equal(cli.status, 0, cli.stderr);

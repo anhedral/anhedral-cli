@@ -38,7 +38,7 @@ anhedral doctor --cwd client-app --json
 
 Complete the selected provider settings and connect the intended hosting account before delivery, as described in [provider configuration](provider-configuration.md). The commands above are examples, not authorization to deploy an application.
 
-`--cwd` / `-c` selects the working directory and resolves relative directory arguments from it. `add <items...>` uses the current project; the earlier `add <directory> <items...>` form remains supported. Use `--cwd` or an explicit `./directory` when a directory name is also a stack item. `new` remains a compatibility alias for scaffolding an explicit destination; documentation and help lead with `init`.
+`--cwd` / `-c` selects the working directory and resolves relative directory arguments from it. `init [directory]` scaffolds a workspace; `add <items...>` adds bundled parts to the current project. Use `anhedral --cwd <directory> add <items...>` to select a project explicitly.
 
 ## Output contract
 

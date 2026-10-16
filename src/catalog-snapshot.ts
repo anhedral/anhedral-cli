@@ -1,13 +1,14 @@
-import { existsSync, realpathSync } from 'node:fs';
+import { lstatSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { readBoundedFile } from './bounded-file.js';
+import { readProjectConfig, projectConfigPath, type ProjectConfig } from './project-config.js';
 import { inspectApplication } from './project-inspector.js';
 import { STANDARD_PRODUCTS } from './stack-registry.js';
 import type { ProjectSummary } from './catalog-model.js';
 import { z } from 'zod';
 import type { ProjectEntry } from './project-catalog.js';
 
-/** List views read only two bounded source manifests; detailed evidence is opt-in by ID. */
+/** List views read bounded package and project configuration; detailed evidence is opt-in by ID. */
 export function projectSnapshot(entry: ProjectEntry, detail = false): ProjectSummary {
   const summary: ProjectSummary = {
     id: entry.id,
@@ -18,7 +19,9 @@ export function projectSnapshot(entry: ProjectEntry, detail = false): ProjectSum
     status: 'source',
   };
   try {
-    if (entry.sourceIdentity !== readCatalogSourceIdentity(entry.root))
+    if (realpathSync(entry.root) !== entry.root) throw new Error();
+    const configuration = catalogConfiguration(entry.root);
+    if (entry.sourceIdentity !== sourceIdentity(configuration))
       return {
         ...summary,
         status: 'unavailable',
@@ -42,8 +45,11 @@ export function projectSnapshot(entry: ProjectEntry, detail = false): ProjectSum
     )
       throw new Error();
     summary.sourceName = manifest.name;
-    if (existsSync(path.join(entry.root, 'anhedral.setup.json'))) {
-      const setup = read('anhedral.setup.json');
+    const rawSetup = configuration?.setup;
+    if (rawSetup !== undefined) {
+      if (!rawSetup || typeof rawSetup !== 'object' || Array.isArray(rawSetup)) throw new Error();
+      if (Buffer.byteLength(JSON.stringify(rawSetup)) > 256 * 1024) throw new Error();
+      const setup = rawSetup as Record<string, unknown>;
       summary.products = Array.isArray(setup.products)
         ? setup.products
             .filter(
@@ -78,12 +84,22 @@ export function projectSnapshot(entry: ProjectEntry, detail = false): ProjectSum
   return summary;
 }
 
-export function readCatalogSourceIdentity(root: string): string | undefined {
-  const file = path.join(root, 'anhedral.app.json');
-  if (!existsSync(file)) return undefined;
-  const value = z
+function catalogConfiguration(root: string): ProjectConfig | null {
+  return lstatSync(projectConfigPath(root), { throwIfNoEntry: false })
+    ? readProjectConfig(root)
+    : null;
+}
+
+function sourceIdentity(configuration: ProjectConfig | null): string | undefined {
+  if (configuration?.identity === undefined) return undefined;
+  if (Buffer.byteLength(JSON.stringify(configuration.identity)) > 4096)
+    throw new Error('Project identity exceeds its size limit.');
+  return z
     .object({ schemaVersion: z.literal(1), id: z.string().uuid() })
     .strict()
-    .parse(JSON.parse(readBoundedFile(file, 4096).toString('utf8')));
-  return value.id;
+    .parse(configuration.identity).id;
+}
+
+export function readCatalogSourceIdentity(root: string): string | undefined {
+  return sourceIdentity(catalogConfiguration(root));
 }

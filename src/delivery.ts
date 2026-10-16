@@ -1,3 +1,4 @@
+import { projectConfigPath, writeProjectSection } from './project-config.js';
 import { deployVoidTarget, rollbackVoidTarget } from './void-execution.js';
 import { voidLogSnapshot, readVoidDeploymentReceipt } from './void-state.js';
 import { createHash, randomUUID } from 'node:crypto';
@@ -56,7 +57,7 @@ interface ReleaseHistory {
   projectId: string;
   releases: Release[];
 }
-const manifestName = 'anhedral.project.json';
+const manifestName = 'anhedral.json';
 const stateDirectory = '.anhedral';
 const accountPattern = /^[a-f0-9]{32}$/i;
 
@@ -126,7 +127,7 @@ export async function connectApplication(
     if (connected.audience === 'private') validatePrivateAudience(connected, root);
     else if (emails.length) throw new Error('--allow-email applies only to private delivery.');
     await authenticate(root, connected, run);
-    atomicJson(path.join(root, manifestName), connected);
+    writeProjectSection(root, 'cloudflare', connected);
     return connected;
   });
 }
@@ -188,7 +189,7 @@ function checkTargets(
   }
 }
 function configurationFingerprint(root: string, project: ApplicationProject): string {
-  const hash = createHash('sha256').update(JSON.stringify(project));
+  const hash = createHash('sha256').update(readFileSync(projectConfigPath(root)));
   for (const target of project.targets) {
     const directory = targetDirectory(root, target);
     hash.update(readFileSync(configurationFile(directory)));
@@ -205,6 +206,8 @@ export function planDelivery(root: string, allowResourcePlaceholders = false) {
   checkTargets(root, project, allowResourcePlaceholders);
   if (usesVoid(project)) {
     const owners = project.targets.filter((target) => {
+      // Ownership is authored. Void may add a conventional migrations_dir to
+      // resolved consumer locks; those consumers must not become migration owners.
       const config = JSON.parse(
         readFileSync(configurationFile(targetDirectory(root, target)), 'utf8'),
       ) as Record<string, unknown>;
@@ -822,7 +825,7 @@ export async function recoverApplication(
     const fingerprint = configurationFingerprint(root, project);
     if (
       (await run('git', ['show', `HEAD:${manifestName}`], root, env)) !==
-      readFileSync(path.join(root, manifestName), 'utf8')
+      readFileSync(projectConfigPath(root), 'utf8')
     )
       throw new Error('Recovery requires the exact committed application manifest.');
     for (const target of project.targets) {

@@ -1,3 +1,4 @@
+import { writeProjectSection } from '../../../../src/project-config.ts';
 import { createSetupPlan } from '../../../../src/capabilities.ts';
 import { parseStandardOptions } from '../../../../src/standard.ts';
 import { ProjectServices } from '../server/services.ts';
@@ -17,7 +18,7 @@ for (const name of ['atlas', 'empty-app']) {
   };
   save('package.json', { name });
   if (name === 'atlas') {
-    const options = parseStandardOptions('init', [
+    const options = parseStandardOptions([
       directory,
       '--hono',
       '--d1',
@@ -25,7 +26,7 @@ for (const name of ['atlas', 'empty-app']) {
       '--skip-install',
       '--no-git',
     ]);
-    save('anhedral.setup.json', createSetupPlan(options));
+    writeProjectSection(directory, 'setup', createSetupPlan(options));
     save('apps/api/package.json', { name: '@atlas/api' });
     save('apps/api/wrangler.jsonc', {
       name: 'atlas-api',
@@ -33,12 +34,13 @@ for (const name of ['atlas', 'empty-app']) {
       r2_buckets: [{ binding: 'FILES', bucket_name: 'atlas-files' }],
     });
     const projectId = '00000000-0000-4000-8000-000000000001';
-    save('anhedral.project.json', {
+    writeProjectSection(directory, 'cloudflare', {
       schemaVersion: 1,
       id: projectId,
       name: 'atlas',
       ownership: 'customer',
       provider: 'cloudflare',
+      deliveryEngine: 'wrangler',
       accountId: 'a'.repeat(32),
       audience: 'public',
       targets: [{ id: 'api', directory: 'apps/api', workerName: 'atlas-api' }],
@@ -92,7 +94,9 @@ const services = new ProjectServices(
             meta: { changes: 0, changed_db: false },
             results: sql.includes('sqlite_schema')
               ? [{ name: 'notes' }]
-              : [{ id: 1, title: 'Synthetic note', email: 'private@example.com' }],
+              : sql.startsWith('PRAGMA')
+                ? [{ name: 'id' }, { name: 'email' }, { name: 'title' }]
+                : [{ id: 1, title: 'Synthetic note', email: 'private@example.com' }],
           },
         ],
       };

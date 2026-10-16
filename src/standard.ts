@@ -1,6 +1,7 @@
-import { configureDependencyPatches } from './braces-patch.js';
+import { writeProjectSection } from './project-config.js';
+import { usesVoidSelection } from './runtime-policy.js';
+import { configureDependencyPatches } from './dependency-patches.js';
 import { randomUUID } from 'node:crypto';
-import { json } from './scaffold/files.js';
 import { registerGeneratedProject } from './catalog-registration.js';
 import { recordScaffoldFiles } from './registry/receipt.js';
 import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, rmdirSync } from 'node:fs';
@@ -39,13 +40,7 @@ export async function scaffoldStandardProject(
   }
   assertBootstrapPlatform(run);
   assertWorkspaceRuntime(run);
-  const voidWorkspace =
-    !(options.products.includes('next') && options.hosting === 'cloudflare') &&
-    !options.products.includes('queues') &&
-    !options.products.includes('basin') &&
-    options.products.some((product) =>
-      ['vinext', 'hono', 'realtime', 'queues', 'cron', 'workflows'].includes(product),
-    );
+  const voidWorkspace = usesVoidSelection(options.products, options.hosting);
   if (voidWorkspace && run === execFile && !supportsVoidRuntime(process.versions.node))
     throw new Error(
       'New Cloudflare workspaces use Void and require Node.js 24.21.0 or newer. Planning remains available on older CLI-supported versions.',
@@ -79,7 +74,7 @@ export async function scaffoldStandardProject(
         bootstrapWorkspace(stageRoot, options.name, run);
         printProgress('Composing the selected stack…', display);
         await composeStack(stageRoot, options, plan.registry);
-        json(stageRoot, 'anhedral.app.json', {
+        writeProjectSection(stageRoot, 'identity', {
           schemaVersion: 1,
           id: randomUUID(),
         });

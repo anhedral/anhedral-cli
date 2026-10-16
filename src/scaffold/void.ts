@@ -175,12 +175,12 @@ export default {
       put(
         root,
         `${directory}/routes/README.md`,
-        '# Standalone Worker delivery\n\nVoid 0.27 requires a backend convention directory to classify a Worker deployment. This reserved directory contains no Void handlers. The Cloudflare Vite plugin builds src/index.ts, which owns fetch, queue, scheduled and exported class behavior. Do not add a second router here without reviewing the application architecture.\n',
+        '# Standalone Worker delivery\n\nVoid 0.27 requires a backend convention directory to classify a Worker deployment. This reserved directory contains no Void handlers. The Cloudflare Vite plugin builds src/void-entry.ts, which adds deployment readiness and preserves the application handlers and exported classes from src/index.ts. Do not add a second router here without reviewing the application architecture.\n',
       );
       put(
         root,
         `${directory}/vite.config.ts`,
-        `import { defineConfig } from 'vite';\nimport { cloudflare } from '@cloudflare/vite-plugin';\n// Void generates the deployment config before its fresh build. Local builds\n// use the same explicit declaration without provisioning remote resources.\nexport default defineConfig({ plugins: [cloudflare({ configPath: process.env.VOID_CLOUDFLARE_DEPLOY_BUILD ? '.void-wrangler.jsonc' : 'anhedral.cloudflare.json', viteEnvironment: { name: 'ssr' } })], server: { host: '127.0.0.1', port: ${ports.http} } });\n`,
+        `import { defineConfig } from 'vite';\nimport { cloudflare } from '@cloudflare/vite-plugin';\n// Void generates the deployment config before its fresh build. Local builds\n// use the same explicit declaration without provisioning remote resources.\nexport default defineConfig({ plugins: [cloudflare({ configPath: process.env.VOID_CLOUDFLARE_DEPLOY_BUILD ? '.void-wrangler.jsonc' : 'anhedral.cloudflare.json', inspectorPort: ${ports.inspector}, viteEnvironment: { name: 'ssr' } })], server: { host: '127.0.0.1', port: ${ports.http}, strictPort: true } });\n`,
       );
       patchPackage(root, `${directory}/package.json`, {
         devDependencies: {

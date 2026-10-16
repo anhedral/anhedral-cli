@@ -1,3 +1,4 @@
+import { readProjectSection, writeProjectSection } from '../dist/project-config.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -79,7 +80,7 @@ test('Vercel configures production variables through a private file, verifies pa
 function fixture() {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-vercel-test-'));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
-  writeFileSync(path.join(root, 'anhedral.setup.json'), JSON.stringify({ hosting: 'vercel' }));
+  writeProjectSection(root, 'setup', { hosting: 'vercel' });
   writeFileSync(
     path.join(root, 'package.json'),
     JSON.stringify({ name: 'customer-app', scripts: { 'test:live': 'node tests/live.mjs' } }),
@@ -134,7 +135,7 @@ function provider(root, options = {}) {
       if (args[0] === 'show')
         return options.uncommittedManifest
           ? '{}'
-          : readFileSync(path.join(root, 'anhedral.web.json'), 'utf8');
+          : readFileSync(path.join(root, 'anhedral.json'), 'utf8');
       if (args[0] === 'ls-remote')
         return `${options.remoteDrift ? 'c'.repeat(40) : commit}\trefs/heads/main`;
       if (args.includes('--show-toplevel')) return root;
@@ -205,8 +206,7 @@ function provider(root, options = {}) {
               }
             : undefined,
           meta: {
-            anhedralProject: JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8'))
-              .id,
+            anhedralProject: readProjectSection(root, 'vercel').id,
             anhedralCommit: options.wrongCommit ? 'c'.repeat(40) : commit,
           },
         });
@@ -416,10 +416,7 @@ test('Vercel Git connection verifies the remote provider link and keeps account 
           connect(root, mock.run, { git: true }),
           /GitHub repository connection/,
         );
-        assert.equal(
-          JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8')).projectId,
-          projectId,
-        );
+        assert.equal(readProjectSection(root, 'vercel').projectId, projectId);
       } else {
         await connect(root, mock.run, { git: true });
         assert.ok(
@@ -456,10 +453,11 @@ test('Vercel retains Git identity and rejects later provider or origin drift bef
     const options = {};
     const mock = provider(root, options);
     await connect(root, mock.run, { git: true });
-    assert.deepEqual(
-      JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8')).repository,
-      { repoId: 123, nameWithOwner: 'customer/customer-app', productionBranch: 'main' },
-    );
+    assert.deepEqual(readProjectSection(root, 'vercel').repository, {
+      repoId: 123,
+      nameWithOwner: 'customer/customer-app',
+      productionBranch: 'main',
+    });
     await shipVercelApplication(root, mock.run);
     await verifyVercelApplication(root, mock.run);
     options.drift = true;
@@ -496,10 +494,7 @@ test('Vercel private creation enables all-deployment authentication before linki
     assert.equal(result.planActivated, false);
     assert.equal(result.project.audience, 'private');
     const patch = mock.calls.find((call) => call.args[2] === 'api' && call.args.includes('PATCH'));
-    assert.deepEqual(
-      JSON.parse(readFileSync(path.join(root, 'anhedral.web.json'), 'utf8')).audience,
-      'private',
-    );
+    assert.deepEqual(readProjectSection(root, 'vercel').audience, 'private');
     assert.ok(patch);
     assert.ok(mock.calls.indexOf(patch) < mock.calls.findIndex((call) => call.args[2] === 'link'));
   } finally {

@@ -20,7 +20,7 @@ Review source, provider access and shipping plan prepare unsent Codex drafts. Th
 | Setup | Local prerequisites, selected providers, capability limits and setup guidance | Authentication, selected-account permission and billing remain not checked |
 | Delivery | Separate Cloudflare, Vercel and mobile records; integration pending outcomes and latest operation | One provider's success does not establish another's; old running records do not prove a process is active |
 
-Unsupported standalone Sites tabs remain removed. Service controls expose only implemented readers; there is no schedule-execution reader. Environment names come from example files and reveal no values or proof of secret validity. Mobile download URLs may contain access tokens and are excluded; validated Expo build-page links may be displayed. Missing record timestamps and project identity are unavailable rather than invented.
+Service controls expose only implemented readers; there is no schedule-execution reader. Environment names come from example files and reveal no values or proof of secret validity. Mobile download URLs may contain access tokens and are excluded; validated Expo build-page links may be displayed. Missing record timestamps and project identity are unavailable rather than invented.
 
 Every section is bounded and validated independently. A corrupt provider journal must not hide another target's valid evidence. Read time is explicitly distinct from receipt time. Configured, recorded and unknown states must remain distinguishable. General secret files, provider credential vaults, runtime state, raw diagnostics and absolute source paths are excluded from the UI projection.
 
@@ -51,9 +51,9 @@ ANHEDRAL_PLUGIN_DATA="$PWD/.artifacts/plugin-preview" pnpm plugin:preview
 
 Open `http://127.0.0.1:4317/`. The preview binds only to loopback, validates Host/Origin, bounds requests and uses a restrictive content security policy. `anhedral inspect [directory] --json` provides the shared read-only projection directly. `anhedral registry capabilities --json` explains the supported automation and owner steps.
 
-`src/project-inspector.ts` owns projection; `plugins/codex/inspector/server/snapshot.ts` adds catalog identity. The browser only renders its validated schema. The MCP server exposes `open_projects`, `list_projects`, `get_project`, `get_project_services`, local metadata tools and model-only source/catalog context tools. They remain useful without UI rendering. Standard MCP Apps resources and bridge messages provide the optional panel, host themes and inline/fullscreen modes. Native host-specific draft support is a separate acceptance gate.
+`src/project-inspector.ts` owns projection; `src/catalog-snapshot.ts` adds catalog identity. The browser only renders its validated schema. The MCP server exposes `open_projects`, `list_projects`, `get_project`, `get_project_services`, local metadata tools and model-only source/catalog context tools. They remain useful without UI rendering. Standard MCP Apps resources and bridge messages provide the optional panel, host themes and inline/fullscreen modes. Native host-specific draft support is a separate acceptance gate.
 
-The plugin and standalone CLI share one private catalog. On first use, the plugin merges its earlier Codex catalog without altering it; imported app IDs and metadata are preserved. The import runs once so forgotten apps do not reappear. List views read bounded summaries; only a selected project loads detailed inspection. The server does not scan for other projects. CLI initialization registers new apps using a persistent `anhedral.app.json` identity; recreating a directory creates a separate app rather than silently retargeting an old catalog entry. A remote server cannot inspect these local directories without a separately reviewed architecture; never publish the local catalog through a tunnel.
+The plugin and standalone CLI share one private catalog. List views read bounded summaries; only a selected project loads detailed inspection. The server does not scan for other projects. CLI initialization registers new apps using the persistent `identity.id` in `anhedral.json`; recreating a directory creates a separate app rather than silently retargeting an old catalog entry. A remote server cannot inspect these local directories without a separately reviewed architecture; never publish the local catalog through a tunnel.
 
 ## Recovery and release review
 
@@ -77,7 +77,7 @@ Live readings require the selected provider account and resource permissions. Mi
 | --- | --- | --- | --- | --- |
 | Cloudflare Worker | Settings existence | Requests, errors and CPU quantiles | — | — |
 | D1 | Resource identity and current storage | Daily query/row counts and latency | Bounded table pages | Project-created, unshared resources |
-| KV | Resource identity | — | First-page key metadata; no values | Project-created, unshared resources |
+| KV | Resource identity | — | Paginated key metadata; no values | Project-created, unshared resources |
 | R2 | Bucket identity | — | Paginated object metadata; no contents | — |
 | Queues | Resource identity | — | — | — |
 | Vercel | Project/deployment status | Daily Web Analytics | — | — |
@@ -89,7 +89,7 @@ Neon browsing requires `ANHEDRAL_NEON_READONLY_URL`, optionally suffixed with th
 
 R2 metadata browsing requires bucket-scoped read-only S3 credentials in `ANHEDRAL_R2_ACCESS_KEY_ID` and `ANHEDRAL_R2_SECRET_ACCESS_KEY`, optionally suffixed with the uppercase account ID. The reader signs only the selected account/bucket request and never downloads object contents.
 
-Data rows, table names and deletion confirmation tokens are returned through private app metadata rather than model-visible MCP results. CLI data output is explicit user-requested output. Data views mask sensitive fields and do not provide an unmask control.
+Data rows, table names and deletion confirmation tokens are returned through private app metadata rather than model-visible MCP results. CLI data output is explicit user-requested output. Data views mask sensitive fields and do not provide an unmask control. D1 and Neon project bounded columns and mask sensitive columns in SQL before fetching rows; empty tables retain their schema. Database pages use explicit ordering, but concurrent writes can still change offset-based pages. KV and R2 metadata pages use provider cursors.
 
 Deletion is intentionally limited to D1 and KV. Review shows the exact account, resource, affected applications and impact. The user must type the resource name. The server requires a short-lived, single-use token, revalidates source and provider identity, and rejects adopted resources or detected external Worker consumers. Provider reads cannot provide an atomic lock against another operator changing remote dependencies.
 
@@ -97,6 +97,6 @@ A deletion request is never automatically retried. Confirmed absence is required
 
 The CLI shares these adapters: `anhedral services list --json` lists exact selectors; `anhedral help services` describes status, metrics, tables, data and the two-step deletion flow. No service operation provisions resources, changes billing or deploys code.
 
-The catalog defaults to `~/.local/share/anhedral/sites`; `ANHEDRAL_PLUGIN_DATA` selects an alternate directory and `ANHEDRAL_DISABLE_CATALOG=1` disables initialization registration. A catalog failure leaves successfully generated source intact and reports a registration recovery action.
+The catalog defaults to `~/.local/share/anhedral/projects`; `ANHEDRAL_PLUGIN_DATA` selects an alternate directory and `ANHEDRAL_DISABLE_CATALOG=1` disables initialization registration. A catalog failure leaves successfully generated source intact and reports a registration recovery action.
 
 The inspector source lives in `plugins/codex/inspector`; the installable plugin source lives in `plugins/codex/distribution`. Packaging reads that directory and emits a self-contained ZIP. Immutable `plugin-v*` release tags retain the public `plugins/anhedral` installation path used by the marketplace; the publication script builds that tree from the verified ZIP. That release path is independent of the development checkout layout.

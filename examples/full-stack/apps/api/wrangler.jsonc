@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "full-stack-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-05",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "pipelines": [
+    {
+      "binding": "ANALYTICS",
+      "stream": "REPLACE_WITH_BASIN_STREAM_ID"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "full-stack-db",
+      "database_id": "REPLACE_WITH_D1_ID",
+      "migrations_dir": "../../packages/db/drizzle"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CONFIG",
+      "id": "REPLACE_WITH_KV_ID"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "JOBS",
+        "queue": "full-stack-jobs"
+      }
+    ]
+  },
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "full-stack-private-files"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  }
+}

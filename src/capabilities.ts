@@ -1,3 +1,4 @@
+import { usesVoidSelection } from './runtime-policy.js';
 import { resolveStackRegistry } from './registry/resolve.js';
 import { BOOTSTRAP_COMMAND } from './registry/bootstrap.js';
 import { GENERATOR_VERSION } from './version.js';
@@ -41,13 +42,7 @@ export function createSetupPlan(
   options: StandardOptions,
   registry = resolveStackRegistry(options),
 ) {
-  const voidWorkspace =
-    !(options.products.includes('next') && options.hosting === 'cloudflare') &&
-    !options.products.includes('queues') &&
-    !options.products.includes('basin') &&
-    options.products.some((product) =>
-      ['vinext', 'hono', 'realtime', 'queues', 'cron', 'workflows'].includes(product),
-    );
+  const voidWorkspace = usesVoidSelection(options.products, options.hosting);
   const items = new Map(registry.items.map((item) => [item.name, item]));
   const capabilities = options.products.map((id) => {
     const item = items.get(id)!;

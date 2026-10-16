@@ -135,7 +135,7 @@ for (const providers of [
     try {
       writeFileSync(
         path.join(directory, 'providers.json'),
-        JSON.stringify({ schemaVersion: 1, providers }),
+        JSON.stringify({ schemaVersion: 2, providers }),
         { mode: 0o600 },
       );
       assert.throws(() => new ProvisioningState(directory), /Invalid provider state/);
@@ -187,7 +187,7 @@ for (const operation of [
       writeFileSync(
         path.join(directory, 'providers.json'),
         JSON.stringify({
-          schemaVersion: 1,
+          schemaVersion: 2,
           providers: { neon: { config: hash, operations: { [hash]: operation } } },
         }),
         { mode: 0o600 },

@@ -30,7 +30,7 @@ test('room messages enforce UTF-8/binary size limits and broadcast once to peers
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-room-'));
   try {
     scaffoldRealtime(
-      createRecipeContext(root, parseStandardOptions('new', [root, '--hono', '--realtime'])),
+      createRecipeContext(root, parseStandardOptions([root, '--hono', '--realtime'])),
     );
     const source = readFileSync(path.join(root, 'apps/realtime/src/index.ts'), 'utf8');
     const { Room } = loadGeneratedModule(source, (name) => {
@@ -89,7 +89,7 @@ export function ThemeProvider() {
 }
 `,
     );
-    scaffoldWeb(createRecipeContext(root, parseStandardOptions('new', [root, '--next'])));
+    scaffoldWeb(createRecipeContext(root, parseStandardOptions([root, '--next'])));
     const source = readFileSync(path.join(root, 'apps/web/components/theme-provider.tsx'), 'utf8');
     const handler = loadGeneratedModule(source).ThemeProvider();
     const event = {
@@ -120,7 +120,7 @@ export function ThemeProvider() {
 test('API source renders an arbitrary display label as data rather than executable text', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-api-label-'));
   try {
-    const options = { ...parseStandardOptions('new', [root, '--hono']), name: 'customer\'s "app"' };
+    const options = { ...parseStandardOptions([root, '--hono']), name: 'customer\'s "app"' };
     scaffoldApi(createRecipeContext(root, options));
     const source = readFileSync(path.join(root, 'apps/api/src/index.ts'), 'utf8');
     const file = ts.createSourceFile('index.ts', source, ts.ScriptTarget.Latest, true);

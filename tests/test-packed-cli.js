@@ -45,7 +45,7 @@ function runInstalledScaffold(installRoot) {
   const projectRoot = path.join(installRoot, 'packed-project');
   const plan = run(
     binPath,
-    ['new', projectRoot, '--hono', '--neon', '--r2', '--dry-run', '--json'],
+    ['init', projectRoot, '--hono', '--neon', '--r2', '--dry-run', '--json'],
     installRoot,
   );
   const resolved = JSON.parse(plan.stdout);
@@ -122,7 +122,7 @@ try {
     import path from 'node:path';
     import { pathToFileURL } from 'node:url';
     const installed = path.resolve('node_modules/anhedral');
-    const { configureDependencyPatches, writeDependencyAudit } = await import(pathToFileURL(path.join(installed, 'dist/braces-patch.js')));
+    const { configureDependencyPatches, writeDependencyAudit } = await import(pathToFileURL(path.join(installed, 'dist/dependency-patches.js')));
     const root = path.resolve('installed-patch-probe');
     fs.mkdirSync(root);
     fs.writeFileSync(path.join(root, 'package.json'), '{}');

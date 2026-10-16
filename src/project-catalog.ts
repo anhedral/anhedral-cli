@@ -10,7 +10,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { hostname } from 'node:os';
 import { z } from 'zod';
@@ -71,16 +71,11 @@ const entrySchema = z
     sourceIdentity: z.string().uuid().optional(),
   })
   .strict();
-// Keep the private on-disk catalog format compatible with existing registrations.
 const catalogSchema = z
   .object({
     schemaVersion: z.literal(1),
-    sites: z.array(entrySchema).max(200),
+    projects: z.array(entrySchema).max(200),
     view: z.enum(['list', 'grid']),
-    importedCatalogs: z
-      .array(z.string().regex(/^[a-f0-9]{64}$/))
-      .max(64)
-      .optional(),
   })
   .strict();
 export type ProjectEntry = z.infer<typeof entrySchema>;
@@ -108,16 +103,16 @@ export class ProjectStore {
   constructor(directory: string) {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     this.directory = realpathSync(directory);
-    this.file = path.join(this.directory, 'sites.json');
+    this.file = path.join(this.directory, 'projects.json');
   }
   private read() {
     if (!existsSync(this.file))
-      return { schemaVersion: 1 as const, sites: [] as ProjectEntry[], view: 'list' as const };
+      return { schemaVersion: 1 as const, projects: [] as ProjectEntry[], view: 'list' as const };
     try {
       const value = catalogSchema.parse(
         JSON.parse(readBoundedFile(this.file, CATALOG_LIMIT).toString('utf8')),
       );
-      if (new Set(value.sites.map((site) => site.id)).size !== value.sites.length)
+      if (new Set(value.projects.map((project) => project.id)).size !== value.projects.length)
         throw new Error();
       return value;
     } catch {
@@ -139,34 +134,6 @@ export class ProjectStore {
       rmSync(temporary, { force: true });
     }
   }
-  /** Merge an earlier private catalog once, without altering it or resurrecting forgotten apps. */
-  importLegacy(source: ProjectStore): void {
-    if (source.directory === this.directory) return;
-    const identity = createHash('sha256').update(source.directory).digest('hex');
-    if (this.read().importedCatalogs?.includes(identity)) return;
-    const previous = source.read();
-    this.mutate((catalog) => {
-      if (catalog.importedCatalogs?.includes(identity)) return;
-      const wasEmpty = catalog.sites.length === 0;
-      for (const entry of previous.sites) {
-        const existing = catalog.sites.find((site) => site.id === entry.id);
-        if (
-          existing &&
-          (existing.root !== entry.root || existing.sourceIdentity !== entry.sourceIdentity)
-        )
-          throw new CatalogError('CATALOG_INVALID');
-        if (
-          !existing &&
-          !catalog.sites.some(
-            (site) => site.root === entry.root && site.sourceIdentity === entry.sourceIdentity,
-          )
-        )
-          catalog.sites.push(entry);
-      }
-      if (wasEmpty) catalog.view = previous.view;
-      catalog.importedCatalogs = [...(catalog.importedCatalogs ?? []), identity];
-    });
-  }
   register(root: string, displayName?: string): string {
     const resolved = realpathSync(root);
     if (!statSync(resolved).isDirectory()) throw new Error('Choose a project directory.');
@@ -186,8 +153,8 @@ export class ProjectStore {
     }
     const sourceIdentity = readCatalogSourceIdentity(resolved);
     return this.mutate((catalog) => {
-      const previous = catalog.sites.find(
-        (site) => site.root === resolved && site.sourceIdentity === sourceIdentity,
+      const previous = catalog.projects.find(
+        (project) => project.root === resolved && project.sourceIdentity === sourceIdentity,
       );
       if (previous) return previous.id;
       const entry = entrySchema.parse({
@@ -197,15 +164,15 @@ export class ProjectStore {
         updatedAt: new Date().toISOString(),
         ...(sourceIdentity ? { sourceIdentity } : {}),
       });
-      catalog.sites.push(entry);
+      catalog.projects.push(entry);
       return entry.id;
     });
   }
   private mutate<T>(operation: (catalog: Catalog) => T): T {
-    const lock = path.join(this.directory, 'sites.lock');
+    const lock = path.join(this.directory, 'projects.lock');
     let descriptor: number;
     try {
-      if (existsSync(path.join(this.directory, 'sites.recovery.lock'))) throw new Error();
+      if (existsSync(path.join(this.directory, 'projects.recovery.lock'))) throw new Error();
       descriptor = openSync(lock, 'wx', 0o600);
     } catch {
       throw new CatalogError('CATALOG_BUSY');
@@ -221,7 +188,7 @@ export class ProjectStore {
           createdAt: new Date().toISOString(),
         }),
       );
-      if (existsSync(path.join(this.directory, 'sites.recovery.lock')))
+      if (existsSync(path.join(this.directory, 'projects.recovery.lock')))
         throw new CatalogError('CATALOG_BUSY');
       const catalog = this.read();
       const result = operation(catalog);
@@ -235,7 +202,7 @@ export class ProjectStore {
 
   /** Explicit local operator recovery only; uncertain ownership never removes a lock. */
   recoverCatalogLock(): { recovered: boolean } {
-    const guard = path.join(this.directory, 'sites.recovery.lock');
+    const guard = path.join(this.directory, 'projects.recovery.lock');
     let descriptor: number;
     try {
       descriptor = openSync(guard, 'wx', 0o600);
@@ -243,7 +210,7 @@ export class ProjectStore {
       throw new CatalogError('CATALOG_BUSY');
     }
     try {
-      const lock = path.join(this.directory, 'sites.lock');
+      const lock = path.join(this.directory, 'projects.lock');
       if (!existsSync(lock)) return { recovered: false };
       let owner;
       try {
@@ -279,23 +246,23 @@ export class ProjectStore {
   }
 
   context(id: string) {
-    const site = this.read().sites.find((site) => site.id === id);
-    if (!site) throw new CatalogError('PROJECT_NOT_FOUND');
+    const project = this.read().projects.find((project) => project.id === id);
+    if (!project) throw new CatalogError('PROJECT_NOT_FOUND');
     try {
       if (
-        realpathSync(site.root) !== site.root ||
-        site.sourceIdentity !== readCatalogSourceIdentity(site.root)
+        realpathSync(project.root) !== project.root ||
+        project.sourceIdentity !== readCatalogSourceIdentity(project.root)
       )
         throw new Error();
     } catch {
       throw new CatalogError('PROJECT_UNAVAILABLE');
     }
-    return { id: site.id, name: site.name, directory: site.root };
+    return { id: project.id, name: project.name, directory: project.root };
   }
   snapshot(selectedId: string | null = null): Dashboard {
     const catalog = this.read();
     return {
-      projects: catalog.sites
+      projects: catalog.projects
         .map((entry) => projectSnapshot(entry, entry.id === selectedId))
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
       selectedId,
@@ -311,7 +278,7 @@ export class ProjectStore {
     }
     if (tool === 'list_projects') return this.snapshot();
     if (tool === 'get_project') {
-      if (!this.read().sites.some((site) => site.id === args.id))
+      if (!this.read().projects.some((project) => project.id === args.id))
         throw new CatalogError('PROJECT_NOT_FOUND');
       return this.snapshot(args.id!);
     }
@@ -321,15 +288,15 @@ export class ProjectStore {
         catalog.view = args.view;
         return null;
       }
-      const site = catalog.sites.find((site) => site.id === args.id);
-      if (!site) throw new CatalogError('PROJECT_NOT_FOUND');
+      const project = catalog.projects.find((project) => project.id === args.id);
+      if (!project) throw new CatalogError('PROJECT_NOT_FOUND');
       if (tool === 'rename_project') {
         if (!args.name) throw new Error('Enter a project name.');
-        site.name = args.name;
-        site.updatedAt = new Date().toISOString();
-        return site.id;
+        project.name = args.name;
+        project.updatedAt = new Date().toISOString();
+        return project.id;
       }
-      catalog.sites = catalog.sites.filter((entry) => entry.id !== site.id);
+      catalog.projects = catalog.projects.filter((entry) => entry.id !== project.id);
       return null;
     });
     return this.snapshot(selectedId);

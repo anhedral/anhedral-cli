@@ -1,14 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import {
-  mkdtempSync,
-  writeFileSync,
-  readFileSync,
-  rmSync,
-  chmodSync,
-  symlinkSync,
-  existsSync,
-} from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, chmodSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { ProvisioningState } from '../dist/providers/state.js';
@@ -23,26 +15,17 @@ const operation = digest({ key: 'sending-key', route, body });
 function fixture() {
   return mkdtempSync(path.join(tmpdir(), 'anhedral-minimal-receipts-'));
 }
-function legacy(directory) {
-  atomicJson(path.join(directory, 'providers.json'), {
-    schemaVersion: 1,
-    providers: {
-      resend: {
-        config: digest(settings),
-        operations: {
-          [operation]: {
-            status: 'complete',
-            value: {
-              id: 'key_1',
-              token: secret,
-              internal_diagnostics: secret,
-              account: { secret },
-            },
-          },
-        },
-      },
-    },
-  });
+async function current(directory) {
+  const state = new ProvisioningState(directory);
+  state.context('resend', settings);
+  await state.create(
+    'resend',
+    'sending-key',
+    async () => ({ id: 'key_1', token: secret }),
+    route,
+    body,
+  );
+  return state;
 }
 for (const [provider, value, expected] of [
   [
@@ -111,67 +94,16 @@ for (const [provider, key, value, expected] of [
     }
   });
 }
-test('legacy migration writes private credentials first and remains restartable after receipt write failure', async () => {
+test('unsupported receipt schemas are rejected without rewriting state', () => {
   const directory = fixture();
   try {
-    legacy(directory);
-    assert.throws(
-      () =>
-        new ProvisioningState(directory, (file, value) => {
-          if (file.endsWith('/providers.json')) throw new Error('injected write failure');
-          atomicJson(file, value);
-        }),
-      /injected/,
-    );
-    assert.equal(JSON.parse(readFileSync(path.join(directory, 'providers.json'))).schemaVersion, 1);
-    assert.equal(existsSync(path.join(directory, 'provider-credentials.json')), true);
-    const restored = new ProvisioningState(directory);
-    restored.context('resend', settings);
-    assert.equal(JSON.parse(readFileSync(path.join(directory, 'providers.json'))).schemaVersion, 2);
-    assert.deepEqual(
-      await restored.create(
-        'resend',
-        'sending-key',
-        async () => {
-          throw new Error('must not replay');
-        },
-        route,
-        body,
-      ),
-      { id: 'key_1', token: secret },
-    );
-    assert.equal(
-      readFileSync(path.join(directory, 'providers.json'), 'utf8').includes(secret),
-      false,
-    );
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
-  }
-});
-test('legacy migration rejects conflicting private credentials without changing either file', () => {
-  const directory = fixture();
-  try {
-    legacy(directory);
-    const file = path.join(directory, 'provider-credentials.json');
-    const conflicting = 'different-private-creation-value';
-    atomicJson(file, {
-      schemaVersion: 1,
-      providers: { resend: { [operation]: { token: conflicting } } },
-    });
-    const before = readFileSync(file, 'utf8');
-    const receiptFile = path.join(directory, 'providers.json');
-    const receiptsBefore = readFileSync(receiptFile, 'utf8');
-    assert.throws(
-      () => new ProvisioningState(directory),
-      (error) => {
-        assert.match(error.message, /credential state conflicts/);
-        assert.equal(error.message.includes(secret), false);
-        assert.equal(error.message.includes(conflicting), false);
-        return true;
-      },
-    );
-    assert.equal(readFileSync(file, 'utf8'), before);
-    assert.equal(readFileSync(receiptFile, 'utf8'), receiptsBefore);
+    const file = path.join(directory, 'providers.json');
+    for (const schemaVersion of [1, 3]) {
+      atomicJson(file, { schemaVersion, providers: {} });
+      const before = readFileSync(file, 'utf8');
+      assert.throws(() => new ProvisioningState(directory), /Invalid provider state/);
+      assert.equal(readFileSync(file, 'utf8'), before);
+    }
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -179,8 +111,7 @@ test('legacy migration rejects conflicting private credentials without changing 
 test('credential loss blocks replay and fails with redacted actionable error', async () => {
   const directory = fixture();
   try {
-    legacy(directory);
-    new ProvisioningState(directory);
+    await current(directory);
     rmSync(path.join(directory, 'provider-credentials.json'));
     assert.throws(() => new ProvisioningState(directory), /credentials are missing/);
   } finally {
@@ -254,11 +185,10 @@ for (const value of [
   });
 }
 for (const issue of ['permissions', 'symlink', 'unexpected-field', 'receipt-secret']) {
-  test(`private receipts and credentials reject ${issue}`, () => {
+  test(`private receipts and credentials reject ${issue}`, async () => {
     const directory = fixture();
     try {
-      legacy(directory);
-      new ProvisioningState(directory);
+      await current(directory);
       const file = path.join(directory, 'provider-credentials.json');
       if (issue === 'permissions') chmodSync(file, 0o644);
       if (issue === 'symlink') {

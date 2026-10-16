@@ -1,3 +1,4 @@
+import { hasProjectSection, readProjectSection, writeProjectSection } from './project-config.js';
 import { isDeepStrictEqual } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
@@ -21,6 +22,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { hostname } from 'node:os';
 import { readBoundedFile } from './bounded-file.js';
+import { validateSetupPlan } from './readiness.js';
 import { parse, type ParseError } from 'jsonc-parser';
 import { resolveCommand } from './command.js';
 
@@ -35,8 +37,7 @@ export interface ApplicationProject {
   name: string;
   ownership: 'customer';
   provider: 'cloudflare';
-  /** Missing on existing manifests: retain the legacy Wrangler engine. */
-  deliveryEngine?: 'void' | 'wrangler';
+  deliveryEngine: 'void' | 'wrangler';
   accountId: string | null;
   audience: 'unconfigured' | 'public' | 'private';
   access?: { emails: string[] };
@@ -49,7 +50,6 @@ export type DeliveryRunner = (
   env: NodeJS.ProcessEnv,
   input?: string,
 ) => Promise<string>;
-const manifestName = 'anhedral.project.json';
 const stateDirectory = '.anhedral';
 const accountPattern = /^[a-f0-9]{32}$/i;
 const workerPattern = /^[a-z0-9][a-z0-9-]{0,62}$/;
@@ -170,11 +170,10 @@ export function targetDirectory(root: string, target: DeploymentTarget): string 
 }
 export function registerApplication(root: string, extendTargets = false): ApplicationProject {
   root = realpathSync(root);
-  const existing = existsSync(path.join(root, manifestName)) ? readApplication(root) : undefined;
+  const existing = hasProjectSection(root, 'cloudflare') ? readApplication(root) : undefined;
   if (existing && !extendTargets) return existing;
-  const setup = JSON.parse(readFileSync(path.join(root, 'anhedral.setup.json'), 'utf8'));
-  if (!['cloudflare', 'vercel'].includes(setup.hosting))
-    throw new Error('Automatic delivery currently supports Cloudflare projects.');
+  const setup: unknown = readProjectSection(root, 'setup');
+  validateSetupPlan(setup);
   const targets = readdirSync(path.join(root, 'apps'), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .filter((entry) => existsSync(configurationFile(path.join(root, 'apps', entry.name))))
@@ -185,6 +184,11 @@ export function registerApplication(root: string, extendTargets = false): Applic
       return { id: entry.name, directory: `apps/${entry.name}`, workerName };
     })
     .sort((a, b) => (a.id === 'web' ? 1 : b.id === 'web' ? -1 : a.id.localeCompare(b.id)));
+  const selectedEngine: ApplicationProject['deliveryEngine'] =
+    targets.length &&
+    targets.every((target) => existsSync(path.join(root, target.directory, 'void.config.ts')))
+      ? 'void'
+      : 'wrangler';
   if (existing) {
     if (
       existing.targets.some(
@@ -198,8 +202,14 @@ export function registerApplication(root: string, extendTargets = false): Applic
       )
     )
       throw new Error('Addition cannot replace existing delivery targets.');
-    const extended = { ...existing, targets };
-    atomicJson(path.join(root, manifestName), extended);
+    const extended = {
+      ...existing,
+      // A native-only registration has no Cloudflare runtime to preserve.
+      // Select the first actual targets' engine while keeping project identity.
+      deliveryEngine: existing.targets.length ? existing.deliveryEngine : selectedEngine,
+      targets,
+    };
+    writeProjectSection(root, 'cloudflare', extended);
     return extended;
   }
   const project: ApplicationProject = {
@@ -209,10 +219,7 @@ export function registerApplication(root: string, extendTargets = false): Applic
       JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).name ?? path.basename(root),
     ownership: 'customer',
     provider: 'cloudflare',
-    ...(targets.length &&
-    targets.every((target) => existsSync(path.join(root, target.directory, 'void.config.ts')))
-      ? { deliveryEngine: 'void' as const }
-      : {}),
+    deliveryEngine: selectedEngine,
     accountId: null,
     audience: 'unconfigured',
     targets,
@@ -224,21 +231,18 @@ export function registerApplication(root: string, extendTargets = false): Applic
       ignoreFile,
       ignored + (ignored.endsWith('\n') || !ignored ? '' : '\n') + '.anhedral/\n',
     );
-  atomicJson(path.join(root, manifestName), project);
+  writeProjectSection(root, 'cloudflare', project);
   return project;
 }
 export function readApplication(root: string): ApplicationProject {
-  const project = JSON.parse(
-    readFileSync(path.join(root, manifestName), 'utf8'),
-  ) as ApplicationProject;
+  const project = readProjectSection(root, 'cloudflare') as ApplicationProject;
   if (
     project.schemaVersion !== 1 ||
     typeof project.id !== 'string' ||
     !/^[a-f0-9-]{36}$/i.test(project.id) ||
     project.ownership !== 'customer' ||
     project.provider !== 'cloudflare' ||
-    (project.deliveryEngine !== undefined &&
-      !['void', 'wrangler'].includes(project.deliveryEngine)) ||
+    !['void', 'wrangler'].includes(project.deliveryEngine) ||
     !(project.accountId === null || accountPattern.test(project.accountId)) ||
     !['unconfigured', 'public', 'private'].includes(project.audience) ||
     !Array.isArray(project.targets)

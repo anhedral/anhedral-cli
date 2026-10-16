@@ -1,4 +1,10 @@
-import { configureDependencyPatches } from '../braces-patch.js';
+import {
+  PROJECT_CONFIG_FILE,
+  readProjectSection,
+  writeProjectSection,
+  hasProjectSection,
+} from '../project-config.js';
+import { configureDependencyPatches } from '../dependency-patches.js';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
@@ -13,12 +19,13 @@ import { GENERATOR_VERSION } from '../version.js';
 import { runStagedTransaction } from '../transaction.js';
 import { inspectWorkspaceGraph } from '../workspace-graph.js';
 import { execFile } from '../util.js';
-import { json, put, readJson } from '../scaffold/files.js';
+import { supportsVoidRuntime, usesVoidSelection } from '../runtime-policy.js';
+import { put } from '../scaffold/files.js';
 import { writeStandardRoot } from '../scaffold/workspace.js';
 import { configureVoidDelivery, refreshVoidEnvironment } from '../scaffold/void.js';
 import { createRecipeContext } from './context.js';
 import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
-import { sourceFiles } from './receipt.js';
+import { sourceFiles, configurationFingerprints } from './receipt.js';
 import type { StandardOptions, StandardProduct, StandardRunner } from './types.js';
 import {
   sourcePreview,
@@ -55,18 +62,23 @@ export async function addStackItems(
   if (!request.dryRun) assertWorkspaceRuntime(run);
   root = realpathSync(root);
   if (!request.items.length) throw new Error('Select at least one registry item.');
-  const plan = readJson(root, 'anhedral.setup.json');
+  const plan = readProjectSection(root, 'setup');
   validateSetupPlan(plan);
   if (plan.cliVersion !== GENERATOR_VERSION)
     throw new Error('Use the project CLI version before adding recipes.');
   if (!inspectProject(root).localReady)
     throw new Error('Run doctor and resolve project provenance or workspace errors before add.');
-  const receipt = readJson(root, 'anhedral.registry.json');
+  const receipt = readProjectSection(root, 'registry');
   if (!receipt.files || typeof receipt.files !== 'object' || Array.isArray(receipt.files))
-    throw new Error(
-      'This project has no scaffold fingerprints; migrate it deliberately before using add.',
-    );
+    throw new Error('Add requires current scaffold fingerprints.');
   const baseline = receipt.files as Record<string, string>;
+  if (
+    !receipt.configuration ||
+    typeof receipt.configuration !== 'object' ||
+    Array.isArray(receipt.configuration)
+  )
+    throw new Error('Add requires current configuration fingerprints.');
+  const originalConfiguration = configurationFingerprints(root);
   const selected = new Set<StandardProduct>(plan.products);
   for (const id of request.items) {
     if (!(STANDARD_PRODUCTS as readonly string[]).includes(id))
@@ -75,13 +87,21 @@ export async function addStackItems(
   }
   if (
     (selected.has('queues') || selected.has('basin')) &&
-    existsSync(path.join(root, 'anhedral.project.json')) &&
-    readJson(root, 'anhedral.project.json').deliveryEngine === 'void'
+    hasProjectSection(root, 'cloudflare') &&
+    readProjectSection(root, 'cloudflare').deliveryEngine === 'void'
   )
     throw new Error(
-      'Queues with dead-letter recovery and Basin currently require legacy Cloudflare delivery. Review an explicit engine migration before adding them to a Void project.',
+      'Queues with dead-letter recovery and Basin require Wrangler delivery. They cannot be added to a Void project.',
     );
   resolveStandardProducts(selected, plan.hosting, false);
+  const voidSelected = usesVoidSelection([...selected], plan.hosting);
+  if (
+    !request.dryRun &&
+    voidSelected &&
+    run === execFile &&
+    !supportsVoidRuntime(process.versions.node)
+  )
+    throw new Error('Cloudflare workspaces using Void require Node.js 24.21.0 or newer.');
   const options: StandardOptions = {
     root,
     name: plan.name ?? path.basename(root),
@@ -93,17 +113,6 @@ export async function addStackItems(
     initializeGit: false,
   };
   const registry = resolveStackRegistry(options);
-  // Additions preserve an existing runtime's configuration authority. They do
-  // not migrate a customer's old Wrangler project merely to add a capability.
-  for (const item of registry.items)
-    item.targets = item.targets.map((target) => {
-      if (!target.endsWith('/anhedral.cloudflare.json')) return target;
-      const directory = path.dirname(target);
-      return existsSync(path.join(root, directory, 'wrangler.jsonc')) &&
-        !existsSync(path.join(root, directory, 'void.config.ts'))
-        ? `${directory}/wrangler.jsonc`
-        : target;
-    });
   const oldItems = new Map(plan.registry.items.map((item) => [item.name, item]));
   const recipes = registry.items.filter(
     (item) => item.installer === 'recipe' && !isDeepStrictEqual(oldItems.get(item.name), item),
@@ -113,12 +122,12 @@ export async function addStackItems(
     const before = oldItems.get(item.name);
     if (before && before.targets.some((target) => !item.targets.includes(target)))
       throw new Error(
-        `Adding this selection relocates ${item.name}; migrate its existing source explicitly.`,
+        `Adding this selection relocates ${item.name}; additions must preserve existing runtime ownership.`,
       );
   }
   const before = sourceFiles(root);
   const receiptText = readBoundedFile(
-    path.join(root, 'anhedral.registry.json'),
+    path.join(root, PROJECT_CONFIG_FILE),
     MAX_PROJECT_JSON_BYTES,
   ).toString('utf8');
   const commitPaths: string[] = [];
@@ -152,7 +161,7 @@ export async function addStackItems(
   await runStagedTransaction(root, {
     dryRun: !!request.dryRun,
     commitPaths,
-    seedPaths: [...before.keys(), 'anhedral.registry.json'],
+    seedPaths: [...before.keys(), PROJECT_CONFIG_FILE],
     build: async (stage) => {
       const context = createRecipeContext(stage, options);
       for (const item of registry.items) Object.assign(context.bindings, item.bindings);
@@ -187,11 +196,7 @@ export async function addStackItems(
         put(stage, file, content);
       }
       writeStandardRoot(stage, options, registry, true);
-      const applicationFile = path.join(stage, 'anhedral.project.json');
-      if (
-        existsSync(applicationFile) &&
-        readJson(stage, 'anhedral.project.json').deliveryEngine === 'void'
-      ) {
+      if (voidSelected) {
         configureVoidDelivery(stage);
         refreshVoidEnvironment(stage);
       }
@@ -219,14 +224,19 @@ export async function addStackItems(
       const files = { ...baseline };
       for (const [file, hash] of after) {
         if (before.get(file) === hash) continue;
-        if (
-          before.has(file) &&
-          baseline[file] !== before.get(file) &&
-          file !== 'anhedral.project.json'
-        )
-          conflicts.push(file);
+        if (before.has(file) && baseline[file] !== before.get(file)) conflicts.push(file);
         commitPaths.push(file);
         files[file] = hash;
+      }
+      const configuration = configurationFingerprints(stage);
+      for (const [section, hash] of Object.entries(originalConfiguration)) {
+        // Hosting registration preserves existing user fields while adding new targets.
+        if (
+          section !== 'cloudflare' &&
+          hash !== receipt.configuration[section] &&
+          configuration[section] !== hash
+        )
+          conflicts.push(`${PROJECT_CONFIG_FILE} (${section})`);
       }
       // Never delete preexisting source as a side effect of an addition.
       for (const file of before.keys()) if (!after.has(file)) conflicts.push(file);
@@ -234,14 +244,15 @@ export async function addStackItems(
         throw new Error(
           `Addition conflicts with edited or untracked source: ${conflicts.join(', ')}. No files were installed.`,
         );
-      json(stage, 'anhedral.registry.json', {
+      writeProjectSection(stage, 'registry', {
         ...registry,
         status: 'scaffolded',
         resourcesProvisioned: false,
         workspaces: inspectWorkspaceGraph(stage),
         files,
+        configuration,
       });
-      commitPaths.push('anhedral.registry.json');
+      commitPaths.push(PROJECT_CONFIG_FILE);
       if (request.preview && result.previews) {
         const preview = request.preview;
         const selected = [...commitPaths]
@@ -263,7 +274,7 @@ export async function addStackItems(
       // Detect concurrent changes even to source that this addition would otherwise preserve.
       if (
         !isDeepStrictEqual(sourceFiles(root), before) ||
-        readBoundedFile(path.join(root, 'anhedral.registry.json'), MAX_PROJECT_JSON_BYTES).toString(
+        readBoundedFile(path.join(root, PROJECT_CONFIG_FILE), MAX_PROJECT_JSON_BYTES).toString(
           'utf8',
         ) !== receiptText
       )

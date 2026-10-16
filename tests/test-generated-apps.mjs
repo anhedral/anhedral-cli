@@ -1,3 +1,4 @@
+import { readProjectSection } from '../dist/project-config.js';
 import { verifyWebLint } from './support/web-lint-check.mjs';
 import { verifyWorkerDevelopment } from './support/worker-dev-smoke.mjs';
 import { STACK_PROFILES as profiles } from './support/stack-profiles.mjs';
@@ -24,7 +25,7 @@ for (const profile of selected) {
     if (process.platform === 'win32') {
       const result = spawnSync(
         process.execPath,
-        [cli, 'new', root, ...profiles[profile], '--no-git'],
+        [cli, 'init', root, ...profiles[profile], '--no-git'],
         { cwd: temporary, encoding: 'utf8' },
       );
       assert.equal(result.error, undefined);
@@ -41,26 +42,26 @@ for (const profile of selected) {
         'pk_test_' + Buffer.from('example.clerk.accounts.dev$').toString('base64');
     execFile(
       process.execPath,
-      [cli, 'new', root, ...profiles[profile], '--no-git', '--verbose'],
+      [cli, 'init', root, ...profiles[profile], '--no-git', '--verbose'],
       temporary,
     );
     assert.equal(inspectProject(root).localReady, true);
-    const appIdentity = JSON.parse(readFileSync(path.join(root, 'anhedral.app.json'), 'utf8'));
+    const appIdentity = readProjectSection(root, 'identity');
     assert.match(appIdentity.id, /^[a-f0-9-]{36}$/);
     const catalogFiles = readdirSync(path.join(temporary, 'catalog'));
     assert.ok(catalogFiles.length > 0, 'CLI init registers its generated app');
     if (existsSync(path.join(root, 'apps/web/package.json'))) await verifyWebLint(root);
     execFile('pnpm', ['check'], root);
     if (profile === 'api-neon') {
-      execFile(process.execPath, [cli, 'add', root, 'r2', '--json'], temporary);
-      execFile(process.execPath, [cli, 'add', root, 'wxt', '--json'], temporary);
+      execFile(process.execPath, [cli, '--cwd', root, 'add', 'r2', '--json'], temporary);
+      execFile(process.execPath, [cli, '--cwd', root, 'add', 'wxt', '--json'], temporary);
       assert.ok(existsSync(path.join(root, 'apps/extension/.wxt/tsconfig.json')));
       assert.equal(inspectProject(root).localReady, true);
       execFile('pnpm', ['check'], root);
     }
 
     if (profile === 'worker-services') await verifyWorkerDevelopment(root);
-    const setup = JSON.parse(readFileSync(path.join(root, 'anhedral.setup.json'), 'utf8'));
+    const setup = readProjectSection(root, 'setup');
     if (setup.products.includes('vinext')) {
       assert.ok(existsSync(path.join(root, 'apps/web/dist/server/wrangler.json')));
       assert.ok(
@@ -109,6 +110,37 @@ for (const profile of selected) {
       );
       assert.ok(readdirSync(path.join(root, 'apps/desktop/release')).length > 0);
     }
+    if (setup.products.includes('neon-realtime'))
+      execFile(
+        'pnpm',
+        [
+          'exec',
+          'tsx',
+          path.resolve(import.meta.dirname, 'test-generated-neon-realtime.mjs'),
+          root,
+        ],
+        path.join(root, 'packages/db'),
+      );
+    if (profile === 'api')
+      execFile(
+        process.execPath,
+        [path.resolve(import.meta.dirname, 'test-generated-auth.mjs'), root],
+        temporary,
+      );
+    if (
+      readdirSync(path.join(root, 'apps')).some((app) =>
+        existsSync(path.join(root, 'apps', app, 'void.config.ts')),
+      )
+    )
+      execFile(
+        process.execPath,
+        [
+          path.resolve(import.meta.dirname, 'test-void-runtime-generated.mjs'),
+          root,
+          ...(profile === 'api' ? ['--local-auth'] : []),
+        ],
+        temporary,
+      );
     console.log(
       `Real ${profile} generation and local validation finished; production acceptance is separate`,
     );

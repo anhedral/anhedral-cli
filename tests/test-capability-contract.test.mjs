@@ -45,16 +45,17 @@ test('distribution and plugin limitations cannot be mistaken for verified delive
   const expo = CAPABILITY_CONTRACT.products.find((product) => product.id === 'expo');
   assert.match(expo.delivery.scope, /artifact link/);
   assert.ok(expo.limits.some((limit) => limit.includes('No store submission')));
-  for (const id of [
-    'live-analytics',
-    'live-database-reader',
-    'schedule-execution',
-    'live-provider-health',
-  ]) {
+  for (const id of ['live-analytics', 'live-database-reader', 'live-provider-health']) {
     const capability = CAPABILITY_CONTRACT.plugin.find((item) => item.id === id).capability;
-    assert.equal(capability.support, 'unsupported');
-    assert.equal(capability.evidence, 'unverified');
+    assert.equal(capability.support, 'implemented');
+    assert.equal(capability.evidence, 'local-contract');
   }
+  const schedule = CAPABILITY_CONTRACT.plugin.find(
+    (item) => item.id === 'schedule-execution',
+  ).capability;
+  assert.equal(schedule.support, 'unsupported');
+  assert.equal(schedule.evidence, 'unverified');
+  assert.match(formatCapabilityContract(), /Resource status does not certify application health/);
   assert.equal(CAPABILITY_CONTRACT.liveAcceptance, 'unverified');
   assert.ok(CAPABILITY_CONTRACT.hosts.every((host) => host.liveAcceptance === 'unverified'));
 });
@@ -112,4 +113,24 @@ test('capability inspection never includes environment credential values', () =>
     if (previous === undefined) delete process.env.OPENAI_ADMIN_KEY;
     else process.env.OPENAI_ADMIN_KEY = previous;
   }
+});
+
+test('Neon Realtime advertises manual beta setup separately from Durable Object provisioning', () => {
+  const capability = CAPABILITY_CONTRACT.products.find((product) => product.id === 'neon-realtime');
+  assert.ok(capability);
+  assert.equal(capability.scaffold.support, 'implemented');
+  assert.equal(capability.provisioning.support, 'scaffold-only');
+  assert.equal(capability.provisioning.evidence, 'unverified');
+  assert.match(capability.provisioning.scope, /Manually enable Realtime/);
+  assert.match(capability.provisioning.scope, /allowed origins/);
+  assert.match(capability.provisioning.scope, /no automatic Realtime provisioning/);
+  const limits = capability.limits.join(' ');
+  assert.match(limits, /beta.*does not support RLS/);
+  assert.match(limits, /NEON_REALTIME_SECRET server-only/);
+  assert.match(limits, /no arbitrary SQL endpoint/);
+  assert.match(limits, /live behavior remains unverified/);
+  assert.equal(
+    CAPABILITY_CONTRACT.products.find((product) => product.id === 'realtime').provisioning.support,
+    'implemented',
+  );
 });

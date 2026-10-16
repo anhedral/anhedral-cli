@@ -84,11 +84,11 @@ test('bundled MCP runtime exposes standard UI resources, extension entrypoints a
     assert.equal(unknown.isError, true);
     assert.ok('text' in unknown.content[0]);
     assert.equal(JSON.parse(unknown.content[0].text).code, 'PROJECT_NOT_FOUND');
-    writeFileSync(path.join(directory, 'catalog/sites.lock'), 'interrupted writer');
+    writeFileSync(path.join(directory, 'catalog/projects.lock'), 'interrupted writer');
     const busy = await client.callTool({ name: 'set_view', arguments: { view: 'grid' } });
     assert.ok('text' in busy.content[0]);
     assert.equal(JSON.parse(busy.content[0].text).code, 'CATALOG_BUSY');
-    rmSync(path.join(directory, 'catalog/sites.lock'));
+    rmSync(path.join(directory, 'catalog/projects.lock'));
     assert.equal(
       tools.tools.some((tool) => tool.name.includes('recover')),
       false,

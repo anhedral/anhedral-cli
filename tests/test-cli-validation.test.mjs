@@ -49,7 +49,7 @@ try {
   assert.equal(JSON.parse(diagnosis.stdout).productionReady, false);
   assert.deepEqual(readdirSync(root), [], 'doctor must not write');
   const target = path.join(root, 'planned');
-  const result = run('new', target, '--hono', '--neon', '--dry-run', '--json');
+  const result = run('init', target, '--hono', '--neon', '--dry-run', '--json');
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout).products, ['hono', 'neon']);
   assert.equal(existsSync(target), false);

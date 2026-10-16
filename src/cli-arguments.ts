@@ -68,7 +68,7 @@ export function validateCommand(command: string | undefined, args: readonly stri
   if (!command || ['--help', '-h', '--version', '-v', 'help'].includes(command)) return;
   const definition = commandDefinition(command);
   if (!definition) {
-    const recommendation = suggest(command, [...Object.keys(COMMANDS), 'new', 'help']);
+    const recommendation = suggest(command, [...Object.keys(COMMANDS), 'help']);
     const name = /^[a-z-]{1,32}$/.test(command) ? `: ${command}` : '';
     throw new CliArgumentError(
       `Unknown command${name}.${recommendation ? ` Did you mean ${recommendation}?` : ''}`,

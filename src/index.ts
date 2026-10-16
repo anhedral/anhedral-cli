@@ -22,8 +22,7 @@ export {
 } from './delivery.js';
 export type { ApplicationProject, DeploymentTarget, DeliveryRunner } from './delivery.js';
 export { planProvisioning, provisionApplication } from './provision.js';
-export { planVoidDelivery, supportsVoidRuntime, VOID_VERSION, VOID_NODE_ENGINE } from './void.js';
-export type { VoidDeliveryOptions } from './void.js';
+export { supportsVoidRuntime, VOID_VERSION, VOID_NODE_ENGINE } from './void.js';
 
 export {
   registerVercelApplication,
@@ -82,3 +81,12 @@ export { recoverDeliveryLock } from './project-state.js';
 
 export { inspectApplication } from './project-inspector.js';
 export type { ProjectInspection } from './inspector-model.js';
+
+export {
+  PROJECT_CONFIG_FILE,
+  readProjectConfig,
+  readProjectSection,
+  writeProjectSection,
+  hasProjectSection,
+} from './project-config.js';
+export type { ProjectConfig, ProjectSection } from './project-config.js';

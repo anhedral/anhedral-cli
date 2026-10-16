@@ -102,6 +102,19 @@ function productCapability(id: StandardProduct): ProductCapability {
         : 'Extension signing, store submission, review, and distribution require a separate delivery workflow.',
     );
   }
+  if (id === 'neon-realtime') {
+    provisioning = stage(
+      'scaffold-only',
+      'Manually enable Realtime on the intended Neon branch, configure allowed origins and supply its private secret and public URL; no automatic Realtime provisioning.',
+      'unverified',
+    );
+    limits.push(
+      'Neon Realtime is beta and does not support RLS; authenticate requests and seal only explicitly scoped, read-only application queries.',
+      'Keep DATABASE_URL and NEON_REALTIME_SECRET server-only; clients use the public NEON_REALTIME_URL and short-lived sealed queries.',
+      'The package exposes separate server/client factories and a Drizzle adapter; no arbitrary SQL endpoint or application subscription flow is generated.',
+      'Live subscriptions, renewal, revocation, allowed origins and cross-tenant isolation require authorized acceptance; live behavior remains unverified.',
+    );
+  }
   if (id === 'better-auth')
     limits.push(
       'Configure private authentication secret and public origin; apply and verify database migrations and authorization rules.',
@@ -175,16 +188,35 @@ export const CAPABILITY_CONTRACT = {
       id: 'native-host-installation',
       capability: stage('implemented', 'Packaged plugin and host integration.', 'unverified'),
     },
-    ...['live-analytics', 'live-database-reader', 'schedule-execution', 'live-provider-health'].map(
-      (id) => ({
-        id,
-        capability: stage(
-          'unsupported',
-          'Configuration and recorded state only; no live reader or execution evidence.',
-          'unverified',
-        ),
-      }),
-    ),
+    {
+      id: 'live-analytics',
+      capability: stage(
+        'implemented',
+        'Explicit selected-resource analytics for Cloudflare Workers/D1, Vercel and PostHog; provider access and metric availability require live acceptance.',
+      ),
+    },
+    {
+      id: 'live-database-reader',
+      capability: stage(
+        'implemented',
+        'Explicit bounded D1 and restricted read-only Neon data reads; masked rows and schema are private app metadata.',
+      ),
+    },
+    {
+      id: 'live-provider-health',
+      capability: stage(
+        'implemented',
+        'Explicit resource existence, identity and recorded deployment status checks; these do not certify application health.',
+      ),
+    },
+    {
+      id: 'schedule-execution',
+      capability: stage(
+        'unsupported',
+        'Schedules are declared configuration; no execution-history reader is implemented.',
+        'unverified',
+      ),
+    },
   ],
   limits: [
     'Local contract tests are separate from live provider acceptance and completed application verification.',
@@ -208,7 +240,8 @@ export function formatCapabilityContract(): string {
     'Providers: ' + CAPABILITY_CONTRACT.providers.map((provider) => provider.id).join(', '),
     'Expo delivery returns EAS artifacts; it does not submit to stores.',
     'Electron and WXT distribution: scaffold only.',
-    'Plugin live analytics, database readers, schedule execution, and provider health: unavailable.',
+    'Plugin: explicit selected-resource analytics, bounded database reads and provider status checks; live acceptance remains unverified.',
+    'Schedule execution history: unavailable. Resource status does not certify application health.',
     '',
     ...CAPABILITY_CONTRACT.limits,
     '',

@@ -22,15 +22,7 @@ if (prepare) {
   const root = path.resolve(prepare);
   assert.equal(existsSync(root), false, 'Prepare a new isolated fixture directory');
   await scaffoldStandardProject(
-    parseStandardOptions('new', [
-      root,
-      '--vinext',
-      '--hono',
-      '--d1',
-      '--better-auth',
-      '--r2',
-      '--no-git',
-    ]),
+    parseStandardOptions([root, '--vinext', '--hono', '--d1', '--better-auth', '--r2', '--no-git']),
   );
   execFileSync(
     process.execPath,

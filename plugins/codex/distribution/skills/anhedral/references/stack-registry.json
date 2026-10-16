@@ -319,6 +319,53 @@
       "runtime": "server"
     },
     {
+      "name": "neon-realtime",
+      "version": "0.11.1",
+      "selection": {
+        "requiresAny": [
+          "neon"
+        ]
+      },
+      "registryDependencies": [
+        "workspace",
+        "typescript",
+        "eslint",
+        "neon"
+      ],
+      "environment": [
+        "NEON_REALTIME_SECRET",
+        "NEON_REALTIME_URL"
+      ],
+      "installer": "recipe",
+      "type": "integration",
+      "description": "Neon live SQL with server-sealed Drizzle queries and a browser-safe subscription client (beta)",
+      "targets": [
+        "packages/neon-realtime"
+      ],
+      "runtime": "server",
+      "setup": {
+        "purpose": "Live PostgreSQL query results on the selected Neon branch",
+        "tools": [
+          "Neon Console or Neon CLI",
+          "Browser control"
+        ],
+        "access": [
+          "Client-owned Neon project and branch with Realtime beta availability"
+        ],
+        "credentials": [
+          "Server-only NEON_REALTIME_SECRET; public NEON_REALTIME_URL; existing server DATABASE_URL"
+        ],
+        "resources": [
+          "Manually enable Realtime and logical replication on the selected branch; configure allowed browser origins",
+          "Tables with stable replica identity; authorized deterministic SELECT queries sealed on the server"
+        ],
+        "verify": [
+          "Authorized row isolation, access revocation, capability renewal, disconnect/reconnect and subscription cleanup",
+          "Beta has no RLS or performance guarantees; database compute and egress remain billable"
+        ]
+      }
+    },
+    {
       "name": "d1",
       "version": "0.11.1",
       "selection": {

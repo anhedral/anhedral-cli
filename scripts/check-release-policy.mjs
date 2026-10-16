@@ -211,7 +211,6 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
       '.github/workflows/release-on-main.yml: dispatch must pin the exact reviewed main commit',
     );
   if (
-    !/ANHEDRAL_REQUIRE_PLUGIN: '1'/.test(releaseWorkflow) ||
     !/ANHEDRAL_EXPECTED_INTEGRITY: \$\{\{ inputs\.cli_integrity \}\}/.test(releaseWorkflow) ||
     !/ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: \$\{\{ inputs\.plugin_integrity \}\}/.test(
       releaseWorkflow,
