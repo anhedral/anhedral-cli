@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { test } from 'node:test';
 import { launchPreview } from './support/preview-process.mjs';
 
@@ -8,7 +9,7 @@ test(
   'preview diagnostics preserve server failures with bounded output and redacted credentials',
   { timeout: 5000 },
   async () => {
-    const secret = 'sk_test_disposable_preview_fixture';
+    const secret = 'sk_test_' + randomBytes(24).toString('hex');
     const preview = launch(`
     console.error('x'.repeat(32 * 1024));
     console.error('\\x1b[31mClerk middleware failed for ${secret}\\x1b[0m');
