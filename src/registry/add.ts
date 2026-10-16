@@ -3,7 +3,7 @@ import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
 import { registerVercelApplication } from '../vercel.js';
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { applyEdits, modify, parse } from 'jsonc-parser';
@@ -270,7 +270,22 @@ export async function addStackItems(
         throw new Error('Workspace changed during addition; retry after reviewing source.');
     },
     afterCommit: () => {
-      if (!request.skipInstall) run('pnpm', ['install', '--frozen-lockfile'], root);
+      if (request.skipInstall) return;
+      const lockPath = path.join(root, 'pnpm-lock.yaml');
+      const lock = readBoundedFile(lockPath, 16 * 1024 * 1024);
+      const modules = path.join(root, 'node_modules');
+      const metadata = lstatSync(modules, { throwIfNoEntry: false });
+      if (metadata && (!metadata.isDirectory() || metadata.isSymbolicLink()))
+        throw new Error('Dependency installation requires a real project node_modules directory.');
+      // pnpm 10 can retain skipped optional packages after a new recipe makes
+      // them required. Rebuild generated links from the reviewed lock while
+      // retaining the separate content-addressed package store.
+      rmSync(modules, { recursive: true, force: true });
+      run('pnpm', ['install', '--frozen-lockfile'], root);
+      if (!readBoundedFile(lockPath, 16 * 1024 * 1024).equals(lock))
+        throw new Error(
+          'Frozen dependency installation changed the reviewed lockfile; review it before continuing.',
+        );
     },
   });
   return result;

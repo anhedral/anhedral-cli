@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -300,10 +301,21 @@ test('bundled addition prepares dependencies after script-free staged lock resol
   const root = path.join(temp, 'app');
   try {
     await project(root);
+    mkdirSync(path.join(root, 'node_modules'));
+    writeFileSync(path.join(root, 'node_modules/.modules.yaml'), 'skipped: [tslib@2.8.1]\n');
+    mkdirSync(path.join(root, '.pnpm-store'));
+    writeFileSync(path.join(root, '.pnpm-store/retained'), 'package store');
     const commands = [];
     await addStackItems(root, { items: ['wxt'] }, (command, args, cwd) => {
       commands.push({ command, args, cwd });
       if (args.includes('--lockfile-only')) runner(command, args, cwd);
+      if (args.includes('--frozen-lockfile')) {
+        assert.equal(existsSync(path.join(root, 'node_modules')), false);
+        assert.equal(
+          readFileSync(path.join(root, '.pnpm-store/retained'), 'utf8'),
+          'package store',
+        );
+      }
     });
     assert.ok(commands.slice(0, -1).every(({ args }) => args.includes('--ignore-scripts')));
     assert.deepEqual(commands.at(-1), {
@@ -312,6 +324,47 @@ test('bundled addition prepares dependencies after script-free staged lock resol
       cwd: realpathSync(root),
     });
     assert.equal(inspectProject(root).localReady, true);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('addition refuses a linked dependency cache without touching its target', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-linked-cache-'));
+  const root = path.join(temp, 'app');
+  try {
+    await project(root);
+    const outside = path.join(temp, 'outside');
+    mkdirSync(outside);
+    writeFileSync(path.join(outside, 'retained'), 'customer content');
+    symlinkSync(
+      outside,
+      path.join(root, 'node_modules'),
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
+    await assert.rejects(
+      addStackItems(root, { items: ['r2'] }, runner),
+      /real project node_modules/,
+    );
+    assert.equal(readFileSync(path.join(outside, 'retained'), 'utf8'), 'customer content');
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('addition rejects lockfile changes during the frozen dependency installation', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-lock-drift-'));
+  const root = path.join(temp, 'app');
+  try {
+    await project(root);
+    await assert.rejects(
+      addStackItems(root, { items: ['r2'] }, (command, args, cwd) => {
+        if (args.includes('--frozen-lockfile'))
+          writeFileSync(path.join(cwd, 'pnpm-lock.yaml'), 'lockfileVersion: "9.0"\n# changed\n');
+        else runner(command, args, cwd);
+      }),
+      /changed the reviewed lockfile/,
+    );
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }
