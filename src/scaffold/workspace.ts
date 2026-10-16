@@ -7,7 +7,6 @@ import {
   GLOB_11_OVERRIDE_VERSION,
   BRACE_EXPANSION_1_OVERRIDE_VERSION,
   BRACE_EXPANSION_2_OVERRIDE_VERSION,
-  BRACE_EXPANSION_3_OVERRIDE_VERSION,
   BRACE_EXPANSION_5_OVERRIDE_VERSION,
 } from '../dependencies.js';
 import { writeDependencyAudit } from '../dependency-patches.js';
@@ -74,7 +73,6 @@ function securityOverrides(options: StandardOptions): Record<string, string> {
       : {}),
     'brace-expansion@<2': BRACE_EXPANSION_1_OVERRIDE_VERSION,
     'brace-expansion@>=2 <3': BRACE_EXPANSION_2_OVERRIDE_VERSION,
-    'brace-expansion@>=3 <4': BRACE_EXPANSION_3_OVERRIDE_VERSION,
     'brace-expansion@>=4 <5.0.12': BRACE_EXPANSION_5_OVERRIDE_VERSION,
   };
 }

@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { stripVTControlCharacters } from 'node:util';
 
 // Observe close/error immediately: a failed preview may exit before assertions finish.
 export function launchPreview(command, args, options) {
@@ -47,7 +48,9 @@ export function launchPreview(command, args, options) {
         if (failure) throw failure;
         if (finished || child.exitCode !== null || child.signalCode !== null)
           throw new Error(`Preview exited: ${output}`);
-        const address = output.match(/http:\/\/127\.0\.0\.1:\d+\//)?.[0];
+        // Vite colors the port independently, including when output is piped in CI.
+        // Normalize only discovery; retain the bounded original output for failures.
+        const address = stripVTControlCharacters(output).match(/http:\/\/127\.0\.0\.1:\d+\//)?.[0];
         if (address) return address;
         await delay(25);
       }

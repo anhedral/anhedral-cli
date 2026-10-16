@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { launchPreview } from './support/preview-process.mjs';
 import { verifyLocalAuth } from './support/verify-local-auth.mjs';
+import { verifyServerModuleGraph } from './support/server-module-graph.mjs';
 
 assert.ok(process.argv[2], 'Specify an installed generated workspace');
 const root = path.resolve(process.argv[2]);
@@ -109,6 +110,7 @@ try {
       timeout: 10 * 60 * 1000,
       killSignal: 'SIGKILL',
     });
+    if (name === 'web') verifyServerModuleGraph(path.join(cwd, 'dist/server'));
     const preview = launchPreview(
       process.execPath,
       [

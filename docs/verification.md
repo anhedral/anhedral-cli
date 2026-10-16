@@ -2,6 +2,10 @@
 
 ## Final branch checks for 0.11.1 — 2026-10-16
 
+Hosted CI on the first wrap-up commit exposed colored preview URLs, a Vinext RSC chunk-layout defect, a generated Neon factory complexity finding and the unused brace-expansion 3.x catalog advisory described below. Preview discovery now strips terminal controls while preserving diagnostics. An RSC-only final bundler output hook keeps server chunks beside Vinext's real emitted manifests, preserving client/SSR layouts and avoiding copied or synthesized modules. A two-entry Rolldown reproduction goes from one broken import to none; a cached real Void/Vinext build validates 55 server modules with no missing imports. The generated runtime harness now checks emitted relative module imports before workerd starts. The Neon factory separates URL parsing from SDK creation and passes the generated health gate; source-backed SDK sealing still passes. The approved example received only the matching build-config and override corrections, with refreshed source fingerprints.
+
+After those corrections, the local suite passed 690 tests with two explicit skips (692 total); focused follow-up checks also passed. Hosted CI must pass again on the corrected commit before merge/release.
+
 The final local CLI suite passed 686 tests with two explicit skips (688 total). Root lint, type checking, source hygiene, release policy, static security scanning and both real frozen pnpm patch installation suites passed. Built the CLI and inspector together, packed the CLI tarball and plugin ZIP, verified their integrity and scanned the artifacts for secrets. The approved full-stack example remains source-only under `examples/full-stack`, with one root `anhedral.json` and no provisioned resources.
 
 The release must use a successful hosted CI candidate from the exact final main commit. Local registry DNS and listener restrictions remain as described below; the hosted generated-profile matrix, fresh packed installations, advisory refresh and inspector browser checks are release gates. Local archives are preparation evidence, not publication evidence.
@@ -141,3 +145,10 @@ The source-only examples/full-stack now contains only anhedral.json for Anhedral
 Validation: CLI build; full offline unit suite 668 passed, two skipped, zero failures (670 total); focused configuration/addition checks 22 passed before the additional preservation regression; provider/auth/runtime/shipping suite 278 passed; inspector source section/catalog tests passed; lint, static security policy, package allowlist (216 files) and whitespace checks passed. Canonical/bundled instructions and browser fixtures use the unified file. Hosted/browser/workerd/live-provider and fresh dependency installation limitations remain as previously recorded. No provider mutation, deployment, publication or source commit was performed.
 
 Inspector follow-up: type checking/build passed, 61 tests passed and the one preview-listener test remains blocked by listen EPERM on 127.0.0.1. Rebuilt runtime source/integrity checks passed.
+
+
+## Retired unused brace-expansion 3.x override
+
+The fresh OSV catalog scan flagged `brace-expansion@3.0.9` under GHSA-3jxr-9vmj-r5cp. The maintainer and reviewed GitHub advisory identify fixes on the 1.x, 2.x and 5.x lines, with no repaired 3.x version listed. The 3.x coordinate came from a blanket catalog override; it is absent from the CLI/inspector lockfiles and from all 18 accessible cached generated lockfiles inspected in the task temp directories and repository artifacts. Those generated locks contained 1.1.21 and 5.0.12.
+
+Removed the unused 3.x catalog pin and generated major override while retaining reviewed 1.1.21, 2.1.7 and 5.0.12 overrides. No advisory exception, audit relaxation or new patch was introduced. Catalog/override regressions assert the retained coordinates and absence of the unused 3.x override. A coordinated rebuild, fresh OSV scan and generated-profile verification remain necessary before release.

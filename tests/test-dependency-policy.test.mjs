@@ -150,6 +150,7 @@ test('every generated override resolves to an audited catalog coordinate', async
         },
       );
       const manifest = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
+      assert.equal(manifest.pnpm.overrides['brace-expansion@>=3 <4'], undefined);
       for (const [selector, version] of Object.entries(manifest.pnpm.overrides)) {
         const target = selector.replace(/^.*>(?=@?[a-zA-Z])/, '');
         const name = target.match(/^(@[^/]+\/[^@]+|[^@]+)(?:@|$)/)?.[1];
@@ -181,8 +182,16 @@ test('Renovate discovers every compatible-major override constant', async () => 
     'glob@11.1.0',
     'brace-expansion@1.1.21',
     'brace-expansion@2.1.7',
-    'brace-expansion@3.0.9',
     'brace-expansion@5.0.12',
   ])
     assert.ok(extracted.includes(coordinate), `${coordinate} missing from Renovate extraction`);
+});
+
+test('brace-expansion catalog keeps repaired compatible lines without an unused affected 3.x pin', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { collectCatalogDependencyPins } = await import('../scripts/dependency-policy.mjs');
+  const pins = collectCatalogDependencyPins(
+    readFileSync(new URL('../src/dependencies.ts', import.meta.url), 'utf8'),
+  ).filter(({ name }) => name === 'brace-expansion');
+  assert.deepEqual(pins.map(({ version }) => version).sort(), ['1.1.21', '2.1.7', '5.0.12']);
 });

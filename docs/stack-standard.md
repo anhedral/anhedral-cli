@@ -156,6 +156,8 @@ When installing a capability addition, Anhedral regenerates the root `node_modul
 
 Framework-specific lint dependencies belong to the consuming application. The shared `packages/eslint-config` retains generic TypeScript, React, Hooks and Turbo rules; web applications declare their own Next API lint plugin and configuration. API and native-only workspaces must not inherit Next-specific tooling solely because the bootstrap started from a Next template.
 
+Security overrides retain reviewed compatible `brace-expansion` 1.x, 2.x and 5.x releases. There is no blanket 3.x pin: [GHSA-3jxr-9vmj-r5cp](https://github.com/advisories/GHSA-3jxr-9vmj-r5cp) lists no repaired 3.x release, and the reviewed generated lockfiles do not consume that major. A future consumer on an affected line must be resolved through its compatible upstream dependency path; it receives no audit exception or additional local patch.
+
 Generated `pnpm audit:deps` runs the standard pnpm audit through a narrow patch policy and preserves its unmodified JSON in `.anhedral-audit-report.json`. High and critical findings fail except for the two reviewed, exact-version mitigations below. The gate permits `GHSA-vfj7-8cjw-p6xm` for configured reviewed `braces@3.0.3` and `GHSA-86w9-cpqp-85rv` for configured reviewed `node-forge@1.4.0`; it preserves both upstream findings and blocks unrelated advisories. Review the resolved lockfile for each generated profile: a clean CLI lockfile or direct-version catalog audit does not establish that a generated application’s transitive dependencies are clean. Removing an unused dependency path does not resolve other paths to the same vulnerable package.
 
 ### Temporary braces mitigation

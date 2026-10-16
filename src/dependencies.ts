@@ -284,7 +284,7 @@ export const GLOB_11_OVERRIDE_VERSION = '11.1.0';
 export const BRACE_EXPANSION_1_OVERRIDE_VERSION = '1.1.21';
 // renovate: datasource=npm depName=brace-expansion
 export const BRACE_EXPANSION_2_OVERRIDE_VERSION = '2.1.7';
-// renovate: datasource=npm depName=brace-expansion
-export const BRACE_EXPANSION_3_OVERRIDE_VERSION = '3.0.9';
+// No blanket 3.x override: GHSA-3jxr-9vmj-r5cp lists no repaired 3.x
+// release, and supported locked profiles do not consume that major.
 // renovate: datasource=npm depName=brace-expansion
 export const BRACE_EXPANSION_5_OVERRIDE_VERSION = '5.0.12';

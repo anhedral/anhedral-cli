@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { VOID_NODE_ENGINE, VOID_VERSION } from '../void.js';
 import { VINEXT_DEPENDENCIES, WORKER_DEV_PORTS } from '../dependencies.js';
+import { VINEXT_SERVER_OUTPUT_PLUGIN } from '../vinext.js';
 import { json, patchPackage, put, readJson } from './files.js';
 
 /** Keep Void's adapter paired with the Wrangler version validated by this stack. */
@@ -127,7 +128,7 @@ export default defineConfig({
       put(
         root,
         `${directory}/vite.config.ts`,
-        `import { defineConfig } from 'vite';\nimport vinext from 'vinext';\nimport { voidPlugin } from 'void';\nexport default defineConfig({ plugins: [vinext(), voidPlugin()] });\n`,
+        `import { defineConfig } from 'vite';\nimport vinext from 'vinext';\nimport { voidPlugin } from 'void';\nexport default defineConfig({ plugins: [vinext(), voidPlugin(), ${VINEXT_SERVER_OUTPUT_PLUGIN}] });\n`,
       );
       patchPackage(root, `${directory}/package.json`, {
         scripts: { preview: 'vite preview --host 127.0.0.1 --port 3000' },

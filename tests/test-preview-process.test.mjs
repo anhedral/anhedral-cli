@@ -5,6 +5,23 @@ import { launchPreview } from './support/preview-process.mjs';
 const launch = (source) => launchPreview(process.execPath, ['-e', source]);
 
 test(
+  'preview discovers Vite URLs with an independently colored port across output chunks',
+  { timeout: 5000 },
+  async () => {
+    const preview = launch(`
+    process.stdout.write('  Local: http://127.0.0.1:\\x1b[');
+    setTimeout(() => process.stdout.write('1m35041\\x1b[22m/\\n'), 75);
+    setInterval(() => {}, 1000);
+  `);
+    try {
+      assert.equal(await preview.address(2000), 'http://127.0.0.1:35041/');
+    } finally {
+      await preview.stop();
+    }
+  },
+);
+
+test(
   'preview cleanup completes after startup fails and after repeated cleanup',
   { timeout: 5000 },
   async () => {

@@ -22,19 +22,23 @@ export function scaffoldNeonRealtime({ root, options, runtimeApp }: RecipeContex
     `import { createRealtime } from '@neon/realtime/server';
 import { drizzleAdapter } from '@neon/realtime-drizzle';
 
-// Import this entry point only from server code. Sealing is local Web Crypto work.
-export function createNeonRealtime(options: { secret: string; databaseUrl: string }) {
+function databaseName(connectionString: string): string {
   let database: string;
   try {
-    const url = new URL(options.databaseUrl);
+    const url = new URL(connectionString);
     if (!['postgres:', 'postgresql:'].includes(url.protocol)) throw new Error();
     database = decodeURIComponent(url.pathname.slice(1));
-    if (!database || database.includes('/')) throw new Error();
+    if (!/^[^/]+$/.test(database)) throw new Error();
   } catch {
     throw new Error('Configure a PostgreSQL DATABASE_URL with the intended database name.');
   }
+  return database;
+}
+
+// Import this entry point only from server code. Sealing is local Web Crypto work.
+export function createNeonRealtime(options: { secret: string; databaseUrl: string }) {
   if (!options.secret.trim()) throw new Error('Configure the branch NEON_REALTIME_SECRET on the server.');
-  return createRealtime({ secret: options.secret, db: database, adapter: drizzleAdapter() });
+  return createRealtime({ secret: options.secret, db: databaseName(options.databaseUrl), adapter: drizzleAdapter() });
 }
 `,
   );
