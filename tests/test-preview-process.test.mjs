@@ -5,6 +5,30 @@ import { launchPreview } from './support/preview-process.mjs';
 const launch = (source) => launchPreview(process.execPath, ['-e', source]);
 
 test(
+  'preview diagnostics preserve server failures with bounded output and redacted credentials',
+  { timeout: 5000 },
+  async () => {
+    const secret = 'sk_test_disposable_preview_fixture';
+    const preview = launch(`
+    console.error('x'.repeat(32 * 1024));
+    console.error('\\x1b[31mClerk middleware failed for ${secret}\\x1b[0m');
+    console.error('http://127.0.0.1:35041/');
+    setInterval(() => {}, 1000);
+  `);
+    try {
+      await preview.address();
+      const diagnostic = preview.diagnostics([secret]);
+      assert.match(diagnostic, /Clerk middleware failed for \[redacted\]/);
+      assert.ok(!diagnostic.includes(secret));
+      assert.ok(!diagnostic.includes('\x1b'));
+      assert.ok(diagnostic.length <= 16 * 1024);
+    } finally {
+      await preview.stop();
+    }
+  },
+);
+
+test(
   'preview discovers Vite URLs with an independently colored port across output chunks',
   { timeout: 5000 },
   async () => {

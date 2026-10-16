@@ -6,6 +6,8 @@ Hosted CI on the first wrap-up commit exposed colored preview URLs, a Vinext RSC
 
 After those corrections, the local suite passed 690 tests with two explicit skips (692 total); focused follow-up checks also passed. Hosted CI must pass again on the corrected commit before merge/release.
 
+The next hosted run passed 34 of 35 jobs, including real workerd web/API previews, Better Auth/D1 session lifecycle, fresh published Neon SDK wrappers and the advisory scan. Its remaining Clerk preview lacked private runtime configuration. The isolated anonymous-rendering fixture now supplies disposable public/private test keys, refuses existing private files, removes its owned environment file and reports bounded, redacted server diagnostics on HTTP failure. Seven focused preview tests pass; live Clerk identity remains outside this fixture's scope. Final hosted CI remains the merge/release gate.
+
 The final local CLI suite passed 686 tests with two explicit skips (688 total). Root lint, type checking, source hygiene, release policy, static security scanning and both real frozen pnpm patch installation suites passed. Built the CLI and inspector together, packed the CLI tarball and plugin ZIP, verified their integrity and scanned the artifacts for secrets. The approved full-stack example remains source-only under `examples/full-stack`, with one root `anhedral.json` and no provisioned resources.
 
 The release must use a successful hosted CI candidate from the exact final main commit. Local registry DNS and listener restrictions remain as described below; the hosted generated-profile matrix, fresh packed installations, advisory refresh and inspector browser checks are release gates. Local archives are preparation evidence, not publication evidence.

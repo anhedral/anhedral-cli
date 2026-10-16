@@ -42,6 +42,13 @@ export function launchPreview(command, args, options) {
     });
   }
   return {
+    diagnostics(sensitiveValues = []) {
+      let diagnostic = stripVTControlCharacters(output);
+      for (const value of sensitiveValues)
+        if (typeof value === 'string' && value.length)
+          diagnostic = diagnostic.replaceAll(value, '[redacted]');
+      return diagnostic.slice(-16 * 1024);
+    },
     async address(timeout = 30000) {
       const deadline = Date.now() + timeout;
       while (Date.now() < deadline) {

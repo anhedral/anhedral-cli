@@ -34,6 +34,7 @@ try {
     const modules = sharedModules ?? path.join(cwd, 'node_modules');
     const pkg = JSON.parse(readFileSync(path.join(cwd, 'package.json'), 'utf8'));
     const auth = localAuth && name === 'api';
+    const clerk = name === 'web' && Boolean(pkg.dependencies?.['@clerk/nextjs']);
     const appEnv = { ...env };
     if (auth) {
       assert.ok(
@@ -82,6 +83,28 @@ try {
           killSignal: 'SIGKILL',
         },
       );
+    }
+    if (clerk) {
+      for (const filename of ['.env', '.env.local', '.dev.vars'])
+        assert.equal(
+          existsSync(path.join(cwd, filename)),
+          false,
+          `Refuse existing ${filename} during anonymous Clerk preview`,
+        );
+      // Disposable SDK configuration exercises anonymous middleware/rendering only.
+      // It cannot authenticate a user and does not establish live Clerk access.
+      appEnv.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY =
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+        'pk_test_' + Buffer.from('example.clerk.accounts.dev$').toString('base64');
+      appEnv.CLERK_SECRET_KEY = 'sk_test_' + randomBytes(24).toString('hex');
+      appEnv.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV = 'true';
+      const environmentFile = path.join(cwd, '.env');
+      writeFileSync(
+        environmentFile,
+        `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${appEnv.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}\nCLERK_SECRET_KEY=${appEnv.CLERK_SECRET_KEY}\n`,
+        { flag: 'wx', mode: 0o600 },
+      );
+      ownedEnvironmentFiles.push(environmentFile);
     }
     assert.equal(pkg.devDependencies.void, '0.27.0');
     for (const dependency of [
@@ -138,7 +161,12 @@ try {
       const response = await fetch(new URL(route, address), {
         signal: AbortSignal.timeout(30000),
       });
-      assert.equal(response.status, 200, `${name}: ${await response.clone().text()}`);
+      if (response.status !== 200) {
+        let diagnostic = `${name}: HTTP ${response.status}\n${(await response.text()).slice(-16 * 1024)}\n${preview.diagnostics([appEnv.CLERK_SECRET_KEY, appEnv.BETTER_AUTH_SECRET])}`;
+        for (const value of [appEnv.CLERK_SECRET_KEY, appEnv.BETTER_AUTH_SECRET])
+          if (value) diagnostic = diagnostic.replaceAll(value, '[redacted]');
+        assert.fail(diagnostic);
+      }
       if (name === 'api') {
         assert.deepEqual(await response.json(), { ok: true });
         const openapi = await fetch(new URL('/openapi.json', address), {
@@ -161,6 +189,10 @@ try {
         assert.match(readiness.versionId, /^[a-f0-9-]{36}$/i);
       }
       console.log(`PASS: generated ${name} fresh build and workerd preview response.`);
+      if (clerk)
+        console.log(
+          'Anonymous Clerk middleware/rendering used disposable SDK configuration; live identity remains unverified.',
+        );
       tested++;
     } finally {
       await preview.stop();
