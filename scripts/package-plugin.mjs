@@ -80,13 +80,9 @@ export function buildPluginArchive(root) {
     'LICENSE',
     'mcp.json',
     'skills/anhedral/SKILL.md',
-    ...[
-      'stack-standard.md',
-      'software-factory.md',
-      'provider-configuration.md',
-      'plugin-ui.md',
-      'void-verification.md',
-    ].map((name) => `skills/anhedral/references/${name}`),
+    ...['stack-standard.md', 'software-factory.md', 'verification.md'].map(
+      (name) => `skills/anhedral/references/${name}`,
+    ),
     'runtime/build.json',
     'runtime/server.mjs',
     'runtime/dashboard.html',

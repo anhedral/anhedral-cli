@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { COMMANDS, GLOBAL_OPTIONS, commandDefinition, optionHelp } from '../dist/command-schema.js';
 import {
   CliArgumentError,
+  commandArguments,
   globalArguments,
   inlineArguments,
   validateCommand,
@@ -100,4 +101,32 @@ test('global aliases and inline cwd normalize independently of command position'
   ]);
   assert.throws(() => globalArguments(['--cwd=one', '-c', 'two']), /Specify one/);
   assert.throws(() => globalArguments(['--cwd', '--json']), /Specify one/);
+});
+
+test('command option collection follows schema arity, aliases and repeatable order', () => {
+  for (const [command, definition] of Object.entries(COMMANDS)) {
+    for (const option of definition.options) {
+      const args = option.arity ? [option.flag, 'fixture'] : [option.flag];
+      const parsed = commandArguments(command, ['first', ...args, 'last']);
+      assert.deepEqual(parsed.positional, ['first', 'last']);
+      assert.equal(parsed.has(option.flag), true);
+      assert.equal(parsed.value(option.flag), option.arity ? 'fixture' : undefined);
+    }
+  }
+  const parsed = commandArguments('connect', [
+    '--allow-email=one@example.com',
+    'project',
+    '--allow-email',
+    'two@example.com',
+    '-q',
+  ]);
+  assert.deepEqual(parsed.values('--allow-email'), ['one@example.com', 'two@example.com']);
+  assert.deepEqual(parsed.positional, ['project']);
+  assert.equal(parsed.has('--quiet'), true);
+  const values = parsed.values('--allow-email');
+  values.length = 0;
+  assert.equal(parsed.values('--allow-email').length, 2);
+  assert.equal(commandArguments('add', ['resend', '--diff']).has('--diff'), true);
+  assert.throws(() => commandArguments('ship', ['--provider']), /Supply a value/);
+  assert.throws(() => commandArguments('ship', ['--provider', 'one', '--provider', 'two']), /once/);
 });

@@ -1,0 +1,425 @@
+[
+  {
+    "name": "initialization preview",
+    "command": "init",
+    "value": {
+      "root": "/project",
+      "products": ["hono", "neon"],
+      "hosting": "cloudflare"
+    },
+    "expected": "Stack preview for /project.\nStack: hono, neon.\nHosting: cloudflare.\n\nNo files, provider resources or deployments were created."
+  },
+  {
+    "name": "created project",
+    "command": "init",
+    "value": {
+      "root": "/project",
+      "products": ["vinext"],
+      "hosting": "cloudflare",
+      "generated": true,
+      "catalog": {
+        "state": "registered"
+      }
+    },
+    "expected": "Created /project.\nStack: vinext.\nHosting: cloudflare.\n\nRegistered in your local Anhedral dashboard.\nReview the generated source and provider settings in anhedral.json (providers).\nIn the project directory, start development with pnpm dev. Run pnpm check before delivery.\nNext: anhedral auth, then connect the intended hosting account and preview anhedral ship --dry-run."
+  },
+  {
+    "name": "pending registration",
+    "command": "init",
+    "value": {
+      "generated": true,
+      "catalog": {
+        "state": "pending",
+        "nextAction": "Retry catalog registration."
+      }
+    },
+    "expected": "Created .\nStack: .\nHosting: .\n\nNext: Retry catalog registration.\nReview the generated source and provider settings in anhedral.json (providers).\nIn the project directory, start development with pnpm dev. Run pnpm check before delivery.\nNext: anhedral auth, then connect the intended hosting account and preview anhedral ship --dry-run."
+  },
+  {
+    "name": "service inventory",
+    "command": "services",
+    "value": {
+      "services": [
+        {
+          "key": "binding:apps/api:D1:DB"
+        },
+        {
+          "key": "provider:neon",
+          "state": "pending"
+        }
+      ]
+    },
+    "expected": "2 local service entries.\n  binding:apps/api:D1:DB\n  provider:neon — pending"
+  },
+  {
+    "name": "service analytics",
+    "command": "services",
+    "value": {
+      "source": "Cloudflare",
+      "start": "2026-10-01",
+      "end": "2026-10-02",
+      "points": [
+        {
+          "value": 1
+        }
+      ]
+    },
+    "expected": "Analytics: Cloudflare.\nWindow: 2026-10-01 to 2026-10-02 (UTC).\n1 provider data points.\nUse --json for the complete aggregate values."
+  },
+  {
+    "name": "private service rows",
+    "command": "services",
+    "value": {
+      "rows": [["confidential-fixture"]],
+      "masked": true
+    },
+    "expected": "Read 1 rows.\nPrivate data; sensitive fields are masked. Use --json to inspect values."
+  },
+  {
+    "name": "deletion plan",
+    "command": "services",
+    "value": {
+      "token": "confidential-fixture",
+      "kind": "d1",
+      "name": "app-data",
+      "impact": "Permanently removes data.",
+      "applications": ["apps/api"],
+      "expiresAt": "2026-10-16T17:00:00Z"
+    },
+    "expected": "Deletion plan: d1 app-data.\nPermanently removes data.\nAffected apps: apps/api.\nExpires: 2026-10-16T17:00:00Z.\nUse --json for the single-use confirmation token; deleting requires the exact resource name."
+  },
+  {
+    "name": "table listing",
+    "command": "services",
+    "value": ["notes", "members"],
+    "expected": "Tables: notes, members."
+  },
+  {
+    "name": "service status",
+    "command": "services",
+    "value": {
+      "state": "unavailable",
+      "message": "Check permissions."
+    },
+    "expected": "Service: unavailable.\nCheck permissions."
+  },
+  {
+    "name": "addition preview",
+    "command": "add",
+    "value": {
+      "root": "/project",
+      "items": ["resend"],
+      "files": ["packages/email/src/index.ts"],
+      "dryRun": true,
+      "filesChecked": false,
+      "conflicts": ["package.json"],
+      "previews": [
+        {
+          "path": "packages/email/src/index.ts",
+          "diff": "+ export {};"
+        }
+      ]
+    },
+    "expected": "Addition preview.\nParts: resend.\nProject: /project.\n\n  packages/email/src/index.ts\nSource files were not checked: this selection needs the networked web bootstrap.\nConflicts: package.json.\n\npackages/email/src/index.ts\n+ export {};\n\nNo application files were changed."
+  },
+  {
+    "name": "completed addition",
+    "command": "add",
+    "value": {
+      "root": "/project",
+      "items": [],
+      "files": []
+    },
+    "expected": "Stack parts added.\nNo new stack parts.\nProject: /project.\nNext: Run anhedral doctor and review the selected services’ setup requirements."
+  },
+  {
+    "name": "inspection evidence",
+    "command": "inspect",
+    "value": {
+      "name": "fixture",
+      "selection": {
+        "data": {
+          "products": ["hono"]
+        }
+      },
+      "targets": {
+        "data": [
+          {
+            "application": "apps/api",
+            "provider": "cloudflare",
+            "delivery": "implemented",
+            "latestAttempt": {
+              "state": "deployed",
+              "operationState": "failed"
+            },
+            "lastSuccessful": {
+              "id": "release-1"
+            },
+            "error": "Review the latest attempt."
+          }
+        ]
+      },
+      "readiness": {
+        "data": {
+          "checks": [
+            {
+              "id": "lockfile",
+              "ok": false,
+              "detail": "Missing lockfile"
+            }
+          ]
+        }
+      },
+      "configuration": {
+        "state": "unavailable",
+        "error": "Unavailable bindings"
+      }
+    },
+    "expected": "Project: fixture.\nLocal recorded evidence; authentication and live provider status are not checked.\nStack: hono.\n  apps/api — cloudflare (implemented)\n    Latest recorded target result: deployed.\n    Overall attempt: failed.\n    Last recorded success: release-1.\n    Review the latest attempt.\n  fail  lockfile — Missing lockfile\nconfiguration: Unavailable bindings.\nNext: Use --json for target-specific records. Review local checks, then explicitly run auth or ship when intended."
+  },
+  {
+    "name": "runtime authentication",
+    "command": "auth",
+    "value": {
+      "checks": [
+        {
+          "provider": "clerk",
+          "state": "verified",
+          "access": "runtime",
+          "nextAction": "Supply management access."
+        }
+      ],
+      "authenticated": true,
+      "note": "Runtime access only."
+    },
+    "expected": "Provider authentication\n  clerk       verified (runtime access)\nNext: Supply management access.\nRuntime access only.\nNext: Complete provider settings, connect the intended hosting account, then run anhedral ship --dry-run."
+  },
+  {
+    "name": "empty authentication",
+    "command": "auth",
+    "value": {
+      "checks": []
+    },
+    "expected": "This stack requires no provider authentication."
+  },
+  {
+    "name": "integration receipts",
+    "command": "integrations",
+    "value": {
+      "providers": [
+        {
+          "provider": "neon",
+          "operations": [
+            {
+              "operation": "operation-1",
+              "status": "pending"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": "Integration receipts (recorded locally).\n  neon\n    operation-1: pending\nNext: Use --json to inspect the resource IDs and safe recovery descriptors. Unknown operations must be verified before retrying."
+  },
+  {
+    "name": "integration recovery",
+    "command": "integrations",
+    "value": {
+      "recovered": true,
+      "operation": "operation-1",
+      "nextAction": "Refresh status."
+    },
+    "expected": "Integration resource reconciled.\nOperation: operation-1\nNext: Refresh status."
+  },
+  {
+    "name": "registry item",
+    "command": "registry",
+    "value": {
+      "name": "neon",
+      "type": "database",
+      "description": "PostgreSQL",
+      "targets": ["packages/db"],
+      "registryDependencies": ["hono"],
+      "setup": {
+        "access": ["Use your account."],
+        "credentials": ["DATABASE_URL"]
+      }
+    },
+    "expected": "neon (database)\nPostgreSQL\nFiles: packages/db\nRequires: hono\naccess: Use your account.\ncredentials: DATABASE_URL\nNext: Inspect anhedral add neon --dry-run in your project."
+  },
+  {
+    "name": "doctor checks",
+    "command": "doctor",
+    "value": {
+      "localReady": false,
+      "local": {
+        "checks": [
+          {
+            "id": "source",
+            "ok": false,
+            "detail": "Missing manifest",
+            "nextAction": "Generate source."
+          }
+        ]
+      },
+      "providerVerification": "unverified",
+      "prerequisiteChecks": [
+        {
+          "id": "pnpm",
+          "ok": true,
+          "detail": "Available"
+        }
+      ]
+    },
+    "expected": "Local project checks need attention.\n  fail  source — Missing manifest\nNext: Generate source.\nProvider evidence: unverified.\n  pass  pnpm — Available\nLocal readiness does not certify production behavior."
+  },
+  {
+    "name": "delivery preview",
+    "command": "ship",
+    "value": {
+      "mutation": false,
+      "project": {
+        "name": "fixture",
+        "provider": "cloudflare"
+      },
+      "provisioning": {
+        "resources": [
+          {
+            "kind": "d1",
+            "name": "data",
+            "target": "api"
+          }
+        ]
+      },
+      "integrations": {
+        "providers": [
+          {
+            "provider": "neon",
+            "missing": ["organizationId"]
+          },
+          {
+            "provider": "resend",
+            "missing": []
+          }
+        ]
+      }
+    },
+    "expected": "ship: preview only.\nProject: fixture (cloudflare).\n  d1  data (api)\n  neon: missing organizationId\n  resend: configuration selected\nNo provider resources or deployments were changed."
+  },
+  {
+    "name": "successful delivery",
+    "command": "ship",
+    "value": {
+      "release": {
+        "id": "release-1",
+        "state": "deployed",
+        "url": "https://app.example.com"
+      },
+      "productVerification": "required",
+      "integrations": {
+        "results": [
+          {
+            "provider": "neon",
+            "ready": true,
+            "nextActions": ["Review migrations."]
+          }
+        ]
+      },
+      "operation": {
+        "state": "completed",
+        "phases": [
+          {
+            "name": "checks",
+            "state": "completed"
+          }
+        ]
+      }
+    },
+    "expected": "ship: deployed.\nRelease: release-1\nURL: https://app.example.com\n  neon: configured\nNext: Review migrations.\nProduct verification: required.\nOperation: completed (recorded locally).\n  checks: completed\nNext: Run anhedral verify to exercise the application’s configured acceptance checks."
+  },
+  {
+    "name": "mixed partial delivery",
+    "command": "ship",
+    "value": {
+      "state": "partial",
+      "targets": [
+        {
+          "provider": "cloudflare",
+          "result": {
+            "release": {
+              "state": "deployed"
+            }
+          }
+        },
+        {
+          "provider": "vercel",
+          "state": "failed"
+        }
+      ],
+      "nextAction": "Inspect provider status.",
+      "runtime": {
+        "secret": "confidential-fixture"
+      }
+    },
+    "expected": "ship: partial.\n  cloudflare: deployed\n  vercel: failed\nNext: Inspect provider status."
+  },
+  {
+    "name": "mobile artifact",
+    "command": "ship",
+    "value": {
+      "state": "built",
+      "buildId": "build-1",
+      "platform": "android",
+      "profile": "preview",
+      "downloadUrl": "https://expo.dev/artifact",
+      "buildPageUrl": "https://expo.dev/build-1"
+    },
+    "expected": "ship: built.\nBuild: build-1 (android, preview).\ndownloadUrl: https://expo.dev/artifact\nbuildPageUrl: https://expo.dev/build-1"
+  },
+  {
+    "name": "refreshed status",
+    "command": "status",
+    "value": {
+      "project": {
+        "name": "fixture",
+        "provider": "vercel"
+      },
+      "evidence": "provider-refresh",
+      "activeRecordedVersion": false,
+      "provider": [
+        {
+          "target": "api",
+          "activeRecordedVersion": true
+        }
+      ],
+      "repository": {
+        "nameWithOwner": "owner/app"
+      },
+      "branch": "main",
+      "file": "/overview.html"
+    },
+    "expected": "status: completed.\nProject: fixture (vercel).\nEvidence: provider-refresh.\nRecorded production version: not confirmed.\n  api: recorded version active\nRepository: owner/app\nBranch: main\nfile: /overview.html"
+  },
+  {
+    "name": "connection next action",
+    "command": "connect",
+    "value": {
+      "project": {
+        "name": "fixture",
+        "provider": "cloudflare"
+      }
+    },
+    "expected": "connect: completed.\nProject: fixture (cloudflare).\nNext: Review and commit the connection manifest, then run anhedral ship --dry-run."
+  },
+  {
+    "name": "empty evidence",
+    "command": "unknown",
+    "value": null,
+    "expected": "unknown: completed.\nUse --json for the complete recorded evidence."
+  },
+  {
+    "name": "non-object payload",
+    "command": "services",
+    "value": "confidential-fixture",
+    "expected": "Service: Checked."
+  }
+]

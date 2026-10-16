@@ -10,12 +10,15 @@ test('plugin entrypoints and public starter documentation use the exact composer
   const manifest = JSON.parse(read('plugins/codex/distribution/plugin.json'));
   assert.deepEqual(manifest.extensions['com.openai'].interface.defaultPrompt, [prompt]);
   assert.ok(read('README.md').includes(prompt));
-  assert.ok(read('docs/plugin-ui.md').includes(prompt));
+  assert.ok(read('docs/software-factory.md').includes(prompt));
   assert.ok(read('plugins/codex/inspector/shared/starter.ts').includes(prompt));
 });
 
 test('plugin instructions and documentation do not imply credentials enable unimplemented live readers', () => {
-  for (const file of ['docs/plugin-ui.md', 'plugins/codex/distribution/skills/anhedral/SKILL.md']) {
+  for (const file of [
+    'docs/software-factory.md',
+    'plugins/codex/distribution/skills/anhedral/SKILL.md',
+  ]) {
     const source = read(file);
     assert.match(source, /explicit service controls/i);
     assert.match(source, /schedule-execution reader/);
@@ -24,12 +27,12 @@ test('plugin instructions and documentation do not imply credentials enable unim
       /rows remain unavailable until|Analytics remains.*until an actual provider/,
     );
   }
-  assert.match(read('docs/cli-design.md'), /help text is never parsed/);
+  assert.match(read('docs/software-factory.md'), /help text is never parsed/);
 });
 
 test('Cloudflare delivery documentation distinguishes Void activation checkpoints from Wrangler provisioning', () => {
   const factory = read('docs/software-factory.md');
-  const providers = read('docs/provider-configuration.md');
+  const providers = read('docs/software-factory.md');
   assert.match(factory, /Void can activate a target before recording new resource identities/);
   assert.match(providers, /If Wrangler resource provisioning changes tracked binding IDs/);
   assert.match(providers, /Void may already activate targets/);

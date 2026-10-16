@@ -23,10 +23,7 @@ const requiredFiles = new Set([
   'package.json',
   'docs/stack-standard.md',
   'docs/software-factory.md',
-  'docs/void-verification.md',
-  'docs/provider-configuration.md',
-  'docs/cli-design.md',
-  'docs/plugin-ui.md',
+  'docs/verification.md',
 ]);
 const allowedRootFiles = new Set(['LICENSE', 'README.md', 'package.json']);
 
@@ -134,10 +131,7 @@ try {
     const allowedDocumentation =
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
-      file.path === 'docs/void-verification.md' ||
-      file.path === 'docs/provider-configuration.md' ||
-      file.path === 'docs/cli-design.md' ||
-      file.path === 'docs/plugin-ui.md';
+      file.path === 'docs/verification.md';
     const allowedPatch = [
       'assets/patches/braces@3.0.3.patch',
       'assets/patches/LICENSE.braces',

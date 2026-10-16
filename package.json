@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.11.2",
+  "version": "0.12.0",
   "description": "Build and deliver applications with Cloudflare-first Vinext, selected services, optional Next.js on Vercel, and verified release evidence.",
   "type": "module",
   "exports": {
@@ -25,10 +25,7 @@
     "README.md",
     "docs/stack-standard.md",
     "docs/software-factory.md",
-    "docs/void-verification.md",
-    "docs/provider-configuration.md",
-    "docs/cli-design.md",
-    "docs/plugin-ui.md"
+    "docs/verification.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {

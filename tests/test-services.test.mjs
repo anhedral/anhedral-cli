@@ -142,6 +142,35 @@ test('D1 browsing uses bounded SQL, validates schema identifiers, and masks priv
       /safely/,
     );
   }));
+test('D1 schema browsing excludes literal internal prefixes without hiding application tables', async (context) => {
+  let DatabaseSync;
+  try {
+    ({ DatabaseSync } = await import('node:sqlite'));
+  } catch (error) {
+    if (error.code !== 'ERR_UNKNOWN_BUILTIN_MODULE') throw error;
+    context.skip('SQLite execution requires Node 22 or newer.');
+    return;
+  }
+  await fixture(async ({ service }) => {
+    const database = new DatabaseSync(':memory:');
+    try {
+      for (const name of ['notes', 'acfxrecords', '_cfXrecords', 'sqliteXapp', '_cf_internal'])
+        database.exec(`CREATE TABLE "${name}" (id INTEGER PRIMARY KEY AUTOINCREMENT)`);
+      const request = async (_method, _endpoint, { sql, params }) => ({
+        result: [{ success: true, meta: {}, results: database.prepare(sql).all(...params) }],
+      });
+      assert.deepEqual(await listServiceTables(service, request), [
+        '_cfXrecords',
+        'acfxrecords',
+        'notes',
+        'sqliteXapp',
+      ]);
+      assert.deepEqual((await browseServiceData(service, request, 'acfxrecords')).columns, ['id']);
+    } finally {
+      database.close();
+    }
+  });
+});
 test('analytics verifies selected resource, uses complete UTC days, and never invents empty results', async () =>
   fixture(async ({ service }) => {
     let variables;

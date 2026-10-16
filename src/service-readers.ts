@@ -106,7 +106,7 @@ export async function listServiceTables(
   const rows = await d1Query(
     service,
     request,
-    "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name LIMIT 1001",
+    "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name NOT GLOB '_cf_*' ORDER BY name LIMIT 1001",
   );
   if (rows.length > 1000) throw new Error('Database schema exceeds its table limit.');
   return rows.map((row) => {

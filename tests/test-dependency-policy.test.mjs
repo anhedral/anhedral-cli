@@ -93,6 +93,7 @@ test('maintained source catalog contains deployment, bootstrap, manager and nati
     'eslint',
     'pnpm',
     'eas-cli',
+    'vercel',
     'vinext',
     'react',
     'wrangler',
@@ -103,6 +104,17 @@ test('maintained source catalog contains deployment, bootstrap, manager and nati
     );
   assert.ok(pins.length > 40, 'all generated dependency groups must be audited');
   assert.ok(pins.every((pin) => !/engine|node_version/i.test(pin.name)));
+});
+
+test('Vercel authentication and delivery use the audited provider CLI pin', async () => {
+  const { VERCEL_CLI_VERSION } = await import('../dist/dependencies.js');
+  const { PROVIDER_AUTH } = await import('../dist/provider-auth.js');
+  const { cli } = await import('../dist/vercel-project.js');
+  const vercel = PROVIDER_AUTH.find((provider) => provider.id === 'vercel');
+  const coordinate = `vercel@${VERCEL_CLI_VERSION}`;
+  assert.deepEqual(cli, ['dlx', coordinate]);
+  assert.deepEqual(vercel.login, ['pnpm', ...cli, 'login']);
+  assert.deepEqual(vercel.identity, ['pnpm', ...cli, 'whoami']);
 });
 
 test('Renovate tracks the separately reviewed Void source pin', async () => {

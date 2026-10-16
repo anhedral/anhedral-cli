@@ -128,6 +128,30 @@ test('current CLI has one initialization command and selects addition projects w
   }
 });
 
+test('inspect and services distinguish operational failures from invalid arguments and unknown commands', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-cli-error-codes-'));
+  try {
+    for (const [args, code] of [
+      [['inspect', path.join(root, 'absent')], 'INSPECTION_FAILED'],
+      [['inspect', root, 'extra-directory'], 'INVALID_ARGUMENT'],
+      [['services', 'status'], 'INVALID_ARGUMENT'],
+      [['services', 'unsupported'], 'INVALID_ARGUMENT'],
+      [['services', 'status', 'binding:apps/api:D1:DB', '--table', 'notes'], 'INVALID_ARGUMENT'],
+      [['services', 'status', 'binding:apps/api:D1:DB'], 'SERVICE_FAILED'],
+    ]) {
+      const result = run(root, ...args, '--json');
+      assert.equal(result.status, 1, JSON.stringify(args));
+      assert.equal(result.stdout, '');
+      const error = JSON.parse(result.stderr);
+      assert.equal(error.code, code, JSON.stringify(args));
+      assert.equal(error.nextAction, `Run anhedral ${args[0]} --help.`);
+    }
+    assert.deepEqual(readdirSync(root), []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('human provider summaries show actionable prerequisites without dumping credentials or raw diagnostics', () => {
   const result = formatResult('ship', {
     state: 'provider-configuration-required',

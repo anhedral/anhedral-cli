@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { CliArgumentError } from './cli-arguments.js';
 import { resolveIntegrationService } from './integration-service-readers.js';
 import { inspectApplication } from './project-inspector.js';
 import {
@@ -10,14 +11,16 @@ import { ServiceDeletionStore } from './service-deletion.js';
 import { catalogDirectory } from './catalog-registration.js';
 import { serviceOperation } from './service-operations.js';
 import type { ServiceAction } from './service-model.js';
+const argumentError = (message: string) =>
+  new CliArgumentError(message, 'Run anhedral services --help.');
 export async function runServiceCommand(root: string, input: string[]) {
   const args = input.filter((arg) => arg !== '--json');
   const action = args.shift();
   const actions = ['list', 'status', 'metrics', 'tables', 'data', 'delete-plan', 'delete'];
   if (!action || !actions.includes(action))
-    throw new Error('Choose a supported services operation.');
+    throw argumentError('Choose a supported services operation.');
   if (action === 'list') {
-    if (args.length) throw new Error('services list accepts no service selector.');
+    if (args.length) throw argumentError('services list accepts no service selector.');
     const inspection = inspectApplication(root);
     const keys = [
       ...inspection.setupProviders.data
@@ -66,7 +69,7 @@ export async function runServiceCommand(root: string, input: string[]) {
   }
   const key = args.shift();
   if (!key || key.startsWith('-') || key.length > 1024)
-    throw new Error('Choose the exact service key from services list.');
+    throw argumentError('Choose the exact service key from services list.');
   const options: Record<string, string> = {};
   for (let i = 0; i < args.length; i += 2) {
     if (
@@ -77,7 +80,7 @@ export async function runServiceCommand(root: string, input: string[]) {
       !args[i + 1] ||
       args[i + 1].startsWith('-')
     )
-      throw new Error('Invalid services options.');
+      throw argumentError('Invalid services options.');
     options[args[i]] = args[i + 1];
   }
   const allowed: Record<string, string[]> = {
@@ -89,9 +92,9 @@ export async function runServiceCommand(root: string, input: string[]) {
     delete: ['--token', '--confirm-name'],
   };
   if (Object.keys(options).some((option) => !allowed[action].includes(option)))
-    throw new Error('This services operation does not accept that option.');
+    throw argumentError('This services operation does not accept that option.');
   if (action === 'delete' && (!options['--token'] || !options['--confirm-name']))
-    throw new Error('Deletion requires its plan token and exact resource name.');
+    throw argumentError('Deletion requires its plan token and exact resource name.');
   const result = await serviceOperation(
     root,
     action as ServiceAction,

@@ -141,6 +141,53 @@ test('mobile delivery rejects dirty source, missing profiles and unverifiable EA
   }
 });
 
+for (const owner of ['fixture', 'foreign']) {
+  test(`mobile project linking verifies ownership and stops before build submission (${owner})`, async () => {
+    const root = fixture();
+    const file = path.join(root, 'apps/mobile/app.json');
+    writeFileSync(file, JSON.stringify({ expo: { owner: 'fixture', slug: 'mobile-app' } }));
+    const calls = [];
+    const base = mobileRunner(root, async () => assert.fail('Linking must not submit a build'));
+    try {
+      const result = buildMobileApplication(
+        root,
+        { platform: 'android', profile: 'preview' },
+        async (command, args, ...rest) => {
+          calls.push(args);
+          if (args.includes('project:init')) {
+            writeFileSync(
+              file,
+              JSON.stringify({
+                expo: {
+                  owner,
+                  slug: 'mobile-app',
+                  extra: { eas: { projectId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' } },
+                },
+              }),
+            );
+            return '';
+          }
+          return base(command, args, ...rest);
+        },
+      );
+      if (owner === 'fixture') {
+        const linked = await result;
+        assert.equal(linked.state, 'configuration-required');
+        assert.equal(linked.deployed, false);
+        assert.equal(linked.operation.state, 'blocked');
+        assert.match(linked.nextAction, /Review and commit/);
+      } else await assert.rejects(result, /selected owner and slug/);
+      assert.equal(calls.filter((args) => args.includes('project:init')).length, 1);
+      assert.equal(
+        calls.some((args) => args.includes('build') || args.includes('env:push')),
+        false,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+}
+
 test('queued builds retain their ID and the next ship inspects that build without submitting another', async () => {
   const root = fixture();
   const calls = [];
