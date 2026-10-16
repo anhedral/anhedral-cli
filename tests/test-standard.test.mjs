@@ -338,10 +338,7 @@ try {
   assert.equal(read(web.root, 'packages/ui/package.json').dependencies.shadcn, undefined);
   assert.equal(read(web.root, 'packages/ui/package.json').devDependencies.shadcn, '4.21.1');
   assert.match(read(web.root, 'package.json').scripts.check, /audit:deps/);
-  assert.equal(
-    read(web.root, 'package.json').scripts['audit:deps'],
-    'pnpm audit --audit-level=high',
-  );
+  assert.equal(read(web.root, 'package.json').scripts['audit:deps'], 'node scripts/audit-deps.mjs');
   assert.equal(existsSync(path.join(web.root, 'scripts/security')), false);
   assert.ok(read(web.root, '.fallowrc.json').ignorePatterns.includes('**/next-env.d.ts'));
   assert.equal(existsSync(path.join(web.root, 'pnpm-lock.yaml')), true);

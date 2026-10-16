@@ -14,6 +14,7 @@ const requiredFiles = new Set([
   'README.md',
   'assets/patches/braces@3.0.3.patch',
   'assets/patches/LICENSE.braces',
+  'assets/patches/audit-deps.mjs',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -132,6 +133,7 @@ try {
     const allowedPatch = [
       'assets/patches/braces@3.0.3.patch',
       'assets/patches/LICENSE.braces',
+      'assets/patches/audit-deps.mjs',
     ].includes(file.path);
     const allowed =
       allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation || allowedPatch;

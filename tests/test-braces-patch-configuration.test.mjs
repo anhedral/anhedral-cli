@@ -18,7 +18,7 @@ import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.
 import { addStackItems } from '../dist/registry/add.js';
 import { sourceFiles } from '../dist/registry/receipt.js';
 import { bootstrap } from './support/workspace-bootstrap.mjs';
-import { configureBracesPatch } from '../dist/braces-patch.js';
+import { configureBracesPatch, writeDependencyAudit } from '../dist/braces-patch.js';
 
 const patch = 'patches/braces@3.0.3.patch';
 function fixture(
@@ -196,7 +196,12 @@ async function quietly(action) {
 }
 function assertPatchReceipt(root) {
   const receipt = JSON.parse(readFileSync(path.join(root, 'anhedral.registry.json'), 'utf8'));
-  for (const file of [patch, 'patches/LICENSE.braces', '.gitattributes']) {
+  for (const file of [
+    patch,
+    'patches/LICENSE.braces',
+    '.gitattributes',
+    'scripts/audit-deps.mjs',
+  ]) {
     const expected = createHash('sha256')
       .update(readFileSync(path.join(root, file)))
       .digest('hex');
@@ -239,6 +244,14 @@ test('add previews never resolve or write a patch; actual add resolves again and
       ),
     );
     assert.equal(existsSync(path.join(root, patch)), false);
+    assert.deepEqual(
+      readFileSync(path.join(root, 'scripts/audit-deps.mjs')),
+      readFileSync(new URL('../assets/patches/audit-deps.mjs', import.meta.url)),
+    );
+    assert.equal(
+      JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).scripts['audit:deps'],
+      'node scripts/audit-deps.mjs',
+    );
     events.length = 0;
     introduceBraces = true;
     const before = sourceFiles(root);
@@ -337,5 +350,70 @@ test('Git attributes symlinks are refused before writing patch files or policy',
   } finally {
     f.close();
     rmSync(outside, { recursive: true, force: true });
+  }
+});
+
+test('every generated profile receives the audit gate even without braces or a local patch', () => {
+  const f = fixture("lockfileVersion: '9.0'\n");
+  try {
+    const before = f.policy();
+    writeDependencyAudit(f.root);
+    const script = path.join(f.root, 'scripts/audit-deps.mjs');
+    assert.deepEqual(
+      readFileSync(script),
+      readFileSync(new URL('../assets/patches/audit-deps.mjs', import.meta.url)),
+    );
+    writeDependencyAudit(f.root);
+    assert.equal(configureBracesPatch(f.root), false);
+    assert.equal(existsSync(path.join(f.root, patch)), false);
+    assert.equal(f.policy(), before);
+  } finally {
+    f.close();
+  }
+});
+
+test('audit gate installation preserves different files and rejects symlink destinations', () => {
+  const f = fixture();
+  const outside = mkdtempSync(path.join(tmpdir(), 'anhedral-audit-script-'));
+  try {
+    mkdirSync(path.join(f.root, 'scripts'));
+    const script = path.join(f.root, 'scripts/audit-deps.mjs');
+    writeFileSync(script, '// customer script\n');
+    assert.throws(() => writeDependencyAudit(f.root), /different customer content/);
+    assert.equal(readFileSync(script, 'utf8'), '// customer script\n');
+    rmSync(script);
+    const original = path.join(outside, 'audit.mjs');
+    writeFileSync(original, '// outside\n');
+    symlinkSync(original, script);
+    assert.throws(() => writeDependencyAudit(f.root), /regular file/);
+    assert.equal(readFileSync(original, 'utf8'), '// outside\n');
+  } finally {
+    f.close();
+    rmSync(outside, { recursive: true, force: true });
+  }
+});
+
+test('add refuses edited generated audit scripts before committing unrelated changes', async () => {
+  const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-audit-add-conflict-'));
+  try {
+    const root = path.join(temp, 'project');
+    const run = resolutionRunner([], () => false);
+    await quietly(() =>
+      scaffoldStandardProject(
+        parseStandardOptions('new', [root, '--hono', '--skip-install', '--no-git', '--json']),
+        run,
+      ),
+    );
+    const script = path.join(root, 'scripts/audit-deps.mjs');
+    writeFileSync(script, '// edited customer policy\n');
+    const before = sourceFiles(root);
+    await assert.rejects(
+      addStackItems(root, { items: ['resend'], skipInstall: true }, run),
+      /conflicts.*scripts\/audit-deps\.mjs/,
+    );
+    assert.deepEqual(sourceFiles(root), before);
+    assert.equal(readFileSync(script, 'utf8'), '// edited customer policy\n');
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
   }
 });

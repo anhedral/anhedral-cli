@@ -1,10 +1,18 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
-import { configureBracesPatch } from '../dist/braces-patch.js';
+import { configureBracesPatch, writeDependencyAudit } from '../dist/braces-patch.js';
 import { verifyBraces } from './support/braces-regressions.mjs';
 
 const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-braces-install-')));
@@ -20,7 +28,7 @@ const environment = Object.fromEntries(
   ),
 );
 environment.npm_config_userconfig = userconfig;
-function run(args, expected = 0) {
+function run(args, expected = 0, includeStderr = false) {
   const result = spawnSyncPortable('pnpm', args, {
     cwd: root,
     env: environment,
@@ -30,7 +38,7 @@ function run(args, expected = 0) {
   });
   assert.equal(result.error, undefined, result.error?.message);
   assert.equal(result.status, expected, `${args.join(' ')}\n${result.stdout}\n${result.stderr}`);
-  return result.stdout;
+  return includeStderr ? result.stdout + result.stderr : result.stdout;
 }
 try {
   writeFileSync(
@@ -38,8 +46,10 @@ try {
     JSON.stringify({
       private: true,
       packageManager: 'pnpm@10.34.5',
+      scripts: { 'audit:deps': 'node scripts/audit-deps.mjs' },
       dependencies: {
         braces: '3.0.3',
+        braceAlias: 'npm:braces@3.0.3',
         micromatch: '4.0.8',
         'fast-glob': '3.3.3',
         chokidar: '3.6.0',
@@ -47,6 +57,7 @@ try {
     }),
   );
   writeFileSync(path.join(root, 'pnpm-workspace.yaml'), 'packages: []\n');
+  writeDependencyAudit(root);
   run(['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts']);
   assert.equal(configureBracesPatch(root), true);
   run(['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts']);
@@ -84,6 +95,7 @@ try {
   writeFileSync(patchFile, patchBytes);
   run(['install', '--frozen-lockfile', '--ignore-scripts', '--offline']);
   const require = createRequire(path.join(root, 'package.json'));
+  assert.equal(require.resolve('braceAlias'), require.resolve('braces'));
   verifyBraces(path.dirname(require.resolve('braces/package.json')));
 
   // Real filesystem/glob/watch consumers retain ordinary behavior.
@@ -119,7 +131,7 @@ try {
     await watcher.close();
   }
 
-  // A local patch is not an upstream version fix. Preserve the raw finding.
+  // Permit only verified patched bytes while preserving the raw upstream finding.
   const raw = run(['audit', '--json', '--audit-level=high'], 1);
   const report = JSON.parse(raw);
   assert.ok(
@@ -128,6 +140,33 @@ try {
         entry.module_name === 'braces' && entry.github_advisory_id === 'GHSA-vfj7-8cjw-p6xm',
     ),
   );
+  assert.match(run(['run', 'audit:deps']), /Accepted only GHSA-vfj7-8cjw-p6xm/);
+  const retained = JSON.parse(readFileSync(path.join(root, '.anhedral-audit-report.json'), 'utf8'));
+  assert.deepEqual(retained.metadata.vulnerabilities, report.metadata.vulnerabilities);
+  assert.ok(
+    Object.values(retained.advisories).some(
+      (entry) => entry.github_advisory_id === 'GHSA-vfj7-8cjw-p6xm',
+    ),
+  );
+  writeFileSync(patchFile, Buffer.concat([patchBytes, Buffer.from('\n')]));
+  try {
+    assert.match(run(['run', 'audit:deps'], 1, true), /reviewed braces patch.*changed/);
+  } finally {
+    writeFileSync(patchFile, patchBytes);
+  }
+  // Replace the inode, never modify pnpm's shared hardlinked store contents.
+  const limits = path.join(path.dirname(require.resolve('braces/package.json')), 'lib/limits.js');
+  const originalLimits = readFileSync(limits);
+  const replacement = path.join(root, 'limits-replacement.js');
+  writeFileSync(replacement, Buffer.concat([originalLimits, Buffer.from('\n')]));
+  renameSync(replacement, limits);
+  try {
+    assert.match(run(['run', 'audit:deps'], 1, true), /Installed braces bytes/);
+  } finally {
+    writeFileSync(replacement, originalLimits);
+    renameSync(replacement, limits);
+  }
+  assert.match(run(['run', 'audit:deps']), /Accepted only GHSA-vfj7-8cjw-p6xm/);
   const evidence = path.resolve('.artifacts/braces-patch');
   mkdirSync(evidence, { recursive: true });
   writeFileSync(path.join(evidence, 'audit.json'), raw);
@@ -135,7 +174,7 @@ try {
     'Frozen pnpm patch installation, depth regressions, glob/watch compatibility passed.',
   );
   console.log(
-    'Unmodified pnpm audit still reports GHSA-vfj7-8cjw-p6xm; no release exception applied.',
+    'Verified gate accepts only the patched braces advisory; raw audit remains visible and tampered installed bytes fail.',
   );
 } finally {
   rmSync(root, { recursive: true, force: true });

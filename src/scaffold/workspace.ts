@@ -1,4 +1,5 @@
 import { STACK_DEPENDENCIES, WORKSPACE_NODE_ENGINE } from '../dependencies.js';
+import { writeDependencyAudit } from '../braces-patch.js';
 import { setPnpmPolicy } from '../pnpm-policy.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
 import { BOOTSTRAP_COMMAND } from '../registry/bootstrap.js';
@@ -129,7 +130,7 @@ export function writeStandardRoot(
         : {}),
       audit: 'node scripts/audit.mjs',
       'audit:full': 'fallow --fail-on-issues',
-      'audit:deps': 'pnpm audit --audit-level=high',
+      'audit:deps': 'node scripts/audit-deps.mjs',
       check: `pnpm lint && pnpm typecheck && pnpm run audit && pnpm audit:deps && pnpm test && pnpm build${workerBuildSuffix(options)}`,
     },
     devDependencies: { turbo: STACK_DEPENDENCIES['turbo'], fallow: STACK_DEPENDENCIES['fallow'] },
@@ -139,6 +140,7 @@ export function writeStandardRoot(
       overrides: { ...existing.pnpm?.overrides, ...securityOverrides(options) },
     },
   });
+  writeDependencyAudit(root, updating);
   put(
     root,
     'scripts/audit.mjs',

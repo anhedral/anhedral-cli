@@ -90,3 +90,29 @@ export function configureBracesPatch(root: string): boolean {
   }
   return true;
 }
+
+/** Install the standard audit gate for every profile, including braces-free apps. */
+export function writeDependencyAudit(root: string, replaceManaged = false): void {
+  root = realpathSync(root);
+  const trusted = readBoundedFile(
+    fileURLToPath(new URL('../assets/patches/audit-deps.mjs', import.meta.url)),
+    patchMaximum,
+  );
+  const directory = path.join(root, 'scripts');
+  const directoryStat = lstatSync(directory, { throwIfNoEntry: false });
+  if (directoryStat && (!directoryStat.isDirectory() || directoryStat.isSymbolicLink()))
+    throw new Error('Audit script directory must be a real directory inside the project.');
+  const target = path.join(directory, 'audit-deps.mjs');
+  if (lstatSync(target, { throwIfNoEntry: false })) {
+    const current = readBoundedFile(target, patchMaximum);
+    if (current.equals(trusted)) return;
+    if (!replaceManaged)
+      throw new Error('The dependency audit script path contains different customer content.');
+    // Replacements occur only inside the add staging transaction. Its source
+    // fingerprints reject edited or untracked customer files before commit.
+    writeFile(target, trusted.toString('utf8'));
+    return;
+  }
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(target, trusted, { flag: 'wx', mode: 0o644 });
+}

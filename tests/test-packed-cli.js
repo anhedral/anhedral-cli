@@ -122,12 +122,14 @@ try {
     import path from 'node:path';
     import { pathToFileURL } from 'node:url';
     const installed = path.resolve('node_modules/anhedral');
-    const { configureBracesPatch } = await import(pathToFileURL(path.join(installed, 'dist/braces-patch.js')));
+    const { configureBracesPatch, writeDependencyAudit } = await import(pathToFileURL(path.join(installed, 'dist/braces-patch.js')));
     const root = path.resolve('installed-patch-probe');
     fs.mkdirSync(root);
     fs.writeFileSync(path.join(root, 'package.json'), '{}');
     fs.writeFileSync(path.join(root, 'pnpm-workspace.yaml'), 'packages: []' + String.fromCharCode(10));
     fs.writeFileSync(path.join(root, 'pnpm-lock.yaml'), ['packages:', '  braces@3.0.3:', ''].join(String.fromCharCode(10)));
+    writeDependencyAudit(root);
+    assert.deepEqual(fs.readFileSync(path.join(root, 'scripts/audit-deps.mjs')), fs.readFileSync(path.join(installed, 'assets/patches/audit-deps.mjs')));
     assert.equal(configureBracesPatch(root), true);
     for (const name of ['braces@3.0.3.patch', 'LICENSE.braces'])
       assert.deepEqual(fs.readFileSync(path.join(root, 'patches', name)), fs.readFileSync(path.join(installed, 'assets/patches', name)));

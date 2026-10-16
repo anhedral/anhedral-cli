@@ -5,6 +5,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const directories = [
   '.agents',
   '.github',
+  'assets/patches',
   'docs',
   'plugins/codex/inspector',
   'plugins/codex/distribution',
