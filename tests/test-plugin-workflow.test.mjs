@@ -76,8 +76,8 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     assert.equal(registry.cliVersion, manifest.version);
     assert.equal(metadata.cliVersion, manifest.version);
     for (const [document, source] of [
-      ['application-stack-standard.md', 'stack-standard.md'],
-      ['delivery-workflow.md', 'delivery-workflow.md'],
+      ['stack-standard.md', 'stack-standard.md'],
+      ['software-factory.md', 'software-factory.md'],
     ]) {
       assert.equal(
         readFileSync(path.join(references, document), 'utf8'),

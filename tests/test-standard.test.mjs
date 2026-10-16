@@ -102,10 +102,7 @@ try {
   );
   assert.deepEqual(pluginRegistry, CAPABILITY_REGISTRY);
   assert.equal(
-    readFileSync(
-      'plugins/codex/distribution/skills/anhedral/references/application-stack-standard.md',
-      'utf8',
-    ),
+    readFileSync('plugins/codex/distribution/skills/anhedral/references/stack-standard.md', 'utf8'),
     readFileSync('docs/stack-standard.md', 'utf8'),
   );
   const mobilePlan = createSetupPlan(options('mobile-plan', ['--expo']));
