@@ -18,8 +18,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scope:
+    name: Change scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      full: ${{ steps.scope.outputs.full }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: scope
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/ci-scope.mjs
+
   checks:
-    needs: plugin-ui
+    needs: [scope, plugin-ui]
+    if: ${{ !cancelled() }}
     name: Checks (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -32,66 +49,81 @@ jobs:
           - '24.18.0'
           - '24.21.0'
     steps:
+      - name: Documentation-only check
+        if: ${{ needs.scope.result == 'success' && needs.scope.outputs.full == 'false' }}
+        run: echo 'Documentation-only change; build and test steps are not needed.'
+
+      - name: Require successful scope and plugin checks
+        if: ${{ needs.scope.result != 'success' || (needs.scope.outputs.full == 'true' && needs.plugin-ui.result != 'success') }}
+        run: exit 1
+
       - name: Checkout
+        if: ${{ needs.scope.outputs.full == 'true' }}
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           persist-credentials: false
 
       - name: Setup pnpm
+        if: ${{ needs.scope.outputs.full == 'true' }}
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
           version: 10.34.5
 
       - name: Setup Node.js
+        if: ${{ needs.scope.outputs.full == 'true' }}
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
       - name: Install dependencies
+        if: ${{ needs.scope.outputs.full == 'true' }}
         run: pnpm install --frozen-lockfile
 
       - name: Build initializer
+        if: ${{ needs.scope.outputs.full == 'true' }}
         run: pnpm build
 
       - name: Restore verified plugin runtime
+        if: ${{ needs.scope.outputs.full == 'true' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: plugin-runtime
           path: plugins/codex/distribution/runtime
 
       - name: Run unit tests
+        if: ${{ needs.scope.outputs.full == 'true' }}
         run: pnpm test:unit
 
       - name: Verify reviewed dependency patches and preserve advisory visibility
-        if: ${{ matrix.node == '24.21.0' }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
         run: pnpm test:patch
 
       - name: Check source hygiene and static security policy
-        if: ${{ matrix.node == '20.19.0' }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '20.19.0') }}
         run: pnpm lint && pnpm check:security
 
       - name: Audit dependencies
-        if: ${{ matrix.node == '20.19.0' }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '20.19.0') }}
         run: pnpm audit:osv
 
       - name: Smoke test packed CLI
-        if: ${{ matrix.node != '22.12.0' }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node != '22.12.0') }}
         run: node tests/test-packed-cli.js
 
       - name: Enforce package allowlist
-        if: ${{ matrix.node == '20.19.0' }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '20.19.0') }}
         run: node tests/test-packlist.js
 
       - name: Build and verify Linux release candidate
-        if: ${{ matrix.node == '24.21.0' }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
         run: |
           node scripts/create-release-artifact.mjs
           pnpm release:artifact:verify
           pnpm release:artifact:smoke
 
       - name: Share verified release candidate for review
-        if: ${{ matrix.node == '24.21.0' }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-candidate
@@ -102,6 +134,8 @@ jobs:
           compression-level: 0
 
   e2e-stable:
+    needs: scope
+    if: ${{ needs.scope.outputs.full == 'true' }}
     name: E2E Stable
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -120,6 +154,8 @@ jobs:
       - run: pnpm build && node tests/test-packed-cli.js
 
   portable:
+    needs: scope
+    if: ${{ !cancelled() }}
     name: Portable CLI (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -129,25 +165,41 @@ jobs:
         os: [macos-latest, windows-latest]
         node: ['20.19.0', '22.12.0', '24.18.0', '24.21.0']
     steps:
+      - name: Documentation-only check
+        if: ${{ needs.scope.result == 'success' && needs.scope.outputs.full == 'false' }}
+        run: echo 'Documentation-only change; build and test steps are not needed.'
+
+      - name: Require successful scope detection
+        if: ${{ needs.scope.result != 'success' }}
+        run: exit 1
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        if: ${{ needs.scope.outputs.full == 'true' }}
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+        if: ${{ needs.scope.outputs.full == 'true' }}
         with:
           version: 10.34.5
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: ${{ needs.scope.outputs.full == 'true' }}
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+        if: ${{ needs.scope.outputs.full == 'true' }}
       - run: pnpm build
+        if: ${{ needs.scope.outputs.full == 'true' }}
       - run: node --test tests/test-cli-validation.test.mjs tests/test-standard.test.mjs tests/test-util-exec.test.mjs
+        if: ${{ needs.scope.outputs.full == 'true' }}
       - run: node tests/test-packed-cli.js
+        if: ${{ needs.scope.outputs.full == 'true' }}
       - name: Verify native Windows bootstrap guard
-        if: runner.os == 'Windows'
+        if: ${{ needs.scope.outputs.full == 'true' && (runner.os == 'Windows') }}
         run: node tests/test-generated-apps.mjs web
 
   plugin-ui:
+    needs: scope
+    if: ${{ needs.scope.outputs.full == 'true' }}
     name: Plugin UI (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -202,7 +254,8 @@ jobs:
 
   generated:
     name: Generated (${{ matrix.os }}, ${{ matrix.profile }}, Node ${{ matrix.node }})
-    needs: registry-matrix
+    needs: [scope, registry-matrix]
+    if: ${{ needs.scope.outputs.full == 'true' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:

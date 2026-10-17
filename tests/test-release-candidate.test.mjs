@@ -13,7 +13,7 @@ const scripts = JSON.parse(
 test('Linux release candidate is verified and executed after tests before its immutable upload', () => {
   const job = workflow.jobs.checks;
   assert.equal(job['runs-on'], 'ubuntu-latest');
-  assert.equal(job.needs, 'plugin-ui');
+  assert.deepEqual(job.needs, ['scope', 'plugin-ui']);
   assert.ok(job.strategy.matrix.node.includes('24.21.0'));
   const steps = job.steps;
   const candidate = steps.findIndex(
@@ -24,7 +24,10 @@ test('Linux release candidate is verified and executed after tests before its im
   assert.ok(patches >= 0);
   assert.ok(candidate > patches);
   assert.ok(candidate > steps.findIndex((step) => step.name === 'Restore verified plugin runtime'));
-  assert.equal(steps[candidate].if, "${{ matrix.node == '24.21.0' }}");
+  assert.equal(
+    steps[candidate].if,
+    "${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}",
+  );
   assert.deepEqual(steps[candidate].run.trim().split('\n'), [
     'node scripts/create-release-artifact.mjs',
     'pnpm release:artifact:verify',

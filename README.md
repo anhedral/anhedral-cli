@@ -4,6 +4,8 @@
 [![npm](https://img.shields.io/npm/v/anhedral)](https://www.npmjs.com/package/anhedral)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
+> 🚧 **Under construction.** Anhedral is in active development; features and APIs may change.
+
 Anhedral creates TypeScript application workspaces and helps deliver them to your own cloud accounts. Start with a web app, add the interfaces and services your product needs, and keep the source code, infrastructure, data and billing under your control.
 
 The default is **Vinext, React, Tailwind, shadcn/ui and Lucide on Cloudflare Workers**, with pnpm and Turborepo. The CLI generates the foundation and handles supported setup and delivery operations. You or your coding agent implement the product.
