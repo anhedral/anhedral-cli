@@ -5,13 +5,17 @@ import { fileURLToPath } from 'node:url';
 
 // Keep the exception narrow: plugin instructions, examples and registry data
 // can change shipped behavior even when their filenames look like documentation.
+const ordinaryDocuments = new Set([
+  'README.md',
+  'CONTRIBUTING.md',
+  '.github/CONTRIBUTING.md',
+  '.github/PULL_REQUEST_TEMPLATE.md',
+]);
+
 export function needsFullCI(files) {
   return (
     files.length === 0 ||
-    files.some(
-      (file) =>
-        file !== 'README.md' && file !== 'CONTRIBUTING.md' && !/^docs\/[^\r\n]+\.md$/.test(file),
-    )
+    files.some((file) => !ordinaryDocuments.has(file) && !/^docs\/[^\r\n]+\.md$/.test(file))
   );
 }
 

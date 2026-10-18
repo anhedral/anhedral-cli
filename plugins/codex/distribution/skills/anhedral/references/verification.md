@@ -2,6 +2,18 @@
 
 Dated records below describe the source and environment exercised at that time. Earlier results are historical evidence, not acceptance of a later release. Current architecture and operating instructions live in the stack standard and software factory.
 
+## Maintenance practices — 2026-10-18
+
+Added the software factory's evidence-driven maintenance workflow and connected it to the CLI's root `AGENTS.md`, contribution/PR guidance, shipped Anhedral skill and generated application instructions. It covers removal evidence for published/generated consumers, operational flag dependencies, focused changes, causal flaky-test diagnosis and controlled instruction comparisons. Existing uncommitted CI work was preserved. These instruction changes have not been evaluated through comparative agent task replays; no model cost or quality improvement is claimed.
+
+Local CLI build, generator and plugin package contracts (`node --test tests/test-standard.test.mjs tests/test-plugin.test.mjs`, two tests passed), source hygiene, changed TypeScript formatting and `git diff --check` passed. Build refreshed bundled canonical references. Skill YAML parsing passed using the repository's YAML library, and package contracts checked bundled Markdown reference targets. The skill-creator Python validator could not start because PyYAML is unavailable. No full release gate, provider acceptance, publication or installed-plugin update was performed for this local workflow change.
+
+### CLI integration verification — 2026-10-18
+
+Reviewed the pending maintenance guidance and documentation-only CI changes together with the Windows pnpm PATH fix. Ordinary contribution and PR-template Markdown now takes the documentation path; registry matrix preparation is skipped for that path. Source, shipped plugin instructions, unknown comparison history and manual runs retain full checks. Regression coverage includes source-to-document renames, whitespace failures, generated instructions preserving existing framework guidance, and earlier pnpm shims taking precedence over later native executables.
+
+Local CLI and optional inspector builds passed with a 384 MB Node heap cap. All 16 targeted tests passed across CI scope, release-candidate policy, command execution, generated guidance, documentation contracts, plugin packaging/workflow and standard generation. Root lint (types, formatting, hygiene and release policy), static security policy, package allowlist (227 files, 607781 packed bytes) and `git diff --check` passed. The first plugin workflow check correctly rejected a stale runtime; rebuilding the inspector resolved it. Frozen inspector dependency installation changed no lockfiles. Build refreshed bundled references. Hosted CI, the full cross-platform/generated-app matrix, browser acceptance, current external advisory refresh, publication and installed-plugin updates were not performed in this focused pass.
+
 ## Release candidate 0.12.0 — 2026-10-16
 
 This candidate combines the CLI/service refactor with optional Cloudflare Stream live video and consolidated documentation. Stream supplies a server-only management factory; billing activation, input ownership, broadcast/player UI, signed playback and live media acceptance remain explicit integration work. The README links into three maintained documents: the stack standard, software factory and this dated evidence record. Provider, CLI, dashboard, Void and codebase-review material is retained in those documents; packaging and plugin references use the same sources.

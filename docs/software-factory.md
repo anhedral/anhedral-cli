@@ -10,6 +10,7 @@ Use the numbered workflow for application delivery, then the reference sections 
 - [Application implementation and validation](#3-implement-the-product-and-integrations)
 - [Source, access and delivery](#5-establish-source-access-and-delivery-authority)
 - [Maintenance and recovery](#8-maintain-and-recover)
+- [Evidence-driven maintenance](#evidence-driven-maintenance)
 - [Provider configuration](#provider-configuration)
 - [CLI behavior](#cli-behavior)
 - [Project dashboard](#project-dashboard)
@@ -205,6 +206,34 @@ Rollback does not restore data, reverse SQL or cross incompatible Durable Object
 Keep alerts, dependency updates, quotas, retry/concurrency limits and shutdown controls owned and exercised. Ignored local receipts are not a durable historical backup. Live/foreign/uncertain locks are preserved; a leftover `.anhedral/ship.guard` needs manual ownership inspection. Lock recovery cannot be combined with provider/refresh flags and never replays provider writes.
 
 Use `anhedral help <command>` for exact options. See [provider configuration](software-factory.md#provider-configuration) for integration setup/retries and [CLI behavior](https://github.com/anhedral/anhedral-cli/blob/main/docs/software-factory.md#cli-behavior) for machine output and previews. The optional [Codex inspector](software-factory.md#project-dashboard) uses the same project logic; it does not replace runtime or product acceptance.
+
+## Evidence-driven maintenance
+
+Use this workflow for maintenance in the CLI, plugin and generated applications. It adapts lessons from OpenAI's [Maintaining software with the GPT-6 family](https://developers.openai.com/blog/maintaining-software-with-the-gpt-6-family) to Anhedral's source generators, published contracts and provider boundaries. It does not authorize a new audit, external mutation or release outside the requested work.
+
+### Establish the case before editing
+
+Inspect the current branch, working tree, owning instructions and relevant history. Define the behavior to preserve and the evidence that would justify changing it. For a broad audit, rank candidates by confidence, maintenance burden and measured runtime or CI cost. Keep uncertain candidates visible with the missing evidence; do not turn an incomplete inventory into a claim that everything else is safe.
+
+Use Fallow and source searches to find candidates, then trace their consumers. In this repository, include `src/index.ts` exports, command dispatch, registry-selected recipes, emitted source strings, generated package scripts, plugin/MCP entrypoints and source-only examples. An internal import search alone cannot establish that a published API or generated recipe is unused. Check aliases, wrappers, computed names and external consumers where relevant. Keep compatible entrypoints unless a breaking change is explicitly in scope.
+
+For each proposed removal, capture the symbol or configuration, callsites, history, evidence links or commands, expected behavior and unresolved dependencies. Use authorized read-only provider configuration, CI history and telemetry when they can resolve uncertainty. Note environment, source revision and observation window. Zero observed traffic is supporting evidence, not proof that a recovery path is obsolete. If live access is unavailable, finish source analysis and mark that candidate unverified.
+
+### Preserve operational controls
+
+Before retiring an experiment or constant flag, check its current authoritative value, targeting rules, dependent flags and all consuming services. Follow indirect references through schemas, aliases and dynamically constructed keys. Local overrides and SDK defaults do not establish production values. Preserve kill switches, emergency fallbacks, access boundaries, retry limits and recovery controls unless their retirement is explicitly justified and authorized. A permanent designation or conflicting evidence needs owner resolution before removal. A code cleanup does not imply permission to delete provider configuration or resources.
+
+### Prepare a bounded change and verify it
+
+Group work by a single rationale and ownership boundary; separate unrelated candidates into small changes. Explain why behavior is preserved, including the dependency chain for flag removals. Add a meaningful regression for a code defect and exercise affected consumers. Recipe changes need generated-output checks; package/export changes need packed-consumer checks; provider behavior needs its relevant local contracts and separately scoped live evidence. Use the existing release gates when releasing. Report measured savings with the measurement method, and label estimates explicitly.
+
+For flaky tests, inspect recent failed and successful CI runs at the same revision where possible. Distinguish product failures from timing, shared state, platform and infrastructure problems. Reproduce the failure or capture a concrete causal trace, fix that cause and rerun the affected case under the relevant conditions. Do not replace assertions with sleeps, increase retries to conceal failures, or disable required checks as a fix. When evidence is insufficient, report the suspected cause and next diagnostic step.
+
+### Improve agent context with evidence
+
+Keep enduring instructions in the owning `AGENTS.md` or skill and detailed procedures in linked references. When an instruction appears to cause unnecessary work, use the original task and an isolated repository snapshot to compare the current instruction with one narrow correction. Hold model, effort, tools and inputs constant; compare correctness, tool calls, tokens, elapsed time and cost where available. Replays must avoid duplicate provider writes, messages or releases. If a replay cannot be run, call the edit a proposed improvement rather than a measured gain.
+
+Use the configured model and effort for routine work. Consider a stronger reasoning setting for unresolved dependency chains or broad audits when cost and authorization permit; the article's benchmark is not an Anhedral quality or cost guarantee. Revisit corrective prompts when models change rather than accumulating permanent workarounds. Put accepted findings and verification gaps in `docs/verification.md`, and carry only durable, demonstrated lessons into shared instructions.
 
 ## Provider configuration
 
@@ -521,7 +550,7 @@ Keep application-facing guidance in the stack standard and this factory, with on
 
 Before release, review the entire diff, run `pnpm release:check` and `pnpm plugin:check`, and exercise affected generated profiles with `pnpm test:integration`. The full local release gate includes external advisory refresh, exact patch regressions, packed installation and package allowlisting. A restricted local environment can leave network, listener or browser checks blocked; record that boundary and require the corresponding hosted CI evidence. Do not disable required checks to make a release pass.
 
-README, CONTRIBUTING and `docs/**/*.md` changes use lightweight CI: check the diff for whitespace errors and skip builds, browser tests, generated-project matrices and release artifacts. All other paths, including plugin instructions, run full CI. The workflow still starts for every PR and push to main. Required matrix checks report a quick documentation-only success without installing dependencies; other expensive jobs are skipped. This preserves the existing branch-protection check names. Scope-detection failures also fail the existing Checks jobs. Merging documentation updates GitHub immediately and needs no version bump or npm publication. Packaged documentation updates with the next release. To deliberately release a documentation-only commit, manually run CI on main first; manual runs always execute the full matrix and produce the reviewed candidate.
+`README.md`, `CONTRIBUTING.md`, `.github/CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md` and `docs/**/*.md` changes use lightweight CI: check the diff for whitespace errors and skip builds, browser tests, registry/generated-project matrices and release artifacts. All other paths, including plugin instructions, run full CI. The workflow still starts for every PR and push to main. Required matrix checks report a quick documentation-only success without installing dependencies; other expensive jobs are skipped. This preserves the existing branch-protection check names. Scope-detection failures also fail the existing Checks jobs. Merging documentation updates GitHub immediately and needs no version bump or npm publication. Packaged documentation updates with the next release. To deliberately release a documentation-only commit, manually run CI on main first; manual runs always execute the full matrix and produce the reviewed candidate.
 
 For a new version, update `package.json`, `src/version.ts` and the immutable marketplace `plugin-v<version>` reference in `.agents/plugins/marketplace.json`. Build regenerates plugin manifest and registry versions. Commit all source and generated references, open a focused PR and wait for its checks before merging. Keep the owner's local checkout on `main` and synchronize it with the merged source without discarding unrelated work.
 
