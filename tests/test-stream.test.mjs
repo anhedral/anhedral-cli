@@ -25,10 +25,10 @@ async function fixture(flags, run) {
 const read = (root, file) => readFileSync(path.join(root, file), 'utf8');
 
 for (const [name, flags, runtime, env] of [
-  ['Vinext', [], 'web', 'env.example'],
-  ['Vercel', ['--next'], 'web', '.env.example'],
+  ['Vinext', ['--vinext'], 'api', 'env.example'],
+  ['Vercel', ['--next'], 'api', 'env.example'],
   ['Hono', ['--hono'], 'api', 'env.example'],
-  ['OpenNext', ['--next', '--hosting=cloudflare'], 'web', '.dev.vars.example'],
+  ['OpenNext', ['--next', '--hosting=cloudflare'], 'api', '.dev.vars.example'],
 ]) {
   test(`${name} composes Stream with private runtime examples and a server-only export`, () =>
     fixture(flags, (root) => {
@@ -47,7 +47,7 @@ test('Stream is independent of messaging and live SQL and requires a server', ()
   for (const product of ['stream', 'realtime', 'neon-realtime', 'neon'])
     assert.ok(options.products.includes(product));
   assert.ok(!parseStandardOptions(['app', '--stream']).products.includes('neon'));
-  assert.throws(() => parseStandardOptions(['app', '--expo', '--stream']), /server runtime/);
+  assert.ok(parseStandardOptions(['app', '--expo', '--stream']).products.includes('hono'));
   const capability = CAPABILITY_CONTRACT.products.find((entry) => entry.id === 'stream');
   assert.equal(capability.provisioning.support, 'scaffold-only');
   assert.equal(capability.provisioning.evidence, 'unverified');

@@ -53,7 +53,9 @@ while (result.contents.readUInt32LE(offset) === 0x04034b50) {
   offset += 30 + nameSize + size;
 }
 assert.ok(files.has('plugin.json'));
-assert.ok(files.has('skills/anhedral/SKILL.md'));
+const skillNames = ['init', 'dev', 'design', 'auth', 'billing', 'hosting'];
+assert.equal([...files.keys()].filter((name) => name.endsWith('/SKILL.md')).length, 6);
+for (const name of skillNames) assert.ok(files.has(`skills/anhedral-${name}/SKILL.md`));
 assert.ok(files.has('LICENSE'));
 for (const name of [
   'mcp.json',
@@ -112,8 +114,8 @@ try {
   const distribution = path.join(temporary, 'plugins/codex/distribution');
   for (const name of [
     'mcp.json',
-    'skills/anhedral/SKILL.md',
-    'skills/anhedral/references/software-factory.md',
+    'skills/anhedral-init/SKILL.md',
+    'references/software-factory.md',
     'runtime/server.mjs',
   ]) {
     const file = path.join(distribution, name);

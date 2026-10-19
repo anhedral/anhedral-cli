@@ -389,7 +389,9 @@ export async function verifyApplication(root: string, run = defaultRunner) {
     const project = snapshot.project;
     const env = environment(project);
     const primary =
-      release.targets.find((target) => target.target === 'web') ?? release.targets.at(-1);
+      release.targets.find((target) => target.target === 'web') ??
+      release.targets.find((target) => target.target === 'mobile') ??
+      release.targets.at(-1);
     if (!primary?.urls.length)
       throw new Error('No recorded application URL for live verification.');
     const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));

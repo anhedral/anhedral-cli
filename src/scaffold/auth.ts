@@ -1,3 +1,6 @@
+import { scaffoldContracts, scaffoldWebAuth } from './backend.js';
+import { expoAuthScheme, scaffoldExpoAuth } from './expo-auth.js';
+import { jsString } from '../render.js';
 import { writeEnvironmentFile } from './environment.js';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { existsSync, readFileSync } from 'node:fs';
@@ -5,25 +8,35 @@ import path from 'node:path';
 import { writeBetterAuthSchema } from '../auth-schema.js';
 import type { RecipeContext } from '../registry/types.js';
 import { put, patchPackage, sharedPackage } from './files.js';
-export function scaffoldBetterAuth({ root, options, runtimeApp, has }: RecipeContext): void {
+export function scaffoldBetterAuth({
+  root,
+  options,
+  runtimeApp,
+  has,
+  updating,
+}: RecipeContext): void {
+  const scheme = has('expo') ? expoAuthScheme(root) : undefined;
   writeBetterAuthSchema(root, has('neon'));
   sharedPackage(
     root,
     'auth',
-    `import { betterAuth } from 'better-auth';
+    `${scheme ? "import { expo } from '@better-auth/expo';\n" : ''}import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { createDatabase } from '@workspace/db';
-export function createAuth(db: ReturnType<typeof createDatabase>, secret: string, baseURL: string) {
+export function createAuth(db: ReturnType<typeof createDatabase>, secret: string, baseURL: string, trustedOrigins: string[] = [new URL(baseURL).origin${scheme ? `, ${jsString(scheme + '://')}` : ''}]) {
   return betterAuth({
     database: drizzleAdapter(db, { provider: '${has('neon') ? 'pg' : 'sqlite'}', transaction: false }),
     secret,
     baseURL,
+    trustedOrigins,
+    ${scheme ? 'plugins: [expo()],' : ''}
     emailAndPassword: { enabled: true },
   });
 }
 `,
     {
       'better-auth': STACK_DEPENDENCIES['better-auth'],
+      ...(scheme ? { '@better-auth/expo': STACK_DEPENDENCIES['@better-auth/expo'] } : {}),
       '@better-auth/drizzle-adapter': STACK_DEPENDENCIES['@better-auth/drizzle-adapter'],
       '@workspace/db': 'workspace:*',
     },
@@ -33,14 +46,18 @@ export function createAuth(db: ReturnType<typeof createDatabase>, secret: string
   });
   const connection = has('neon') ? 'createDatabase(env.DATABASE_URL)' : 'createDatabase(env.DB)';
   if (has('hono')) {
+    if (!existsSync(path.join(root, 'packages/contracts/package.json'))) scaffoldContracts(root);
+    patchPackage(root, 'apps/api/package.json', {
+      dependencies: { '@workspace/contracts': 'workspace:*' },
+    });
     const source = readFileSync(path.join(root, 'apps/api/src/index.ts'), 'utf8');
     put(
       root,
       'apps/api/src/index.ts',
-      `import { createAuth } from '@workspace/auth';\nimport { createDatabase } from '@workspace/db';\n` +
+      `import { createAuth } from '@workspace/auth';\n${source.includes("import { createDatabase } from '@workspace/db'") ? '' : "import { createDatabase } from '@workspace/db';\n"}import { sessionSchema } from '@workspace/contracts';\n` +
         source.replace(
           'export default app;',
-          `app.on(['GET', 'POST'], '/api/auth/*', async (c) => {\n  const env = c.env;\n  const database = ${connection};\n  return await createAuth(database, env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).handler(c.req.raw);\n});\nexport default app;`,
+          `app.get('/api/session', async (c) => {\n  const env = c.env;\n  const session = await createAuth(${connection}, env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).api.getSession({ headers: c.req.raw.headers });\n  c.header('cache-control', 'private, no-store');\n  if (!session) return c.json({ error: 'Unauthorized' }, 401);\n  return c.json(sessionSchema.parse({ user: session.user }));\n});\napp.on(['GET', 'POST'], '/api/auth/*', async (c) => {\n  const env = c.env;\n  const database = ${connection};\n  return await createAuth(database, env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).handler(c.req.raw);\n});\nexport default app;`,
         ),
     );
   } else {
@@ -81,9 +98,11 @@ export { handler as GET, handler as POST };
     {
       ...(has('neon') ? { DATABASE_URL: '' } : {}),
       BETTER_AUTH_SECRET: '',
-      BETTER_AUTH_URL: `http://localhost:${runtimeApp === 'web' ? '3000' : '8787'}`,
+      BETTER_AUTH_URL: `http://localhost:${has('vinext') || has('next') || has('expo') ? '3000' : '8787'}`,
     },
   );
+  if (has('hono') && (has('vinext') || has('next'))) scaffoldWebAuth(root);
+  if (scheme) scaffoldExpoAuth(root, scheme, !updating);
   if (has('hono'))
     put(
       root,

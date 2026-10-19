@@ -9,11 +9,22 @@ import { parse } from 'yaml';
 import { needsFullCI } from '../scripts/ci-scope.mjs';
 
 test('only ordinary documentation takes the lightweight path', () => {
-  assert.equal(needsFullCI(['README.md', 'CONTRIBUTING.md', 'docs/stack-standard.md']), false);
+  assert.equal(
+    needsFullCI([
+      'README.md',
+      'CONTRIBUTING.md',
+      '.github/CONTRIBUTING.md',
+      '.github/PULL_REQUEST_TEMPLATE.md',
+      'docs/stack-standard.md',
+    ]),
+    false,
+  );
   for (const file of [
     'src/bin.ts',
+    'AGENTS.md',
+    '.github/actions/example/README.md',
     'docs/stack-registry.json',
-    'plugins/codex/distribution/skills/anhedral/SKILL.md',
+    'plugins/codex/distribution/skills/anhedral-init/SKILL.md',
     'examples/full-stack/README.md',
     '.github/workflows/ci.yml',
     'package.json',
@@ -80,6 +91,13 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
     writeFileSync(path.join(directory, 'README.md'), '🚧 Under construction\n');
     git('commit', '--quiet', '-am', 'Docs');
     assert.equal(run(), 'full=false\n');
+    writeFileSync(path.join(directory, 'README.md'), 'Trailing space \n');
+    git('commit', '--quiet', '-am', 'Whitespace defect');
+    assert.throws(run, 'documentation whitespace defects must fail');
+    assert.throws(() => readFileSync(output));
+    writeFileSync(path.join(directory, 'README.md'), 'Clean documentation\n');
+    git('commit', '--quiet', '-am', 'Fix whitespace');
+    assert.equal(run(), 'full=false\n');
     mkdirSync(path.join(directory, 'docs'));
     git('mv', 'source.ts', 'docs/source.md');
     git('commit', '--quiet', '-m', 'Move source');
@@ -99,7 +117,7 @@ test('CI retains check names, gates expensive jobs and fails checks if scope det
   assert.ok(workflow.on.pull_request !== undefined);
   assert.equal(workflow.on.push['paths-ignore'], undefined);
   assert.equal(workflow.jobs.scope.steps[0].with['fetch-depth'], 0);
-  for (const name of ['e2e-stable', 'plugin-ui', 'generated']) {
+  for (const name of ['e2e-stable', 'plugin-ui', 'registry-matrix', 'generated']) {
     const job = workflow.jobs[name];
     assert.ok([job.needs].flat().includes('scope'), name);
     assert.match(job.if, /needs\.scope\.outputs\.full == 'true'/, name);

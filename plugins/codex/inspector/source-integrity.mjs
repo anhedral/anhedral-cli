@@ -4,7 +4,7 @@ import path from 'node:path';
 export const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
 export function pluginSourceDigest(root) {
   const files = [
-    'plugins/codex/distribution/skills/anhedral/references/stack-registry.json',
+    'plugins/codex/distribution/references/stack-registry.json',
     ...[
       'build.mjs',
       'licenses.mjs',

@@ -346,6 +346,25 @@ try {
     /reviewed CLI and plugin artifacts/,
   );
 
+  for (const [trusted, untrusted] of [
+    ['--branch main --commit "$RELEASE_SHA"', '--branch staging --commit "$RELEASE_SHA"'],
+    [
+      'select(.event == "push" or .event == "workflow_dispatch")',
+      'select(.event == "pull_request")',
+    ],
+    ['run-id: ${{ steps.candidate.outputs.run_id }}', 'run-id: 123'],
+  ]) {
+    writeFileSync(
+      path.join(workflowPolicyDirectory, 'release.yml'),
+      releaseWorkflow.replace(trusted, untrusted),
+    );
+    assert.match(
+      validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+      /successful trusted main CI/,
+    );
+  }
+  writeFileSync(path.join(workflowPolicyDirectory, 'release.yml'), releaseWorkflow);
+
   const token = ['ghp', '_', 'A'.repeat(32)].join('');
   const clerkSecret = ['sk', '_test_', 'B'.repeat(28)].join('');
   const r2Secret = ['C'.repeat(20), 'D'.repeat(20)].join('');
@@ -608,5 +627,41 @@ test('Node type update policies follow each package runtime without cross-packag
   ]) {
     const manifest = JSON.parse(readFileSync(path.join(repoRoot, file), 'utf8'));
     assert.equal(Number(manifest.devDependencies['@types/node'].split('.')[0]), major);
+  }
+});
+
+test('empty adjacent example assignments do not exempt populated or multiline secrets', () => {
+  const firstKey = 'REVENUECAT_SECRET_KEY';
+  const secondKey = 'REVENUECAT_WEBHOOK_SIGNING_SECRET';
+  const secret = 'a'.repeat(32);
+  for (const newline of ['\n', '\r\n']) {
+    assert.deepEqual(
+      scanText(
+        'apps/api/.env.example',
+        Buffer.from(`${firstKey}=${newline}${secondKey}=${newline}`),
+      ),
+      [],
+      'Two empty example assignments contain no secret',
+    );
+    assert.ok(
+      scanText(
+        'apps/api/.env.example',
+        Buffer.from(`${firstKey}=${newline}${secondKey}=${secret}${newline}`),
+      ).some((finding) => finding.pattern === 'credential-assignment'),
+      'A populated second example assignment must remain blocking',
+    );
+    assert.ok(
+      scanText('apps/api/private.env', Buffer.from(`${secondKey}=${secret}${newline}`)).some(
+        (finding) => finding.pattern === 'credential-assignment',
+      ),
+      'Runtime environment files must not inherit example exemptions',
+    );
+    assert.ok(
+      scanText(
+        'config.js',
+        Buffer.from(`const API_TOKEN =${newline}  '${secret}';${newline}`),
+      ).some((finding) => finding.pattern === 'credential-assignment'),
+      'Actual multiline JavaScript credentials must remain blocking',
+    );
   }
 });

@@ -1,3 +1,10 @@
+import {
+  scaffoldCloudflareTransport,
+  scaffoldAnalyticsEngine,
+  scaffoldImages,
+  scaffoldRealtimeKit,
+  scaffoldVideo,
+} from './scaffold/cloudflare-services.js';
 import { usesVoidSelection } from './runtime-policy.js';
 import { scaffoldStyling } from './scaffold/styling.js';
 import { resourceName } from './render.js';
@@ -19,7 +26,11 @@ import {
 import { scaffoldExpo } from './platforms/mobile.js';
 import { scaffoldElectron } from './platforms/desktop.js';
 import { scaffoldWxt } from './platforms/extension.js';
-import { scaffoldPrivateFiles, scaffoldRevenueCat } from './scaffold/integrations.js';
+import {
+  scaffoldPrivateFiles,
+  scaffoldStripe,
+  scaffoldRevenueCat,
+} from './scaffold/integrations.js';
 import { sharedPackage } from './scaffold/files.js';
 import type {
   ItemDefinition,
@@ -39,6 +50,23 @@ function requirements(
 ): SetupRequirements {
   return { purpose, tools, access, credentials, resources, verify };
 }
+
+function billingDependencies({ has }: RecipeContext): string[] {
+  return [
+    'hono',
+    has('neon') ? 'neon' : 'd1',
+    has('clerk') ? 'clerk' : 'better-auth',
+    ...(has('expo') ? ['expo'] : []),
+  ];
+}
+
+const BILLING_ENVIRONMENT_KEYS = [
+  'BILLING_ORIGIN',
+  'BILLING_ENVIRONMENT',
+  'BILLING_PLANS_JSON',
+  'BILLING_ENTITLEMENTS_JSON',
+  'BILLING_PREMIUM_ENTITLEMENT',
+];
 function packageSource(
   name: string,
   source: string,
@@ -107,18 +135,24 @@ const PRODUCT_ITEMS = defineItems({
   },
   expo: {
     type: 'application',
-    description: 'Expo mobile application with native UI',
+    description: 'Universal Expo web, iOS and Android client with a Cloudflare asset/API gateway',
     targets: ['apps/mobile'],
     registryDependencies: ['workspace', 'typescript', 'eslint', 'styling'],
     setup: requirements(
-      'Mobile application',
-      ['Expo/EAS CLI', 'Xcode or Android SDK'],
-      ['Client-owned Apple/Google developer accounts for store delivery'],
-      ['Platform signing credentials; EAS access when used'],
-      ['Expo app; native adapters, signing, store configuration'],
-      ['Native simulator/device flows and signed native build; web export alone is insufficient'],
+      'Universal web, iOS and Android application',
+      ['Browser control', 'Wrangler'],
+      ['For requested native distribution only: client-owned Apple/Google developer accounts'],
+      ['For requested native builds only: platform signing credentials and EAS access when used'],
+      [
+        'Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration',
+      ],
+      [
+        'Static web export/runtime; requested native delivery additionally needs simulator/device and signed-build acceptance',
+      ],
     ),
     install: scaffoldExpo,
+    environment: [],
+    resolveEnvironment: ({ has }) => (has('hono') ? ['EXPO_PUBLIC_API_URL'] : []),
   },
   electron: {
     type: 'application',
@@ -315,8 +349,16 @@ export interface LocalDataStore {
     fallbackDependency: 'd1',
     environment: ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'],
     runtime: 'server',
-    resolveDependencies: ({ has }) => [has('neon') ? 'neon' : 'd1'],
-    resolveTargets: ({ runtimeApp }) => ['packages/auth', 'packages/db', `apps/${runtimeApp}`],
+    resolveDependencies: ({ has }) => [
+      has('neon') ? 'neon' : 'd1',
+      ...(has('expo') ? ['expo'] : []),
+    ],
+    resolveTargets: ({ runtimeApp, has }) => [
+      'packages/auth',
+      'packages/db',
+      `apps/${runtimeApp}`,
+      ...(has('expo') ? ['apps/mobile'] : []),
+    ],
   },
   r2: {
     type: 'integration',
@@ -450,8 +492,89 @@ export interface LocalDataStore {
     ),
     install: scaffoldWorkflows,
   },
+  'analytics-engine': {
+    selection: { requiresAll: ['hono'] },
+    type: 'integration',
+    description: 'Workers Analytics Engine dataset binding and server event helper',
+    targets: ['packages/analytics-engine'],
+    runtime: 'worker',
+    install: scaffoldAnalyticsEngine,
+    configure: ({ options }) => ({
+      analytics_engine_datasets: [
+        { binding: 'EVENTS', dataset: resourceName(options.name, 'events').replaceAll('-', '_') },
+      ],
+    }),
+    setup: requirements(
+      'Custom server-side analytics',
+      ['Wrangler'],
+      ['Cloudflare Analytics Engine access'],
+      [],
+      ['EVENTS dataset binding; define event semantics and privacy policy'],
+      [
+        'Dataset ingestion, sampled query semantics and privacy filtering; not transactional billing state',
+      ],
+    ),
+  },
+  images: {
+    selection: { requiresAll: ['hono'] },
+    type: 'integration',
+    description: 'Cloudflare Images binding and private image transform helper',
+    targets: ['packages/images'],
+    runtime: 'worker',
+    install: scaffoldImages,
+    configure: () => ({ images: { binding: 'IMAGES' } }),
+    setup: requirements(
+      'Image optimization',
+      ['Wrangler'],
+      ['Cloudflare Images account eligibility'],
+      [],
+      ['IMAGES binding; authorize source objects and define transform/usage limits'],
+      ['Real transforms, source ownership and cache isolation'],
+    ),
+  },
+  realtimekit: {
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'cloudflare-api'],
+    selection: { requiresAll: ['hono'] },
+    type: 'integration',
+    description: 'Cloudflare RealtimeKit server meeting and participant-token helpers',
+    targets: ['packages/realtimekit'],
+    runtime: 'worker',
+    install: scaffoldRealtimeKit,
+    environment: ['REALTIMEKIT_ACCOUNT_ID', 'REALTIMEKIT_APP_ID', 'REALTIMEKIT_API_TOKEN'],
+    setup: requirements(
+      'Audio/video conferencing',
+      ['Cloudflare RealtimeKit API or dashboard'],
+      ['Cloudflare RealtimeKit app and scoped Realtime permissions'],
+      ['Server-only account/app ID and API token'],
+      [
+        'Manual app activation and presets; implement authorized token routes and platform client SDK',
+      ],
+      ['Meeting isolation, permissions, reconnect and actual device media/teardown'],
+    ),
+  },
+  video: {
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'cloudflare-api'],
+    selection: { requiresAll: ['hono'] },
+    type: 'integration',
+    description: 'Cloudflare Stream private on-demand direct video upload helper',
+    targets: ['packages/video'],
+    runtime: 'worker',
+    install: scaffoldVideo,
+    environment: ['STREAM_ACCOUNT_ID', 'STREAM_API_TOKEN'],
+    setup: requirements(
+      'Uploaded video processing and delivery',
+      ['Cloudflare Stream API or dashboard'],
+      ['Cloudflare Stream activation and scoped Stream Write access'],
+      ['Server-only Stream account ID and API token'],
+      [
+        'Authorized one-time upload issuance; implement processing checks, signed playback and retention',
+      ],
+      ['Creator ownership, upload/processing limits and private playback on selected devices'],
+    ),
+  },
   openai: {
     type: 'package',
+    runtime: 'server',
     description: 'Server-side OpenAI SDK factory',
     targets: ['packages/ai'],
     selection: { conflicts: ['ai-sdk'] },
@@ -473,6 +596,7 @@ export interface LocalDataStore {
   },
   'ai-sdk': {
     type: 'package',
+    runtime: 'server',
     description: 'Server-side AI SDK and provider exports',
     targets: ['packages/ai'],
     selection: { conflicts: ['openai'] },
@@ -512,6 +636,7 @@ export interface LocalDataStore {
   },
   resend: {
     type: 'package',
+    runtime: 'server',
     description: 'Server-side email SDK factory',
     targets: ['packages/email'],
     registryDependencies: ['workspace', 'typescript', 'eslint'],
@@ -533,10 +658,18 @@ export interface LocalDataStore {
     environment: ['RESEND_API_KEY'],
   },
   stripe: {
-    type: 'package',
-    description: 'Server-side billing SDK factory',
-    targets: ['packages/billing'],
+    type: 'integration',
+    description: 'Authenticated Stripe checkout, portal and server entitlement projection',
+    targets: ['packages/billing', 'packages/contracts', 'apps/api'],
+    selection: { requiresAll: ['hono'], requiresAny: ['better-auth', 'clerk'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
+    resolveDependencies: billingDependencies,
+    resolveTargets: ({ has }) => [
+      'packages/billing',
+      'packages/contracts',
+      'apps/api',
+      ...(has('expo') ? ['apps/mobile'] : []),
+    ],
     setup: requirements(
       'Web payments and subscriptions',
       ['Stripe integration or CLI'],
@@ -545,29 +678,43 @@ export interface LocalDataStore {
       ['Products/prices, signed webhooks and entitlement implementation'],
       ['Test purchase/cancellation, webhook replay and transactional idempotency'],
     ),
-    package: packageSource(
-      'billing',
-      "import Stripe from 'stripe';\nexport function createBilling(apiKey: string) { return new Stripe(apiKey); }\n",
-      { stripe: STACK_DEPENDENCIES['stripe'] },
-    ),
-    environment: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
+    install: scaffoldStripe,
+    environment: [...BILLING_ENVIRONMENT_KEYS, 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
   },
   revenuecat: {
     type: 'integration',
-    description: 'Cross-store entitlement integration guidance',
-    targets: ['packages/billing/revenuecat.md'],
-    selection: { requiresAll: ['stripe'] },
-    registryDependencies: ['stripe'],
+    description: 'Native purchases, restore and server-enforced cross-store entitlements',
+    targets: ['packages/billing', 'packages/contracts', 'apps/api'],
+    selection: { requiresAll: ['hono'], requiresAny: ['better-auth', 'clerk'] },
+    registryDependencies: ['workspace', 'typescript', 'eslint'],
+    resolveDependencies: billingDependencies,
+    resolveTargets: ({ has }) => [
+      'packages/billing',
+      'packages/contracts',
+      'apps/api',
+      ...(has('expo') ? ['apps/mobile'] : []),
+    ],
     setup: requirements(
-      'Cross-store subscription entitlements alongside Stripe',
+      'Cross-store subscription entitlements; Stripe is optional',
       ['RevenueCat integration or API', 'Selected mobile store tooling'],
       ['RevenueCat project; App Store/Play Store product access'],
       ['Platform public SDK keys; server API/webhook credentials as required'],
-      ['Integration guidance only; install platform SDKs and configure offerings/store products'],
+      [
+        'Native purchase SDK and authenticated entitlement APIs; configure offerings/store products before acceptance',
+      ],
       ['Sandbox purchase/restore, verified webhooks and entitlement reconciliation'],
     ),
     install: scaffoldRevenueCat,
-    environment: ['EXPO_PUBLIC_REVENUECAT_IOS_API_KEY', 'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY'],
+    environment: [
+      ...BILLING_ENVIRONMENT_KEYS,
+      'REVENUECAT_SECRET_KEY',
+      'REVENUECAT_WEBHOOK_AUTHORIZATION',
+      'REVENUECAT_WEBHOOK_SIGNING_SECRET',
+      'REVENUECAT_APP_IDS_JSON',
+      'REVENUECAT_PROJECT_ID',
+      'EXPO_PUBLIC_REVENUECAT_IOS_API_KEY',
+      'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY',
+    ],
   },
   sentry: {
     type: 'package',
@@ -628,6 +775,7 @@ export async function recordEvents(stream: EventStream, events: Record<string, u
   },
   posthog: {
     type: 'package',
+    runtime: 'server',
     description: 'Server-side product analytics factory',
     targets: ['packages/analytics'],
     registryDependencies: ['workspace', 'typescript', 'eslint'],
@@ -700,6 +848,14 @@ const FOUNDATION_ITEMS = defineItems({
     description: 'Shared ESLint configuration',
     targets: ['packages/eslint-config'],
     registryDependencies: ['workspace'],
+  },
+  'cloudflare-api': {
+    type: 'foundation',
+    installer: 'recipe',
+    description: 'Shared server-only Cloudflare media management transport',
+    targets: ['packages/cloudflare-api'],
+    registryDependencies: ['workspace', 'typescript', 'eslint'],
+    install: scaffoldCloudflareTransport,
   },
   ui: {
     type: 'foundation',

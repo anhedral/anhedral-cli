@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { randomBytes } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { verifyLocalAuth } from './support/verify-local-auth.mjs';
@@ -58,9 +58,27 @@ try {
   assert.equal(openapi.status, 200);
   assert.ok((await openapi.json()).paths['/health']);
   await verifyLocalAuth(env.BETTER_AUTH_URL, send);
-  assert.equal(db.prepare('select count(*) as count from user').get().count, 1);
+  let accounts = 1;
+  const proxyPath = path.join(root, 'apps/web/lib/api-proxy.ts');
+  if (existsSync(proxyPath)) {
+    const { createApiProxy } = await import(pathToFileURL(proxyPath));
+    env.BETTER_AUTH_URL = 'http://localhost:3000';
+    const proxy = createApiProxy(
+      (request) => worker.fetch(request, env, {}),
+      'https://api.internal',
+    );
+    await verifyLocalAuth(env.BETTER_AUTH_URL, (url, options) => {
+      const request = new Request(url, options);
+      // Readiness is an API runtime endpoint, outside the web /api/* proxy.
+      return new URL(url).pathname === '/__void/ready'
+        ? worker.fetch(request, env, {})
+        : proxy(request);
+    });
+    accounts++;
+  }
+  assert.equal(db.prepare('select count(*) as count from user').get().count, accounts);
   // Signup creates a separate session. Logout revokes only the later login cookie.
-  assert.equal(db.prepare('select count(*) as count from session').get().count, 1);
+  assert.equal(db.prepare('select count(*) as count from session').get().count, accounts);
   console.log(
     'PASS: compiled generated health/OpenAPI and Better Auth/Drizzle signup, login, session, incorrect password and revocation against in-memory SQLite. Workerd and provider acceptance are separate.',
   );

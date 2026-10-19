@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Build and ship applications with a Cloudflare-first stack, explicit architecture and verified delivery evidence.",
   "author": {
     "name": "Anhedral",
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Build and ship applications",
-        "longDescription": "Describe your application. Anhedral guides Codex through implementation with Vinext and Cloudflare Workers by default, adding D1, Better Auth and Workers AI when needed. Native Next.js on Vercel remains an option. The CLI scaffolds applications and verifies supported delivery into your own provider accounts. Architecture and product verification remain visible in your source.",
+        "longDescription": "Six focused skills: Anhedral Init, Dev, Design, Auth, Billing and Hosting. Start with a minimal Expo app and add Hono, identity, data and services as needed, or select the full-product preset. Next.js on Vercel and Vinext on Cloudflare are explicit alternatives. Source, provider accounts and verification stay under your control.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
         "composerIcon": "./assets/anhedral-mark.svg",

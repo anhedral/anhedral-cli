@@ -239,6 +239,8 @@ jobs:
           retention-days: 1
 
   registry-matrix:
+    needs: scope
+    if: ${{ needs.scope.outputs.full == 'true' }}
     name: Registry matrix
     runs-on: ubuntu-latest
     timeout-minutes: 5

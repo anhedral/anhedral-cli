@@ -40,6 +40,19 @@ try {
   assert.deepEqual(JSON.parse(direct.stdout), literalArgs);
   assert.throws(() => resolveCommand('pnpm', [], 'win32', ''), /direct pnpm entry point/);
 
+  const nativeRoot = path.join(temporaryRoot, 'native tools');
+  mkdirSync(nativeRoot);
+  const native = path.join(nativeRoot, 'pnpm.exe');
+  writeFileSync(native, '');
+  assert.deepEqual(resolveCommand('pnpm', literalArgs, 'win32', `${shimRoot};${nativeRoot}`), {
+    command: process.execPath,
+    args: [entry, ...literalArgs],
+  });
+  assert.deepEqual(resolveCommand('pnpm.cmd', literalArgs, 'win32', `${nativeRoot};${shimRoot}`), {
+    command: native,
+    args: literalArgs,
+  });
+
   const noisySuccess = path.join(temporaryRoot, 'noisy-success.mjs');
   writeFileSync(
     noisySuccess,

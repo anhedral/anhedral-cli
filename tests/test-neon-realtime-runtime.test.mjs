@@ -22,9 +22,9 @@ function fixture(flags, relative, content) {
 const run = async (_command, args) => (args.includes('check-ignore') ? args.at(-1) : '');
 
 for (const [flags, relative, voidApp] of [
-  [['--hono', '--neon', '--neon-realtime', '--expo'], 'apps/api/.env', 'api'],
+  [['--hono', '--neon', '--neon-realtime', '--electron'], 'apps/api/.env', 'api'],
   [['--hono', '--queues', '--neon', '--neon-realtime'], 'apps/api/.dev.vars'],
-  [['--next', '--neon', '--neon-realtime'], 'apps/web/.env.local'],
+  [['--next', '--neon', '--neon-realtime'], 'apps/api/.env', 'api'],
 ]) {
   test(`Neon Realtime credentials target only ${relative}`, async () => {
     const content = `NEON_REALTIME_SECRET=${JSON.stringify(secret)}\nNEON_REALTIME_URL=https://unrelated.customer.com\nBETTER_AUTH_SECRET=invalid-unselected-secret\nOTHER_SECRET=private-unrelated-value\n`;

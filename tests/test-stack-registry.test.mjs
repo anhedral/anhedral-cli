@@ -56,21 +56,30 @@ test('runtime and database dependencies precede auth and resolve deterministical
   const auth = first.items.find((item) => item.name === 'better-auth');
   assert.ok(auth.registryDependencies.includes('hono'));
   assert.ok(auth.registryDependencies.includes('neon'));
-  assert.ok(ordered.indexOf('stripe') < ordered.indexOf('revenuecat'));
+  for (const provider of ['stripe', 'revenuecat']) {
+    assert.ok(ordered.indexOf('better-auth') < ordered.indexOf(provider));
+    assert.ok(ordered.indexOf('neon') < ordered.indexOf(provider));
+  }
   assert.ok(ordered.indexOf('posthog') < ordered.indexOf('basin'));
   assert.equal(new Set(ordered).size, ordered.length);
   assert.ok(!names(resolve(['--expo'])).includes('ui'));
-  assert.ok(names(resolve([])).includes('ui'));
+  assert.ok(!names(resolve([])).includes('ui'));
+  assert.ok(names(resolve(['--vinext'])).includes('ui'));
 });
 
 test('plans resolve runtime-specific destinations, package names and bindings', () => {
   const item = (args, name) => resolve(args).items.find((entry) => entry.name === name);
+  const expo = item([], 'expo');
+  assert.deepEqual(expo.environment, []);
+  assert.ok(item(['--hono', '--expo'], 'expo').environment.includes('EXPO_PUBLIC_API_URL'));
+  assert.ok(expo.environment.every((key) => key.startsWith('EXPO_PUBLIC_')));
+  assert.ok(expo.setup.tools.includes('Wrangler'));
   assert.deepEqual(item(['--basin'], 'basin').targets, ['packages/analytics']);
   assert.equal(item(['--basin'], 'basin').package.name, 'analytics');
   assert.deepEqual(item(['--basin', '--posthog'], 'basin').targets, ['packages/basin']);
   assert.equal(item(['--basin', '--posthog'], 'basin').package.name, 'basin');
   assert.ok(names(resolve(['--next', '--queues'])).includes('hono'));
-  assert.ok(!names(resolve(['--expo', '--queues'])).includes('hono'));
+  assert.ok(names(resolve(['--expo', '--queues'])).includes('hono'));
   assert.equal(item(['--d1'], 'd1').bindings.d1_databases[0].database_name, 'registry-test-db');
   const nativeDatabase = item(['--next', '--neon'], 'neon');
   assert.equal(nativeDatabase.bindings, undefined);
@@ -94,7 +103,7 @@ test('direct registry API rejects incompatible or incomplete selections', () => 
   assert.throws(invalid(['vinext', 'next']), /Choose one/);
   assert.throws(invalid(['hono', 'neon', 'd1']), /Choose one/);
   assert.throws(invalid(['hono', 'better-auth']), /requires.*neon or d1/);
-  assert.throws(invalid(['expo', 'revenuecat']), /requires stripe/);
+  assert.throws(invalid(['expo', 'revenuecat']), /requires.*better-auth or clerk/);
   assert.throws(invalid(['next', 'r2'], 'vercel'), /Cloudflare runtime/);
   assert.throws(invalid(['expo', 'neon']), /server runtime/);
   assert.throws(invalid(['made-up']), /Unknown stack product/);
@@ -240,4 +249,21 @@ test('recipes compose all compatible products without package collisions, and in
     console.log = original;
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('minimal defaults and optional capabilities stay independent', () => {
+  const products = (flags = []) =>
+    parseStandardOptions(['example', ...flags, '--skip-install']).products;
+  assert.deepEqual(products(), ['expo']);
+  assert.deepEqual(products(['--wxt']), ['wxt']);
+  assert.deepEqual(products(['--neon']), ['expo', 'hono', 'neon']);
+  for (const provider of ['stripe', 'revenuecat']) {
+    const selected = products([`--${provider}`]);
+    assert.ok(selected.includes(provider));
+    assert.equal(selected.includes(provider === 'stripe' ? 'revenuecat' : 'stripe'), false);
+    for (const item of ['better-auth', 'd1', 'expo', 'hono']) assert.ok(selected.includes(item));
+    assert.ok(!selected.includes('r2'));
+  }
+  assert.deepEqual(products(['--hono']), ['hono']);
+  assert.deepEqual(products(['--vinext']), ['vinext']);
 });

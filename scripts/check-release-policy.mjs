@@ -233,6 +233,23 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
     failures.push(
       '.github/workflows/release-on-main.yml: the reviewed commit must have successful full CI',
     );
+  const candidate =
+    releaseWorkflow.match(
+      /name: Locate successful main CI candidate[\s\S]*?(?=\n      - name: Verify release artifact)/,
+    )?.[0] ?? '';
+  if (
+    !candidate.includes('RELEASE_SHA: ${{ inputs.release_sha }}') ||
+    !candidate.includes(
+      'gh run list --workflow ci.yml --branch main --commit "$RELEASE_SHA" --status success',
+    ) ||
+    !candidate.includes('select(.event == "push" or .event == "workflow_dispatch")') ||
+    !candidate.includes('name: release-candidate') ||
+    !candidate.includes('run-id: ${{ steps.candidate.outputs.run_id }}') ||
+    !candidate.includes('github-token: ${{ github.token }}')
+  )
+    failures.push(
+      '.github/workflows/release.yml: candidate must come from successful trusted main CI for the exact reviewed commit',
+    );
   if (!/^    environment: npm$/m.test(releaseWorkflow))
     failures.push(
       '.github/workflows/release.yml: publication must retain the protected npm environment',
@@ -371,14 +388,14 @@ function validatePluginRelease(root, version) {
   );
   const registry = JSON.parse(
     readFileSync(
-      path.join(root, 'plugins/codex/distribution/skills/anhedral/references/capabilities.json'),
+      path.join(root, 'plugins/codex/distribution/references/capabilities.json'),
       'utf8',
     ),
   );
   const failures = [];
   const stack = JSON.parse(
     readFileSync(
-      path.join(root, 'plugins/codex/distribution/skills/anhedral/references/stack-registry.json'),
+      path.join(root, 'plugins/codex/distribution/references/stack-registry.json'),
       'utf8',
     ),
   );

@@ -2,6 +2,8 @@
 
 Describe the problem and resulting behavior. Link the agreed issue for feature or architecture changes.
 
+For maintenance, include the removal evidence or failure cause and affected public/generated consumers. Link authoritative configuration or CI evidence when relevant; identify anything unverified.
+
 ## Validation
 
 List relevant checks and regression coverage, including generated-app checks when applicable.

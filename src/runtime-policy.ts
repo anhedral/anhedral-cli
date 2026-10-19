@@ -15,9 +15,12 @@ export function supportsVoidRuntime(version: string): boolean {
 
 export function usesVoidSelection(products: readonly string[], hosting: string): boolean {
   return (
+    !products.includes('expo') &&
     !(products.includes('next') && hosting === 'cloudflare') &&
     !products.includes('queues') &&
     !products.includes('basin') &&
+    !products.includes('images') &&
+    !products.includes('analytics-engine') &&
     products.some((product) =>
       ['vinext', 'hono', 'realtime', 'cron', 'workflows'].includes(product),
     )

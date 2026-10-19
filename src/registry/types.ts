@@ -28,6 +28,7 @@ export interface SetupRequirements {
   verify: readonly string[];
 }
 export interface RecipeContext {
+  updating?: boolean;
   root: string;
   options: StandardOptions;
   runtimeApp: 'api' | 'web';

@@ -89,6 +89,15 @@ function looksLikeText(name, contents) {
 }
 
 function isAllowedMatch(id, relativePath, match, text) {
+  // Empty environment examples can put two long variable names next to each
+  // other. The generic assignment detector crosses newlines; neither empty
+  // assignment contains a value. Never exempt a populated second assignment.
+  if (
+    id === 'credential-assignment' &&
+    path.basename(relativePath).endsWith('.example') &&
+    /^[A-Z][A-Z0-9_]*[ \t]*=[ \t]*\r?\n[A-Z][A-Z0-9_]*=$/.test(match[0])
+  )
+    return true;
   if (id === 'email-address' && /^[a-z0-9._-]+@\d+\.\d+\.\d+\.patch$/i.test(match[0])) return true;
   if (
     id === 'email-address' &&

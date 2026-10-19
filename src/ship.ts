@@ -109,7 +109,10 @@ async function executeCloudflareApplication(
   const environments = mergeRuntimeTargets(runtimeTargets(root, runtime), application);
   const buildRunner: DeliveryRunner = async (command, args, cwd, env) => {
     const relative = path.relative(root, cwd).split(path.sep).join('/');
-    const values = environments[`${relative}/.env`] ?? environments[`${relative}/.dev.vars`];
+    const values =
+      environments[`${relative}/.env`] ??
+      environments[`${relative}/.dev.vars`] ??
+      environments[`${relative}/.env.local`];
     const environment = runtimeEnvironment(env, values);
     if (
       deployment.project.deliveryEngine === 'void' &&

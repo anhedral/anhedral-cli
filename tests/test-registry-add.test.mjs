@@ -107,14 +107,14 @@ test('add source previews show staged changes without installing, printing priva
     rmSync(temporary, { recursive: true, force: true });
   }
 });
-async function project(root, flags = ['--hono']) {
+async function project(root, flags = ['--hono'], legacy = false) {
   const log = console.log;
   console.log = () => {};
   try {
-    await scaffoldStandardProject(
-      parseStandardOptions([root, ...flags, '--skip-install', '--no-git']),
-      runner,
-    );
+    const options = parseStandardOptions([root, ...flags, '--skip-install', '--no-git']);
+    // Preserve coverage for pre-default native projects when adding their first backend.
+    if (legacy) options.products = options.products.filter((id) => id !== 'hono');
+    await scaffoldStandardProject(options, runner);
   } finally {
     console.log = log;
   }
@@ -209,11 +209,11 @@ test('add introduces native and web applications using the shared shadcn foundat
   const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-apps-'));
   const root = path.join(temp, 'app');
   try {
-    await project(root, ['--expo']);
+    await project(root, ['--electron'], true);
     await addStackItems(root, { items: ['vinext'], skipInstall: true }, runner);
     assert.ok(existsSync(path.join(root, 'apps/web/void.config.ts')));
     assert.equal(existsSync(path.join(root, 'apps/web/wrangler.jsonc')), false);
-    assert.ok(existsSync(path.join(root, 'apps/mobile/package.json')));
+    assert.ok(existsSync(path.join(root, 'apps/desktop/package.json')));
     assert.ok(existsSync(path.join(root, 'packages/ui/package.json')));
     assert.equal(inspectProject(root).localReady, true);
     const connected = readProjectSection(root, 'cloudflare');
@@ -240,7 +240,7 @@ test('adding the first Cloudflare runtime uses the selected delivery engine', as
       ['wrangler', ['hono', 'queues'], 'wrangler'],
     ]) {
       const root = path.join(temp, name);
-      await project(root, ['--expo']);
+      await project(root, ['--electron'], true);
       await addStackItems(root, { items, skipInstall: true }, runner);
       const manifest = readProjectSection(root, 'cloudflare');
       assert.equal(manifest.deliveryEngine ?? 'wrangler', engine);
@@ -314,7 +314,7 @@ test('web additions preview without running the upstream generator or changing s
   const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-preview-'));
   const root = path.join(temp, 'app');
   try {
-    await project(root, ['--expo']);
+    await project(root, ['--electron'], true);
     const before = sourceFiles(root);
     const receipt = readFileSync(path.join(root, 'anhedral.json'), 'utf8');
     const preview = await addStackItems(root, { items: ['vinext'], dryRun: true }, () => {
@@ -445,7 +445,7 @@ test('a native-only registration selects its first Cloudflare engine without cha
   const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-add-native-registration-'));
   const root = path.join(temp, 'project');
   try {
-    await project(root, ['--expo']);
+    await project(root, ['--electron'], true);
     const original = registerApplication(root);
     assert.deepEqual(original.targets, []);
     original.accountId = 'a'.repeat(32);

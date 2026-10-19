@@ -13,18 +13,26 @@ test('Void capability additions preserve existing environment declarations and r
     writeFileSync(path.join(root, 'package.json'), JSON.stringify({ engines: { node: '>=22' } }));
     writeFileSync(path.join(app, 'void.config.ts'), 'export default {};\n');
     writeFileSync(
+      path.join(app, 'anhedral.cloudflare.json'),
+      JSON.stringify({ name: 'fixture-api' }),
+    );
+    writeFileSync(
       path.join(app, 'env.ts'),
       "import { defineEnv } from 'void/env';\nexport default defineEnv({});\n",
     );
     writeFileSync(
       path.join(app, '.dev.vars.example'),
-      'DATABASE_URL=\nVITE_ORIGIN=https://example.com\n',
+      'DATABASE_URL=\nVITE_ORIGIN=https://example.com\nEXPO_PUBLIC_API_URL=https://product.example.com\n',
     );
     refreshVoidEnvironment(root);
     const schema = readFileSync(path.join(app, 'env.ts'), 'utf8');
     assert.match(schema, /import \{[^}]*string[^}]*\} from 'void\/env'/);
     assert.equal(schema.split('DATABASE_URL:').length, 2);
-    assert.doesNotMatch(schema, /VITE_ORIGIN:/);
+    assert.doesNotMatch(schema, /VITE_ORIGIN:|EXPO_PUBLIC_API_URL:/);
+    assert.deepEqual(
+      JSON.parse(readFileSync(path.join(app, 'anhedral.cloudflare.json'), 'utf8')).secrets.required,
+      ['DATABASE_URL'],
+    );
     assert.equal(existsSync(path.join(app, '.dev.vars.example')), false);
     assert.match(readFileSync(path.join(app, 'env.example'), 'utf8'), /DATABASE_URL=/);
     refreshVoidEnvironment(root);

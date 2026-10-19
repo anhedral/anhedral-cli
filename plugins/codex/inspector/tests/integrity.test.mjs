@@ -54,7 +54,7 @@ test('the real plugin archive includes verified UI assets and refuses source or 
     writeFileSync(sharedDomain, domainOriginal);
     const registry = path.join(
       fixture,
-      'plugins/codex/distribution/skills/anhedral/references/stack-registry.json',
+      'plugins/codex/distribution/references/stack-registry.json',
     );
     const registryOriginal = readFileSync(registry);
     writeFileSync(registry, Buffer.concat([registryOriginal, Buffer.from(' ')]));

@@ -150,8 +150,8 @@ export function loadPluginRelease(metadataPath) {
     return JSON.parse(file.contents.toString('utf8'));
   };
   const manifest = json('plugin.json');
-  const capabilities = json('skills/anhedral/references/capabilities.json');
-  const stack = json('skills/anhedral/references/stack-registry.json');
+  const capabilities = json('references/capabilities.json');
+  const stack = json('references/stack-registry.json');
   const build = json('runtime/build.json');
   if (
     manifest.name !== 'anhedral' ||

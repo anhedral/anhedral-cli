@@ -86,7 +86,9 @@ export function inspectProject(root: string) {
       standard.schemaVersion === 1 &&
         JSON.stringify(standard.products) === JSON.stringify(plan.products) &&
         standard.hosting ===
-          (plan.products.includes('next') || plan.products.includes('vinext')
+          (plan.products.includes('next') ||
+          plan.products.includes('vinext') ||
+          plan.products.includes('expo')
             ? plan.hosting
             : null),
       'Setup plan matches project selection',
@@ -139,7 +141,7 @@ export function validateSetupPlan(plan: unknown): asserts plan is {
     throw new Error('Invalid hosting.');
   validateRequirements(value.setup, value.products);
   const selected = new Set<StandardProduct>(value.products);
-  resolveStandardProducts(selected, value.hosting, false);
+  resolveStandardProducts(selected, value.hosting, false, false);
   if (selected.size !== value.products.length)
     throw new Error('Invalid or incomplete setup selection.');
   if (value.name !== undefined && typeof value.name !== 'string')

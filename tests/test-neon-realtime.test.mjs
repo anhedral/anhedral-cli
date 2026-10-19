@@ -35,9 +35,10 @@ const read = (root, file) => readFileSync(path.join(root, file), 'utf8');
 
 test('Neon Realtime defaults and auth database choices are independent of flag order', () => {
   assert.deepEqual(parseStandardOptions(['app', '--neon-realtime']).products, [
+    'expo',
+    'hono',
     'neon',
     'neon-realtime',
-    'vinext',
   ]);
   for (const flags of [
     ['--better-auth', '--neon-realtime'],
@@ -52,9 +53,8 @@ test('Neon Realtime defaults and auth database choices are independent of flag o
   }
   assert.throws(() => parseStandardOptions(['app', '--d1', '--neon-realtime']), /Choose one/);
   for (const native of ['expo', 'electron', 'wxt'])
-    assert.throws(
-      () => parseStandardOptions(['app', `--${native}`, '--neon-realtime']),
-      /server runtime/,
+    assert.ok(
+      parseStandardOptions(['app', `--${native}`, '--neon-realtime']).products.includes('hono'),
     );
   const coexisting = parseStandardOptions(['app', '--realtime', '--neon-realtime']);
   assert.ok(coexisting.products.includes('realtime'));
@@ -62,8 +62,8 @@ test('Neon Realtime defaults and auth database choices are independent of flag o
 });
 
 for (const [name, flags, runtime, environment] of [
-  ['Vinext', ['--neon-realtime'], 'web', 'env.example'],
-  ['native Vercel', ['--next', '--neon-realtime'], 'web', '.env.example'],
+  ['Vinext', ['--vinext', '--neon-realtime'], 'api', 'env.example'],
+  ['native Vercel', ['--next', '--neon-realtime'], 'api', 'env.example'],
   ['Hono with Vercel', ['--next', '--hono', '--neon-realtime'], 'api', 'env.example'],
 ])
   test(`${name} composes one shared Neon Realtime package with separate server and client boundaries`, () =>
@@ -103,7 +103,7 @@ for (const [name, flags, runtime, environment] of [
     }));
 
 test('managed Neon subscriptions coexist with independent Durable Object rooms', () =>
-  fixture(['--realtime', '--neon-realtime'], (root) => {
+  fixture(['--vinext', '--realtime', '--neon-realtime'], (root) => {
     assert.ok(existsSync(path.join(root, 'packages/db/src/index.ts')));
     assert.ok(existsSync(path.join(root, 'packages/neon-realtime/src/server.ts')));
     assert.ok(existsSync(path.join(root, 'apps/realtime/src/index.ts')));

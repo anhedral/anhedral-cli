@@ -1,3 +1,4 @@
+import { scaffoldCloudflareServiceContext } from './cloudflare-services.js';
 import { writeProjectSection } from '../project-config.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
 import { existsSync, rmSync } from 'node:fs';
@@ -25,6 +26,7 @@ export async function composeStack(
   for (const item of registry.items) {
     if (item.installer === 'recipe') await installStackItem(item, context);
   }
+  scaffoldCloudflareServiceContext(context);
   normalizeSharedLint(root);
   writeStandardRoot(root, options, registry);
   configureVoidDelivery(root);

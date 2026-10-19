@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
-  "version": "0.12.0",
-  "description": "Build and deliver applications with Cloudflare-first Vinext, selected services, optional Next.js on Vercel, and verified release evidence.",
+  "version": "0.13.0",
+  "description": "Start with a minimal Expo app and progressively add Hono, identity, data and Cloudflare services.",
   "type": "module",
   "exports": {
     ".": {
@@ -25,7 +25,8 @@
     "README.md",
     "docs/stack-standard.md",
     "docs/software-factory.md",
-    "docs/verification.md"
+    "docs/verification.md",
+    "docs/anhedral-stack.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -80,7 +81,9 @@
     "plugin:build": "pnpm --dir plugins/codex/inspector build",
     "plugin:check": "pnpm --dir plugins/codex/inspector check",
     "plugin:preview": "pnpm --dir plugins/codex/inspector start",
-    "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs"
+    "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
+    "test:reference": "node tests/test-universal-reference.mjs",
+    "test:billing": "node tests/test-generated-billing.mjs examples/billing-reference"
   },
   "keywords": [
     "cli",

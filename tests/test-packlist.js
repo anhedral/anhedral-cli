@@ -21,6 +21,7 @@ const requiredFiles = new Set([
   'dist/index.d.ts',
   'dist/index.js',
   'package.json',
+  'docs/anhedral-stack.md',
   'docs/stack-standard.md',
   'docs/software-factory.md',
   'docs/verification.md',
@@ -129,6 +130,7 @@ try {
   for (const file of packed.files) {
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
+      file.path === 'docs/anhedral-stack.md' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
       file.path === 'docs/verification.md';

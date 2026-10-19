@@ -97,7 +97,7 @@ const scenarios = {
         enabled_events: ['checkout.session.completed'],
       },
     },
-    keys: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
+    keys: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_ENVIRONMENT'],
     mutations: 1,
   },
   revenuecat: {
@@ -124,6 +124,9 @@ const scenarios = {
       },
     },
     keys: [
+      'REVENUECAT_PROJECT_ID',
+      'REVENUECAT_APP_IDS_JSON',
+      'BILLING_ENVIRONMENT',
       'EXPO_PUBLIC_REVENUECAT_IOS_API_KEY',
       'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY',
       'STRIPE_SECRET_KEY',
