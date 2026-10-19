@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
-export async function verifyLocalAuth(origin, send = fetch) {
+export async function verifyLocalAuth(origin, send = fetch, { voidReadiness = true } = {}) {
   const base = new URL(origin);
   assert.ok(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Local preview only');
   assert.equal(base.protocol, 'http:');
@@ -19,11 +19,16 @@ export async function verifyLocalAuth(origin, send = fetch) {
       ...(input ? { body: JSON.stringify(input) } : {}),
       signal: AbortSignal.timeout(15000),
     });
-  const ready = await send(new URL('/__void/ready', base), { signal: AbortSignal.timeout(15000) });
-  assert.equal(ready.status, 200);
-  const readiness = await ready.json();
-  assert.equal(readiness.ready, true);
-  assert.match(readiness.versionId, /^[a-f0-9-]{36}$/i);
+  if (voidReadiness) {
+    const ready = await send(new URL('/__void/ready', base), {
+      signal: AbortSignal.timeout(15000),
+    });
+    assert.equal(ready.status, 200);
+    const readiness = await ready.json();
+    assert.equal(readiness.ready, true);
+    assert.match(readiness.versionId, /^[a-f0-9-]{36}$/i);
+  }
+  assert.equal((await request('/api/session')).status, 401);
   const anonymous = await request('/api/auth/get-session');
   assert.equal(anonymous.status, 200);
   assert.equal(await anonymous.json(), null);
@@ -44,6 +49,10 @@ export async function verifyLocalAuth(origin, send = fetch) {
   const session = await request('/api/auth/get-session', undefined, cookie);
   assert.equal(session.status, 200);
   assert.equal((await session.json()).user.email, email);
+  const protectedSession = await request('/api/session', undefined, cookie);
+  assert.equal(protectedSession.status, 200);
+  assert.equal(protectedSession.headers.get('cache-control'), 'private, no-store');
+  assert.equal((await protectedSession.json()).user.email, email);
   const invalid = await request('/api/auth/sign-in/email', {
     email,
     password: 'incorrect-local-password',
@@ -54,5 +63,6 @@ export async function verifyLocalAuth(origin, send = fetch) {
   const expired = await request('/api/auth/get-session', undefined, cookie);
   assert.equal(expired.status, 200);
   assert.equal(await expired.json(), null);
+  assert.equal((await request('/api/session', undefined, cookie)).status, 401);
   return { signup: true, login: true, session: true, incorrectPassword: true, revocation: true };
 }

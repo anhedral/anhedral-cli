@@ -145,6 +145,12 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
         hidden: true,
       })),
       {
+        flag: '--preset',
+        description: 'Start minimal or select the complete compatible product stack.',
+        value: 'minimal|full-product',
+        arity: 'required',
+      },
+      {
         flag: '--hosting',
         description: 'Select web hosting.',
         value: 'cloudflare|vercel',
@@ -160,10 +166,10 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     ],
     examples: [
       'init client-app',
-      'init mobile-app --expo',
+      'init product --preset full-product --dry-run',
       'init product --next --hono --neon --clerk --dry-run',
     ],
-    note: `Default: Vinext on Cloudflare Workers, using the official shadcn pnpm/Turborepo monorepo.\nProducts: ${STANDARD_PRODUCTS.join(', ')}\nOnly bundled options are supported. --all is intentionally unsupported.`,
+    note: `Default: minimal Expo web/iOS/Android app on Cloudflare; no API, auth, database or paid integrations. Add capabilities with resolved dependencies, or use --preset full-product.\nProducts: ${STANDARD_PRODUCTS.join(', ')}\nOnly bundled options are supported. --all is intentionally unsupported.`,
   },
   auth: {
     description: 'Check or guide authentication for the selected providers.',

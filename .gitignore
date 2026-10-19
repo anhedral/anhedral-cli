@@ -24,3 +24,6 @@ yarn-error.log*
 
 # Private companion application; not part of the public CLI repository.
 /examples/cloudflare-chat/
+
+# Generated runtime declarations are recreated by Wrangler in source-only examples.
+/examples/*/apps/*/worker-configuration.d.ts

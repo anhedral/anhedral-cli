@@ -24,6 +24,14 @@ function needsWorker(name: string, context: RecipeContext): boolean {
     (definition.runtime === 'optional-worker' && hasServer(context))
   );
 }
+
+/** Explicit billing selection needs an authenticated server and durable state. */
+export function resolveBillingProducts(selected: Set<StandardProduct>): void {
+  selected.add('hono');
+  if (!selected.has('clerk')) selected.add('better-auth');
+  if (!selected.has('neon') && !selected.has('d1'))
+    selected.add(selected.has('neon-realtime') ? 'neon' : 'd1');
+}
 function validateProducts(selected: ReadonlySet<string>, hosting: Hosting): void {
   if (!['cloudflare', 'vercel'].includes(hosting))
     throw new Error('hosting must be cloudflare or vercel.');
@@ -50,25 +58,42 @@ export function resolveStandardProducts(
   selected: Set<StandardProduct>,
   hosting: Hosting,
   hostingSpecified: boolean,
+  initializing = true,
 ): void {
   for (const id of selected) getStackDefinition(id);
-  if (![...selected].some((id) => getStackDefinition(id).type === 'application'))
-    selected.add(hosting === 'vercel' ? 'next' : 'vinext');
-  // Resolve single-provider defaults before alternatives (e.g. Realtime's Neon
-  // before Better Auth chooses a database), independently of CLI flag order.
-  const defaults = [...selected].sort(
-    (left, right) =>
-      (getStackDefinition(left).selection.requiresAny?.length ?? 0) -
-        (getStackDefinition(right).selection.requiresAny?.length ?? 0) || left.localeCompare(right),
-  );
-  for (const id of defaults) {
-    const definition = getStackDefinition(id);
-    const alternatives = definition.selection.requiresAny ?? [];
-    if (
-      definition.fallbackDependency &&
-      !alternatives.some((other) => selected.has(other as StandardProduct))
-    )
-      selected.add(definition.fallbackDependency as StandardProduct);
+  const applications = [...selected].filter((id) => getStackDefinition(id).type === 'application');
+  if (!applications.length) selected.add(hosting === 'vercel' ? 'next' : 'expo');
+  // Resolve to a fixed point: an addition may introduce another dependency.
+  // Readiness/add callers preserve an existing web-owned backend; new profiles
+  // use Hono whenever privileged server behavior is selected.
+  let changed = true;
+  while (changed) {
+    const before = selected.size;
+    if (selected.has('stripe') || selected.has('revenuecat')) resolveBillingProducts(selected);
+    const defaults = [...selected].sort(
+      (left, right) =>
+        (getStackDefinition(left).selection.requiresAny?.length ?? 0) -
+          (getStackDefinition(right).selection.requiresAny?.length ?? 0) ||
+        left.localeCompare(right),
+    );
+    for (const id of defaults) {
+      const definition = getStackDefinition(id);
+      const alternatives = definition.selection.requiresAny ?? [];
+      if (
+        definition.fallbackDependency &&
+        !alternatives.some((other) => selected.has(other as StandardProduct))
+      )
+        selected.add(definition.fallbackDependency as StandardProduct);
+      for (const dependency of definition.selection.requiresAll ?? [])
+        selected.add(dependency as StandardProduct);
+      const serverCapability = Boolean(definition.runtime);
+      if (
+        serverCapability &&
+        (initializing || !hasServer(createResolutionContext({ products: [...selected], hosting })))
+      )
+        selected.add('hono');
+    }
+    changed = selected.size !== before;
   }
   const context = createResolutionContext({ products: [...selected], hosting });
   if (
@@ -77,7 +102,11 @@ export function resolveStandardProducts(
     [...selected].some((id) => needsWorker(id, context))
   )
     selected.add('hono');
-  if (hostingSpecified && !selected.has('next') && !selected.has('vinext'))
+  if (selected.has('expo') && hosting === 'vercel' && !selected.has('next'))
+    throw new Error(
+      'Expo web uses Cloudflare hosting; select --next for a Vercel web application.',
+    );
+  if (hostingSpecified && !selected.has('next') && !selected.has('vinext') && !selected.has('expo'))
     throw new Error('--hosting applies to the web application.');
   resolveStackRegistry({ products: [...selected], hosting });
 }

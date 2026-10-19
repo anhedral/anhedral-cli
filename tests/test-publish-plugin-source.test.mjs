@@ -75,8 +75,8 @@ function fixture() {
   const files = Object.entries({
     'plugin.json': JSON.stringify({ name: 'anhedral', version }),
     'mcp.json': '{}',
-    'skills/anhedral/references/capabilities.json': JSON.stringify({ cliVersion: version }),
-    'skills/anhedral/references/stack-registry.json': JSON.stringify({
+    'references/capabilities.json': JSON.stringify({ cliVersion: version }),
+    'references/stack-registry.json': JSON.stringify({
       cliVersion: version,
       items: [{ version }],
     }),

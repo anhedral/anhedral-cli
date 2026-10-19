@@ -1,0 +1,127 @@
+diff --git a/lib/compile.js b/lib/compile.js
+--- a/lib/compile.js
++++ b/lib/compile.js
+@@ -2,8 +2,10 @@
+ 
+ const fill = require('fill-range');
+ const utils = require('./utils');
++const { checkAst } = require('./limits');
+ 
+ const compile = (ast, options = {}) => {
++  checkAst(ast);
+   const walk = (node, parent = {}) => {
+     const invalidBlock = utils.isInvalidBrace(parent);
+     const invalidNode = node.invalid === true && options.escapeInvalid === true;
+diff --git a/lib/expand.js b/lib/expand.js
+--- a/lib/expand.js
++++ b/lib/expand.js
+@@ -3,6 +3,7 @@
+ const fill = require('fill-range');
+ const stringify = require('./stringify');
+ const utils = require('./utils');
++const { checkAst } = require('./limits');
+ 
+ const append = (queue = '', stash = '', enclose = false) => {
+   const result = [];
+@@ -31,6 +32,7 @@
+ };
+ 
+ const expand = (ast, options = {}) => {
++  checkAst(ast, true);
+   const rangeLimit = options.rangeLimit === undefined ? 1000 : options.rangeLimit;
+ 
+   const walk = (node, parent = {}) => {
+diff --git a/lib/limits.js b/lib/limits.js
+new file mode 100644
+--- /dev/null
++++ b/lib/limits.js
+@@ -0,0 +1,44 @@
++'use strict';
++
++const MAX_DEPTH = 100;
++const fail = () => {
++  throw new RangeError(`braces nesting exceeds maximum depth of ${MAX_DEPTH}`);
++};
++
++// Preflight recursive walkers iteratively. The root is not a nesting level;
++// leaves do not add a level. Normal parent links are intentionally separate
++// from child traversal, since a parsed AST links each child to its parent.
++const checkAst = (ast, checkParents = false) => {
++  const active = new Set();
++  const stack = [{ node: ast, depth: 0, root: true }];
++  while (stack.length) {
++    const frame = stack.pop();
++    const node = frame.node;
++    if (!node || typeof node !== 'object') continue;
++    if (frame.exit) {
++      active.delete(node);
++      continue;
++    }
++    if (active.has(node)) fail();
++    const children = Array.isArray(node.nodes) ? node.nodes : [];
++    const depth = frame.depth + (Array.isArray(node.nodes) && !(frame.root && node.type === 'root') ? 1 : 0);
++    if (depth > MAX_DEPTH) fail();
++    if (checkParents) {
++      const parents = new Set();
++      let parent = node;
++      let count = 0;
++      while (parent && parent.type !== 'brace' && parent.type !== 'root' && parent.parent) {
++        if (parents.has(parent) || ++count > MAX_DEPTH + 1) fail();
++        parents.add(parent);
++        parent = parent.parent;
++      }
++    }
++    active.add(node);
++    stack.push({ node, exit: true });
++    for (let index = children.length - 1; index >= 0; index--) {
++      stack.push({ node: children[index], depth });
++    }
++  }
++};
++
++module.exports = { MAX_DEPTH, checkAst };
+diff --git a/lib/parse.js b/lib/parse.js
+--- a/lib/parse.js
++++ b/lib/parse.js
+@@ -1,6 +1,7 @@
+ 'use strict';
+ 
+ const stringify = require('./stringify');
++const { MAX_DEPTH } = require('./limits');
+ 
+ /**
+  * Constants
+@@ -143,6 +144,9 @@
+      */
+ 
+     if (value === CHAR_LEFT_PARENTHESES) {
++      if (stack.length > MAX_DEPTH) {
++        throw new RangeError(`braces nesting exceeds maximum depth of ${MAX_DEPTH}`);
++      }
+       block = push({ type: 'paren', nodes: [] });
+       stack.push(block);
+       push({ type: 'text', value });
+@@ -195,6 +199,9 @@
+      */
+ 
+     if (value === CHAR_LEFT_CURLY_BRACE) {
++      if (stack.length > MAX_DEPTH) {
++        throw new RangeError(`braces nesting exceeds maximum depth of ${MAX_DEPTH}`);
++      }
+       depth++;
+ 
+       const dollar = prev.value && prev.value.slice(-1) === '$' || block.dollar === true;
+diff --git a/lib/stringify.js b/lib/stringify.js
+--- a/lib/stringify.js
++++ b/lib/stringify.js
+@@ -1,8 +1,10 @@
+ 'use strict';
+ 
+ const utils = require('./utils');
++const { checkAst } = require('./limits');
+ 
+ module.exports = (ast, options = {}) => {
++  checkAst(ast);
+   const stringify = (node, parent = {}) => {
+     const invalidBlock = options.escapeInvalid && utils.isInvalidBrace(parent);
+     const invalidNode = node.invalid === true && options.escapeInvalid === true;

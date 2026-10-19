@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { writeEnvironmentFile } from './environment.js';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
@@ -138,8 +140,33 @@ process.exitCode = result.status ?? 1;
   const tsconfig = readJson(root, `${directory}/tsconfig.json`);
   tsconfig.include = [...new Set([...((tsconfig.include as string[]) ?? []), 'drizzle.config.ts'])];
   json(root, `${directory}/tsconfig.json`, tsconfig);
-  // Consumers such as Better Auth add their direct workspace dependency when
-  // they generate imports. Selecting a database alone creates reusable tooling.
+  if (has('hono')) {
+    patchPackage(root, 'apps/api/package.json', {
+      dependencies: { '@workspace/db': 'workspace:*' },
+    });
+    const source = readFileSync(path.join(root, 'apps/api/src/index.ts'), 'utf8');
+    put(
+      root,
+      'apps/api/src/index.ts',
+      "import { createDatabase } from '@workspace/db';\n" +
+        source
+          .replace(
+            source.includes('Variables: {') ? 'Variables: {' : 'Bindings: Env',
+            source.includes('Variables: {')
+              ? 'Variables: { database: () => ReturnType<typeof createDatabase>;'
+              : 'Bindings: Env; Variables: { database: () => ReturnType<typeof createDatabase> }',
+          )
+          .replace(
+            'const health = createRoute({',
+            `// Construct the database only when a route needs it: c.get('database')().
+app.use('/api/*', async (c, next) => {
+  c.set('database', () => createDatabase(${postgres ? 'c.env.DATABASE_URL' : 'c.env.DB'}));
+  await next();
+});
+const health = createRoute({`,
+          ),
+    );
+  }
   if (postgres) {
     const native = runtimeApp === 'web' && options.hosting === 'vercel';
     writeEnvironmentFile(root, `${app}/${native ? '.env.example' : '.dev.vars.example'}`, {

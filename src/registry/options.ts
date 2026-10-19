@@ -1,3 +1,4 @@
+import { applyPreset } from './presets.js';
 import { resolveStandardProducts } from './resolve.js';
 import path from 'node:path';
 import { packageNameFromText } from '../render.js';
@@ -26,11 +27,18 @@ function parseStandardFlags(remaining: readonly string[]) {
   let hosting: StandardOptions['hosting'] = 'cloudflare';
   let hostingSpecified = false;
   let gitSpecified: boolean | undefined;
+  let preset: string | undefined;
   for (let index = 0; index < remaining.length; index++) {
     const token = remaining[index];
     if (['--skip-install', '--dry-run', '--json', '--verbose'].includes(token)) continue;
     if (token === '--git' || token === '--no-git') {
       gitSpecified = readGitFlag(token, gitSpecified);
+      continue;
+    }
+    if (token === '--preset' || token.startsWith('--preset=')) {
+      if (preset !== undefined) throw new Error('Specify --preset once.');
+      preset = token === '--preset' ? remaining[++index] : token.slice('--preset='.length);
+      if (!preset || preset.startsWith('-')) throw new Error('Supply a value for --preset.');
       continue;
     }
     if (token === '--hosting' || token.startsWith('--hosting=')) {
@@ -45,6 +53,7 @@ function parseStandardFlags(remaining: readonly string[]) {
     }
     products.add(value as StandardProduct);
   }
+  if (preset) applyPreset(preset, products);
   if (!hostingSpecified && products.has('next')) hosting = 'vercel';
   return { products, hosting, hostingSpecified, gitSpecified };
 }

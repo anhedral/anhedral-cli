@@ -1,4 +1,6 @@
 import { readProjectSection } from '../dist/project-config.js';
+import { verifyUniversalDevelopment } from './support/universal-dev-smoke.mjs';
+import { verifyWebApiDevelopment } from './support/web-api-dev-smoke.mjs';
 import { verifyWebLint } from './support/web-lint-check.mjs';
 import { verifyWorkerDevelopment } from './support/worker-dev-smoke.mjs';
 import { STACK_PROFILES as profiles } from './support/stack-profiles.mjs';
@@ -51,6 +53,7 @@ for (const profile of selected) {
     const catalogFiles = readdirSync(path.join(temporary, 'catalog'));
     assert.ok(catalogFiles.length > 0, 'CLI init registers its generated app');
     if (existsSync(path.join(root, 'apps/web/package.json'))) await verifyWebLint(root);
+    if (profile === 'universal-billing') execFile('pnpm', ['db:generate'], root);
     execFile('pnpm', ['check'], root);
     if (profile === 'api-neon') {
       execFile(process.execPath, [cli, '--cwd', root, 'add', 'r2', '--json'], temporary);
@@ -60,6 +63,15 @@ for (const profile of selected) {
       execFile('pnpm', ['check'], root);
     }
 
+    if (profile === 'web-auth') await verifyWebApiDevelopment(root);
+    if (profile === 'universal-auth' || profile === 'universal-billing')
+      await verifyUniversalDevelopment(root);
+    if (profile === 'universal-billing')
+      execFile(
+        process.execPath,
+        [path.resolve(import.meta.dirname, 'test-generated-billing.mjs'), root],
+        temporary,
+      );
     if (profile === 'worker-services') await verifyWorkerDevelopment(root);
     const setup = readProjectSection(root, 'setup');
     if (setup.products.includes('vinext')) {
@@ -121,7 +133,7 @@ for (const profile of selected) {
         ],
         path.join(root, 'packages/db'),
       );
-    if (profile === 'api')
+    if (profile === 'api' || profile === 'web-auth')
       execFile(
         process.execPath,
         [path.resolve(import.meta.dirname, 'test-generated-auth.mjs'), root],

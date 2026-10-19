@@ -24,7 +24,7 @@ For a booking app, “a member can create a booking, see it after reload, and ca
 
 Choose only the necessary catalog components. Decide whether the app is public or private, whether several clients share an API, and who owns production operations. Resolve decisions that materially affect architecture, access or cost before creating resources.
 
-Use the complete [stack catalog](stack-standard.md#defaults-and-foundations) to choose applications, data/identity, services and SDK integrations. Plain initialization supplies the Vinext web foundation without a database or identity provider. Include the web flag when combining it with another interface; for example, `--vinext --hono --expo --neon` selects web, API, mobile and PostgreSQL. Better Auth defaults to D1, Neon Realtime adds Neon, and RevenueCat requires an explicit Stripe selection. Review the [composition rules](stack-standard.md#composition-and-compatibility) before choosing a delivery engine: OpenNext, Queues and Basin use Wrangler, and later additions do not switch an existing Void workspace to Wrangler.
+Choose the smallest sufficient capability set from the [stack catalog](stack-standard.md#progressive-selection-and-full-product-preset). Plain init creates only Expo, shared styling and workspace tooling. Add Hono for server logic, Drizzle/D1 for persistence, Better Auth for accounts and private R2 for uploads only when needed. Dependencies are resolved automatically; no accounts or billing are inferred for an AI-only app. Use `--preset full-product` for the complete compatible foundation including Cloudflare AI, analytics, realtime/conferencing, image/video, jobs and both payment providers. Explicit provider/frontend alternatives replace preset defaults. Inspect generated guides and support metadata; scaffolding does not activate services or establish product behavior. Existing backend ownership and edited source remain protected. New Expo/Images/Analytics Engine/Queues/Basin use Wrangler; additions do not silently migrate an existing Void workspace.
 
 Record what each recipe supplies and what the product still needs. Sentry, device-local data and RevenueCat require platform integration work; SDK factories need consumers; room messaging, live video, job processing and workflows need product behavior. Select `--stream` for one-to-many WHIP/WHEP broadcasts; Stream activation, live input ownership, creator/player UI and private playback verification remain explicit integration work. The catalog's generated-scope and setup columns describe these boundaries.
 
@@ -35,8 +35,8 @@ Record what each recipe supplies and what the product still needs. Sentry, devic
 Use Node.js `24.21.0+` and pnpm `10.34.5` for the default stack. Match the installed CLI version to the plugin's bundled registry `cliVersion` when using Codex. Pin that version for repeatable automation. For unpublished checkout work, run `pnpm build` and use `node dist/bin.js`; building does not update installed releases.
 
 ```sh
-anhedral init my-app --vinext --hono --d1 --better-auth --r2 --dry-run --json
-anhedral init my-app --vinext --hono --d1 --better-auth --r2
+anhedral init my-app --expo --d1 --better-auth --r2 --dry-run --json
+anhedral init my-app --expo --d1 --better-auth --r2
 cd my-app
 pnpm dev
 ```
@@ -57,6 +57,8 @@ anhedral doctor --json
 Additions use the bundled catalog and preserve edited source. Resolve conflicts deliberately. A selection plan marked `filesChecked: false` has not previewed files that require a new upstream web bootstrap. Add does not perform runtime relocation or switch the Cloudflare engine.
 
 **Ready to implement:** the workspace starts, the selected packages have clear consumers, and remaining setup is understood.
+
+Root `pnpm dev` exports Expo web and runs its Wrangler gateway on port 3000 with Hono on port 8787 when selected. Native Metro remains `pnpm --dir apps/mobile start`; use the iOS/Android scripts for native development. Browser changes initially require `pnpm --dir apps/mobile build:web` to re-export; this is not HMR. The gateway entry is `apps/mobile/worker/index.ts`, static assets are `apps/mobile/dist`, and the Worker service name is `<project>-mobile`. New Expo workspaces use Wrangler for both targets; preserve existing delivery-engine selections.
 
 ## 3. Implement the product and integrations
 
@@ -82,7 +84,7 @@ anhedral inspect --json
 
 `pnpm check` runs lint, types, Fallow analysis, dependency audit, tests and builds; the explicit OpenNext profile also builds its Worker output. Add meaningful product tests as you implement features. `doctor` checks local readiness and provenance. `inspect` reads local selection, setup and recorded delivery evidence offline; neither certifies live product behavior.
 
-Exercise the actual runtime as well as compilation: Vinext/Vite workerd preview, OpenNext Worker preview, or native Next.js as selected. For mobile, desktop and extensions, check relevant device/packaged behavior and permissions. Verify retry, webhook duplication, private files, AI limits and recovery for the services you selected.
+Exercise the actual runtime as well as compilation: Expo static web behind its Cloudflare gateway plus Hono, or explicit Vinext/Vite workerd preview, OpenNext Worker preview, or native Next.js as selected. A reference app should prove browser/API calls and separately export iOS/Android bundles; native export success is not device acceptance. For mobile, desktop and extensions, check relevant device/packaged behavior and permissions. Verify retry, webhook duplication, private files, AI limits and recovery for the services you selected.
 
 Record commands, results and gaps in the application's `docs/verification.md`. Distinguish local, preview and live results. A smoke check or HTTP 200 establishes availability of that route, not completion of the product.
 
@@ -131,7 +133,7 @@ anhedral status --refresh --json
 
 The dry run previews setup and delivery without provider operations. Actual `ship` coordinates supported integration setup, private runtime configuration, checks and hosting delivery. In mixed projects it handles Cloudflare services before the Vercel web app; provider flags select one target explicitly.
 
-For supported Cloudflare selections, Void owns provisioning and deployment. `provision` reports the plan and defers writes to Void. Explicit OpenNext, Queues/DLQ and Basin use Wrangler; standalone `provision` reconciles Cloudflare resources only. The integration adapters and their limits are documented in the provider reference.
+New Expo workspaces use Wrangler for Hono and the web gateway. For other supported Cloudflare selections, Void owns provisioning and deployment. `provision` reports the plan and defers writes to Void. New Expo workspaces, explicit OpenNext, Queues/DLQ and Basin use Wrangler; standalone `provision` reconciles Cloudflare resources only. The integration adapters and their limits are documented in the provider reference.
 
 **Treat `configuration-required` as a checkpoint.** Wrangler can stop before deployment when resolved resource IDs change tracked bindings. Void can activate a target before recording new resource identities in `void.lock.json`; Anhedral retains activation receipts and then requires review and a commit. Inspect those results, commit the expected changes, and ship the clean configuration again. Do not assume a nonzero result means nothing happened. Anhedral never commits source automatically. Multiple Workers are not an atomic release.
 
@@ -235,6 +237,32 @@ Keep enduring instructions in the owning `AGENTS.md` or skill and detailed proce
 
 Use the configured model and effort for routine work. Consider a stronger reasoning setting for unresolved dependency chains or broad audits when cost and authorization permit; the article's benchmark is not an Anhedral quality or cost guarantee. Revisit corrective prompts when models change rather than accumulating permanent workarounds. Put accepted findings and verification gaps in `docs/verification.md`, and carry only durable, demonstrated lessons into shared instructions.
 
+Expo remains pinned to SDK 57; current SDK 58 documentation is not an upgrade instruction. Static web cannot resolve arbitrary unknown dynamic paths at request time: provide build-time `generateStaticParams` for exported route IDs or deliberately select an implemented SPA/server profile. Experimental SSR is not the default. The reference app uses fixed health/account paths.
+
+## Cross-platform identity and optional billing
+
+New Expo workspaces include Better Auth, Drizzle/D1 and private R2. Expo generates separate browser/native session clients, an exact trusted app scheme, SecureStore cookie transport and sign-in/account screens. Native calls the reachable `EXPO_PUBLIC_API_URL`; Hono derives the user from the session. Local browser/API checks and native exports are separate from development-build/device acceptance. Explicit Clerk retains its own adapter/setup requirements.
+
+Select `--stripe`, `--revenuecat` or both explicitly. They add shared Hono billing, database schema, public contracts and selected Expo billing UI. Neither requires the other. Web uses server-created Stripe Checkout and Customer Portal; native RevenueCat provides purchase, restore and management flows. The verified auth `user.id` is the shared billing identity. Client purchase results and SDK `CustomerInfo` never grant server access.
+
+| Hono route                                              | Generated contract                                                                                 |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `GET /api/billing/identity`                             | Signed-in `appUserId`, selected providers and safe plan IDs/labels.                                |
+| `GET /api/billing/entitlements`                         | Entitlement keys, `active`, nullable expiry, provider sources and `checkedAt`.                     |
+| `POST /api/billing/refresh`                             | Strict empty JSON body; refreshes the signed-in account.                                           |
+| `POST /api/billing/checkout`                            | Strict `{ plan }`; UUID `Idempotency-Key`; server selects configured Stripe Price and returns URL. |
+| `POST /api/billing/portal`                              | Strict empty JSON body; returns the signed-in customer's management URL.                           |
+| `GET /api/billing/premium`                              | Example of the server entitlement guard; adapt the guarded business flow deliberately.             |
+| `POST /api/webhooks/stripe`, `/api/webhooks/revenuecat` | Provider-authenticated durable metadata inbox and canonical reconciliation.                        |
+
+Hono independently projects Stripe and RevenueCat state and unions active entitlement grants. When both are enabled it excludes RevenueCat Stripe-origin grants, avoiding stale duplicate grants after Stripe revocation. Canonical refresh uses a fenced account lease; cached grants have a bounded 60-second freshness window and fail closed after expiry during provider outage. The durable inbox retries on a bounded five-minute scheduled handler; duplicate/reordered events do not directly overwrite grants. Stripe verifies raw-body signatures. RevenueCat requires configured webhook authorization and uses optional signing verification when configured. Account/environment/provider IDs are validated; configuration is not purchase proof.
+
+Read generated `packages/billing/README.md` and `apps/api/.dev.vars.example`. Configure `BILLING_ORIGIN`, `BILLING_ENVIRONMENT`, `BILLING_PLANS_JSON`, `BILLING_ENTITLEMENTS_JSON` and `BILLING_PREMIUM_ENTITLEMENT`. Stripe needs its runtime/signing secrets. RevenueCat needs a scoped runtime key, webhook authorization, allowed app IDs and project ID, plus public iOS/Android SDK keys. Keep management keys separate. Generate/review/apply billing SQL explicitly; init and builds never migrate a configured database. Configure account products/Prices, native offerings and store credentials before acceptance.
+
+Check logout/account-switch handling, late SDK callbacks, restore/transfer policy, provider outage, duplicate/reordered webhooks, invalid signatures, refunds/disputes and cross-user denial. Use actual iOS/Android development builds and Apple/Google sandboxes for purchase acceptance; Expo Go, exports and synthetic SDK/provider tests cannot establish real purchases. Existing billing-guidance/scaffold projects require a reviewed migration rather than silent replacement. Managed portal full-stack publishing remains separate implementation work.
+
+References: [Better Auth Expo](https://better-auth.com/docs/integrations/expo), [Expo development builds](https://docs.expo.dev/develop/development-builds/introduction/), [RevenueCat Expo](https://www.revenuecat.com/docs/getting-started/installation/expo), [RevenueCat customer identity](https://www.revenuecat.com/docs/customers/identifying-customers), [RevenueCat webhooks](https://www.revenuecat.com/docs/integrations/webhooks), [Stripe subscription webhooks](https://docs.stripe.com/billing/subscriptions/webhooks).
+
 ## Provider configuration
 
 Anhedral scaffolds source, guides authentication, and provisions and configures the selected stack before deployment. The application and accounts belong to the developer or client. Feature development, design, custom integrations, and ongoing maintenance are Anhedral's services.
@@ -296,7 +324,7 @@ Replace example organization IDs with the intended account's actual identifiers.
 
 ### Delivery and retries
 
-For new supported Cloudflare workspaces, Void owns resource provisioning and deployment; Anhedral does not run its resource creator in parallel. Explicit resource declarations remain in `anhedral.cloudflare.json`, and Void records resolved identities in `void.lock.json`. Explicit OpenNext, queue/DLQ and Basin selections use Wrangler. Wrangler provisioning reconciles D1, private R2 buckets, KV, Queues, and private JSON Basin streams. Basin HTTP ingestion stays disabled; the Worker binding is enabled. Sinks and transformations require application-specific design. Durable Objects, schedules, Workflows, and Workers AI bindings are configured through Worker deployment. Hyperdrive configurations added by a developer still require an explicit provider workflow.
+For new Expo workspaces, Wrangler owns API/gateway deployment. For other supported Cloudflare workspaces, Void owns resource provisioning and deployment; Anhedral does not run its resource creator in parallel. Explicit resource declarations remain in `anhedral.cloudflare.json`, and Void records resolved identities in `void.lock.json`. New Expo workspaces, explicit OpenNext, queue/DLQ and Basin selections use Wrangler. Wrangler provisioning reconciles D1, private R2 buckets, KV, Queues, and private JSON Basin streams. Basin HTTP ingestion stays disabled; the Worker binding is enabled. Sinks and transformations require application-specific design. Durable Objects, schedules, Workflows, and Workers AI bindings are configured through Worker deployment. Hyperdrive configurations added by a developer still require an explicit provider workflow.
 
 If Wrangler resource provisioning changes tracked binding IDs, `ship` returns `configuration-required` before deployment. Void may already activate targets before writing new resource identities to their locks. When only the expected `void.lock.json` files change, it retains the activation receipts and returns `configuration-required`; live product verification remains blocked. Review and commit the changed bindings or locks, then ship the clean configuration. It never commits code automatically. Pending Neon operations or unverified Resend DNS return `provider-configuration-required` and stop deployment. The configured integrations' remaining product setup appears in their results.
 
@@ -480,7 +508,7 @@ Open `http://127.0.0.1:4317/`. The preview binds only to loopback, validates Hos
 
 `src/project-inspector.ts` owns projection; `src/catalog-snapshot.ts` adds catalog identity. The browser only renders its validated schema. The MCP server exposes `open_projects`, `list_projects`, `get_project`, `get_project_services`, local metadata tools and model-only source/catalog context tools. They remain useful without UI rendering. Standard MCP Apps resources and bridge messages provide the optional panel, host themes and inline/fullscreen modes. Native host-specific draft support is a separate acceptance gate.
 
-The plugin and standalone CLI share one private catalog. List views read bounded summaries; only a selected project loads detailed inspection. The server does not scan for other projects. CLI initialization registers new apps using the persistent `identity.id` in `anhedral.json`; recreating a directory creates a separate app rather than silently retargeting an old catalog entry. A remote server cannot inspect these local directories without a separately reviewed architecture; never publish the local catalog through a tunnel.
+The six focused skills (Init, Dev, Design, Auth, Billing and Hosting) share plugin-wide references in `plugins/codex/distribution/references`. The plugin and standalone CLI share one private catalog. List views read bounded summaries; only a selected project loads detailed inspection. The server does not scan for other projects. CLI initialization registers new apps using the persistent `identity.id` in `anhedral.json`; recreating a directory creates a separate app rather than silently retargeting an old catalog entry. A remote server cannot inspect these local directories without a separately reviewed architecture; never publish the local catalog through a tunnel.
 
 ### Recovery and release review
 

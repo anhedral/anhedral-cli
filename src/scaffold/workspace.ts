@@ -95,6 +95,11 @@ function writeTurboConfiguration(root: string, registry: ResolvedStackRegistry):
     ...new Set([
       ...(turbo.globalEnv ?? []),
       'VOID_CLOUDFLARE_DEPLOY_BUILD',
+      ...(registry.items.some(({ name }) => name === 'expo') ? ['EXPO_PUBLIC_API_URL'] : []),
+      ...(registry.items.some(({ name }) => name === 'next') &&
+      registry.items.some(({ name }) => name === 'hono')
+        ? ['API_URL', 'API_ACCESS_CLIENT_ID', 'API_ACCESS_CLIENT_SECRET']
+        : []),
       'npm_execpath',
       ...registry.items.flatMap((item) => item.environment),
     ]),
@@ -274,7 +279,7 @@ process.exitCode = result.status ?? 1;
     schemaVersion: 1,
     standard: 'anhedral-application-stack',
     products: options.products,
-    hosting: has('next') || has('vinext') ? options.hosting : null,
+    hosting: has('next') || has('vinext') || has('expo') ? options.hosting : null,
     bootstrap: updating
       ? readProjectSection(root, 'standard').bootstrap
       : {

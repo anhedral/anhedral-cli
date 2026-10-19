@@ -90,3 +90,5 @@ export {
   hasProjectSection,
 } from './project-config.js';
 export type { ProjectConfig, ProjectSection } from './project-config.js';
+
+export { FULL_PRODUCT } from './registry/presets.js';

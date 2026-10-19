@@ -155,8 +155,8 @@ test('API-only projects remove inherited Next lint tooling and retain TypeScript
     rmSync(temp, { recursive: true, force: true });
   }
 });
-for (const flags of [[], ['--next']])
-  test(`${flags.length ? 'Next.js' : 'Vinext'} owns its pinned lint plugin independently of shared packages`, async () => {
+for (const flags of [['--vinext'], ['--next']])
+  test(`${flags.includes('--next') ? 'Next.js' : 'Vinext'} owns its pinned lint plugin independently of shared packages`, async () => {
     const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-lint-web-'));
     try {
       const root = path.join(temp, 'project');
@@ -200,7 +200,7 @@ test(
     const temp = mkdtempSync(path.join(tmpdir(), 'anhedral-lint-runtime-'));
     try {
       const root = path.join(temp, 'project');
-      await scaffold(root, []);
+      await scaffold(root, ['--vinext']);
       const packages = [
         'eslint',
         '@next/eslint-plugin-next',

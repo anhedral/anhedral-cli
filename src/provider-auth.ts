@@ -30,6 +30,12 @@ export const PROVIDER_AUTH: readonly ProviderAuth[] = [
   {
     id: 'cloudflare',
     products: [
+      'expo',
+      'analytics-engine',
+      'images',
+      'realtimekit',
+      'video',
+      'stream',
       'vinext',
       'hono',
       'd1',

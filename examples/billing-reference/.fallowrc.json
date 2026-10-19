@@ -1,0 +1,28 @@
+{
+  "entry": [
+    "apps/*/void.config.ts",
+    "apps/*/env.ts",
+    "apps/*/src/void-entry.ts",
+    "apps/*/crons/**/*.{ts,mts,js,mjs}"
+  ],
+  "ignoreDependencies": [
+    "react-native-web",
+    "react-native-css-interop",
+    "react-native-reanimated",
+    "react-native-worklets"
+  ],
+  "ignorePatterns": [
+    "scripts/audit.mjs",
+    "scripts/audit-deps.mjs",
+    "scripts/void-migrations.mjs",
+    "scripts/prepare-void-migrations.mjs",
+    "**/next-env.d.ts",
+    "**/.next/**",
+    "**/.open-next/**",
+    "**/.vinext/**",
+    "**/.wrangler/**",
+    "**/dist/**",
+    "**/worker-configuration.d.ts",
+    "**/cloudflare-env.d.ts"
+  ]
+}

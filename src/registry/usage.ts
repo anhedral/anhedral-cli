@@ -24,4 +24,4 @@ export const STANDARD_USAGE = `Anhedral\nScaffold source, authenticate your prov
   .map(([name, entry]) => `  ${name.padEnd(12)}${entry.description}`)
   .join(
     '\n',
-  )}\n\nDefault: Vinext on Cloudflare Workers, from the official shadcn pnpm/Turborepo monorepo.\nExamples:\n  anhedral init client-app\n  anhedral auth client-app\n  anhedral ship client-app --dry-run\n\nUse anhedral <command> --help for options and examples.\nUse anhedral help <command> for the same focused help.\nGlobal options:\n${common.map((option) => `  ${option}`).join('\n')}\n  -v, --version  Show the CLI version.\n`;
+  )}\n\nDefault: minimal Expo web, iOS and Android app in a pnpm/Turborepo workspace. Add API, identity, data and services when needed; --preset full-product selects the complete compatible stack.\nExamples:\n  anhedral init client-app\n  anhedral auth client-app\n  anhedral ship client-app --dry-run\n\nUse anhedral <command> --help for options and examples.\nUse anhedral help <command> for the same focused help.\nGlobal options:\n${common.map((option) => `  ${option}`).join('\n')}\n  -v, --version  Show the CLI version.\n`;

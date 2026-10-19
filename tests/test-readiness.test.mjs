@@ -9,7 +9,7 @@ import { inspectProject, validateSetupPlan } from '../dist/readiness.js';
 const root = mkdtempSync(path.join(tmpdir(), 'anhedral-readiness-'));
 const write = (file, value) =>
   writeFileSync(path.join(root, file), typeof value === 'string' ? value : JSON.stringify(value));
-const options = parseStandardOptions([root]);
+const options = parseStandardOptions([root, '--vinext']);
 const plan = createSetupPlan(options);
 try {
   assert.equal(inspectProject(root).localReady, false);

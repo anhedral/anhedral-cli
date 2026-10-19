@@ -2,6 +2,54 @@
 
 Dated records below describe the source and environment exercised at that time. Earlier results are historical evidence, not acceptance of a later release. Current architecture and operating instructions live in the stack standard and software factory.
 
+## Full Cloudflare default and optional shared billing — 2026-10-18
+
+New plain initialization and new Expo selections include Expo web/iOS/Android, Hono, Better Auth, Drizzle/D1 and private R2. Explicit Neon replaces D1. WXT-only initialization adds an extension to that default; explicit primary applications preserve their compatibility selection. Existing saved selections and unrelated additions do not receive new profile defaults. Legacy billing SDK/guidance projects require their pinned CLI or an explicit reviewed migration; strict provenance was preserved.
+
+Stripe and RevenueCat are independently optional. Generated shared contracts, Expo web/native billing adapters, authenticated Hono Checkout/portal/identity/entitlement routes and a server enforcement example are connected. The authenticated subject is the RevenueCat App User ID. Server-only Drizzle tables store account/customer ownership, fenced reconciliation snapshots and an idempotent webhook inbox. Stripe signatures use raw request bodies; RevenueCat requires configured Authorization and supports HMAC with timestamp checks. Canonical provider reads reconcile grants instead of trusting event order or client purchase state. A bounded scheduled retry drains pending events. Access caches expire within sixty seconds and never outlive provider expiry; stale access fails closed during outages. Provider environments and native public keys remain isolated from private credentials.
+
+Checkout guards nonterminal subscriptions independently of entitlement state, including refunded or past-due subscriptions. Verified open same-plan sessions are reused across distinct intents; another pending plan returns a conflict. Root client error handling gives safe conflict guidance. SDK operations fence native identity changes; RevenueCat logout failure cannot prevent Better Auth session revocation. R2 remains a private binding: each product must implement file ownership checks before exposing file routes.
+
+Local evidence:
+
+- CLI build, lint and static security checks passed. The full unit suite passed with 743 passing, zero failures and two existing skips (745 total); the focused release-scanner regression also passed. The scanner correction exempts only adjacent empty assignments in example files; populated secrets and JavaScript multiline credentials remain detected.
+- Retained `examples/billing-reference` was generated with `--stripe --revenuecat`; its final full `pnpm check` passed, including client/server/Worker types, Fallow, dependency audit, static web export and both Worker dry builds. Reviewed reference migration source is `0001_billing.sql`; no configured database was migrated. Final iOS/Android Hermes exports passed with the real optional RevenueCat native package and account-transition adapters.
+- `pnpm test:billing` passed against the compiled generated Hono Worker, real Better Auth/Drizzle SQL and Stripe SDK, with synthetic vendor HTTP responses and in-memory SQLite. It covered authenticated account isolation, strict plans/body/origins, deterministic retries, open-session reuse, duplicate-sale guards, server enforcement, independent optional providers, Stripe/RevenueCat grant union, refund/revocation, cancellation versus expiry, trial/past-due behavior, native transfers, invalid/stale signatures, environment/app scope, duplicate/out-of-order events, concurrent lease fencing, stale-cache outage denial and durable scheduled recovery. SQLite fixtures do not certify Cloudflare D1 semantics; vendor fixtures do not certify provider/store acceptance.
+- A final fresh `node tests/test-generated-apps.mjs universal-billing` passed initialization/install, generated SQL/check/build, local workerd/D1/R2 auth and the compiled billing proof, including open-session reuse and duplicate-sale guards. The hosted CI matrix now includes this reproducible profile.
+- Real local workerd, service bindings, D1 and private R2 loaded successfully. Chrome verified signup, protected account/reload, sign-out and mobile viewport behavior. An initial concurrent-edit run observed Worker reload/session unavailability; the unchanged assertions passed after source writers stopped. No timeout or security assertions were relaxed.
+- Main repository `pnpm check` and `pnpm build` passed. The five local Anhedral skills passed frontmatter/UI-metadata YAML and local-reference checks. CLI build refreshes bundled references; an installed plugin is not silently updated.
+
+Billing provider products/prices, webhook ingress and credentials, RevenueCat project/store policy, signed native builds and real sandbox purchases still require owner configuration and acceptance. Native exports are not device tests. Nothing was provisioned, deployed or published; no financial provider writes, charges or remote migrations were performed. Earlier dated records remain historical evidence of their own source/environment.
+
+## Universal Expo default — 2026-10-18
+
+New plain initialization selects Expo web/iOS/Android in `apps/mobile`, Hono in `apps/api`, shared contracts/styling and Wrangler delivery on Cloudflare. SDK 57 exports static web assets behind a thin API-binding gateway. Explicit Vinext/Next.js selections and existing projects remain supported. Better Auth selects a database and generates browser/native session adapters, exact application-scheme trust, SecureStore integration and account screens. Billing entitlements and the portal publisher remain separate implementation work.
+
+Local evidence:
+
+- CLI build, lint, static security policy and the full unit suite passed: 740 passing, zero failures and two existing conditional skips (742 total). Coverage includes gateway forwarding/caching/failure behavior, API-first target order, public build-variable isolation, native cookie rotation and server/browser/native auth boundaries.
+- Retained `examples/universal-reference` was generated from the local CLI with `--better-auth --no-git`. Its complete `pnpm check` passed, including lint, client/server/gateway types, Fallow, dependency audit, static web export and both Worker dry builds. Its lockfile and source are retained; generated outputs remain ignored.
+- `pnpm test:reference --browser` passed against real local workerd, an API service binding and disposable D1. It exercised health/exported routes, signup/login, protected contracts, incorrect-password rejection, sign-out/revocation, forged identity-header rejection, native scheme/cookie transport and untrusted-scheme rejection. Headless installed Chrome verified account creation, the protected account screen, reload, sign-out and a 390px viewport without horizontal overflow. The helper creates local synthetic credentials/state, applies migrations only with `--local`, refuses existing configured private files and cleans its processes/files.
+- A second fresh `node tests/test-generated-apps.mjs universal-auth` passed initialization, installation, full generated `pnpm check` and the real workerd/D1 gateway acceptance flow, proving the retained example does not depend on manual source repairs.
+- Final iOS and Android Hermes exports passed with the platform-specific auth and development-client modules. This proves bundler compatibility, not an installed native build or device session persistence.
+- Main repository `pnpm check` and `pnpm build` passed. Five local Anhedral skills passed YAML/frontmatter/UI-metadata and local-reference validation.
+
+The browser preview currently needs a new static export for changes; it does not provide web HMR. Arbitrary unknown dynamic URLs require explicit routing/rendering design. Physical-device/simulator native acceptance, native compilation/signing, deployed Cloudflare behavior, store purchase sandboxes and complete billing synchronization remain unverified. No cloud provisioning, remote migration, deployment, package publication or installed-plugin update occurred. Earlier records below retain their original source/environment scope.
+
+## Default Hono backend — 2026-10-18
+
+New initialization includes Hono and framework-independent Zod/HTTP contracts. Web remains Vinext/Cloudflare by default; explicit native Next.js/Vercel calls the API through a server-only configured URL. Cloudflare web/API service bindings, cookie-preserving same-origin transport, selected database bindings/factories and Better Auth routes/session UI are generated together. Database and identity remain opt-in. New routes still need product authorization. Existing registry metadata remains compatible; readiness and additions do not apply new backend defaults to old selections.
+
+Local validation:
+
+- CLI build and lint (types, formatting, source hygiene and release policy) passed. The unit suite passed with 738 passing and two skipped tests, including shared-client response validation and Vercel server-credential transport checks. The composition matrix now validates 200 supported combinations.
+- A fresh `node tests/test-generated-apps.mjs web-auth` completed initialization/install, generated `pnpm check` (including Fallow and dependency audit), build, real Vite/workerd web→API service binding, rendered auth screen, signup/login, protected session, invalid-password rejection, signout and revocation. Compiled Worker/Drizzle auth also passed against isolated in-memory SQLite; both generated Workers passed production-runtime local previews. Test data and credentials were synthetic/local; migrations were never applied to a configured production database.
+- An isolated generated native Next.js/Vercel + Hono/Neon profile passed its full `pnpm check` and build after regeneration with the current scaffold. No live Neon database or protected Vercel-to-Cloudflare deployment was exercised. Its API URL and optional Access service credentials remain explicit deployment configuration.
+- A copy of the original HEAD generator produced real old web-only, Hono-only and combined Hono/web/auth receipts. Current readiness accepted each; adding Resend preserved its API source and did not silently generate/migrate contracts. Pre-contracts Hono web/auth additions require an explicit migration.
+- The five local skills in the main repository passed frontmatter/UI-metadata parsing and local-reference checks. Main repository `pnpm check` and `pnpm build` passed for the checked working state. Historical verification records remain intact.
+
+The Expo/RevenueCat/Stripe sequence is a documented implementation roadmap, not generated native authentication, store purchases or verified billing behavior. No cloud provisioning, remote migrations, deployment, package publication or installed-plugin update occurred. Provider access/protection, native/device acceptance, store sandboxes and real billing remain separate verification work.
+
 ## Maintenance practices — 2026-10-18
 
 Added the software factory's evidence-driven maintenance workflow and connected it to the CLI's root `AGENTS.md`, contribution/PR guidance, shipped Anhedral skill and generated application instructions. It covers removal evidence for published/generated consumers, operational flag dependencies, focused changes, causal flaky-test diagnosis and controlled instruction comparisons. Existing uncommitted CI work was preserved. These instruction changes have not been evaluated through comparative agent task replays; no model cost or quality improvement is claimed.
@@ -454,3 +502,50 @@ The listener and empty-cache failures are environment limitations, not proven ap
 4. For an implemented product, verify protected business data, denied users, tenant isolation and any cross-app/native/extension identity flows. The scaffold's auth session smoke does not implement or certify those product behaviors.
 
 No provider resources, publication, production deployment or source commit were performed during this review. Detailed local evidence and prior pass results are recorded in `docs/verification.md`.
+
+
+## Progressive stack — local checkout, 2026-10-18
+
+Plain initialization now selects Expo only. Capability dependencies resolve to a
+fixed point; the compatible full-product preset includes Cloudflare AI, analytics,
+media, realtime and jobs plus WXT, billing, email and monitoring. Existing edited
+source and backend/delivery ownership remain protected. Legacy full-stack records
+above describe earlier defaults and are retained as historical evidence.
+
+Real generated `universal` (minimal) and `full-product` profiles passed dependency
+installation and `pnpm check`, including lint, type checks, Fallow, dependency audit,
+tests and builds. Full-product built Expo web, WXT, Hono and service Workers. These
+were isolated temporary projects; no configured database was migrated or provider
+resource deployed. The full-product check exposed unused helper dependencies and
+duplicate transport code; shared server transport and lazy Hono adapters fixed the
+actual findings without suppressing the generated checks.
+
+Focused regressions exercise minimal selection, provider independence, preset
+overrides, read-only previews, adding auth/billing without overwriting an edited
+home screen, data added after service adapters, scoped media calls, private image
+responses and redacted invalid provider JSON. The stack page's Mermaid diagram was
+rendered locally. The six local plugin skills passed frontmatter/link validation.
+
+Remaining acceptance: account/service activation and permissions, actual AI/event
+receipt/image/video behavior, RealtimeKit calls, app room authorization, native
+build/device/store flows and live payment reconciliation. No release, installation,
+publication, production deployment or source commit was performed.
+
+Final regression run: `pnpm test:unit` reported 750 tests, 748 passed, two skipped,
+zero failures. `pnpm typecheck`, `pnpm format:check`, `pnpm check:hygiene`,
+`pnpm check:security`, `pnpm check:release-policy`, CLI build and inspector/plugin
+build passed. Additional growth coverage confirms direct billing additions retain
+native RevenueCat key examples in the consuming app and preserve API-origin entries.
+
+## 0.13.0 release preparation
+
+The candidate changes plain init to a minimal Expo app, adds dependency-resolving
+capabilities and a full-product preset, and packages six focused skills with shared
+plugin-wide references. README and the concise stack page use the same progressive
+diagram. Historical generated reference apps retain their original provenance.
+
+Local `pnpm release:check` passed: lint/typecheck/format/hygiene/release policy,
+static security policy, refreshed OSV audit, 748 passing tests (two skipped), exact
+braces/node-forge patch regressions, packed CLI installation and package allowlist.
+`pnpm plugin:check` passed, including 62 inspector tests. Release artifact creation,
+hosted CI and publication are recorded separately after they actually complete.

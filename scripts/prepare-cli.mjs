@@ -10,10 +10,7 @@ if (!readFileSync(entry, 'utf8').startsWith('#!/usr/bin/env node\n')) {
 }
 chmodSync(entry, 0o755);
 // Ship the same registry and standard with the independently installable plugin.
-const references = new URL(
-  '../plugins/codex/distribution/skills/anhedral/references/',
-  import.meta.url,
-);
+const references = new URL('../plugins/codex/distribution/references/', import.meta.url);
 mkdirSync(references, { recursive: true });
 writeFileSync(
   new URL('stack-registry.json', references),
@@ -26,6 +23,10 @@ writeFileSync(
 writeFileSync(
   new URL('software-factory.md', references),
   readFileSync(new URL('../docs/software-factory.md', import.meta.url)),
+);
+writeFileSync(
+  new URL('anhedral-stack.md', references),
+  readFileSync(new URL('../docs/anhedral-stack.md', import.meta.url)),
 );
 writeFileSync(
   new URL('stack-standard.md', references),

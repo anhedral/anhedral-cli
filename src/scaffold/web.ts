@@ -1,3 +1,4 @@
+import { scaffoldWebBackend } from './backend.js';
 import { resourceName } from '../render.js';
 import { writeEnvironmentFile } from './environment.js';
 import { STACK_DEPENDENCIES, NEXT_VERCEL_VERSION, NEXT_OPENNEXT_VERSION } from '../dependencies.js';
@@ -151,4 +152,5 @@ export function scaffoldWeb({ root, options, bindings, runtimeApp, has }: Recipe
       rmSync(path.join(root, 'apps/web', file), { force: true });
     json(root, 'apps/web/vercel.json', { framework: 'nextjs' });
   }
+  scaffoldWebBackend({ root, options, bindings, runtimeApp, has });
 }

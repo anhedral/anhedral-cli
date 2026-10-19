@@ -53,7 +53,7 @@ try {
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout).products, ['hono', 'neon']);
   assert.equal(existsSync(target), false);
-  assert.match(run('--help').stdout, /Vinext on Cloudflare/);
+  assert.match(run('--help').stdout, /minimal Expo/);
   assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify|anhedral cloud/);
   assert.match(run('--version').stdout, /^\d+\.\d+\.\d+\n$/);
 } finally {

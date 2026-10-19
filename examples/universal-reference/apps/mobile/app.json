@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "universal-reference",
+    "slug": "universal-reference",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "universal-reference",
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "reactCompiler": true,
+      "typedRoutes": true
+    },
+    "userInterfaceStyle": "automatic"
+  }
+}

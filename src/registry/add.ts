@@ -1,9 +1,12 @@
+import { scaffoldCloudflareServiceContext } from '../scaffold/cloudflare-services.js';
 import {
   PROJECT_CONFIG_FILE,
   readProjectSection,
   writeProjectSection,
   hasProjectSection,
 } from '../project-config.js';
+import { scaffoldExpoRuntime } from '../scaffold/expo-runtime.js';
+import { scaffoldWebBackend } from '../scaffold/backend.js';
 import { configureDependencyPatches } from '../dependency-patches.js';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
@@ -13,7 +16,7 @@ import { existsSync, lstatSync, readFileSync, realpathSync, rmSync } from 'node:
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { applyEdits, modify, parse } from 'jsonc-parser';
-import { STANDARD_PRODUCTS, installStackItem } from '../stack-registry.js';
+import { STANDARD_PRODUCTS, getStackDefinition, installStackItem } from '../stack-registry.js';
 import { inspectProject, validateSetupPlan } from '../readiness.js';
 import { GENERATOR_VERSION } from '../version.js';
 import { runStagedTransaction } from '../transaction.js';
@@ -24,7 +27,11 @@ import { put } from '../scaffold/files.js';
 import { writeStandardRoot } from '../scaffold/workspace.js';
 import { configureVoidDelivery, refreshVoidEnvironment } from '../scaffold/void.js';
 import { createRecipeContext } from './context.js';
-import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
+import {
+  resolveBillingProducts,
+  resolveStackRegistry,
+  resolveStandardProducts,
+} from './resolve.js';
 import { sourceFiles, configurationFingerprints } from './receipt.js';
 import type { StandardOptions, StandardProduct, StandardRunner } from './types.js';
 import {
@@ -63,6 +70,15 @@ export async function addStackItems(
   root = realpathSync(root);
   if (!request.items.length) throw new Error('Select at least one registry item.');
   const plan = readProjectSection(root, 'setup');
+  if (
+    Array.isArray(plan?.registry?.items) &&
+    plan.registry.items.some(
+      (item: { name?: string; package?: unknown }) => item.name === 'stripe' && item.package,
+    )
+  )
+    throw new Error(
+      'This project uses the legacy billing SDK recipe. Use its pinned CLI or perform a reviewed billing migration before adding capabilities.',
+    );
   validateSetupPlan(plan);
   if (plan.cliVersion !== GENERATOR_VERSION)
     throw new Error('Use the project CLI version before adding recipes.');
@@ -85,15 +101,32 @@ export async function addStackItems(
       throw new Error(`Unknown stack product: ${id}.`);
     selected.add(id as StandardProduct);
   }
+  const existingServerFeatures = plan.products.some((id) =>
+    Boolean(getStackDefinition(id).runtime),
+  );
   if (
-    (selected.has('queues') || selected.has('basin')) &&
+    !existingServerFeatures &&
+    request.items.some((id) => Boolean(getStackDefinition(id).runtime))
+  )
+    selected.add('hono');
+  if (
+    request.items.some(
+      (id) =>
+        ['stripe', 'revenuecat'].includes(id) && !plan.products.includes(id as StandardProduct),
+    )
+  )
+    resolveBillingProducts(selected);
+  if (
+    ['queues', 'basin', 'expo', 'images', 'analytics-engine'].some((id) =>
+      selected.has(id as StandardProduct),
+    ) &&
     hasProjectSection(root, 'cloudflare') &&
     readProjectSection(root, 'cloudflare').deliveryEngine === 'void'
   )
     throw new Error(
-      'Queues with dead-letter recovery and Basin require Wrangler delivery. They cannot be added to a Void project.',
+      'Expo web, Queues, Basin, Images and Analytics Engine require Wrangler delivery. They cannot be added to a Void project.',
     );
-  resolveStandardProducts(selected, plan.hosting, false);
+  resolveStandardProducts(selected, plan.hosting, false, false);
   const voidSelected = usesVoidSelection([...selected], plan.hosting);
   if (
     !request.dryRun &&
@@ -112,6 +145,19 @@ export async function addStackItems(
     json: true,
     initializeGit: false,
   };
+  if (
+    plan.products.includes('hono') &&
+    !existsSync(path.join(root, 'packages/contracts/package.json')) &&
+    (request.items.some(
+      (id) => ['vinext', 'next'].includes(id) && !plan.products.some((existing) => existing === id),
+    ) ||
+      (request.items.includes('better-auth') &&
+        !plan.products.includes('better-auth') &&
+        plan.products.some((id) => ['vinext', 'next'].includes(id))))
+  )
+    throw new Error(
+      'This API predates shared contracts. Migrate its contracts and API endpoints explicitly before adding web/auth wiring.',
+    );
   const registry = resolveStackRegistry(options);
   const oldItems = new Map(plan.registry.items.map((item) => [item.name, item]));
   const recipes = registry.items.filter(
@@ -164,13 +210,24 @@ export async function addStackItems(
     seedPaths: [...before.keys(), PROJECT_CONFIG_FILE],
     build: async (stage) => {
       const context = createRecipeContext(stage, options);
+      context.updating = true;
       for (const item of registry.items) Object.assign(context.bindings, item.bindings);
       if (
         recipes.some((item) => ['vinext', 'next'].includes(item.name)) &&
         !existsSync(path.join(stage, 'apps/web/package.json'))
       )
         bootstrapWorkspace(stage, options.name, run, true);
-      for (const item of recipes) await installStackItem(item, context);
+      for (const item of recipes) {
+        if (item.name === 'expo' && plan.products.includes('expo')) {
+          scaffoldExpoRuntime(context);
+        } else await installStackItem(item, context);
+      }
+      // Connect a newly introduced backend without regenerating customer UI.
+      if (!plan.products.includes('hono') && selected.has('hono')) {
+        if (plan.products.includes('expo')) scaffoldExpoRuntime(context);
+        if (plan.products.includes('next') || plan.products.includes('vinext'))
+          scaffoldWebBackend(context);
+      }
       // Configuration items affect the existing runtime without regenerating its application source.
       const configurationItems = registry.items.filter(
         (item) => !isDeepStrictEqual(oldItems.get(item.name), item) && item.bindings,
@@ -195,6 +252,7 @@ export async function addStackItems(
           }
         put(stage, file, content);
       }
+      scaffoldCloudflareServiceContext(context);
       writeStandardRoot(stage, options, registry, true);
       if (voidSelected) {
         configureVoidDelivery(stage);

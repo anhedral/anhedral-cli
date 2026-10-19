@@ -19,11 +19,10 @@ import { applicationRuntime, runtimeTargets } from '../dist/providers/runtime.js
 const secret = randomBytes(32).toString('hex');
 function fixture(flags = ['--vinext', '--better-auth']) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-app-runtime-'));
-  writeProjectSection(
-    root,
-    'setup',
-    createSetupPlan(parseStandardOptions([root, '--skip-install', ...flags])),
-  );
+  const options = parseStandardOptions([root, '--skip-install', ...flags]);
+  // Retain legacy web-owned credential coverage as well as current explicit API cases.
+  if (!flags.includes('--hono')) options.products = options.products.filter((id) => id !== 'hono');
+  writeProjectSection(root, 'setup', createSetupPlan(options));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
   mkdirSync(path.join(root, 'apps/api'), { recursive: true });
   return root;
@@ -207,6 +206,62 @@ test('broad private runtime permissions stop before git checks and leave file un
     );
     assert.equal(gitCalls, 0);
     assert.equal(readFileSync(file, 'utf8'), before);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('new defaults send auth credentials only to the API', () => {
+  const root = fixture();
+  try {
+    writeProjectSection(
+      root,
+      'setup',
+      createSetupPlan(parseStandardOptions([root, '--better-auth'])),
+    );
+    assert.deepEqual(runtimeTargets(root, { BETTER_AUTH_SECRET: secret }), {
+      'apps/api/.dev.vars': { BETTER_AUTH_SECRET: secret },
+    });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('billing credentials and catalog stay on Hono while only platform SDK keys reach Expo', () => {
+  const root = fixture(['--hono', '--expo', '--better-auth', '--stripe', '--revenuecat']);
+  try {
+    const values = {
+      STRIPE_SECRET_KEY: 'stripe-private-runtime',
+      STRIPE_WEBHOOK_SECRET: 'stripe-webhook-runtime',
+      BILLING_ORIGIN: 'https://example.com',
+      BILLING_ENVIRONMENT: 'sandbox',
+      BILLING_PLANS_JSON: JSON.stringify({
+        premium: { label: 'Premium', stripePriceId: 'price_fixture', entitlement: 'premium' },
+      }),
+      BILLING_ENTITLEMENTS_JSON: '["premium"]',
+      BILLING_PREMIUM_ENTITLEMENT: 'premium',
+      REVENUECAT_SECRET_KEY: 'revenuecat-private-runtime',
+      REVENUECAT_WEBHOOK_AUTHORIZATION: 'revenuecat-webhook-runtime',
+      REVENUECAT_WEBHOOK_SIGNING_SECRET: 'revenuecat-signing-runtime',
+      REVENUECAT_PROJECT_ID: 'proj_fixture',
+      REVENUECAT_APP_IDS_JSON: '["app_ios","app_android"]',
+      EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: 'appl_public',
+      EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY: 'goog_public',
+    };
+    const targets = runtimeTargets(root, values);
+    assert.deepEqual(targets['apps/mobile/.env.local'], {
+      EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: 'appl_public',
+      EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY: 'goog_public',
+    });
+    for (const [key, value] of Object.entries(values)) {
+      if (key.startsWith('EXPO_PUBLIC_'))
+        assert.equal(targets['apps/api/.dev.vars'][key], undefined);
+      else assert.equal(targets['apps/api/.dev.vars'][key], value);
+    }
+    assert.doesNotMatch(
+      JSON.stringify(targets['apps/mobile/.env.local']),
+      /private|webhook|signing|price_fixture/,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

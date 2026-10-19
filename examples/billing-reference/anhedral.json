@@ -1,0 +1,1353 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "schemaVersion": 1,
+    "id": "364311d3-e859-46ef-aa13-ef8a4504ba1b"
+  },
+  "standard": {
+    "schemaVersion": 1,
+    "standard": "anhedral-application-stack",
+    "products": [
+      "better-auth",
+      "d1",
+      "expo",
+      "hono",
+      "r2",
+      "revenuecat",
+      "stripe"
+    ],
+    "hosting": "cloudflare",
+    "bootstrap": {
+      "command": "pnpm dlx shadcn@4.21.4 init --monorepo --template next",
+      "upstreamPackageManager": "pnpm@11.25.0"
+    },
+    "status": "starter",
+    "resourcesProvisioned": false
+  },
+  "setup": {
+    "schemaVersion": 1,
+    "cliVersion": "0.12.0",
+    "registryVersion": 1,
+    "standard": "anhedral-application-stack",
+    "root": ".",
+    "name": "billing-reference",
+    "products": [
+      "better-auth",
+      "d1",
+      "expo",
+      "hono",
+      "r2",
+      "revenuecat",
+      "stripe"
+    ],
+    "hosting": "cloudflare",
+    "registry": {
+      "schemaVersion": 1,
+      "name": "anhedral",
+      "cliVersion": "0.12.0",
+      "items": [
+        {
+          "name": "workspace",
+          "version": "0.12.0",
+          "selection": {},
+          "registryDependencies": [],
+          "environment": [],
+          "installer": "bootstrap",
+          "type": "foundation",
+          "description": "pnpm workspace with one root lockfile, pinned Turborepo and shared checks",
+          "targets": [
+            "package.json",
+            "pnpm-workspace.yaml",
+            "turbo.json"
+          ]
+        },
+        {
+          "name": "typescript",
+          "version": "0.12.0",
+          "selection": {},
+          "registryDependencies": [
+            "workspace"
+          ],
+          "environment": [],
+          "installer": "bootstrap",
+          "type": "foundation",
+          "description": "Shared TypeScript configuration",
+          "targets": [
+            "packages/typescript-config"
+          ]
+        },
+        {
+          "name": "eslint",
+          "version": "0.12.0",
+          "selection": {},
+          "registryDependencies": [
+            "workspace"
+          ],
+          "environment": [],
+          "installer": "bootstrap",
+          "type": "foundation",
+          "description": "Shared ESLint configuration",
+          "targets": [
+            "packages/eslint-config"
+          ]
+        },
+        {
+          "name": "hono",
+          "version": "0.12.0",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "application",
+          "description": "Shared Hono OpenAPI Worker",
+          "targets": [
+            "apps/api"
+          ],
+          "setup": {
+            "purpose": "Shared OpenAPI backend",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare Workers deployment access"
+            ],
+            "credentials": [],
+            "resources": [
+              "API Worker; application routes and authorization"
+            ],
+            "verify": [
+              "Contract validation, unauthenticated rejection and resource ownership"
+            ]
+          }
+        },
+        {
+          "name": "d1",
+          "version": "0.12.0",
+          "selection": {
+            "conflicts": [
+              "neon"
+            ]
+          },
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Reusable Drizzle D1 database package and explicit migration tooling",
+          "targets": [
+            "packages/db",
+            "apps/api"
+          ],
+          "setup": {
+            "purpose": "SQLite-compatible hosted persistence",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare D1 access"
+            ],
+            "credentials": [],
+            "resources": [
+              "D1 database, DB binding and reviewed migrations"
+            ],
+            "verify": [
+              "Migration, constraints, transactional behavior and runtime queries"
+            ]
+          },
+          "runtime": "worker",
+          "bindings": {
+            "d1_databases": [
+              {
+                "binding": "DB",
+                "database_name": "billing-reference-db",
+                "database_id": "REPLACE_WITH_D1_ID",
+                "migrations_dir": "../../packages/db/drizzle"
+              }
+            ]
+          }
+        },
+        {
+          "name": "styling",
+          "version": "0.12.0",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "package",
+          "description": "Shared platform-independent styling tokens",
+          "targets": [
+            "packages/styling"
+          ],
+          "setup": {
+            "purpose": "Shared styling definitions",
+            "tools": [],
+            "access": [],
+            "credentials": [],
+            "resources": [
+              "Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components"
+            ],
+            "verify": [
+              "Consistency across selected interfaces; preserve platform-specific components"
+            ]
+          },
+          "package": {
+            "name": "styling",
+            "source": "import { light, dark, spacing } from './tokens.cjs';\n\nexport const styling = {\n  colors: {\n    foreground: 'hsl(' + light['--foreground'] + ')',\n    background: 'hsl(' + light['--background'] + ')',\n  },\n  spacing,\n  themes: { light, dark },\n};\n",
+            "dependencies": {}
+          }
+        },
+        {
+          "name": "expo",
+          "version": "0.12.0",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "styling"
+          ],
+          "environment": [
+            "EXPO_PUBLIC_API_URL"
+          ],
+          "installer": "recipe",
+          "type": "application",
+          "description": "Universal Expo web, iOS and Android client with a Cloudflare asset/API gateway",
+          "targets": [
+            "apps/mobile"
+          ],
+          "setup": {
+            "purpose": "Universal web, iOS and Android application",
+            "tools": [
+              "Expo/EAS CLI",
+              "Browser control",
+              "Wrangler",
+              "Xcode or Android SDK"
+            ],
+            "access": [
+              "Client-owned Apple/Google developer accounts for store delivery"
+            ],
+            "credentials": [
+              "Platform signing credentials; EAS access when used"
+            ],
+            "resources": [
+              "Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration"
+            ],
+            "verify": [
+              "Native simulator/device flows and signed native build; web export alone is insufficient"
+            ]
+          }
+        },
+        {
+          "name": "better-auth",
+          "version": "0.12.0",
+          "selection": {
+            "conflicts": [
+              "clerk"
+            ],
+            "requiresAny": [
+              "neon",
+              "d1"
+            ]
+          },
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono",
+            "d1",
+            "expo"
+          ],
+          "environment": [
+            "BETTER_AUTH_SECRET",
+            "BETTER_AUTH_URL"
+          ],
+          "installer": "recipe",
+          "type": "integration",
+          "description": "Database-backed identity schema and runtime routes",
+          "targets": [
+            "packages/auth",
+            "packages/db",
+            "apps/api",
+            "apps/mobile"
+          ],
+          "setup": {
+            "purpose": "Application-managed identity",
+            "tools": [
+              "Selected database tooling"
+            ],
+            "access": [
+              "Selected database migration/runtime access"
+            ],
+            "credentials": [
+              "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
+            ],
+            "resources": [
+              "Selected Neon or D1 database, auth schema, trusted origins and application routes"
+            ],
+            "verify": [
+              "Sign-in/out, session expiry, sign-up policy and resource authorization"
+            ]
+          },
+          "runtime": "server"
+        },
+        {
+          "name": "r2",
+          "version": "0.12.0",
+          "selection": {},
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono"
+          ],
+          "environment": [],
+          "installer": "recipe",
+          "type": "integration",
+          "description": "Private file binding and authorization guidance",
+          "targets": [
+            "apps/api/private-files.md"
+          ],
+          "setup": {
+            "purpose": "Private remote files",
+            "tools": [
+              "Wrangler"
+            ],
+            "access": [
+              "Cloudflare R2 bucket/binding access"
+            ],
+            "credentials": [],
+            "resources": [
+              "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+            ],
+            "verify": [
+              "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+            ]
+          },
+          "runtime": "worker",
+          "bindings": {
+            "r2_buckets": [
+              {
+                "binding": "FILES",
+                "bucket_name": "billing-reference-private-files"
+              }
+            ]
+          }
+        },
+        {
+          "name": "revenuecat",
+          "version": "0.12.0",
+          "selection": {
+            "requiresAll": [
+              "hono"
+            ],
+            "requiresAny": [
+              "better-auth",
+              "clerk"
+            ]
+          },
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono",
+            "d1",
+            "better-auth",
+            "expo"
+          ],
+          "environment": [
+            "BILLING_ORIGIN",
+            "BILLING_ENVIRONMENT",
+            "BILLING_PLANS_JSON",
+            "BILLING_ENTITLEMENTS_JSON",
+            "BILLING_PREMIUM_ENTITLEMENT",
+            "REVENUECAT_SECRET_KEY",
+            "REVENUECAT_WEBHOOK_AUTHORIZATION",
+            "REVENUECAT_WEBHOOK_SIGNING_SECRET",
+            "REVENUECAT_APP_IDS_JSON",
+            "REVENUECAT_PROJECT_ID",
+            "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY",
+            "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY"
+          ],
+          "installer": "recipe",
+          "type": "integration",
+          "description": "Native purchases, restore and server-enforced cross-store entitlements",
+          "targets": [
+            "packages/billing",
+            "packages/contracts",
+            "apps/api",
+            "apps/mobile"
+          ],
+          "setup": {
+            "purpose": "Cross-store subscription entitlements; Stripe is optional",
+            "tools": [
+              "RevenueCat integration or API",
+              "Selected mobile store tooling"
+            ],
+            "access": [
+              "RevenueCat project; App Store/Play Store product access"
+            ],
+            "credentials": [
+              "Platform public SDK keys; server API/webhook credentials as required"
+            ],
+            "resources": [
+              "Native purchase SDK and authenticated entitlement APIs; configure offerings/store products before acceptance"
+            ],
+            "verify": [
+              "Sandbox purchase/restore, verified webhooks and entitlement reconciliation"
+            ]
+          }
+        },
+        {
+          "name": "stripe",
+          "version": "0.12.0",
+          "selection": {
+            "requiresAll": [
+              "hono"
+            ],
+            "requiresAny": [
+              "better-auth",
+              "clerk"
+            ]
+          },
+          "registryDependencies": [
+            "workspace",
+            "typescript",
+            "eslint",
+            "hono",
+            "d1",
+            "better-auth",
+            "expo"
+          ],
+          "environment": [
+            "BILLING_ORIGIN",
+            "BILLING_ENVIRONMENT",
+            "BILLING_PLANS_JSON",
+            "BILLING_ENTITLEMENTS_JSON",
+            "BILLING_PREMIUM_ENTITLEMENT",
+            "STRIPE_SECRET_KEY",
+            "STRIPE_WEBHOOK_SECRET"
+          ],
+          "installer": "recipe",
+          "type": "integration",
+          "description": "Authenticated Stripe checkout, portal and server entitlement projection",
+          "targets": [
+            "packages/billing",
+            "packages/contracts",
+            "apps/api",
+            "apps/mobile"
+          ],
+          "setup": {
+            "purpose": "Web payments and subscriptions",
+            "tools": [
+              "Stripe integration or CLI"
+            ],
+            "access": [
+              "Client-owned Stripe account; test/live access as required"
+            ],
+            "credentials": [
+              "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
+            ],
+            "resources": [
+              "Products/prices, signed webhooks and entitlement implementation"
+            ],
+            "verify": [
+              "Test purchase/cancellation, webhook replay and transactional idempotency"
+            ]
+          }
+        }
+      ]
+    },
+    "bootstrap": [
+      "pnpm",
+      "dlx",
+      "shadcn@4.21.4",
+      "init",
+      "--monorepo",
+      "--template",
+      "next"
+    ],
+    "dryRun": false,
+    "setup": {
+      "tools": [
+        "Git",
+        "Node.js 22.13+ on 22.x, or Node.js 24+ for generated workspaces",
+        "pnpm 10.34.5",
+        "GitHub integration or gh",
+        "Fallow",
+        "Cloudflare security audit skill",
+        "Cloudflare integration or API",
+        "Void",
+        "Wrangler",
+        "Selected database tooling",
+        "Expo/EAS CLI",
+        "Browser control",
+        "Xcode or Android SDK",
+        "RevenueCat integration or API",
+        "Selected mobile store tooling",
+        "Stripe integration or CLI"
+      ],
+      "access": [
+        "User-owned GitHub repository and CI access",
+        "Client-owned Cloudflare account; account ID; scoped OAuth/API access; service-compatible plan; DNS access only when needed"
+      ],
+      "capabilities": [
+        {
+          "id": "better-auth",
+          "purpose": "Application-managed identity",
+          "tools": [
+            "Selected database tooling"
+          ],
+          "access": [
+            "Selected database migration/runtime access"
+          ],
+          "credentials": [
+            "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
+          ],
+          "resources": [
+            "Selected Neon or D1 database, auth schema, trusted origins and application routes"
+          ],
+          "verify": [
+            "Sign-in/out, session expiry, sign-up policy and resource authorization"
+          ],
+          "selection": {
+            "conflicts": [
+              "clerk"
+            ],
+            "requiresAny": [
+              "neon",
+              "d1"
+            ]
+          },
+          "status": "starter"
+        },
+        {
+          "id": "d1",
+          "purpose": "SQLite-compatible hosted persistence",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare D1 access"
+          ],
+          "credentials": [],
+          "resources": [
+            "D1 database, DB binding and reviewed migrations"
+          ],
+          "verify": [
+            "Migration, constraints, transactional behavior and runtime queries"
+          ],
+          "selection": {
+            "conflicts": [
+              "neon"
+            ]
+          },
+          "status": "starter"
+        },
+        {
+          "id": "expo",
+          "purpose": "Universal web, iOS and Android application",
+          "tools": [
+            "Expo/EAS CLI",
+            "Browser control",
+            "Wrangler",
+            "Xcode or Android SDK"
+          ],
+          "access": [
+            "Client-owned Apple/Google developer accounts for store delivery"
+          ],
+          "credentials": [
+            "Platform signing credentials; EAS access when used"
+          ],
+          "resources": [
+            "Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration"
+          ],
+          "verify": [
+            "Native simulator/device flows and signed native build; web export alone is insufficient"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "hono",
+          "purpose": "Shared OpenAPI backend",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workers deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "API Worker; application routes and authorization"
+          ],
+          "verify": [
+            "Contract validation, unauthenticated rejection and resource ownership"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "r2",
+          "purpose": "Private remote files",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare R2 bucket/binding access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+          ],
+          "verify": [
+            "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+          ],
+          "selection": {},
+          "status": "starter"
+        },
+        {
+          "id": "revenuecat",
+          "purpose": "Cross-store subscription entitlements; Stripe is optional",
+          "tools": [
+            "RevenueCat integration or API",
+            "Selected mobile store tooling"
+          ],
+          "access": [
+            "RevenueCat project; App Store/Play Store product access"
+          ],
+          "credentials": [
+            "Platform public SDK keys; server API/webhook credentials as required"
+          ],
+          "resources": [
+            "Native purchase SDK and authenticated entitlement APIs; configure offerings/store products before acceptance"
+          ],
+          "verify": [
+            "Sandbox purchase/restore, verified webhooks and entitlement reconciliation"
+          ],
+          "selection": {
+            "requiresAll": [
+              "hono"
+            ],
+            "requiresAny": [
+              "better-auth",
+              "clerk"
+            ]
+          },
+          "status": "starter"
+        },
+        {
+          "id": "stripe",
+          "purpose": "Web payments and subscriptions",
+          "tools": [
+            "Stripe integration or CLI"
+          ],
+          "access": [
+            "Client-owned Stripe account; test/live access as required"
+          ],
+          "credentials": [
+            "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
+          ],
+          "resources": [
+            "Products/prices, signed webhooks and entitlement implementation"
+          ],
+          "verify": [
+            "Test purchase/cancellation, webhook replay and transactional idempotency"
+          ],
+          "selection": {
+            "requiresAll": [
+              "hono"
+            ],
+            "requiresAny": [
+              "better-auth",
+              "clerk"
+            ]
+          },
+          "status": "starter"
+        }
+      ],
+      "completion": [
+        "Guide GitHub authentication, own local Git checkout, reviewed initial commit and private user-owned remote; verify the selected deployment source connection",
+        "Discover available plugins and fallbacks; verify the selected account and scope",
+        "Configure separate environments, bindings and server-side secrets",
+        "Implement starter behavior and meaningful tests",
+        "Run pnpm check plus platform/provider verification",
+        "Verify deployed preview; obtain required production authorization; record rollback and operating ownership"
+      ],
+      "resourcesProvisioned": false
+    }
+  },
+  "providers": {
+    "schemaVersion": 1,
+    "providers": {
+      "stripe": {
+        "accountId": "",
+        "mode": "test"
+      },
+      "revenuecat": {
+        "name": "billing-reference",
+        "bundleId": "",
+        "packageName": ""
+      }
+    }
+  },
+  "cloudflare": {
+    "schemaVersion": 1,
+    "id": "fdddf1ad-7b06-4430-8ae9-6ad9be3d68b9",
+    "name": "billing-reference",
+    "ownership": "customer",
+    "provider": "cloudflare",
+    "deliveryEngine": "wrangler",
+    "accountId": null,
+    "audience": "unconfigured",
+    "targets": [
+      {
+        "id": "api",
+        "directory": "apps/api",
+        "workerName": "billing-reference-api"
+      },
+      {
+        "id": "mobile",
+        "directory": "apps/mobile",
+        "workerName": "billing-reference-mobile"
+      }
+    ]
+  },
+  "registry": {
+    "schemaVersion": 1,
+    "name": "anhedral",
+    "cliVersion": "0.12.0",
+    "items": [
+      {
+        "name": "workspace",
+        "version": "0.12.0",
+        "selection": {},
+        "registryDependencies": [],
+        "environment": [],
+        "installer": "bootstrap",
+        "type": "foundation",
+        "description": "pnpm workspace with one root lockfile, pinned Turborepo and shared checks",
+        "targets": [
+          "package.json",
+          "pnpm-workspace.yaml",
+          "turbo.json"
+        ]
+      },
+      {
+        "name": "typescript",
+        "version": "0.12.0",
+        "selection": {},
+        "registryDependencies": [
+          "workspace"
+        ],
+        "environment": [],
+        "installer": "bootstrap",
+        "type": "foundation",
+        "description": "Shared TypeScript configuration",
+        "targets": [
+          "packages/typescript-config"
+        ]
+      },
+      {
+        "name": "eslint",
+        "version": "0.12.0",
+        "selection": {},
+        "registryDependencies": [
+          "workspace"
+        ],
+        "environment": [],
+        "installer": "bootstrap",
+        "type": "foundation",
+        "description": "Shared ESLint configuration",
+        "targets": [
+          "packages/eslint-config"
+        ]
+      },
+      {
+        "name": "hono",
+        "version": "0.12.0",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "application",
+        "description": "Shared Hono OpenAPI Worker",
+        "targets": [
+          "apps/api"
+        ],
+        "setup": {
+          "purpose": "Shared OpenAPI backend",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare Workers deployment access"
+          ],
+          "credentials": [],
+          "resources": [
+            "API Worker; application routes and authorization"
+          ],
+          "verify": [
+            "Contract validation, unauthenticated rejection and resource ownership"
+          ]
+        }
+      },
+      {
+        "name": "d1",
+        "version": "0.12.0",
+        "selection": {
+          "conflicts": [
+            "neon"
+          ]
+        },
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Reusable Drizzle D1 database package and explicit migration tooling",
+        "targets": [
+          "packages/db",
+          "apps/api"
+        ],
+        "setup": {
+          "purpose": "SQLite-compatible hosted persistence",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare D1 access"
+          ],
+          "credentials": [],
+          "resources": [
+            "D1 database, DB binding and reviewed migrations"
+          ],
+          "verify": [
+            "Migration, constraints, transactional behavior and runtime queries"
+          ]
+        },
+        "runtime": "worker",
+        "bindings": {
+          "d1_databases": [
+            {
+              "binding": "DB",
+              "database_name": "billing-reference-db",
+              "database_id": "REPLACE_WITH_D1_ID",
+              "migrations_dir": "../../packages/db/drizzle"
+            }
+          ]
+        }
+      },
+      {
+        "name": "styling",
+        "version": "0.12.0",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "package",
+        "description": "Shared platform-independent styling tokens",
+        "targets": [
+          "packages/styling"
+        ],
+        "setup": {
+          "purpose": "Shared styling definitions",
+          "tools": [],
+          "access": [],
+          "credentials": [],
+          "resources": [
+            "Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components"
+          ],
+          "verify": [
+            "Consistency across selected interfaces; preserve platform-specific components"
+          ]
+        },
+        "package": {
+          "name": "styling",
+          "source": "import { light, dark, spacing } from './tokens.cjs';\n\nexport const styling = {\n  colors: {\n    foreground: 'hsl(' + light['--foreground'] + ')',\n    background: 'hsl(' + light['--background'] + ')',\n  },\n  spacing,\n  themes: { light, dark },\n};\n",
+          "dependencies": {}
+        }
+      },
+      {
+        "name": "expo",
+        "version": "0.12.0",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "styling"
+        ],
+        "environment": [
+          "EXPO_PUBLIC_API_URL"
+        ],
+        "installer": "recipe",
+        "type": "application",
+        "description": "Universal Expo web, iOS and Android client with a Cloudflare asset/API gateway",
+        "targets": [
+          "apps/mobile"
+        ],
+        "setup": {
+          "purpose": "Universal web, iOS and Android application",
+          "tools": [
+            "Expo/EAS CLI",
+            "Browser control",
+            "Wrangler",
+            "Xcode or Android SDK"
+          ],
+          "access": [
+            "Client-owned Apple/Google developer accounts for store delivery"
+          ],
+          "credentials": [
+            "Platform signing credentials; EAS access when used"
+          ],
+          "resources": [
+            "Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration"
+          ],
+          "verify": [
+            "Native simulator/device flows and signed native build; web export alone is insufficient"
+          ]
+        }
+      },
+      {
+        "name": "better-auth",
+        "version": "0.12.0",
+        "selection": {
+          "conflicts": [
+            "clerk"
+          ],
+          "requiresAny": [
+            "neon",
+            "d1"
+          ]
+        },
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono",
+          "d1",
+          "expo"
+        ],
+        "environment": [
+          "BETTER_AUTH_SECRET",
+          "BETTER_AUTH_URL"
+        ],
+        "installer": "recipe",
+        "type": "integration",
+        "description": "Database-backed identity schema and runtime routes",
+        "targets": [
+          "packages/auth",
+          "packages/db",
+          "apps/api",
+          "apps/mobile"
+        ],
+        "setup": {
+          "purpose": "Application-managed identity",
+          "tools": [
+            "Selected database tooling"
+          ],
+          "access": [
+            "Selected database migration/runtime access"
+          ],
+          "credentials": [
+            "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
+          ],
+          "resources": [
+            "Selected Neon or D1 database, auth schema, trusted origins and application routes"
+          ],
+          "verify": [
+            "Sign-in/out, session expiry, sign-up policy and resource authorization"
+          ]
+        },
+        "runtime": "server"
+      },
+      {
+        "name": "r2",
+        "version": "0.12.0",
+        "selection": {},
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono"
+        ],
+        "environment": [],
+        "installer": "recipe",
+        "type": "integration",
+        "description": "Private file binding and authorization guidance",
+        "targets": [
+          "apps/api/private-files.md"
+        ],
+        "setup": {
+          "purpose": "Private remote files",
+          "tools": [
+            "Wrangler"
+          ],
+          "access": [
+            "Cloudflare R2 bucket/binding access"
+          ],
+          "credentials": [],
+          "resources": [
+            "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+          ],
+          "verify": [
+            "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+          ]
+        },
+        "runtime": "worker",
+        "bindings": {
+          "r2_buckets": [
+            {
+              "binding": "FILES",
+              "bucket_name": "billing-reference-private-files"
+            }
+          ]
+        }
+      },
+      {
+        "name": "revenuecat",
+        "version": "0.12.0",
+        "selection": {
+          "requiresAll": [
+            "hono"
+          ],
+          "requiresAny": [
+            "better-auth",
+            "clerk"
+          ]
+        },
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono",
+          "d1",
+          "better-auth",
+          "expo"
+        ],
+        "environment": [
+          "BILLING_ORIGIN",
+          "BILLING_ENVIRONMENT",
+          "BILLING_PLANS_JSON",
+          "BILLING_ENTITLEMENTS_JSON",
+          "BILLING_PREMIUM_ENTITLEMENT",
+          "REVENUECAT_SECRET_KEY",
+          "REVENUECAT_WEBHOOK_AUTHORIZATION",
+          "REVENUECAT_WEBHOOK_SIGNING_SECRET",
+          "REVENUECAT_APP_IDS_JSON",
+          "REVENUECAT_PROJECT_ID",
+          "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY",
+          "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY"
+        ],
+        "installer": "recipe",
+        "type": "integration",
+        "description": "Native purchases, restore and server-enforced cross-store entitlements",
+        "targets": [
+          "packages/billing",
+          "packages/contracts",
+          "apps/api",
+          "apps/mobile"
+        ],
+        "setup": {
+          "purpose": "Cross-store subscription entitlements; Stripe is optional",
+          "tools": [
+            "RevenueCat integration or API",
+            "Selected mobile store tooling"
+          ],
+          "access": [
+            "RevenueCat project; App Store/Play Store product access"
+          ],
+          "credentials": [
+            "Platform public SDK keys; server API/webhook credentials as required"
+          ],
+          "resources": [
+            "Native purchase SDK and authenticated entitlement APIs; configure offerings/store products before acceptance"
+          ],
+          "verify": [
+            "Sandbox purchase/restore, verified webhooks and entitlement reconciliation"
+          ]
+        }
+      },
+      {
+        "name": "stripe",
+        "version": "0.12.0",
+        "selection": {
+          "requiresAll": [
+            "hono"
+          ],
+          "requiresAny": [
+            "better-auth",
+            "clerk"
+          ]
+        },
+        "registryDependencies": [
+          "workspace",
+          "typescript",
+          "eslint",
+          "hono",
+          "d1",
+          "better-auth",
+          "expo"
+        ],
+        "environment": [
+          "BILLING_ORIGIN",
+          "BILLING_ENVIRONMENT",
+          "BILLING_PLANS_JSON",
+          "BILLING_ENTITLEMENTS_JSON",
+          "BILLING_PREMIUM_ENTITLEMENT",
+          "STRIPE_SECRET_KEY",
+          "STRIPE_WEBHOOK_SECRET"
+        ],
+        "installer": "recipe",
+        "type": "integration",
+        "description": "Authenticated Stripe checkout, portal and server entitlement projection",
+        "targets": [
+          "packages/billing",
+          "packages/contracts",
+          "apps/api",
+          "apps/mobile"
+        ],
+        "setup": {
+          "purpose": "Web payments and subscriptions",
+          "tools": [
+            "Stripe integration or CLI"
+          ],
+          "access": [
+            "Client-owned Stripe account; test/live access as required"
+          ],
+          "credentials": [
+            "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
+          ],
+          "resources": [
+            "Products/prices, signed webhooks and entitlement implementation"
+          ],
+          "verify": [
+            "Test purchase/cancellation, webhook replay and transactional idempotency"
+          ]
+        }
+      }
+    ],
+    "status": "scaffolded",
+    "workspaces": [
+      {
+        "name": "@workspace/api",
+        "directory": "apps/api",
+        "dependencies": [
+          "@workspace/auth",
+          "@workspace/billing",
+          "@workspace/contracts",
+          "@workspace/db",
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/auth",
+        "directory": "packages/auth",
+        "dependencies": [
+          "@workspace/db",
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/billing",
+        "directory": "packages/billing",
+        "dependencies": [
+          "@workspace/contracts",
+          "@workspace/db",
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/contracts",
+        "directory": "packages/contracts",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/db",
+        "directory": "packages/db",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/eslint-config",
+        "directory": "packages/eslint-config",
+        "dependencies": []
+      },
+      {
+        "name": "@workspace/styling",
+        "directory": "packages/styling",
+        "dependencies": [
+          "@workspace/eslint-config"
+        ]
+      },
+      {
+        "name": "@workspace/typescript-config",
+        "directory": "packages/typescript-config",
+        "dependencies": []
+      },
+      {
+        "name": "billing-reference-mobile",
+        "directory": "apps/mobile",
+        "dependencies": [
+          "@workspace/contracts",
+          "@workspace/eslint-config",
+          "@workspace/styling"
+        ]
+      }
+    ],
+    "resourcesProvisioned": false,
+    "files": {
+      ".env.example": "a109df8d3ead9a533a233547c328c412a9d76dbed2ccda797d9c0c139e608ec7",
+      ".eslintrc.js": "c3b3914027b142760a9c78a4e16f912ad65ee0bbb3cfe8a237f260458052d288",
+      ".fallowrc.json": "89e4b2478dfec633a439bc282bdc2d5a87a3b722ef4a97e20a60780764f96b16",
+      ".gitattributes": "fb8f541081cfab6d30a204210dfb64332d94b9122b34db6116947b1ee66d0db9",
+      ".github/workflows/check.yml": "f4e8349229f2bd85532b22be5d7c28088049b892f924f6638b9bebe824280431",
+      ".gitignore": "a7a285c2aa2187ca3a93b959e3637c219b64e418edfcecd9a02c6430efa9fce8",
+      ".npmrc": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".prettierignore": "af8057ae38f97ead3dc0b4d5dad97e403b25b64092c48bba0774afe2c9a5e9ce",
+      ".prettierrc": "25c74a55c10a4dbb662117240b8d07a5afb191bded12c4e9ede104c2cf1733c2",
+      "AGENTS.md": "a48f9ee7bad86df644526af37b41fe5ff423aed227fc3998245512d8a82848ac",
+      "CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "README.md": "089bc1822ae520d08a0ac04a7a486549f7926e62cdb9a9e0da8370adeef2ff08",
+      "apps/api/.dev.vars.example": "d1fcbd2c6903b33491ba5352479fe33ad620bb8deecaaae04b3b13d3b337ef2c",
+      "apps/api/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "apps/api/package.json": "e91c468c205f61eb0ca1daca4149b621a37386a8731bf0c34ce70cef7f0b44b6",
+      "apps/api/private-files.md": "14b42c3f6527ac1ab9bb4e60cbf8b10cb2790e4085309aaf26343fdd67f02c3d",
+      "apps/api/src/billing-env.d.ts": "68d31cd9dc357bd648fd6de0ab919c2bfdc4b3a65cf280512768d79ad94b0e02",
+      "apps/api/src/billing.ts": "3d1a1982d344f4edb1f430e6376d9cd793e6f54a42f21b8c0848482fb485d4ab",
+      "apps/api/src/index.ts": "3864ba701ba10f50efe70d6728b780c285d975f3360583fef2105f1a54f24204",
+      "apps/api/src/secrets.d.ts": "c758d77d3fa6f8baef55d190842e6908aa80767e5dfc4da417862714c07b00ff",
+      "apps/api/tsconfig.json": "58c4b3ed6eab335a55ae891135a62692c3bd276190394e0c90e059d8fc089266",
+      "apps/api/wrangler.jsonc": "6b47fd82286590a905389b7ac45baab1394bb9cf78fee99284947819732e3f58",
+      "apps/mobile/.env.example": "2f5187d0a9467e749145c38a743704dff561ce5dd8160645ed9f32ae7e0211a9",
+      "apps/mobile/.gitignore": "b0d6d09df9339f7313ad828463caaa8bc2e03625ddf9a7dbf5baae8e1e85582e",
+      "apps/mobile/app/_layout.tsx": "c6ad178f1a84af36ef4fbfa6bba43b99243a1fa9e274906f3eaa38c790394111",
+      "apps/mobile/app/account.tsx": "d64cd8072889d4094587dc83eec31391908fc438fdf1c7fb00760063e53cdcdd",
+      "apps/mobile/app/billing.tsx": "1dcb5de731deba18073c579f28652b2b16ede8092bc77fb00216e632e2cd73ba",
+      "apps/mobile/app/index.tsx": "19e8c15cf879e083de95ccb98f7cd775ed9ea41aee910ed200b2d57f97e47dfe",
+      "apps/mobile/app/sign-in.tsx": "90a701fceea23707b497d305b1e4f1711ff687bfca433ec686ce1d7266af5876",
+      "apps/mobile/app.json": "d957d11a8bbf6ed6efcb239d2a61277082de349b9d2d83c34953e9127011b7c1",
+      "apps/mobile/babel.config.js": "32e605ab4f1de11cf43b29c75d4bf7cd92429a7142fab533212780e627604c2b",
+      "apps/mobile/components/auth-configuration.tsx": "0aed8b42a15a42cd370268fb88b47553bfab7128df0f4c824fe35e8e04678a54",
+      "apps/mobile/components/ui/button.tsx": "a5f0abb8f1a29feff1b54353dafe5a22d8675dd16833da29f8b03cbd9ce95da6",
+      "apps/mobile/components.json": "22a7f1c5ee77123f48fcf46c43635e44318ef4748d8e2e1c94e25df985bb81e1",
+      "apps/mobile/eas.json": "d508d7a2813d5f783757d66ea0bb9127301803264602e451456ab555c45b8c0b",
+      "apps/mobile/eslint.config.mjs": "5c113b1ab7991012d6eafcc3f8abb96e79381fc00186426751fbddb7171cc7e0",
+      "apps/mobile/global.css": "cc1a7ad0d019ddb1d32d0ecb588ba0ac26ce41d8625dd6c366348b25f83a28ec",
+      "apps/mobile/lib/api-client.ts": "75813a82b8b51f18dba5139a098a68961c506da924fba5a975d1dac75ba20110",
+      "apps/mobile/lib/auth-client.native.ts": "709c64fcf61d5ee618b249cba4d3bf52280298163eb835f43627a78b436c27c5",
+      "apps/mobile/lib/auth-client.ts": "c4f6efc7d629b0d4f17bd867455d748ed6117e2bd4d459e7a6f76590df9759c4",
+      "apps/mobile/lib/billing-api.native.ts": "1af5a01ee1d5282dbf9f23e1721734533468cb9edffef0f081ccf4e8de9ad7b9",
+      "apps/mobile/lib/billing-api.ts": "0c99480d408dda276a812014a3aa5cca1b4e82dd7a19f9a115396e72a67a4621",
+      "apps/mobile/lib/billing-platform.native.ts": "736ce8069a3a69155e75c076077ae21e504cd24990437f42e81ffb6771764570",
+      "apps/mobile/lib/billing-platform.ts": "8f989dce6aed03f0e6519148e2515d813710aa4a82ee26c728380f89308e71f9",
+      "apps/mobile/lib/development-client.native.ts": "ace5c60b8087f0513ffbd62284b9b9a5b166f35b99cc18a351e39ac88856c3c7",
+      "apps/mobile/lib/development-client.ts": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+      "apps/mobile/lib/session-api.native.ts": "2897099270cfa8f9257d32c8d49693ea65ab84d2db3a543a297adf7a761995b4",
+      "apps/mobile/lib/session-api.ts": "2747339a5b923a63c33d4277f7d06d9f71bd92d8ab31b252d37bbd5585d7961b",
+      "apps/mobile/lib/utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05",
+      "apps/mobile/metro.config.js": "1681713f3acd3a30e002989ed4d7f5ba807059075665900d6092ce1fd0427c02",
+      "apps/mobile/nativewind-env.d.ts": "ba93dc3eac6e58df36919fd4905c4cf02cae566cbb7849c3e3de3451f8ac28ff",
+      "apps/mobile/package.json": "beccdb40cee49972e782811152b006b5d1ca0c8f57bef5021fa64cace3b91829",
+      "apps/mobile/styles.d.ts": "da5bf71d48cf909584a01c80b445f730507068f5b34c920f352e2bfcf0315e4c",
+      "apps/mobile/tailwind.config.js": "a5712999792d1d783f5691099ad57d0ee6704d54a7a82a09d8b6ff41279fad8c",
+      "apps/mobile/tsconfig.json": "e159431c83d5eaa893eed7bbb24e1072cebb4abb23f1bfad923c817a9c989545",
+      "apps/mobile/tsconfig.worker.json": "8359522afe568f8056e9e7432268acf2c54b7122020f859b11bc9972c9bc3103",
+      "apps/mobile/worker/index.ts": "7179df6079e7fc77c81b50ae8de65b8f609b2e6892070064644e1ad3babb817a",
+      "apps/mobile/wrangler.jsonc": "6ca63b597505beb8aebe6e47b49d0015d7b808ddcc2834ed745f05bb7215f97c",
+      "docs/stack.md": "5a370a1248726fda40ef31052d6e8b49f4e0e261e305b3ac25d9ef592cbc64b1",
+      "package.json": "0966c444f32fe7ceb67eceeb40ba11930c59b44dc645317944819f2dd9e8c66d",
+      "packages/auth/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/auth/package.json": "1951eeab3bb81aaf8fd1c51dc72adfbce3f107a3ff5b39ed0c0955a2c2934ccb",
+      "packages/auth/src/index.ts": "2b6720726c8ef0d214e310197a7b92799863f4dd2d7222222105cffccc9aefd2",
+      "packages/auth/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/billing/README.md": "5cc92c988a9f5232be2d3e8390107034a3727c574ae1d43305f38cd38d423465",
+      "packages/billing/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/billing/package.json": "b54d7e3e618e0fa8745fa1bc64c599e7347e1dfe75da0d6239d7c7fce42d9864",
+      "packages/billing/revenuecat.md": "51c79dd2cfab3bdd4cdb791bd60ba1b98e70d2ba9f92407723f07cdb7f5932f6",
+      "packages/billing/src/config.ts": "9fdf819b6a5dc7421aeae69b7f833523624623b0d7de05905242a495b2787e8f",
+      "packages/billing/src/index.ts": "feb0280670d99c284df555bf0b54e374f33a443b461f3e3df8da853aef814029",
+      "packages/billing/src/providers.ts": "ce7488874271fa895a48044c16ddb1b3e7bebd35f44731285b981536f3dc3fdd",
+      "packages/billing/src/security.ts": "84529036e22188a6010bd95dcd734824f87314df2a3c19a1769738c05dbcdf6f",
+      "packages/billing/src/server.ts": "74df4f9fd1c6f71cc718e9655dd559e6ed9faae26b5d33c62997e86469311495",
+      "packages/billing/src/store.ts": "6c2c69376c55432a79dd42201b06f4add5a4f55371fe593c453cd043f5728e8b",
+      "packages/billing/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/contracts/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/contracts/package.json": "1186e1e3995773b678bb3506c65a7705c51c8d5e5cffdb20cc1216d402cc02b7",
+      "packages/contracts/src/billing.ts": "ab30657f4ff294dc593aba0d4d21b9c3a8d31c06d1f91453ad19926c6a4b708e",
+      "packages/contracts/src/index.ts": "70da27c0e37f4123873fd9f066e1db881689edf819b15bff87e30e1f47a60e87",
+      "packages/contracts/tsconfig.json": "60f09238e9b723747f7b4223dbccd9b33b2d632e5e286a5d152edc08e7aaacfd",
+      "packages/db/drizzle/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "packages/db/drizzle/0000_better_auth.sql": "f5c32739908622bb2c7db513e2b171d8bc3ec770860268ce7f2151502d87c994",
+      "packages/db/drizzle/meta/0000_snapshot.json": "37c605d8b98138ad25de4feeada605cb62b39096afce0e9a1e7ad7be5408806e",
+      "packages/db/drizzle/meta/_journal.json": "e13685a9f53924c861ac8cfcaf8f95aa670062f344243e89f0d95c2f0d84a911",
+      "packages/db/drizzle.config.ts": "34f4ffbc8aa50fe5055c8f0a5e109e335fee2bbd86d64bd3f4cf0a77be695c2a",
+      "packages/db/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/db/package.json": "e9a3a35afa23319df59748dafed519415fe6b383510d2962e3320dd1a805975b",
+      "packages/db/src/billing-schema.ts": "7983b863a4d5b879b9c7d69efee06aacd401b8352dbf3a366d5c9485433202b5",
+      "packages/db/src/index.ts": "4bd9b0423bc11377d8b4dcaedc49a95517325f8671c74192236d26520429673f",
+      "packages/db/src/migrate.ts": "ddabfeaf6de7f5a448fbddc6427e41c8bd21e5784b8a0147d167d8349d6338da",
+      "packages/db/src/schema.ts": "eb2eb65175916089d9b9fa995a34a339a50deb41ff914561ba4a86af1c365eb7",
+      "packages/db/tsconfig.json": "dbfbbd34ae2674fce6ecaaf106f38890a9ed811cacec5bcab3f348a38cb4a00b",
+      "packages/eslint-config/README.md": "5ccc9e04a77ac04308e61a11d3bab11470a7fd15855e535f1d08b320a1e6f374",
+      "packages/eslint-config/base.js": "e407313e71ea70cf523cdf844b0a145e4edb62c03e31ceec50d5df9ed8adb7e8",
+      "packages/eslint-config/package.json": "8589c20d73c96af93027f6fbdae8107022ba7e2668ef92d1cd480a05090a379e",
+      "packages/eslint-config/react-internal.js": "2a436f7468735b023243e3cb8b40968647deb5d8c2c8a3c36492f556a02f8609",
+      "packages/styling/eslint.config.mjs": "27e84dc96243fc0a2361e92906eac1706a7a45a1151ad30554829ca8ca531de3",
+      "packages/styling/package.json": "799bd260d767627f1d0caf2bde95efd7e9c2f6f56224f81bb39f2ec5f7ff8097",
+      "packages/styling/src/index.ts": "db90f6b8c6e62c056c1b1037673e8810299d83f33495cf410925a66260e1fdc0",
+      "packages/styling/src/tokens.cjs": "a6acb611aeb637a34889211cd82ffdce028d3c7cf1fa5ada652012fe598d3413",
+      "packages/styling/tailwind.cjs": "d3374d4886765f94067e90b1e57f26f5fd7ea3cc2ecc436272ba54c863a4d8f9",
+      "packages/styling/tsconfig.json": "dee166941107c4d6726765e002380ef096b8e5f39cfef8126c229529660b2725",
+      "packages/typescript-config/README.md": "350d287d62eb70b4cbec06f06688ba9fa9d17c77d9c3e26e4ac354523dd09987",
+      "packages/typescript-config/base.json": "2cc3a29b47bd6f90030004b0f2732ecbd20326c7ffc7581ac91e83b96e02a016",
+      "packages/typescript-config/nextjs.json": "bad41c66b08c3f9768b9695b4e49317b770225412c43d9bc2b082118c2051225",
+      "packages/typescript-config/package.json": "f742c2ef5d77ecf007f17db06128cfdc532c53c6e3756b428ef98028aa1c00e2",
+      "packages/typescript-config/react-library.json": "85898b13f9809809596dd3f86bd75a521bdac45f0351c118782687f84584872d",
+      "patches/LICENSE.braces": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2",
+      "patches/LICENSE.node-forge": "54bca696b5d24e9398957bcf3871264a38d7235b475ecdaabf7bfc1d140e00a5",
+      "patches/braces@3.0.3.patch": "69bd65a37da4569ba0be8a044aa732ad7c2ebd5494d6076f966eb6df8a12756e",
+      "patches/node-forge@1.4.0.patch": "2cbbff9183d2896f13da8c8655b8f598b0f24c9b7477e8230f9a313f806c239f",
+      "pnpm-lock.yaml": "c8be614a0998e6e5750fb02b3b5cf8faddb02d5424ff02d3b7443edf677eb517",
+      "pnpm-workspace.yaml": "39e954b4ddc991361f27aa28039de0a04d3fca80456d011cc0419f2ccb4c6116",
+      "scripts/audit-deps.mjs": "7a47be7e02b215290b65fb7e8e9dd746089f72de7250090514537e3fadbff34d",
+      "scripts/audit.mjs": "848f5d1a98241d94611f8de83fd8c77b8c0f99096f8b20f7d1aa690024bef118",
+      "tsconfig.json": "7c607ee14a7e9d82256eab4e3b6c54cc85ffafffa181645367b9607c75b33eb9",
+      "turbo.json": "7a4ac74bcf470d680b6494a1a8995ea8d561c76d27c832d0a3afcbd0b7b27469"
+    },
+    "configuration": {
+      "identity": "8b5db8e416b60ececd791652bcffa2da6e0882308a1fc00585b83e48cb728218",
+      "standard": "3fcbf42ea959f17616c01666b8d40af2eabb853213a1b6777b0cc7ac35e681f7",
+      "setup": "80ec35c120d90d0aa98fae65e9e9978d893ce917cf0f8531ae58812a48aec6e6",
+      "providers": "ba0a12b0f76f8982b767497961668858664f94b2b70f7b87d0aace0b45ecfd44",
+      "cloudflare": "543f0c9781afd2e4b7dcf926228fd04c55e3a8c74a8fe34822dbf2b1ea73120c"
+    }
+  }
+}

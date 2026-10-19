@@ -174,7 +174,10 @@ async function stripe(context: AdapterContext): Promise<AdapterResult> {
   const prefix = config.mode === 'live' ? /^(sk|rk)_live_/ : /^(sk|rk)_test_/;
   if (!prefix.test(key)) throw new Error('Stripe key does not match the selected test/live mode.');
   const resources: Record<string, string> = { account: resourceId(account.id) };
-  const runtime: Record<string, string> = { STRIPE_SECRET_KEY: key };
+  const runtime: Record<string, string> = {
+    STRIPE_SECRET_KEY: key,
+    BILLING_ENVIRONMENT: config.mode === 'live' ? 'production' : 'sandbox',
+  };
   if (setting(config, 'webhookUrl')) {
     const webhook = await create(context, 'webhook', '/v1/webhook_endpoints', {
       url: config.webhookUrl,
@@ -307,7 +310,7 @@ async function revenuecat(context: AdapterContext): Promise<AdapterResult> {
   const project = object(await api(`/v2/projects/${id}`));
   same(project.id, id, 'RevenueCat project');
   const resources: Record<string, string> = { project: id };
-  const runtime: Record<string, string> = {};
+  const runtime: Record<string, string> = { REVENUECAT_PROJECT_ID: id };
   if (setting(config, 'webAppId') || setting(config, 'stripeAccountId')) {
     let appId = setting(config, 'webAppId');
     if (!appId)
@@ -363,8 +366,12 @@ async function revenuecat(context: AdapterContext): Promise<AdapterResult> {
     resources[`${platform}App`] = appId;
     runtime[`EXPO_PUBLIC_REVENUECAT_${platform.toUpperCase()}_API_KEY`] = text(keys[0].key);
   }
+  const appIds = ['iosApp', 'androidApp', 'webApp'].flatMap((name) =>
+    resources[name] ? [resources[name]] : [],
+  );
+  if (appIds.length) runtime.REVENUECAT_APP_IDS_JSON = JSON.stringify(appIds);
   return result(resources, runtime, [
-    'Configure store credentials or the Stripe connection, products and offerings and verify purchases before enabling billing. SDK keys alone do not activate subscriptions.',
+    'Configure the dedicated server RevenueCat v1 API key and authenticated webhook integration separately from the v2 management credential. Configure store credentials or the Stripe connection, products and offerings and verify purchases before enabling billing. SDK keys alone do not activate subscriptions.',
   ]);
 }
 

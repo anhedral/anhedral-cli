@@ -1,0 +1,87 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "!.next/dev/**",
+        ".open-next/**",
+        "dist/**",
+        ".output/**"
+      ]
+    },
+    "lint": {
+      "dependsOn": [
+        "^lint"
+      ]
+    },
+    "format": {
+      "dependsOn": [
+        "^format"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false,
+      "passThroughEnv": [
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_ACCOUNT_ID"
+      ]
+    }
+  },
+  "globalDependencies": [
+    "**/.env",
+    "**/.env.*",
+    "**/.dev.vars",
+    "**/.dev.vars.*"
+  ],
+  "globalEnv": [
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "BILLING_ENTITLEMENTS_JSON",
+    "BILLING_ENVIRONMENT",
+    "BILLING_ORIGIN",
+    "BILLING_PLANS_JSON",
+    "BILLING_PREMIUM_ENTITLEMENT",
+    "EXPO_PUBLIC_API_URL",
+    "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY",
+    "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY",
+    "REVENUECAT_APP_IDS_JSON",
+    "REVENUECAT_PROJECT_ID",
+    "REVENUECAT_SECRET_KEY",
+    "REVENUECAT_WEBHOOK_AUTHORIZATION",
+    "REVENUECAT_WEBHOOK_SIGNING_SECRET",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "VOID_CLOUDFLARE_DEPLOY_BUILD",
+    "npm_execpath"
+  ]
+}

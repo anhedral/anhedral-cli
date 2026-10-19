@@ -6,9 +6,9 @@
 
 > 🚧 **Under construction.** Anhedral is in active development; features and APIs may change.
 
-Anhedral creates TypeScript application workspaces and helps deliver them to your own cloud accounts. Start with a web app, add the interfaces and services your product needs, and keep the source code, infrastructure, data and billing under your control.
+Anhedral creates TypeScript application workspaces and helps deliver them to your own cloud accounts. Start with a minimal universal frontend, add the services your product needs, and keep the source code, infrastructure, data and billing under your control.
 
-The default is **Vinext, React, Tailwind, shadcn/ui and Lucide on Cloudflare Workers**, with pnpm and Turborepo. The CLI generates the foundation and handles supported setup and delivery operations. You or your coding agent implement the product.
+The default is a **minimal Expo web/iOS/Android app** with React Native Reusables using shadcn conventions, NativeWind, shared styling, TypeScript, pnpm and Turborepo. Cloudflare hosts its static web export. Add API, accounts, data, files, payments or AI when needed; the resolver supplies dependencies. `--preset full-product` selects the complete compatible product foundation without activating services.
 
 ## Start locally
 
@@ -26,39 +26,97 @@ cd my-app
 pnpm dev
 ```
 
-Initialization downloads the pinned upstream starter and installs dependencies. It does not provision cloud services or deploy the app. Follow the generated README for local addresses and any setup required by your selection. You can also run the CLI with `pnpm dlx anhedral@latest`; pin a version for repeatable automation.
+Initialization creates the selected frontend and API foundations, downloads any required pinned upstream starter and installs dependencies. It does not provision cloud services or deploy the app. Follow the generated README for local addresses and any setup required by your selection. You can also run the CLI with `pnpm dlx anhedral@latest`; pin a version for repeatable automation.
 
-## Defaults
+## Progressive stack
 
-Plain `anhedral init my-app` creates a Vinext web application. It includes no database, application identity provider, billing, email or analytics service.
+Plain init creates only the Expo client, styling and tooling. Add capabilities for
+real requirements, or use `--preset full-product` for the complete compatible
+foundation. [See the concise stack page](docs/anhedral-stack.md).
 
-| Area          | Default                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------- |
-| Application   | Vinext and React on Cloudflare Workers                                                          |
-| UI            | TypeScript, Tailwind, shadcn/ui conventions and Lucide                                          |
-| Workspace     | pnpm workspaces and Turborepo, even for one application                                         |
-| Tooling       | Shared TypeScript and ESLint configuration packages; root checks and dependency audit           |
-| Delivery      | Void for supported Cloudflare selections                                                        |
-| Source        | Deployable code in `apps/*`, reusable code in `packages/*`                                      |
-| Configuration | One root `anhedral.json` and `pnpm-lock.yaml`; secrets and local delivery history stay separate |
+```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 35, "rankSpacing": 50, "padding": 18}}}%%
+flowchart TB
+  subgraph minimal["1 · Minimal default"]
+    client["Expo · web / iOS / Android<br/>React Native Reusables · shadcn conventions<br/>NativeWind · shared tokens"]
+    web["Cloudflare static web Worker"]
+    client -->|"web export"| web
+  end
 
-The registry has four foundation entries: `workspace`, `typescript`, `eslint` and `ui`. The first three accompany every project; the shared UI foundation accompanies web applications.
+  subgraph optional["2 · Optional capabilities · choose independently"]
+    backend["Hono API · Cloudflare Workers<br/>Public contracts · authorization"]
+    core["Data, accounts and files<br/>Drizzle / D1 · Better Auth · private R2 · KV"]
+    compute["AI, analytics and processing<br/>Workers AI · Analytics Engine · Basin<br/>Images · Queues · Cron · Workflows"]
+    media["Realtime and video<br/>Durable Object rooms · RealtimeKit<br/>Stream live / uploaded video"]
+    payments["Payments<br/>Stripe web · RevenueCat native<br/>Shared entitlements enforced by Hono"]
+    clients["Additional client<br/>WXT browser side panel"]
+    operations["External operations<br/>Resend email · Sentry monitoring"]
+    backend -.-> core
+    backend -.-> compute
+    backend -.-> media
+    backend -.-> payments
+    backend -.-> operations
+    clients -.->|"when a backend is needed"| backend
+  end
+
+  web ~~~ clients
+  web -.->|"add API service binding"| backend
+  client -.->|"native HTTPS when selected"| backend
+
+  subgraph full["3 · Full-product preset · selection summary"]
+    preset["Minimal app + all capabilities above<br/>22 selected products · no provider activation"]
+  end
+  core ~~~ preset
+  compute ~~~ preset
+  media ~~~ preset
+  payments ~~~ preset
+  operations ~~~ preset
+```
+
+| Need | Selection | Added automatically |
+| --- | --- | --- |
+| Minimal client | Plain init / `--preset minimal` | Expo, NativeWind, shared tokens and workspace tooling |
+| Server logic | `--expo --hono` | Hono API and public contracts |
+| Persistence | `--d1` | Hono and Drizzle/D1 |
+| Accounts | `--better-auth` | Hono, a database and browser/native auth |
+| AI | `--workers-ai` | Hono and AI binding; no implicit accounts or billing |
+| `--analytics-engine` | Custom event analytics | Dataset binding and privacy-safe server event helper |
+| `--images` | Image processing | Images binding and private raw-byte transform helper |
+| `--realtimekit` | Audio/video conferencing | Meeting/participant-token helpers; client SDK/UI remains product work |
+| `--video` | Uploaded video | Private Stream upload helper; implement processing checks and signed playback |
+| Full product | `--preset full-product` | All compatible Cloudflare layers, WXT, payments, email and monitoring |
+
+The full preset includes Expo, WXT side panel, Hono, Better Auth, D1, R2, KV,
+Stripe, RevenueCat, Workers AI, Analytics Engine, Basin/Pipelines, Images,
+RealtimeKit, Durable Object rooms, uploaded/live Stream video, Queues, Cron,
+Workflows, Resend and Sentry. Bindings and helpers still need product logic,
+provider setup and real acceptance. Init never provisions or activates services.
+
+```sh
+anhedral init complete --preset full-product --dry-run --json
+anhedral add better-auth --cwd my-app --dry-run --json
+anhedral add workers-ai images --cwd my-app --dry-run --json
+anhedral add stripe revenuecat --cwd my-app --dry-run --json
+```
+
+Additions preserve edited source and reject conflicting regeneration or backend
+relocation. Auth additions expose `/sign-in` and `/account` for product navigation.
 
 ## Choose the applications
 
-Combine these flags after `anhedral init my-app`. Vinext and Next.js are alternatives; web, API, mobile, desktop and extension applications can otherwise coexist.
+Expo on Cloudflare is the minimal universal default. **Next.js on Vercel**
+(`--next`) is the usual explicit web alternative; **Vinext on Cloudflare**
+(`--vinext`) is also available. `--hono`, `--wxt` and `--electron` alone select
+standalone applications; combine them with `--expo` when desired. Explicit Neon
+or Clerk replace the full preset's D1 or Better Auth selections. OpenNext remains
+an explicit compatibility profile (`--next --hosting=cloudflare`).
 
-| Selection                     | Generates                                                                           |
-| ----------------------------- | ----------------------------------------------------------------------------------- |
-| Default, or `--vinext`        | Vinext web application on Cloudflare Workers                                        |
-| `--next`                      | Native Next.js web application on Vercel                                            |
-| `--next --hosting=cloudflare` | Next.js on Workers through OpenNext                                                 |
-| `--hono`                      | Shared Hono API Worker with OpenAPI/Zod contracts                                   |
-| `--expo`                      | Expo/React Native, Expo Router, NativeWind and React Native Reusables configuration |
-| `--electron`                  | Electron/React desktop application, Vite and packaging configuration                |
-| `--wxt`                       | WXT/React Chrome side-panel extension                                               |
-
-Explicit application flags replace the default application selection. `--expo` generates mobile alone; `--vinext --expo` selects both. If you select only add-ons, such as `--neon`, the resolver includes a default web application. Use web server routes for a web-only backend, or select Hono for an API shared by several clients.
+Every workspace uses pnpm and Turborepo with shared TypeScript/ESLint configuration
+and one root lockfile. Public contracts appear with Hono; server auth, database
+and billing packages appear only when selected. Root `pnpm dev` serves exported
+Expo web on 3000 and Hono on 8787 when present. Native Metro uses
+`pnpm --dir apps/mobile start`. Browser changes need a re-export; this is not HMR.
+Keep SDK 57 pinned and provide build-time paths for static dynamic routes.
 
 ## Choose data and identity
 
@@ -74,7 +132,7 @@ Database code lives in `packages/db`, including schemas and explicit migration t
 
 ## Choose services and integrations
 
-These are optional foundations. The generated scope column distinguishes bindings and Workers from SDK factories and integration guidance.
+Private R2 and every service below are optional; full-product selects the complete compatible set. The generated scope column distinguishes bindings and Workers from SDK factories and integration guidance.
 
 | Selection         | Purpose                           | Generated scope                                                                          |
 | ----------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -90,8 +148,8 @@ These are optional foundations. The generated scope column distinguishes binding
 | `--openai`        | Direct OpenAI integration         | Server SDK factory in `packages/ai`                                                      |
 | `--ai-sdk`        | AI streaming/provider abstraction | AI SDK exports with an OpenAI provider; alternative to `--openai`                        |
 | `--resend`        | Transactional email               | Server SDK factory in `packages/email`                                                   |
-| `--stripe`        | Payments/subscriptions            | Server SDK factory in `packages/billing`                                                 |
-| `--revenuecat`    | Cross-store entitlements          | Integration guidance; explicitly requires `--stripe`; install platform SDKs              |
+| `--stripe`        | Payments/subscriptions            | Hono Checkout/portal/webhooks, DB projection and server entitlement guard                |
+| `--revenuecat`    | Cross-store entitlements          | Native purchase/restore/manage plus Hono webhooks and shared entitlement projection      |
 | `--sentry`        | Error/crash monitoring            | Integration boundary and redaction fields; initialize platform SDKs                      |
 | `--posthog`       | Product analytics                 | Server analytics factory                                                                 |
 | `--basin`         | Cloudflare analytical events      | Private stream binding and event helper                                                  |
@@ -101,11 +159,11 @@ Live video (`--stream`), room messaging (`--realtime`) and live SQL (`--neon-rea
 
 ### Composition rules
 
-- Choose one web framework, one database and one identity provider. `--openai` and `--ai-sdk` are alternatives.
+- Choose one web framework, one database and one identity provider; D1 and Better Auth are the defaults when data/identity is needed. `--openai` and `--ai-sdk` are alternatives.
 - Database/auth, Stream and Neon Realtime selections need a compatible server. For mobile with PostgreSQL, use `--expo --hono --neon`.
-- Native Next.js/Vercel plus Worker-bound capabilities such as D1 or R2 automatically adds Hono on Cloudflare.
-- Explicit OpenNext, Queues or Basin uses Wrangler for the Cloudflare workspace. Other supported Cloudflare selections use Void. `add` rejects changes that switch an existing engine or relocate runtime source.
-- Neon Realtime requires Neon and manual Realtime configuration. RevenueCat requires an explicit Stripe selection.
+- New server capabilities introduce Hono on Cloudflare, including for Next.js/Vercel. Existing apps retain runtime ownership during `add`.
+- New Expo workspaces, explicit OpenNext, Queues, Basin, Images and Analytics Engine use Wrangler for the Cloudflare workspace. Other supported Cloudflare selections use Void. `add` rejects changes that switch an existing engine or relocate runtime source.
+- Neon Realtime requires Neon and manual Realtime configuration. Stripe and RevenueCat are independently optional; WXT is an optional browser-extension interface.
 
 Examples:
 
@@ -113,8 +171,8 @@ Examples:
 # Web with database-backed identity; Better Auth adds D1.
 anhedral init my-app --better-auth
 
-# Web, shared API, mobile and PostgreSQL.
-anhedral init my-app --vinext --hono --expo --neon
+# Universal web/iOS/Android, shared API and PostgreSQL.
+anhedral init my-app --expo --neon
 
 # Vercel web with a Cloudflare API and private files.
 anhedral init my-app --next --r2
@@ -152,7 +210,7 @@ anhedral verify --json
 
 Replace the example member with the intended user. Private Cloudflare hosting requires Zero Trust and scoped Access permissions; native Vercel uses its own connect options in the factory. Implement a meaningful `test:live` script before `verify`. Actual shipping can create resources, apply reviewed deployment migrations and publish code. Provider permissions, account eligibility and usage charges still apply. A generated starter or successful deployment does not establish a working product.
 
-Cloudflare and Vercel have automated delivery and provider evidence checks. Mixed delivery runs Cloudflare before Vercel and can partially succeed. Expo shipping returns verified EAS build artifacts; store submission is separate. Electron and extension projects include local build/package tooling, with signing and distribution handled through their platform workflows.
+Cloudflare and Vercel have automated delivery and provider evidence checks. Mixed delivery runs Cloudflare before Vercel and can partially succeed. Expo native shipping with an explicit platform returns verified EAS build artifacts; store submission is separate. Electron and extension projects include local build/package tooling, with signing and distribution handled through their platform workflows.
 
 Use the [stack standard](docs/stack-standard.md) for destinations, compatibility, migration ownership, environment files and the remaining implementation requirements for every option. Exact dependency versions live in the [source catalog](https://github.com/anhedral/anhedral-cli/blob/main/src/dependencies.ts).
 
@@ -167,7 +225,7 @@ Select **Try now**, or start with:
 
 > Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about.
 
-The plugin guides implementation using the same stack and workflow. Its optional inspector shows project structure, setup, recorded delivery evidence and explicit service controls. Opening it does not deploy the app. The CLI works independently.
+The plugin ships six focused skills: Init, Dev, Design, Auth, Billing and Hosting. They guide implementation using the same stack and workflow. Its optional inspector shows project structure, setup, recorded delivery evidence and explicit service controls. Opening it does not deploy the app. The CLI works independently.
 
 ## Read next
 

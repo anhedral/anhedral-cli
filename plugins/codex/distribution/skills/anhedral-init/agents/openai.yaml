@@ -1,0 +1,3 @@
+interface:
+  display_name: "Anhedral Init"
+  short_description: "Initialize the foundation with Anhedral CLI"

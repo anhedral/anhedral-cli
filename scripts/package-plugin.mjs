@@ -62,10 +62,10 @@ export function buildPluginArchive(root) {
   const manifest = JSON.parse(readFileSync(path.join(pluginRoot, 'plugin.json'), 'utf8'));
   const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
   const registry = JSON.parse(
-    readFileSync(path.join(pluginRoot, 'skills/anhedral/references/capabilities.json'), 'utf8'),
+    readFileSync(path.join(pluginRoot, 'references/capabilities.json'), 'utf8'),
   );
   const stack = JSON.parse(
-    readFileSync(path.join(pluginRoot, 'skills/anhedral/references/stack-registry.json'), 'utf8'),
+    readFileSync(path.join(pluginRoot, 'references/stack-registry.json'), 'utf8'),
   );
   if (
     manifest.version !== packageJson.version ||
@@ -79,9 +79,11 @@ export function buildPluginArchive(root) {
   for (const name of [
     'LICENSE',
     'mcp.json',
-    'skills/anhedral/SKILL.md',
+    ...['init', 'dev', 'design', 'auth', 'billing', 'hosting'].map(
+      (name) => `skills/anhedral-${name}/SKILL.md`,
+    ),
     ...['stack-standard.md', 'software-factory.md', 'verification.md'].map(
-      (name) => `skills/anhedral/references/${name}`,
+      (name) => `references/${name}`,
     ),
     'runtime/build.json',
     'runtime/server.mjs',

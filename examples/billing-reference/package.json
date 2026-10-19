@@ -1,0 +1,43 @@
+{
+  "name": "billing-reference",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "turbo format",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "db:generate": "turbo run db:generate --filter=@workspace/db",
+    "db:migrate": "turbo run db:migrate --filter=@workspace/db",
+    "audit": "node scripts/audit.mjs",
+    "audit:full": "fallow --fail-on-issues",
+    "audit:deps": "node scripts/audit-deps.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm run audit && pnpm audit:deps && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "2.11.7",
+    "typescript": "^5",
+    "fallow": "3.33.1"
+  },
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "source-map-js@<1.2.2": "1.2.2",
+      "baseline-browser-mapping@<2.11.0": "2.11.27",
+      "browserslist@<4.28.7": "4.29.3",
+      "esbuild@<0.25.0": "0.25.12",
+      "brace-expansion@<2": "1.1.21",
+      "brace-expansion@>=2 <3": "2.1.7",
+      "brace-expansion@>=4 <5.0.12": "5.0.12"
+    }
+  }
+}

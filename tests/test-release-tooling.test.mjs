@@ -610,3 +610,39 @@ test('Node type update policies follow each package runtime without cross-packag
     assert.equal(Number(manifest.devDependencies['@types/node'].split('.')[0]), major);
   }
 });
+
+test('empty adjacent example assignments do not exempt populated or multiline secrets', () => {
+  const firstKey = 'REVENUECAT_SECRET_KEY';
+  const secondKey = 'REVENUECAT_WEBHOOK_SIGNING_SECRET';
+  const secret = 'a'.repeat(32);
+  for (const newline of ['\n', '\r\n']) {
+    assert.deepEqual(
+      scanText(
+        'apps/api/.env.example',
+        Buffer.from(`${firstKey}=${newline}${secondKey}=${newline}`),
+      ),
+      [],
+      'Two empty example assignments contain no secret',
+    );
+    assert.ok(
+      scanText(
+        'apps/api/.env.example',
+        Buffer.from(`${firstKey}=${newline}${secondKey}=${secret}${newline}`),
+      ).some((finding) => finding.pattern === 'credential-assignment'),
+      'A populated second example assignment must remain blocking',
+    );
+    assert.ok(
+      scanText('apps/api/private.env', Buffer.from(`${secondKey}=${secret}${newline}`)).some(
+        (finding) => finding.pattern === 'credential-assignment',
+      ),
+      'Runtime environment files must not inherit example exemptions',
+    );
+    assert.ok(
+      scanText(
+        'config.js',
+        Buffer.from(`const API_TOKEN =${newline}  '${secret}';${newline}`),
+      ).some((finding) => finding.pattern === 'credential-assignment'),
+      'Actual multiline JavaScript credentials must remain blocking',
+    );
+  }
+});

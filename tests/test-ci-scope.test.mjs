@@ -24,7 +24,7 @@ test('only ordinary documentation takes the lightweight path', () => {
     'AGENTS.md',
     '.github/actions/example/README.md',
     'docs/stack-registry.json',
-    'plugins/codex/distribution/skills/anhedral/SKILL.md',
+    'plugins/codex/distribution/skills/anhedral-init/SKILL.md',
     'examples/full-stack/README.md',
     '.github/workflows/ci.yml',
     'package.json',

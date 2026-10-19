@@ -183,7 +183,10 @@ export function registerApplication(root: string, extendTargets = false): Applic
         throw new Error('Invalid Worker name.');
       return { id: entry.name, directory: `apps/${entry.name}`, workerName };
     })
-    .sort((a, b) => (a.id === 'web' ? 1 : b.id === 'web' ? -1 : a.id.localeCompare(b.id)));
+    .sort((a, b) => {
+      const rank = (id: string) => (id === 'web' ? 2 : id === 'mobile' ? 1 : 0);
+      return rank(a.id) - rank(b.id) || a.id.localeCompare(b.id);
+    });
   const selectedEngine: ApplicationProject['deliveryEngine'] =
     targets.length &&
     targets.every((target) => existsSync(path.join(root, target.directory, 'void.config.ts')))

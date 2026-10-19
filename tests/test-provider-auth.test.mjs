@@ -27,14 +27,17 @@ test('provider selection follows the stack and deduplicates Cloudflare access', 
   }
   const local = fixture(['--electron', '--local-data']);
   try {
-    assert.deepEqual(requiredProviders(local), []);
+    assert.deepEqual(
+      requiredProviders(local).map(({ id }) => id),
+      [],
+    );
   } finally {
     rmSync(local, { recursive: true, force: true });
   }
 });
 
 test('status does not open login; interactive auth retries and verifies the provider session', async () => {
-  const root = fixture([]);
+  const root = fixture(['--vinext']);
   let loggedIn = false;
   let logins = 0;
   const run = async () => {

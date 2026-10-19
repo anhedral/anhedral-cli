@@ -371,14 +371,14 @@ function validatePluginRelease(root, version) {
   );
   const registry = JSON.parse(
     readFileSync(
-      path.join(root, 'plugins/codex/distribution/skills/anhedral/references/capabilities.json'),
+      path.join(root, 'plugins/codex/distribution/references/capabilities.json'),
       'utf8',
     ),
   );
   const failures = [];
   const stack = JSON.parse(
     readFileSync(
-      path.join(root, 'plugins/codex/distribution/skills/anhedral/references/stack-registry.json'),
+      path.join(root, 'plugins/codex/distribution/references/stack-registry.json'),
       'utf8',
     ),
   );

@@ -23,12 +23,17 @@ function pinVoidCloudflareAdapter(root: string): void {
 
 /** Fresh-workspace conversion only. Existing applications keep their delivery engine. */
 export function configureVoidDelivery(root: string): boolean {
-  if (existsSync(path.join(root, 'apps/web/open-next.config.ts'))) return false;
+  if (
+    existsSync(path.join(root, 'apps/web/open-next.config.ts')) ||
+    existsSync(path.join(root, 'apps/mobile/worker/index.ts'))
+  )
+    return false;
   for (const app of readdirSync(path.join(root, 'apps'))) {
     const file = path.join(root, 'apps', app, 'wrangler.jsonc');
     if (!existsSync(file)) continue;
     const config = readJson(root, `apps/${app}/wrangler.jsonc`);
-    if (config.queues || config.pipelines) return false;
+    if (config.queues || config.pipelines || config.images || config.analytics_engine_datasets)
+      return false;
   }
   let configured = false;
   for (const app of readdirSync(path.join(root, 'apps'))) {
@@ -48,7 +53,9 @@ export function configureVoidDelivery(root: string): boolean {
     put(
       root,
       `${directory}/void.config.ts`,
-      `import { defineConfig } from 'void/config';
+      `// Platform tooling requires this per-app declaration; resource bindings remain app-specific.
+// fallow-ignore-file code-duplication
+import { defineConfig } from 'void/config';
 import declared from './anhedral.cloudflare.json';
 
 // Unassigned placeholders are not provider identities. Void records real IDs
@@ -93,7 +100,10 @@ export default defineConfig({
         '\n',
     );
     const serverKeys = [...envKeys.keys()].filter(
-      (key) => !key.startsWith('NEXT_PUBLIC_') && !key.startsWith('VITE_'),
+      (key) =>
+        !key.startsWith('NEXT_PUBLIC_') &&
+        !key.startsWith('VITE_') &&
+        !key.startsWith('EXPO_PUBLIC_'),
     );
     if (app !== 'web' && serverKeys.length) {
       cloudflare.secrets = { required: serverKeys };
@@ -278,13 +288,17 @@ export function refreshVoidEnvironment(root: string): void {
       (key) =>
         !key.startsWith('NEXT_PUBLIC_') &&
         !key.startsWith('VITE_') &&
+        !key.startsWith('EXPO_PUBLIC_') &&
         !new RegExp(String.raw`\b${key}\s*:`).test(schema),
     );
     if (app !== 'web' && existsSync(path.join(root, directory, 'anhedral.cloudflare.json'))) {
       const configFile = `${directory}/anhedral.cloudflare.json`;
       const config = readJson(root, configFile);
       const serverKeys = [...new Set(keys)].filter(
-        (key) => !key.startsWith('NEXT_PUBLIC_') && !key.startsWith('VITE_'),
+        (key) =>
+          !key.startsWith('NEXT_PUBLIC_') &&
+          !key.startsWith('VITE_') &&
+          !key.startsWith('EXPO_PUBLIC_'),
       );
       const secrets = (config.secrets ?? {}) as { required?: string[] };
       config.secrets = {

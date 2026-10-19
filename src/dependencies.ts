@@ -86,6 +86,8 @@ export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
     clsx: '2.1.1',
     // renovate: datasource=npm depName=expo
     expo: '57.0.8',
+    // renovate: datasource=npm depName=expo-dev-client
+    'expo-dev-client': '57.0.20',
     // renovate: datasource=npm depName=expo-linking
     'expo-linking': '57.0.4',
     // renovate: datasource=npm depName=expo-router
@@ -161,6 +163,8 @@ export const NEXT_VERCEL_VERSION = '16.4.0';
 export const NEXT_OPENNEXT_VERSION = '16.3.8';
 
 export const STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=zod
+  zod: '4.6.6',
   // renovate: datasource=npm depName=@typescript-eslint/parser
   '@typescript-eslint/parser': '8.71.2',
   // renovate: datasource=npm depName=@typescript-eslint/eslint-plugin
@@ -173,6 +177,12 @@ export const STACK_DEPENDENCIES = {
   tsx: '4.23.15',
   // renovate: datasource=npm depName=better-auth
   'better-auth': '1.7.7',
+  // renovate: datasource=npm depName=@better-auth/expo
+  '@better-auth/expo': '1.7.7',
+  // renovate: datasource=npm depName=expo-secure-store
+  'expo-secure-store': '57.0.4',
+  // renovate: datasource=npm depName=expo-network
+  'expo-network': '57.0.2',
   // renovate: datasource=npm depName=@better-auth/drizzle-adapter
   '@better-auth/drizzle-adapter': '1.7.7',
   // renovate: datasource=npm depName=@neondatabase/serverless
@@ -215,8 +225,10 @@ export const STACK_DEPENDENCIES = {
   '@ai-sdk/openai': '3.0.125',
   // renovate: datasource=npm depName=resend
   resend: '6.32.1',
+  // renovate: datasource=npm depName=react-native-purchases
+  'react-native-purchases': '10.14.0',
   // renovate: datasource=npm depName=stripe
-  stripe: '20.4.1',
+  stripe: '23.0.0',
   // renovate: datasource=npm depName=posthog-node
   'posthog-node': '5.55.2',
 } as const;

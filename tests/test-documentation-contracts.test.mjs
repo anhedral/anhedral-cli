@@ -17,7 +17,7 @@ test('plugin entrypoints and public starter documentation use the exact composer
 test('plugin instructions and documentation do not imply credentials enable unimplemented live readers', () => {
   for (const file of [
     'docs/software-factory.md',
-    'plugins/codex/distribution/skills/anhedral/SKILL.md',
+    'plugins/codex/distribution/references/software-factory.md',
   ]) {
     const source = read(file);
     assert.match(source, /explicit service controls/i);

@@ -1,4 +1,4 @@
-import registry from '../../distribution/skills/anhedral/references/stack-registry.json';
+import registry from '../../distribution/references/stack-registry.json';
 import type { ProjectInspection } from '../../../../src/inspector-model.ts';
 
 export type ServiceGroup = 'Applications' | 'Resources' | 'Integrations';

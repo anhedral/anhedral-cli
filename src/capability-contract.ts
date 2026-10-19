@@ -28,7 +28,14 @@ const stage = (
 ): CapabilityStage => ({ support, evidence, scope });
 const none = (scope: string) => stage('not-applicable', scope, 'unverified');
 const cloudflareResources = ['d1', 'r2', 'kv', 'queues', 'basin'];
-const deploymentBindings = ['realtime', 'cron', 'workflows', 'workers-ai'];
+const deploymentBindings = [
+  'realtime',
+  'cron',
+  'workflows',
+  'workers-ai',
+  'analytics-engine',
+  'images',
+];
 function integration(id: string): IntegrationProvider | undefined {
   const provider = id === 'ai-sdk' ? 'openai' : id;
   return Object.hasOwn(PROVIDER_DEFINITIONS, provider)
@@ -100,6 +107,16 @@ function productCapability(id: StandardProduct): ProductCapability {
       id === 'electron'
         ? 'Signing, notarization, installers, updates, and distribution require a separate delivery workflow.'
         : 'Extension signing, store submission, review, and distribution require a separate delivery workflow.',
+    );
+  }
+  if (id === 'realtimekit' || id === 'video') {
+    provisioning = stage(
+      'scaffold-only',
+      'Manual account activation and service configuration; no provider activation or credential installation during generation.',
+      'unverified',
+    );
+    limits.push(
+      'Server-only helper; product authorization routes, client UI and live provider acceptance remain required.',
     );
   }
   if (id === 'stream') {

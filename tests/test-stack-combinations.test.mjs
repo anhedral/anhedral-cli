@@ -118,12 +118,17 @@ test('every option generates coherent targets, workspaces, environment and synta
         ) {
           const environment = readFileSync(path.join(root, 'apps/web/.dev.vars.example'), 'utf8');
           assert.match(environment, /^NEXTJS_ENV=development$/m);
-          assert.match(environment, /^BETTER_AUTH_URL=http:\/\/localhost:3000$/m);
+          const apiEnvironment = readFileSync(
+            path.join(root, 'apps/api/.dev.vars.example'),
+            'utf8',
+          );
+          assert.match(apiEnvironment, /^BETTER_AUTH_URL=http:\/\/localhost:3000$/m);
+          assert.doesNotMatch(environment, /BETTER_AUTH_SECRET/);
         }
         generated++;
         rmSync(root, { recursive: true, force: true });
       }
-    assert.equal(generated, 170);
+    assert.equal(generated, 228);
     for (const product of STANDARD_PRODUCTS) assert.ok(covered.has(product), product);
   } finally {
     rmSync(temporary, { recursive: true, force: true });
@@ -193,7 +198,7 @@ test('the real build matrix covers every product and each runtime/hosting path',
   const selected = new Set(
     Object.values(STACK_PROFILES)
       .flat()
-      .filter((flag) => !flag.startsWith('--hosting'))
+      .filter((flag) => !flag.startsWith('--hosting') && !flag.startsWith('--preset'))
       .map((flag) => flag.slice(2)),
   );
   assert.deepEqual([...selected].sort(), [...STANDARD_PRODUCTS].sort());
