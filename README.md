@@ -80,10 +80,6 @@ flowchart TB
 | Persistence | `--d1` | Hono and Drizzle/D1 |
 | Accounts | `--better-auth` | Hono, a database and browser/native auth |
 | AI | `--workers-ai` | Hono and AI binding; no implicit accounts or billing |
-| `--analytics-engine` | Custom event analytics | Dataset binding and privacy-safe server event helper |
-| `--images` | Image processing | Images binding and private raw-byte transform helper |
-| `--realtimekit` | Audio/video conferencing | Meeting/participant-token helpers; client SDK/UI remains product work |
-| `--video` | Uploaded video | Private Stream upload helper; implement processing checks and signed playback |
 | Full product | `--preset full-product` | All compatible Cloudflare layers, WXT, payments, email and monitoring |
 
 The full preset includes Expo, WXT side panel, Hono, Better Auth, D1, R2, KV,
@@ -137,6 +133,10 @@ Private R2 and every service below are optional; full-product selects the comple
 | Selection         | Purpose                           | Generated scope                                                                          |
 | ----------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
 | `--r2`            | Private files                     | R2 Worker binding and authorization guidance                                             |
+| `--analytics-engine` | Custom event analytics | Dataset binding and privacy-safe server event helper |
+| `--images` | Image processing | Images binding and private raw-byte transform helper |
+| `--realtimekit` | Audio/video conferencing | Meeting/participant-token helpers; client SDK/UI remains product work |
+| `--video` | Uploaded video | Private Stream upload helper; implement processing checks and signed playback |
 | `--kv`            | Cache/configuration               | Eventually consistent Worker binding                                                     |
 | `--realtime`      | WebSocket rooms                   | Separate Durable Object Worker; implement room authorization                             |
 | `--neon-realtime` | Live PostgreSQL query results     | Server/client factories and Drizzle adapter; adds Neon; manual branch activation         |
