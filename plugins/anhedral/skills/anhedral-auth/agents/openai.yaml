@@ -1,0 +1,3 @@
+interface:
+  display_name: "Anhedral Auth"
+  short_description: "Configure provider login and application identity"
