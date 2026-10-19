@@ -28,50 +28,42 @@ pnpm dev
 
 Initialization creates the selected frontend and API foundations, downloads any required pinned upstream starter and installs dependencies. It does not provision cloud services or deploy the app. Follow the generated README for local addresses and any setup required by your selection. You can also run the CLI with `pnpm dlx anhedral@latest`; pin a version for repeatable automation.
 
+### Choose a starting point
+
+```sh
+anhedral init my-app                              # Minimal Expo app
+anhedral init my-app --better-auth                # Add Hono, D1 and accounts
+anhedral init my-app --next --r2                   # Next/Vercel + Cloudflare API/files
+anhedral init my-app --preset full-product        # Complete compatible foundation
+anhedral add workers-ai --cwd my-app --dry-run --json  # Preview growth
+anhedral add workers-ai --cwd my-app               # Apply it
+```
+
+Use `--dry-run --json` to preview any init/add selection. Run `anhedral registry list`
+for recipes, `anhedral registry view <recipe> --json` for details, and
+`anhedral help <command>` for command flags. `--cwd` selects an existing project.
+
+[Stack and preset](#progressive-stack) · [Application options](#choose-the-applications) ·
+[Data/auth](#choose-data-and-identity) · [Services](#choose-services-and-integrations) ·
+[Platform options and documentation](#platform-options-and-documentation) ·
+[Delivery](#build-and-deliver) · [Codex plugin](#use-with-codex)
+
 ## Progressive stack
 
 Plain init creates only the Expo client, styling and tooling. Add capabilities for
 real requirements, or use `--preset full-product` for the complete compatible
 foundation. [See the concise stack page](docs/anhedral-stack.md).
 
-```mermaid
-%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 35, "rankSpacing": 50, "padding": 18}}}%%
-flowchart TB
-  subgraph minimal["1 · Minimal default"]
-    client["Expo · web / iOS / Android<br/>React Native Reusables · shadcn conventions<br/>NativeWind · shared tokens"]
-    web["Cloudflare static web Worker"]
-    client -->|"web export"| web
-  end
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/anhedral/anhedral-cli/main/docs/assets/anhedral-stack.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/anhedral/anhedral-cli/main/docs/assets/anhedral-stack-light.png">
+  <img alt="Anhedral progressive stack: Expo web, iOS and Android connected to Hono, Better Auth, Drizzle/D1 and private R2, with shared UI and workspace tools." src="https://raw.githubusercontent.com/anhedral/anhedral-cli/main/docs/assets/anhedral-stack.png" width="1200">
+</picture>
 
-  subgraph optional["2 · Optional capabilities · choose independently"]
-    backend["Hono API · Cloudflare Workers<br/>Public contracts · authorization"]
-    core["Data, accounts and files<br/>Drizzle / D1 · Better Auth · private R2 · KV"]
-    compute["AI, analytics and processing<br/>Workers AI · Analytics Engine · Basin<br/>Images · Queues · Cron · Workflows"]
-    media["Realtime and video<br/>Durable Object rooms · RealtimeKit<br/>Stream live / uploaded video"]
-    payments["Payments<br/>Stripe web · RevenueCat native<br/>Shared entitlements enforced by Hono"]
-    clients["Additional client<br/>WXT browser side panel"]
-    operations["External operations<br/>Resend email · Sentry monitoring"]
-    backend -.-> core
-    backend -.-> compute
-    backend -.-> media
-    backend -.-> payments
-    backend -.-> operations
-    clients -.->|"when a backend is needed"| backend
-  end
-
-  web ~~~ clients
-  web -.->|"add API service binding"| backend
-  client -.->|"native HTTPS when selected"| backend
-
-  subgraph full["3 · Full-product preset · selection summary"]
-    preset["Minimal app + all capabilities above<br/>22 selected products · no provider activation"]
-  end
-  core ~~~ preset
-  compute ~~~ preset
-  media ~~~ preset
-  payments ~~~ preset
-  operations ~~~ preset
-```
+The diagram shows the basic connected app: Expo web/iOS/Android, Hono, Better Auth,
+Drizzle/D1 and private R2, with shared UI, contracts and workspace tooling.
+Plain init starts with Expo; API, accounts and data are added when needed.
+All additional capabilities and alternatives are listed below.
 
 | Need | Selection | Added automatically |
 | --- | --- | --- |
@@ -106,6 +98,20 @@ Expo on Cloudflare is the minimal universal default. **Next.js on Vercel**
 standalone applications; combine them with `--expo` when desired. Explicit Neon
 or Clerk replace the full preset's D1 or Better Auth selections. OpenNext remains
 an explicit compatibility profile (`--next --hosting=cloudflare`).
+
+| Selection | Client / hosting |
+| --- | --- |
+| Default / `--expo` | Expo Router + React Native; web export on Cloudflare, iOS/Android binaries on devices |
+| `--next` | Next.js on Vercel |
+| `--vinext` | Vinext on Cloudflare |
+| `--next --hosting=cloudflare` | Next.js through OpenNext on Cloudflare |
+| `--hono` | Standalone Hono API on Cloudflare Workers |
+| `--wxt` | Browser extension with side panel; browser-hosted client |
+| `--electron` | Desktop app; locally packaged binaries |
+
+Native delivery can use EAS Build; Apple/Google distribute store binaries. Cloudflare
+hosts the web/API services, not native or desktop binaries. Explicit web alternatives
+replace the preset's implicit Expo; add `--expo` when you also want native clients.
 
 Every workspace uses pnpm and Turborepo with shared TypeScript/ESLint configuration
 and one root lockfile. Public contracts appear with Hono; server auth, database
@@ -191,6 +197,52 @@ anhedral add resend --cwd my-app
 ```
 
 Generated entry points live in `apps/*`, shared code in `packages/*`, and Anhedral configuration in one root `anhedral.json`. Read the [source-only full-stack example](https://github.com/anhedral/anhedral-cli/tree/main/examples/full-stack) to see a larger project without creating services.
+
+## Platform options and documentation
+
+The tables above list generator selections. The wider stack below includes
+**manual integrations and provider features**, not additional CLI flags or implied
+full-product services. Select them for a concrete need and confirm account eligibility.
+Each name links to its upstream documentation; the [stack standard](docs/stack-standard.md)
+is authoritative for what Anhedral generates.
+
+| Area | Technologies and documentation |
+| --- | --- |
+| Shared workspace | [Cloudflare API transport](https://developers.cloudflare.com/api/) · [pnpm](https://pnpm.io/) · [Turborepo](https://turborepo.dev/) · [TypeScript](https://typescriptlang.org/) · [ESLint](https://eslint.org/) · [Shared styling](https://ui.shadcn.com/) · [Zod](https://zod.dev/) |
+| Web frontends | [Vinext](https://github.com/cloudflare/vinext) · [React](https://react.dev/) · [Tailwind](https://tailwindcss.com/) · [shadcn/ui](https://ui.shadcn.com/) · [Lucide](https://lucide.dev/) · [Next.js / Vercel](https://vercel.com/docs/frameworks/nextjs) · [Next.js / OpenNext](https://opennext.js.org/cloudflare) · [CSS Modules](https://nextjs.org/docs/app/getting-started/css) |
+| Runtime & API | [Workers](https://developers.cloudflare.com/workers/) · [Hono](https://hono.dev/) · [Framework server routes](https://nextjs.org/docs/app/getting-started/route-handlers) · [Containers](https://developers.cloudflare.com/containers/) · [Smart Placement](https://developers.cloudflare.com/workers/configuration/placement/) · [DNS / TLS](https://developers.cloudflare.com/ssl/) · [WAF](https://developers.cloudflare.com/waf/) · [Turnstile](https://developers.cloudflare.com/turnstile/) · [API Shield](https://developers.cloudflare.com/api-shield/) · [Access / Tunnel](https://developers.cloudflare.com/cloudflare-one/) · [Load Balancing](https://developers.cloudflare.com/load-balancing/) · [Spectrum](https://developers.cloudflare.com/spectrum/) · [Data Localization](https://developers.cloudflare.com/data-localization/) · [Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/) · [Secrets Store](https://developers.cloudflare.com/secrets-store/) · [Cloudflare for SaaS](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/) · [Workers for Platforms](https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/) |
+| Cloudflare delivery | [Void](https://void.cloud/integrations/cloudflare) · [Wrangler](https://developers.cloudflare.com/workers/wrangler/) · [Vercel](https://vercel.com/) · [Git / GitHub](https://docs.github.com/) · [GitHub Actions](https://docs.github.com/en/actions) · [electron-builder](https://www.electron.build/) · [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) · [Cloudflare Codex plugin](https://developers.cloudflare.com/agent-setup/codex/) · [cf CLI](https://developers.cloudflare.com/cf/) · [Artifacts](https://developers.cloudflare.com/artifacts/) |
+| Native, desktop & extensions | [Expo](https://expo.dev/) · [NativeWind](https://nativewind.dev/) · [React Native Reusables](https://reactnativereusables.com/) · [EAS](https://docs.expo.dev/build/introduction/) · [Electron](https://electronjs.org/) · [WXT](https://wxt.dev/) · [SwiftUI](https://developer.apple.com/documentation/swiftui) · [Compose](https://developer.android.com/develop/ui/compose) · [Flutter](https://docs.flutter.dev/) · [Capacitor](https://capacitorjs.com/docs) · [Local Expo builds](https://docs.expo.dev/build-reference/local-builds/) · [Tauri](https://v2.tauri.app/) · [GPUI](https://www.gpui.rs/) · [SwiftUI / AppKit](https://developer.apple.com/documentation/appkit) · [Browser extension APIs](https://developer.chrome.com/docs/extensions) |
+| Data & identity | [Neon Realtime](https://neon.com/docs/realtime/overview) · [D1](https://developers.cloudflare.com/d1/) · [Neon](https://neon.com/) · [Local data](https://sqlite.org/) · [Drizzle](https://orm.drizzle.team/) · [Better Auth](https://better-auth.com/) · [Clerk](https://clerk.com/) · [SQLite](https://sqlite.org/docs.html) · [Hyperdrive / Neon](https://developers.cloudflare.com/hyperdrive/examples/connect-to-postgres/postgres-database-providers/neon/) · [Neon WebSocket driver](https://neon.com/docs/serverless/serverless-driver) · [D1 / Drizzle](https://orm.drizzle.team/docs/connect-cloudflare-d1) · [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) |
+| Files & realtime | [R2](https://developers.cloudflare.com/r2/) · [KV](https://developers.cloudflare.com/kv/) · [Durable Objects](https://developers.cloudflare.com/durable-objects/) · [Local files](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) · [S3-compatible storage](https://developers.cloudflare.com/r2/api/s3/api/) · [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) · [Polling](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) |
+| Background work | [Queues](https://developers.cloudflare.com/queues/) · [Cron](https://developers.cloudflare.com/workers/configuration/cron-triggers/) · [Workflows](https://developers.cloudflare.com/workflows/) · [Durable Object alarms](https://developers.cloudflare.com/durable-objects/api/alarms/) · [K2](https://developers.cloudflare.com/k2/) |
+| AI integrations | [Workers AI](https://developers.cloudflare.com/workers-ai/) · [OpenAI](https://platform.openai.com/docs) · [AI SDK](https://ai-sdk.dev/docs) · [AI Gateway](https://developers.cloudflare.com/ai-gateway/) · [AI Search](https://developers.cloudflare.com/ai-search/) · [Vectorize](https://developers.cloudflare.com/vectorize/) · [Agents SDK](https://developers.cloudflare.com/agents/) · [Sandboxes](https://developers.cloudflare.com/sandbox/) · [Browser Run](https://developers.cloudflare.com/browser-run/) |
+| Payments | [Stripe](https://docs.stripe.com) · [RevenueCat](https://www.revenuecat.com/docs/) · [Stripe Checkout](https://docs.stripe.com/payments/checkout) · [Stripe Connect](https://docs.stripe.com/connect) · [Stripe Tax](https://docs.stripe.com/tax) · [StoreKit](https://developer.apple.com/documentation/storekit) · [Play Billing](https://developer.android.com/google/play/billing) · [Monetization Gateway](https://developers.cloudflare.com/monetization-gateway/) |
+| Media & communication | [Uploaded video](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/) · [Resend](https://resend.com/docs) · [Email Service](https://developers.cloudflare.com/email-service/) · [Expo Push](https://docs.expo.dev/push-notifications/overview/) · [Web Push](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) · [RealtimeKit](https://developers.cloudflare.com/realtime/realtimekit/) · [Realtime SFU / TURN](https://developers.cloudflare.com/realtime/) · [LiveKit](https://docs.livekit.io/) · [Images](https://developers.cloudflare.com/images/) · [Stream](https://developers.cloudflare.com/stream/) · [Media over QUIC](https://developers.cloudflare.com/moq/) |
+| Observability & analytics | [Sentry](https://docs.sentry.io/) · [PostHog](https://posthog.com/docs) · [Basin](https://developers.cloudflare.com/basin/) · [Workers Observability](https://developers.cloudflare.com/workers/observability/) · [Cloudflare Web Analytics](https://developers.cloudflare.com/web-analytics/) · [Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) · [Flagship](https://developers.cloudflare.com/flagship/) · [PostHog feature flags](https://posthog.com/docs/feature-flags) |
+
+### Cloudflare runtime and operations
+
+| Concern | Configuration / documentation |
+| --- | --- |
+| Placement | [Smart Placement](https://developers.cloudflare.com/workers/configuration/placement/): opt-in `placement: { mode: "smart" }` near dependencies. Regional/host hints are alternatives. Affects fetch handling, not RPC placement; static assets normally stay at the edge. Not a data-residency guarantee. |
+| Service boundaries | [Service bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/) for Worker-to-Worker HTTP/RPC; native clients use public HTTPS with application authorization. |
+| Web delivery | [Static Assets](https://developers.cloudflare.com/workers/static-assets/), asset-first versus Worker-first routing, SPA fallback and custom domains. |
+| Cache | [Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/): keys, TTLs and invalidation; keep private responses out of shared caches. KV is eventually consistent; use Durable Objects for coordination. |
+| Runtime contract | Pin [compatibility dates](https://developers.cloudflare.com/workers/configuration/compatibility-dates/) and [flags](https://developers.cloudflare.com/workers/configuration/compatibility-flags/); enable Node compatibility only where needed. Review [limits](https://developers.cloudflare.com/workers/platform/limits/) and [pricing](https://developers.cloudflare.com/workers/platform/pricing/) before production. |
+| Data placement and recovery | [D1 read replication](https://developers.cloudflare.com/d1/best-practices/read-replication/), [Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/) and [R2 location constraints](https://developers.cloudflare.com/r2/reference/data-location/); choose consistency, recovery and residency deliberately. |
+| Protection | [Rate limiting bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/), WAF, Turnstile and Access complement application authorization. Keep provider secrets server-side. |
+| Delivery and visibility | [Preview URLs](https://developers.cloudflare.com/workers/versions-and-deployments/version-urls/), [gradual deployments](https://developers.cloudflare.com/workers/versions-and-deployments/gradual-deployments/), rollback and [OpenTelemetry export](https://developers.cloudflare.com/observability/export/opentelemetry/). |
+
+### Client delivery, quality and design
+
+| Area | Options and documentation |
+| --- | --- |
+| Expo delivery | [EAS Build](https://docs.expo.dev/build/introduction/), [local builds](https://docs.expo.dev/build-reference/local-builds/), [store submission](https://docs.expo.dev/deploy/submit-to-app-stores/), [EAS Update](https://docs.expo.dev/eas-update/introduction/) and [push notifications](https://docs.expo.dev/push-notifications/overview/). |
+| Extension UX | [WXT](https://wxt.dev/) + [Chrome sidePanel API](https://developer.chrome.com/docs/extensions/reference/api/sidePanel); declare permissions and validate packaged behavior. |
+| Billing | [Stripe Checkout](https://docs.stripe.com/payments/checkout), [customer portal](https://docs.stripe.com/customer-management), [RevenueCat entitlements](https://www.revenuecat.com/docs/getting-started/entitlements), StoreKit and Play Billing. Hono verifies webhooks and enforces shared entitlements; neither provider requires the other. |
+| Tests | [Playwright](https://playwright.dev/docs/intro), [Cloudflare Vitest integration](https://developers.cloudflare.com/workers/testing/vitest-integration/) and [Fallow](https://fallow.tools/docs/); test native/store flows on their actual platforms. |
+| Design | React Native Reusables with **shadcn conventions** for Expo; DOM shadcn/ui for web/extension interfaces. [Vercel guidelines](https://vercel.com/design/guidelines), [Typeset](https://ui.shadcn.com/typeset), [shadcn MCP](https://ui.shadcn.com/docs/mcp), [React Bits](https://reactbits.dev/get-started/introduction/) and [vgpu](https://vgpu.sh) are optional references/tools; DOM components are not automatically native-compatible. |
 
 ## Build and deliver
 
