@@ -134,7 +134,7 @@ globalThis.fetch = async (input, options = {}) => {
     input instanceof Request
       ? { method: input.method, headers: input.headers, body: await input.text(), ...options }
       : options;
-  calls.push(url.hostname + url.pathname);
+  calls.push({ hostname: url.hostname, pathname: url.pathname });
   if (outage) throw new Error('Synthetic provider outage');
   if (url.hostname === 'api.stripe.com') return stripeTransport(url, settings);
   if (url.hostname === 'api.revenuecat.com') {
@@ -587,7 +587,7 @@ try {
   const beforeNativeOnly = calls.length;
   assert.equal((await nativeOnly.entitlements(alice.id, true)).entitlements[0].active, true);
   assert.equal(
-    calls.slice(beforeNativeOnly).some((call) => call.startsWith('api.stripe.com')),
+    calls.slice(beforeNativeOnly).some((call) => call.hostname === 'api.stripe.com'),
     false,
   );
   await assert.rejects(nativeOnly.checkout(alice.id, 'monthly', randomUUID()), /unavailable/);
@@ -618,7 +618,7 @@ try {
     'stripe',
   ]);
   assert.equal(
-    calls.slice(beforeStripeOnly).some((call) => call.startsWith('api.revenuecat.com')),
+    calls.slice(beforeStripeOnly).some((call) => call.hostname === 'api.revenuecat.com'),
     false,
   );
   const productionNative = createBilling({

@@ -57,8 +57,10 @@ export function launchPreview(command, args, options) {
           throw new Error(`Preview exited: ${output}`);
         // Vite colors the port independently, including when output is piped in CI.
         // Normalize only discovery; retain the bounded original output for failures.
-        const address = stripVTControlCharacters(output).match(/http:\/\/127\.0\.0\.1:\d+\//)?.[0];
-        if (address) return address;
+        const address = stripVTControlCharacters(output).match(
+          /http:\/\/127\.0\.0\.1:\d+(?=[/\s])/,
+        )?.[0];
+        if (address) return new URL(address).href;
         await delay(25);
       }
       throw new Error(`Preview did not start: ${output}`);

@@ -113,3 +113,18 @@ test(
     }
   },
 );
+
+test(
+  'preview discovers Wrangler ready URLs without a trailing slash',
+  { timeout: 5000 },
+  async () => {
+    const preview = launch(
+      "console.log('[wrangler:info] Ready on http://127.0.0.1:46339'); setInterval(() => {}, 1000)",
+    );
+    try {
+      assert.equal(await preview.address(2000), 'http://127.0.0.1:46339/');
+    } finally {
+      await preview.stop();
+    }
+  },
+);

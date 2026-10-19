@@ -549,3 +549,9 @@ static security policy, refreshed OSV audit, 748 passing tests (two skipped), ex
 braces/node-forge patch regressions, packed CLI installation and package allowlist.
 `pnpm plugin:check` passed, including 62 inspector tests. Release artifact creation,
 hosted CI and publication are recorded separately after they actually complete.
+
+### 2026-10-19 — release CI corrections and artifact reuse
+
+- Hosted generated-profile checks exposed an unused web API-client stub in Clerk builds and Wrangler ready URLs without trailing slashes. Emit the web client/dependency only for its Better Auth consumer; normalize both Vite and Wrangler loopback URLs. Both Clerk profiles subsequently passed real local generation, check, build and Worker preview. Universal auth and billing reference previews passed with the corrected readiness parser.
+- Provider-call assertions in billing fixtures now compare exact hostnames, addressing CodeQL substring findings without changing provider transport.
+- Publication consumes the immutable candidate from successful trusted main CI for the exact reviewed SHA instead of reinstalling and rebuilding it. CLI/plugin integrity pins, secret scan, package smoke, cross-platform artifact checks, protected npm environment and OIDC publication remain required. Negative policy checks reject staging, PR-run or unpinned candidate selection.

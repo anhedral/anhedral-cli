@@ -346,6 +346,25 @@ try {
     /reviewed CLI and plugin artifacts/,
   );
 
+  for (const [trusted, untrusted] of [
+    ['--branch main --commit "$RELEASE_SHA"', '--branch staging --commit "$RELEASE_SHA"'],
+    [
+      'select(.event == "push" or .event == "workflow_dispatch")',
+      'select(.event == "pull_request")',
+    ],
+    ['run-id: ${{ steps.candidate.outputs.run_id }}', 'run-id: 123'],
+  ]) {
+    writeFileSync(
+      path.join(workflowPolicyDirectory, 'release.yml'),
+      releaseWorkflow.replace(trusted, untrusted),
+    );
+    assert.match(
+      validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+      /successful trusted main CI/,
+    );
+  }
+  writeFileSync(path.join(workflowPolicyDirectory, 'release.yml'), releaseWorkflow);
+
   const token = ['ghp', '_', 'A'.repeat(32)].join('');
   const clerkSecret = ['sk', '_test_', 'B'.repeat(28)].join('');
   const r2Secret = ['C'.repeat(20), 'D'.repeat(20)].join('');

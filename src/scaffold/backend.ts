@@ -56,16 +56,18 @@ export function createHttpClient(baseURL: string, options: HttpOptions = {}) {
 /** A single trusted upstream; never forward provider/edge identity headers from browsers. */
 export function scaffoldWebBackend({ root, options, has }: RecipeContext): void {
   if (!has('hono')) return;
-  patchPackage(root, 'apps/web/package.json', {
-    dependencies: { '@workspace/contracts': 'workspace:*' },
-  });
-  put(
-    root,
-    'apps/web/lib/api-client.ts',
-    `import { createApiClient } from '@workspace/contracts';
+  if (has('better-auth')) {
+    patchPackage(root, 'apps/web/package.json', {
+      dependencies: { '@workspace/contracts': 'workspace:*' },
+    });
+    put(
+      root,
+      'apps/web/lib/api-client.ts',
+      `import { createApiClient } from '@workspace/contracts';
 export const api = createApiClient();
 `,
-  );
+    );
+  }
   put(
     root,
     'apps/web/lib/api-proxy.ts',
