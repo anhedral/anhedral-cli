@@ -2,6 +2,12 @@
 
 Dated records below describe the source and environment exercised at that time. Earlier results are historical evidence, not acceptance of a later release. Current architecture and operating instructions live in the stack standard and software factory.
 
+## README stack catalog and static artwork — 2026-10-19
+
+Replaced the README Mermaid diagram with dark/light static artwork. After reviewing the earlier connected reference, refined the illustration to Expo web/iOS/Android → Hono → Better Auth / Drizzle + D1 / private R2, with Cloudflare hosting, native distribution, shared UI/contracts and workspace tools. Large icons, short labels and thin curves follow the landing hero style. The caption explicitly preserves plain init's Expo-only selection; backend/auth/data are added when needed. The README retains the under-construction notice, early starting commands, all CLI selections and upstream documentation for 117 named ecosystem options.
+
+Local validation: all 38 registry entries remain represented in the retained catalog; CLI build, four documentation-contract tests and the npm packlist policy passed. Inspected rendered artwork for icons, connections and label spacing. No CLI runtime behavior, provider configuration or deployment changed. GitHub/npm image URLs will show this artwork after the assets reach main.
+
 ## Full Cloudflare default and optional shared billing — 2026-10-18
 
 New plain initialization and new Expo selections include Expo web/iOS/Android, Hono, Better Auth, Drizzle/D1 and private R2. Explicit Neon replaces D1. WXT-only initialization adds an extension to that default; explicit primary applications preserve their compatibility selection. Existing saved selections and unrelated additions do not receive new profile defaults. Legacy billing SDK/guidance projects require their pinned CLI or an explicit reviewed migration; strict provenance was preserved.
