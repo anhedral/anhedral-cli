@@ -561,3 +561,15 @@ hosted CI and publication are recorded separately after they actually complete.
 - Hosted generated-profile checks exposed an unused web API-client stub in Clerk builds and Wrangler ready URLs without trailing slashes. Emit the web client/dependency only for its Better Auth consumer; normalize both Vite and Wrangler loopback URLs. Both Clerk profiles subsequently passed real local generation, check, build and Worker preview. Universal auth and billing reference previews passed with the corrected readiness parser.
 - Provider-call assertions in billing fixtures now compare exact hostnames, addressing CodeQL substring findings without changing provider transport.
 - Publication consumes the immutable candidate from successful trusted main CI for the exact reviewed SHA instead of reinstalling and rebuilding it. CLI/plugin integrity pins, secret scan, package smoke, cross-platform artifact checks, protected npm environment and OIDC publication remain required. Negative policy checks reject staging, PR-run or unpinned candidate selection.
+
+### 2026-10-20 — local three-blade brand update
+
+Replaced the plugin/inspector's two legacy marks in place with the supplied
+three-blade SVGs (charcoal for light surfaces, white for dark surfaces). Added
+sixteen logo/wordmark exports under `docs/assets/brand/` (SVG and PNG, black on
+white, white on black, transparent black and transparent white) and theme-aware
+README artwork. Existing plugin manifest and MCP asset paths remain valid.
+
+Local CLI build, typecheck, format check, source hygiene and plugin archive tests
+passed. The archive test verifies both theme variants against the updated source.
+No npm release, remote push or installed-plugin update was performed.

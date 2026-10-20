@@ -21,3 +21,15 @@ one thin horizontal Bézier connector style, inspired by the landing hero.
 
 Dark palette sampled from the approved GitHub screenshot: canvas `#0d1117`,
 panels `#151b23`, text `#f0f6fc`, muted text `#9198a1`, borders `#3d444d`.
+
+## Anhedral identity
+
+`brand/` contains logo and outlined wordmark exports in SVG and PNG, synchronized
+from the shared masters in `anhedral-main`: black on white, white on black,
+transparent black and transparent white. PNG logos are 1024 × 1024 and wordmarks
+are 1856 × 240. Export black is pure `#000000`.
+The README selects the appropriate banner for the viewer's theme. The Codex
+plugin and inspector use `plugins/codex/distribution/assets/anhedral-mark.svg`
+(charcoal) and `anhedral-mark-dark.svg` (white); both now use the three-blade mark.
+Legacy mark artwork was replaced in place so existing manifest and MCP references
+continue to resolve. These local changes do not update an installed plugin.

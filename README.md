@@ -1,4 +1,9 @@
-# Anhedral
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/anhedral-wordmark-white-transparent.png">
+    <img src="docs/assets/brand/anhedral-wordmark-black-transparent.png" alt="Anhedral" width="464" height="60">
+  </picture>
+</h1>
 
 [![CI](https://github.com/anhedral/anhedral-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/anhedral/anhedral-cli/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/anhedral)](https://www.npmjs.com/package/anhedral)
