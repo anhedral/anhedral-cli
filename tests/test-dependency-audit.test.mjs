@@ -81,7 +81,7 @@ test('audit counts track affected versions and preserve lower-severity findings'
   assert.equal(check(report([moderate])).exceptionApplied, false);
 });
 
-test('missing details, duplicate affected versions, network errors and inconsistent statuses fail closed', () => {
+test('missing details, duplicate version/path entries, network errors and inconsistent statuses fail closed', () => {
   for (const value of [
     {},
     { advisories: [], metadata: {} },
@@ -93,7 +93,7 @@ test('missing details, duplicate affected versions, network errors and inconsist
       advisory({
         findings: [
           { version: '3.0.3', paths: ['app>braces'] },
-          { version: '3.0.3', paths: ['app>alias'] },
+          { version: '3.0.3', paths: ['app>braces'] },
         ],
       }),
     ]),
@@ -109,6 +109,57 @@ test('missing details, duplicate affected versions, network errors and inconsist
     /exit status/,
   );
   assert.throws(() => check(report(), false, 1), /exit status/);
+});
+
+test('pnpm workspace instances retain counts and advisory enforcement for the same version', () => {
+  // pnpm 10 reports the same Vite version separately for these two workspace paths.
+  const instances = [
+    { version: '7.3.6', paths: ['apps__extension>wxt>vite'] },
+    { version: '7.3.6', paths: ['apps__desktop>vite'] },
+  ];
+  const vite = advisory({
+    module_name: 'vite',
+    severity: 'moderate',
+    github_advisory_id: 'GHSA-698v-4r3x-3vcv',
+    findings: instances,
+  });
+  const raw = report([vite]);
+  const before = JSON.stringify(raw);
+  assert.equal(check(raw).vulnerabilities.moderate, 2);
+  assert.equal(JSON.stringify(raw), before, 'retain the raw pnpm evidence');
+  const wrongCount = structuredClone(raw);
+  wrongCount.metadata.vulnerabilities.moderate = 1;
+  assert.throws(() => check(wrongCount), /severity counts/);
+  assert.throws(
+    () =>
+      check(
+        report([
+          {
+            ...vite,
+            severity: 'high',
+            github_advisory_id: 'GHSA-587h-7wmj-h5pm',
+          },
+        ]),
+      ),
+    /Unaccepted high\/critical.*GHSA-587h-7wmj-h5pm/,
+  );
+  const patched = report([
+    advisory({ findings: instances.map((item) => ({ ...item, version: '3.0.3' })) }),
+  ]);
+  assert.throws(() => check(patched), /requires its reviewed configured patch/);
+  assert.equal(check(patched, true).vulnerabilities.high, 2);
+  assert.throws(
+    () =>
+      check(
+        report([
+          advisory({
+            findings: [{ version: '3.0.3', paths: ['app>braces', 'app>braces'] }],
+          }),
+        ]),
+        true,
+      ),
+    /Duplicate affected version\/path/,
+  );
 });
 
 const forgeAdvisory = (changes = {}) =>

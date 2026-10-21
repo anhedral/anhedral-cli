@@ -135,22 +135,12 @@ jobs:
         run: echo "Artifact digest ${{ steps.artifact.outputs.artifact-digest }}" >> "$GITHUB_STEP_SUMMARY"
 
   portability:
-    name: Exact artifact (${{ matrix.os }}, Node ${{ matrix.node }})
+    name: Exact artifact smoke
     needs: verify
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest
-          - windows-latest
-        node:
-          - '20.19.0'
-          - '22.12.0'
-          - '24.21.0'
     steps:
       - name: Checkout artifact verification code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -167,7 +157,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: ${{ matrix.node }}
+          node-version: '24.21.0'
           package-manager-cache: false
 
       - name: Download exact verified artifact

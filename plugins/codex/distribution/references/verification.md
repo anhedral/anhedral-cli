@@ -561,3 +561,86 @@ hosted CI and publication are recorded separately after they actually complete.
 - Hosted generated-profile checks exposed an unused web API-client stub in Clerk builds and Wrangler ready URLs without trailing slashes. Emit the web client/dependency only for its Better Auth consumer; normalize both Vite and Wrangler loopback URLs. Both Clerk profiles subsequently passed real local generation, check, build and Worker preview. Universal auth and billing reference previews passed with the corrected readiness parser.
 - Provider-call assertions in billing fixtures now compare exact hostnames, addressing CodeQL substring findings without changing provider transport.
 - Publication consumes the immutable candidate from successful trusted main CI for the exact reviewed SHA instead of reinstalling and rebuilding it. CLI/plugin integrity pins, secret scan, package smoke, cross-platform artifact checks, protected npm environment and OIDC publication remain required. Negative policy checks reject staging, PR-run or unpinned candidate selection.
+
+## 2026-10-21 — focused staging releases and CI tiers
+
+Adopted topic PRs into `staging` and focused staging-to-main release PRs. Routine
+code CI uses one Linux Node 24 CLI lane and one plugin lane; release candidates
+retain supported Node, macOS/Windows, both plugin toolchains and all generated
+profiles. Removed the duplicate E2E packed-CLI job. Stable `CI gate` fails on scope
+errors or applicable failed/skipped jobs. Candidate upload is restricted to trusted
+main CI. Reviewed-integrity dispatch, npm OIDC/provenance, immutable tags and
+existing maintainer/CodeQL review requirements are preserved. Renovate targets staging.
+
+Local build, typecheck, lint, release-policy and release-tooling checks passed.
+Scope/promotion, candidate and plugin packaging regression checks passed. Full unit
+suite passed with pinned pnpm 10.34.5: 750 passed, two optional runtime checks
+skipped, zero failures. actionlint 1.7.12 passed (optional shellcheck/pyflakes disabled).
+Initial checks caught a broken bundled relative documentation link and an obsolete
+candidate-condition expectation; both were corrected. The host's pnpm 11 first
+rejected the inspector's pnpm-10 override configuration; rerunning with the declared
+version avoided a lockfile change. This is source/fixture evidence, not live provider
+acceptance or a new npm publication. Adoption source takes effect on main after its
+release PR merges; main remains the default branch.
+
+Hosted adoption PR #39 subsequently exposed generated-project blockers: desktop
+rejected Vite advisory GHSA-587h-7wmj-h5pm, and clients rejected duplicate affected
+versions in advisory data. The generated dependency/advisory sources are unchanged
+by this conventions diff; these failures are retained as release blockers for a
+separate focused maintenance PR. Added fail-fast matrices and made portability/
+generated jobs wait for primary checks to avoid spending on an already-failing
+candidate. Hosted checks must pass before promotion/publication.
+
+GitHub settings could not be applied: the authenticated account reports push access
+but admin=false, and the attempted ruleset update returned HTTP 404. Existing rules
+are unchanged. PR #39 lists the exact administrator prerequisites, including both
+main rulesets, CI gate, merge commits and disabling automatic staging deletion.
+
+
+## 2026-10-21 correction — lightweight hosted checks on both branches
+
+The owner clarified that large hosted checks are unacceptable on staging **and**
+production. Earlier release-matrix proposals above are superseded. Automatic PR
+CI now has one Linux CI gate on both branches; no full suite, generated project,
+browser or platform matrix expands at promotion. Expensive validation is optional
+and explicitly manual, or local. Main has no duplicate push check. CLI candidate
+packaging is requested manually on main; publication keeps exact SHA/artifact,
+secret/integrity, protected npm approval, provenance and tag checks while using a
+single Linux artifact smoke lane instead of the six-job native matrix. Main repo
+PRs fetch only the formatter, not the full application dependency graph. Its deploy
+scripts no longer repeat full checks/tests, while retaining main/source guards,
+affected-service detection and the selected app's necessary build/typecheck/upload.
+
+The corrected lightweight CLI gate passed locally: compile, formatting, source
+hygiene, static security/release policy, fast contract tests and release-tooling
+negative paths. actionlint passed for automatic, manual-validation and publishing
+workflows. The dependency/advisory repair remains a separate staging PR.
+
+## 2026-10-21 — generated dependency/advisory repair
+
+Reproduced three live OSV findings on desktop's pinned Vite 7.3.6:
+GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv and GHSA-r825-w8mm-5pxw.
+The upstream repaired 7.x release is 7.3.7; the desktop recipe now pins it without
+a major upgrade. Sources: https://github.com/advisories/GHSA-587h-7wmj-h5pm
+and https://github.com/vitejs/vite/releases/tag/v7.3.7.
+
+A real pnpm 10.34.5 clients audit also emitted two Vite 7.3.6 findings for the
+extension and desktop dependency paths. Its severity metadata counted both
+instances. The audit verifier now permits repeated versions at distinct paths,
+preserves both counts and the raw report, and rejects duplicate version/path
+entries. New regressions cover count mismatches, unknown high advisories and
+exact reviewed-patch requirements with repeated versions. No advisory was added
+to an exception list and no severity threshold changed.
+
+Validation used Node 24.21.0 and pnpm 10.34.5. `pnpm test:all` passed: build, lint,
+static security policy, live OSV audit of 110 locked/catalog coordinates, 751 unit
+passes with two optional skips, frozen patch probes, packed CLI installation and
+packlist checks. The 12 focused audit/scaffold checks passed. Fresh real desktop
+and clients profiles passed generation, frozen install, lint/type/audit/tests/build
+and unsigned macOS Electron packaging; clients also exercised Expo and WXT outputs.
+The clients gate still requires its existing reviewed braces/node-forge patches;
+raw advisories remain visible. Initial parallel generator runs collided in shadcn's
+shared temporary clone directory; rerunning sequentially resolved that setup failure
+without changing tests or adding retries. These results do not establish Windows,
+Linux, signed macOS distribution or store acceptance. Hosted PR checks provide
+separate evidence. This focused repair has no version bump or npm publication.

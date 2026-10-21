@@ -35,7 +35,7 @@ test('only ordinary documentation takes the lightweight path', () => {
   assert.equal(needsFullCI([]), true);
 });
 
-test('manual runs and missing comparison history always require full CI', () => {
+test('manual runs and missing history conservatively require code checks', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-ci-scope-'));
   try {
     for (const env of [
@@ -47,7 +47,10 @@ test('manual runs and missing comparison history always require full CI', () => 
       execFileSync(process.execPath, ['scripts/ci-scope.mjs'], {
         env: { ...process.env, ...env, GITHUB_OUTPUT: output },
       });
-      assert.equal(readFileSync(output, 'utf8'), 'full=true\n');
+      assert.equal(
+        readFileSync(output, 'utf8'),
+        'full=true\nrelease=' + (env.GITHUB_EVENT_NAME === 'workflow_dispatch') + '\n',
+      );
     }
   } finally {
     rmSync(directory, { recursive: true, force: true });
@@ -90,18 +93,18 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
     base = git('rev-parse', 'HEAD').trim();
     writeFileSync(path.join(directory, 'README.md'), '🚧 Under construction\n');
     git('commit', '--quiet', '-am', 'Docs');
-    assert.equal(run(), 'full=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\n');
     writeFileSync(path.join(directory, 'README.md'), 'Trailing space \n');
     git('commit', '--quiet', '-am', 'Whitespace defect');
     assert.throws(run, 'documentation whitespace defects must fail');
     assert.throws(() => readFileSync(output));
     writeFileSync(path.join(directory, 'README.md'), 'Clean documentation\n');
     git('commit', '--quiet', '-am', 'Fix whitespace');
-    assert.equal(run(), 'full=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\n');
     mkdirSync(path.join(directory, 'docs'));
     git('mv', 'source.ts', 'docs/source.md');
     git('commit', '--quiet', '-m', 'Move source');
-    assert.equal(run(), 'full=true\n');
+    assert.equal(run(), 'full=true\nrelease=false\n');
     base = 'a'.repeat(40);
     assert.throws(run);
     assert.throws(() => readFileSync(output));
@@ -110,27 +113,70 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
   }
 });
 
-test('CI retains check names, gates expensive jobs and fails checks if scope detection fails', () => {
+test('staging and main share one fast merge gate; deep validation is manual only', () => {
   const workflow = parse(
     readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8'),
   );
-  assert.ok(workflow.on.pull_request !== undefined);
-  assert.equal(workflow.on.push['paths-ignore'], undefined);
-  assert.equal(workflow.jobs.scope.steps[0].with['fetch-depth'], 0);
-  for (const name of ['e2e-stable', 'plugin-ui', 'registry-matrix', 'generated']) {
-    const job = workflow.jobs[name];
-    assert.ok([job.needs].flat().includes('scope'), name);
-    assert.match(job.if, /needs\.scope\.outputs\.full == 'true'/, name);
+  assert.deepEqual(workflow.on.pull_request.branches, ['staging', 'main']);
+  assert.equal(workflow.on.push, undefined, 'do not duplicate a PR run after merge');
+  assert.deepEqual(Object.keys(workflow.jobs), ['gate']);
+  const gate = workflow.jobs.gate;
+  assert.equal(gate.name, 'CI gate');
+  assert.equal(gate['runs-on'], 'ubuntu-latest');
+  assert.ok(gate['timeout-minutes'] <= 5);
+  assert.equal(gate.strategy, undefined);
+  const commands = gate.steps.map((step) => step.run || '').join('\n');
+  assert.doesNotMatch(
+    commands,
+    /test:unit|test:patch|audit:osv|test-generated-apps|playwright|test:browser|plugin:check/,
+  );
+  assert.match(commands, /test-cli-validation/);
+  assert.match(commands, /check:security/);
+  for (const step of gate.steps.filter((step) =>
+    /plugin:build|create-release-artifact|upload-artifact/.test(
+      (step.run || '') + (step.uses || ''),
+    ),
+  )) {
+    assert.match(step.if, /github.event_name == 'workflow_dispatch'/);
+    assert.match(step.if, /github.ref == 'refs\/heads\/main'/);
   }
-  assert.match(workflow.jobs.checks.if, /!cancelled\(\)/);
-  assert.match(workflow.jobs.checks.steps[1].if, /needs\.scope\.result != 'success'/);
-  for (const name of ['checks', 'portable']) {
-    const job = workflow.jobs[name];
-    assert.ok([job.needs].flat().includes('scope'));
-    assert.equal(job.if, '${{ !cancelled() }}');
-    assert.equal(job.steps[1].run, 'exit 1');
-    for (const step of job.steps.slice(2)) {
-      assert.match(step.if, /needs\.scope\.outputs\.full == 'true'/);
-    }
+  const deep = parse(
+    readFileSync(new URL('../.github/workflows/validation.yml', import.meta.url), 'utf8'),
+  );
+  assert.deepEqual(Object.keys(deep.on), ['workflow_dispatch']);
+  assert.ok(deep.jobs.generated);
+  assert.notEqual(deep.jobs.gate.name, 'CI gate');
+  const release = parse(
+    readFileSync(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8'),
+  );
+  assert.equal(
+    release.jobs.portability.strategy,
+    undefined,
+    'publishing has no compatibility matrix',
+  );
+  assert.equal(release.jobs.portability['runs-on'], 'ubuntu-latest');
+});
+
+test('main rejects topic PRs and identifies promotions without expanding hosted checks', () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-promotion-'));
+  try {
+    const output = path.join(directory, 'output');
+    const run = (head) =>
+      execFileSync(process.execPath, ['scripts/ci-scope.mjs'], {
+        env: {
+          ...process.env,
+          GITHUB_EVENT_NAME: 'pull_request',
+          CI_TARGET_BRANCH: 'main',
+          CI_HEAD_BRANCH: head,
+          CI_BASE_SHA: '',
+          GITHUB_OUTPUT: output,
+        },
+        stdio: 'pipe',
+      });
+    assert.throws(() => run('codex/topic'));
+    run('staging');
+    assert.equal(readFileSync(output, 'utf8'), 'full=true\nrelease=true\n');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });

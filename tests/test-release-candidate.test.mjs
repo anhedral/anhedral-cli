@@ -10,23 +10,25 @@ const scripts = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 ).scripts;
 
-test('Linux release candidate is verified and executed after tests before its immutable upload', () => {
-  const job = workflow.jobs.checks;
+test('manual main candidate is verified after quick checks before immutable upload', () => {
+  const job = workflow.jobs.gate;
   assert.equal(job['runs-on'], 'ubuntu-latest');
-  assert.deepEqual(job.needs, ['scope', 'plugin-ui']);
-  assert.ok(job.strategy.matrix.node.includes('24.21.0'));
+  assert.equal(job.strategy, undefined);
   const steps = job.steps;
   const candidate = steps.findIndex(
     (step) => step.name === 'Build and verify Linux release candidate',
   );
-  assert.ok(candidate > steps.findIndex((step) => step.name === 'Run unit tests'));
-  const patches = steps.findIndex((step) => step.run === 'pnpm test:patch');
-  assert.ok(patches >= 0);
-  assert.ok(candidate > patches);
-  assert.ok(candidate > steps.findIndex((step) => step.name === 'Restore verified plugin runtime'));
+  assert.ok(candidate > steps.findIndex((step) => step.name === 'Fast contract smoke tests'));
+  assert.ok(candidate > steps.findIndex((step) => step.name === 'Fast source checks'));
+  assert.ok(
+    candidate >
+      steps.findIndex(
+        (step) => step.name === 'Build plugin only for an explicitly requested main candidate',
+      ),
+  );
   assert.equal(
     steps[candidate].if,
-    "${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}",
+    "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'",
   );
   assert.deepEqual(steps[candidate].run.trim().split('\n'), [
     'node scripts/create-release-artifact.mjs',
