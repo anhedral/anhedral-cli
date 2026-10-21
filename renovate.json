@@ -61,7 +61,7 @@
     {
       "customType": "regex",
       "description": "Pinned Node.js 24 runtime used for release packing and portability lanes",
-      "managerFilePatterns": ["/^\\.github/workflows\\/(?:ci|release)\\.yml$/"],
+      "managerFilePatterns": ["/^\\.github/workflows\\/(?:ci|release|validation)\\.yml$/"],
       "matchStrings": [
         "RELEASE_NODE_VERSION:\\s*'(?<currentValue>24\\.\\d+\\.\\d+)'",
         "(?:node-version:|-)\\s*'(?<currentValue>24\\.\\d+\\.\\d+)'"
@@ -84,7 +84,7 @@
       "description": "Synchronized pnpm runtime pin in generator source and CI",
       "managerFilePatterns": [
         "/^src\\/dependencies\\.ts$/",
-        "/^\\.github\\/workflows\\/(?:ci|release)\\.yml$/"
+        "/^\\.github\\/workflows\\/(?:ci|release|validation)\\.yml$/"
       ],
       "matchStrings": [
         "PACKAGE_MANAGER\\s*=\\s*'pnpm@(?<currentValue>[^']+)'",

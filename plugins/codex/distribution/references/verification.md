@@ -595,3 +595,23 @@ GitHub settings could not be applied: the authenticated account reports push acc
 but admin=false, and the attempted ruleset update returned HTTP 404. Existing rules
 are unchanged. PR #39 lists the exact administrator prerequisites, including both
 main rulesets, CI gate, merge commits and disabling automatic staging deletion.
+
+
+## 2026-10-21 correction — lightweight hosted checks on both branches
+
+The owner clarified that large hosted checks are unacceptable on staging **and**
+production. Earlier release-matrix proposals above are superseded. Automatic PR
+CI now has one Linux CI gate on both branches; no full suite, generated project,
+browser or platform matrix expands at promotion. Expensive validation is optional
+and explicitly manual, or local. Main has no duplicate push check. CLI candidate
+packaging is requested manually on main; publication keeps exact SHA/artifact,
+secret/integrity, protected npm approval, provenance and tag checks while using a
+single Linux artifact smoke lane instead of the six-job native matrix. Main repo
+PRs fetch only the formatter, not the full application dependency graph. Its deploy
+scripts no longer repeat full checks/tests, while retaining main/source guards,
+affected-service detection and the selected app's necessary build/typecheck/upload.
+
+The corrected lightweight CLI gate passed locally: compile, formatting, source
+hygiene, static security/release policy, fast contract tests and release-tooling
+negative paths. actionlint passed for automatic, manual-validation and publishing
+workflows. The dependency/advisory repair remains a separate staging PR.

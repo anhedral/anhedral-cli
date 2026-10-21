@@ -63,7 +63,7 @@ jobs:
         run: |
           PASSED=$(gh run list --workflow ci.yml --branch main --commit "$REVIEWED_SHA" --status success --json headSha,conclusion --jq 'length')
           if ! [[ "$PASSED" =~ ^[1-9][0-9]*$ ]]; then
-            echo "The reviewed main commit must pass CI, including generated-profile checks"
+            echo "The reviewed main commit must pass the lightweight CI gate"
             exit 1
           fi
 
