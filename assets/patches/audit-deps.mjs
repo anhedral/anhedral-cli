@@ -63,8 +63,18 @@ export function verifyAuditReport(report, { status, patchedCoordinates = [] } = 
       )
     )
       fail('Incomplete advisory details; no advisory exception was applied.');
-    if (new Set(finding.findings.map((item) => item.version)).size !== finding.findings.length)
-      fail('Duplicate affected versions in advisory details.');
+    // pnpm emits separate peer/workspace instances with the same version.
+    // Keep every instance in severity counts; only an identical version/path
+    // repeated within this advisory is ambiguous report data.
+    const affectedPaths = new Set();
+    for (const item of finding.findings) {
+      for (const dependencyPath of item.paths) {
+        const coordinate = JSON.stringify([item.version, dependencyPath]);
+        if (affectedPaths.has(coordinate))
+          fail('Duplicate affected version/path in advisory details.');
+        affectedPaths.add(coordinate);
+      }
+    }
     counts[finding.severity] += finding.findings.length;
   }
   for (const severity of severities) {

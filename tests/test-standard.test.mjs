@@ -788,6 +788,7 @@ try {
     assert.equal(existsSync(path.join(native.root, 'apps/web')), false);
     const manifest = read(native.root, `apps/${app}/package.json`);
     assert.ok(manifest.scripts.build || manifest.scripts.start);
+    if (product === 'electron') assert.equal(manifest.devDependencies.vite, '7.3.7');
     assert.equal(manifest.dependencies['@shared/api-client'], undefined);
     assert.equal(manifest.dependencies['@shared/realtime'], undefined);
   }
