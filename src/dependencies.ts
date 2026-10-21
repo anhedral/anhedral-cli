@@ -41,7 +41,7 @@ export const DESKTOP_DEPENDENCIES: DependencyGroup = {
     // renovate: datasource=npm depName=typescript
     typescript: '5.9.3',
     // renovate: datasource=npm depName=vite
-    vite: '7.3.6',
+    vite: '7.3.7',
   },
 };
 

@@ -615,3 +615,32 @@ The corrected lightweight CLI gate passed locally: compile, formatting, source
 hygiene, static security/release policy, fast contract tests and release-tooling
 negative paths. actionlint passed for automatic, manual-validation and publishing
 workflows. The dependency/advisory repair remains a separate staging PR.
+
+## 2026-10-21 — generated dependency/advisory repair
+
+Reproduced three live OSV findings on desktop's pinned Vite 7.3.6:
+GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv and GHSA-r825-w8mm-5pxw.
+The upstream repaired 7.x release is 7.3.7; the desktop recipe now pins it without
+a major upgrade. Sources: https://github.com/advisories/GHSA-587h-7wmj-h5pm
+and https://github.com/vitejs/vite/releases/tag/v7.3.7.
+
+A real pnpm 10.34.5 clients audit also emitted two Vite 7.3.6 findings for the
+extension and desktop dependency paths. Its severity metadata counted both
+instances. The audit verifier now permits repeated versions at distinct paths,
+preserves both counts and the raw report, and rejects duplicate version/path
+entries. New regressions cover count mismatches, unknown high advisories and
+exact reviewed-patch requirements with repeated versions. No advisory was added
+to an exception list and no severity threshold changed.
+
+Validation used Node 24.21.0 and pnpm 10.34.5. `pnpm test:all` passed: build, lint,
+static security policy, live OSV audit of 110 locked/catalog coordinates, 751 unit
+passes with two optional skips, frozen patch probes, packed CLI installation and
+packlist checks. The 12 focused audit/scaffold checks passed. Fresh real desktop
+and clients profiles passed generation, frozen install, lint/type/audit/tests/build
+and unsigned macOS Electron packaging; clients also exercised Expo and WXT outputs.
+The clients gate still requires its existing reviewed braces/node-forge patches;
+raw advisories remain visible. Initial parallel generator runs collided in shadcn's
+shared temporary clone directory; rerunning sequentially resolved that setup failure
+without changing tests or adding retries. These results do not establish Windows,
+Linux, signed macOS distribution or store acceptance. Hosted PR checks provide
+separate evidence. This focused repair has no version bump or npm publication.
