@@ -42,7 +42,7 @@ Hosted checks validate source and isolated fixtures. They do not establish live 
 
 ## CLI release checks
 
-Routine code PRs run the Node 24 unit/static/security/patch/package checks and one plugin check/browser lane. Promotions also run supported minimum Node 20/22 and Node 24 checks, macOS/Windows portability, both plugin toolchains and all registered generated profiles. The old duplicate E2E packed-CLI job is removed; the main checks already test packed installation. Main push CI is retained because publication consumes its trusted immutable candidate. Artifacts expire after one day; manually rerun main CI if a reviewed candidate expires.
+Routine code PRs run the Node 24 unit/static/security/patch/package checks and one plugin check/browser lane. Promotions also run supported minimum Node 20/22 and Node 24 checks, macOS/Windows portability, both plugin toolchains and all registered generated profiles. Compatibility/generated jobs wait for the primary checks, and matrices cancel remaining jobs after a failure. The old duplicate E2E packed-CLI job is removed; the main checks already test packed installation. Main push CI is retained because publication consumes its trusted immutable candidate. Artifacts expire after one day; manually rerun main CI if a reviewed candidate expires.
 
 Before promoting, run `pnpm release:check`, `pnpm plugin:check` and the affected generated profiles locally, or document local blockers and require their hosted evidence. Full local generated integration is `pnpm test:integration`. Never weaken a security/compatibility gate because a local environment cannot run it.
 

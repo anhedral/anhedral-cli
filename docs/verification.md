@@ -582,3 +582,16 @@ rejected the inspector's pnpm-10 override configuration; rerunning with the decl
 version avoided a lockfile change. This is source/fixture evidence, not live provider
 acceptance or a new npm publication. Adoption source takes effect on main after its
 release PR merges; main remains the default branch.
+
+Hosted adoption PR #39 subsequently exposed generated-project blockers: desktop
+rejected Vite advisory GHSA-587h-7wmj-h5pm, and clients rejected duplicate affected
+versions in advisory data. The generated dependency/advisory sources are unchanged
+by this conventions diff; these failures are retained as release blockers for a
+separate focused maintenance PR. Added fail-fast matrices and made portability/
+generated jobs wait for primary checks to avoid spending on an already-failing
+candidate. Hosted checks must pass before promotion/publication.
+
+GitHub settings could not be applied: the authenticated account reports push access
+but admin=false, and the attempted ruleset update returned HTTP 404. Existing rules
+are unchanged. PR #39 lists the exact administrator prerequisites, including both
+main rulesets, CI gate, merge commits and disabling automatic staging deletion.

@@ -127,6 +127,12 @@ test('routine PRs use one runtime; releases retain compatibility and generated c
     assert.match(workflow.jobs[name].if, /outputs.release == 'true'/);
     assert.match(workflow.jobs[name].if, /outputs.full == 'true'/);
   }
+  for (const name of ['portable', 'registry-matrix']) {
+    assert.ok(workflow.jobs[name].needs.includes('checks'), name);
+  }
+  for (const name of ['checks', 'portable', 'plugin-ui', 'generated']) {
+    assert.equal(workflow.jobs[name].strategy['fail-fast'], true, name);
+  }
   assert.equal(workflow.jobs['e2e-stable'], undefined);
   const gate = workflow.jobs.gate;
   assert.equal(gate.name, 'CI gate');
