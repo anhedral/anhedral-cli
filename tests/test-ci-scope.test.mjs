@@ -35,7 +35,7 @@ test('only ordinary documentation takes the lightweight path', () => {
   assert.equal(needsFullCI([]), true);
 });
 
-test('manual runs and missing comparison history always require full CI', () => {
+test('manual runs and missing history conservatively require code checks', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-ci-scope-'));
   try {
     for (const env of [
@@ -113,65 +113,51 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
   }
 });
 
-test('routine PRs use one runtime; releases retain compatibility and generated coverage', () => {
+test('staging and main share one fast merge gate; deep validation is manual only', () => {
   const workflow = parse(
     readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8'),
   );
   assert.deepEqual(workflow.on.pull_request.branches, ['staging', 'main']);
-  assert.deepEqual(workflow.on.push.branches, ['main']);
-  assert.equal(workflow.on.pull_request.paths, undefined);
-  assert.equal(workflow.jobs.scope.steps[0].with['fetch-depth'], 0);
-  assert.match(workflow.jobs.checks.strategy.matrix.node, /outputs.release/);
-  assert.match(workflow.jobs['plugin-ui'].strategy.matrix.node, /outputs.release/);
-  for (const name of ['portable', 'registry-matrix', 'generated']) {
-    assert.match(workflow.jobs[name].if, /outputs.release == 'true'/);
-    assert.match(workflow.jobs[name].if, /outputs.full == 'true'/);
-  }
-  for (const name of ['portable', 'registry-matrix']) {
-    assert.ok(workflow.jobs[name].needs.includes('checks'), name);
-  }
-  for (const name of ['checks', 'portable', 'plugin-ui', 'generated']) {
-    assert.equal(workflow.jobs[name].strategy['fail-fast'], true, name);
-  }
-  assert.equal(workflow.jobs['e2e-stable'], undefined);
+  assert.equal(workflow.on.push, undefined, 'do not duplicate a PR run after merge');
+  assert.deepEqual(Object.keys(workflow.jobs), ['gate']);
   const gate = workflow.jobs.gate;
   assert.equal(gate.name, 'CI gate');
-  assert.equal(gate.if, '${{ always() }}');
-  const code = gate.steps[0].run.split("node --input-type=module -e '")[1].split("'")[0];
-  const results = (full, release, failure) =>
-    Object.fromEntries(
-      gate.needs.map((name) => [
-        name,
-        {
-          result:
-            name === failure
-              ? 'failure'
-              : (['portable', 'registry-matrix', 'generated'].includes(name) && !release) ||
-                  (name === 'plugin-ui' && !full)
-                ? 'skipped'
-                : 'success',
-          outputs: { full: String(full), release: String(release) },
-        },
-      ]),
-    );
-  for (const [full, release] of [
-    [false, false],
-    [true, false],
-    [true, true],
-  ]) {
-    const run = (failure) =>
-      execFileSync(process.execPath, ['--input-type=module', '-e', code], {
-        env: { ...process.env, RESULTS: JSON.stringify(results(full, release, failure)) },
-      });
-    run();
-    assert.throws(() => run('scope'));
-    assert.throws(() => run('checks'));
-    if (full) assert.throws(() => run('plugin-ui'));
-    if (full && release) assert.throws(() => run('generated'));
+  assert.equal(gate['runs-on'], 'ubuntu-latest');
+  assert.ok(gate['timeout-minutes'] <= 5);
+  assert.equal(gate.strategy, undefined);
+  const commands = gate.steps.map((step) => step.run || '').join('\n');
+  assert.doesNotMatch(
+    commands,
+    /test:unit|test:patch|audit:osv|test-generated-apps|playwright|test:browser|plugin:check/,
+  );
+  assert.match(commands, /test-cli-validation/);
+  assert.match(commands, /check:security/);
+  for (const step of gate.steps.filter((step) =>
+    /plugin:build|create-release-artifact|upload-artifact/.test(
+      (step.run || '') + (step.uses || ''),
+    ),
+  )) {
+    assert.match(step.if, /github.event_name == 'workflow_dispatch'/);
+    assert.match(step.if, /github.ref == 'refs\/heads\/main'/);
   }
+  const deep = parse(
+    readFileSync(new URL('../.github/workflows/validation.yml', import.meta.url), 'utf8'),
+  );
+  assert.deepEqual(Object.keys(deep.on), ['workflow_dispatch']);
+  assert.ok(deep.jobs.generated);
+  assert.notEqual(deep.jobs.gate.name, 'CI gate');
+  const release = parse(
+    readFileSync(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8'),
+  );
+  assert.equal(
+    release.jobs.portability.strategy,
+    undefined,
+    'publishing has no compatibility matrix',
+  );
+  assert.equal(release.jobs.portability['runs-on'], 'ubuntu-latest');
 });
 
-test('main rejects topic PRs and promotion runs the release checks', () => {
+test('main rejects topic PRs and identifies promotions without expanding hosted checks', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-promotion-'));
   try {
     const output = path.join(directory, 'output');

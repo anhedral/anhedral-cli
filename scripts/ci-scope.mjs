@@ -41,5 +41,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (!full) execFileSync('git', ['diff', '--check', base, 'HEAD'], { stdio: 'inherit' });
   }
   appendFileSync(process.env.GITHUB_OUTPUT, `full=${full}\nrelease=${release}\n`);
-  console.log(full ? 'Full CI required.' : 'Documentation-only change: whitespace check passed.');
+  console.log(
+    full
+      ? 'Code change: run lightweight checks.'
+      : 'Documentation-only change: whitespace check passed.',
+  );
 }
