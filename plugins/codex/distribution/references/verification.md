@@ -561,3 +561,24 @@ hosted CI and publication are recorded separately after they actually complete.
 - Hosted generated-profile checks exposed an unused web API-client stub in Clerk builds and Wrangler ready URLs without trailing slashes. Emit the web client/dependency only for its Better Auth consumer; normalize both Vite and Wrangler loopback URLs. Both Clerk profiles subsequently passed real local generation, check, build and Worker preview. Universal auth and billing reference previews passed with the corrected readiness parser.
 - Provider-call assertions in billing fixtures now compare exact hostnames, addressing CodeQL substring findings without changing provider transport.
 - Publication consumes the immutable candidate from successful trusted main CI for the exact reviewed SHA instead of reinstalling and rebuilding it. CLI/plugin integrity pins, secret scan, package smoke, cross-platform artifact checks, protected npm environment and OIDC publication remain required. Negative policy checks reject staging, PR-run or unpinned candidate selection.
+
+## 2026-10-21 — focused staging releases and CI tiers
+
+Adopted topic PRs into `staging` and focused staging-to-main release PRs. Routine
+code CI uses one Linux Node 24 CLI lane and one plugin lane; release candidates
+retain supported Node, macOS/Windows, both plugin toolchains and all generated
+profiles. Removed the duplicate E2E packed-CLI job. Stable `CI gate` fails on scope
+errors or applicable failed/skipped jobs. Candidate upload is restricted to trusted
+main CI. Reviewed-integrity dispatch, npm OIDC/provenance, immutable tags and
+existing maintainer/CodeQL review requirements are preserved. Renovate targets staging.
+
+Local build, typecheck, lint, release-policy and release-tooling checks passed.
+Scope/promotion, candidate and plugin packaging regression checks passed. Full unit
+suite passed with pinned pnpm 10.34.5: 750 passed, two optional runtime checks
+skipped, zero failures. actionlint 1.7.12 passed (optional shellcheck/pyflakes disabled).
+Initial checks caught a broken bundled relative documentation link and an obsolete
+candidate-condition expectation; both were corrected. The host's pnpm 11 first
+rejected the inspector's pnpm-10 override configuration; rerunning with the declared
+version avoided a lockfile change. This is source/fixture evidence, not live provider
+acceptance or a new npm publication. Adoption source takes effect on main after its
+release PR merges; main remains the default branch.

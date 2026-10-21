@@ -26,7 +26,7 @@ test('Linux release candidate is verified and executed after tests before its im
   assert.ok(candidate > steps.findIndex((step) => step.name === 'Restore verified plugin runtime'));
   assert.equal(
     steps[candidate].if,
-    "${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}",
+    "${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request') }}",
   );
   assert.deepEqual(steps[candidate].run.trim().split('\n'), [
     'node scripts/create-release-artifact.mjs',

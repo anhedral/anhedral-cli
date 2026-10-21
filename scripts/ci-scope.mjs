@@ -20,6 +20,12 @@ export function needsFullCI(files) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const event = process.env.GITHUB_EVENT_NAME;
+  const target = process.env.CI_TARGET_BRANCH;
+  if (event === 'pull_request' && target === 'main' && process.env.CI_HEAD_BRANCH !== 'staging') {
+    throw new Error('Main accepts release PRs from staging. Retarget this change to staging.');
+  }
+  const release = event === 'workflow_dispatch' || target === 'main';
   const base = process.env.CI_BASE_SHA;
   const comparable = /^[a-f0-9]{40}$/.test(base ?? '') && !/^0+$/.test(base);
   let full = true;
@@ -34,6 +40,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     full = needsFullCI(files);
     if (!full) execFileSync('git', ['diff', '--check', base, 'HEAD'], { stdio: 'inherit' });
   }
-  appendFileSync(process.env.GITHUB_OUTPUT, `full=${full}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `full=${full}\nrelease=${release}\n`);
   console.log(full ? 'Full CI required.' : 'Documentation-only change: whitespace check passed.');
 }

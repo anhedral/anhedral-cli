@@ -3,6 +3,7 @@ name: CI
 on:
   workflow_dispatch:
   pull_request:
+    branches: [staging, main]
   push:
     branches:
       - main
@@ -24,6 +25,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       full: ${{ steps.scope.outputs.full }}
+      release: ${{ steps.scope.outputs.release }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -31,6 +33,8 @@ jobs:
           fetch-depth: 0
       - id: scope
         env:
+          CI_TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
+          CI_HEAD_BRANCH: ${{ github.head_ref }}
           CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: node scripts/ci-scope.mjs
 
@@ -43,11 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node:
-          - '20.19.0'
-          - '22.12.0'
-          - '24.18.0'
-          - '24.21.0'
+        node: ${{ fromJSON(needs.scope.outputs.release == 'true' && '["20.19.0","22.12.0","24.21.0"]' || '["24.21.0"]') }}
     steps:
       - name: Documentation-only check
         if: ${{ needs.scope.result == 'success' && needs.scope.outputs.full == 'false' }}
@@ -100,11 +100,11 @@ jobs:
         run: pnpm test:patch
 
       - name: Check source hygiene and static security policy
-        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '20.19.0') }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
         run: pnpm lint && pnpm check:security
 
       - name: Audit dependencies
-        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '20.19.0') }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
         run: pnpm audit:osv
 
       - name: Smoke test packed CLI
@@ -112,18 +112,18 @@ jobs:
         run: node tests/test-packed-cli.js
 
       - name: Enforce package allowlist
-        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '20.19.0') }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
         run: node tests/test-packlist.js
 
       - name: Build and verify Linux release candidate
-        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request') }}
         run: |
           node scripts/create-release-artifact.mjs
           pnpm release:artifact:verify
           pnpm release:artifact:smoke
 
       - name: Share verified release candidate for review
-        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
+        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-candidate
@@ -133,29 +133,9 @@ jobs:
           retention-days: 1
           compression-level: 0
 
-  e2e-stable:
-    needs: scope
-    if: ${{ needs.scope.outputs.full == 'true' }}
-    name: E2E Stable
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
-        with:
-          version: 10.34.5
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: '24.21.0'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build && node tests/test-packed-cli.js
-
   portable:
     needs: scope
-    if: ${{ !cancelled() }}
+    if: ${{ needs.scope.outputs.full == 'true' && needs.scope.outputs.release == 'true' }}
     name: Portable CLI (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -163,7 +143,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
-        node: ['20.19.0', '22.12.0', '24.18.0', '24.21.0']
+        node: ['20.19.0', '22.12.0', '24.21.0']
     steps:
       - name: Documentation-only check
         if: ${{ needs.scope.result == 'success' && needs.scope.outputs.full == 'false' }}
@@ -206,7 +186,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['22.13.0', '24.21.0']
+        node: ${{ fromJSON(needs.scope.outputs.release == 'true' && '["22.13.0","24.21.0"]' || '["24.21.0"]') }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -240,7 +220,7 @@ jobs:
 
   registry-matrix:
     needs: scope
-    if: ${{ needs.scope.outputs.full == 'true' }}
+    if: ${{ needs.scope.outputs.full == 'true' && needs.scope.outputs.release == 'true' }}
     name: Registry matrix
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -257,7 +237,7 @@ jobs:
   generated:
     name: Generated (${{ matrix.os }}, ${{ matrix.profile }}, Node ${{ matrix.node }})
     needs: [scope, registry-matrix]
-    if: ${{ needs.scope.outputs.full == 'true' }}
+    if: ${{ needs.scope.outputs.full == 'true' && needs.scope.outputs.release == 'true' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -286,3 +266,22 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: node tests/test-generated-apps.mjs ${{ matrix.profile }}
+
+  gate:
+    name: CI gate
+    if: ${{ always() }}
+    needs: [scope, checks, plugin-ui, portable, registry-matrix, generated]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require all applicable checks
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node --input-type=module -e '
+            const jobs = JSON.parse(process.env.RESULTS);
+            const code = jobs.scope.outputs.full === "true";
+            const release = jobs.scope.outputs.release === "true";
+            const required = ["scope", "checks", ...(code ? ["plugin-ui"] : []), ...(code && release ? ["portable", "registry-matrix", "generated"] : [])];
+            if (required.some(name => jobs[name].result !== "success")) process.exit(1);
+          '

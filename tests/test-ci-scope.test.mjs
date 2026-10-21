@@ -47,7 +47,10 @@ test('manual runs and missing comparison history always require full CI', () => 
       execFileSync(process.execPath, ['scripts/ci-scope.mjs'], {
         env: { ...process.env, ...env, GITHUB_OUTPUT: output },
       });
-      assert.equal(readFileSync(output, 'utf8'), 'full=true\n');
+      assert.equal(
+        readFileSync(output, 'utf8'),
+        'full=true\nrelease=' + (env.GITHUB_EVENT_NAME === 'workflow_dispatch') + '\n',
+      );
     }
   } finally {
     rmSync(directory, { recursive: true, force: true });
@@ -90,18 +93,18 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
     base = git('rev-parse', 'HEAD').trim();
     writeFileSync(path.join(directory, 'README.md'), '🚧 Under construction\n');
     git('commit', '--quiet', '-am', 'Docs');
-    assert.equal(run(), 'full=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\n');
     writeFileSync(path.join(directory, 'README.md'), 'Trailing space \n');
     git('commit', '--quiet', '-am', 'Whitespace defect');
     assert.throws(run, 'documentation whitespace defects must fail');
     assert.throws(() => readFileSync(output));
     writeFileSync(path.join(directory, 'README.md'), 'Clean documentation\n');
     git('commit', '--quiet', '-am', 'Fix whitespace');
-    assert.equal(run(), 'full=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\n');
     mkdirSync(path.join(directory, 'docs'));
     git('mv', 'source.ts', 'docs/source.md');
     git('commit', '--quiet', '-m', 'Move source');
-    assert.equal(run(), 'full=true\n');
+    assert.equal(run(), 'full=true\nrelease=false\n');
     base = 'a'.repeat(40);
     assert.throws(run);
     assert.throws(() => readFileSync(output));
@@ -110,27 +113,78 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
   }
 });
 
-test('CI retains check names, gates expensive jobs and fails checks if scope detection fails', () => {
+test('routine PRs use one runtime; releases retain compatibility and generated coverage', () => {
   const workflow = parse(
     readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8'),
   );
-  assert.ok(workflow.on.pull_request !== undefined);
-  assert.equal(workflow.on.push['paths-ignore'], undefined);
+  assert.deepEqual(workflow.on.pull_request.branches, ['staging', 'main']);
+  assert.deepEqual(workflow.on.push.branches, ['main']);
+  assert.equal(workflow.on.pull_request.paths, undefined);
   assert.equal(workflow.jobs.scope.steps[0].with['fetch-depth'], 0);
-  for (const name of ['e2e-stable', 'plugin-ui', 'registry-matrix', 'generated']) {
-    const job = workflow.jobs[name];
-    assert.ok([job.needs].flat().includes('scope'), name);
-    assert.match(job.if, /needs\.scope\.outputs\.full == 'true'/, name);
+  assert.match(workflow.jobs.checks.strategy.matrix.node, /outputs.release/);
+  assert.match(workflow.jobs['plugin-ui'].strategy.matrix.node, /outputs.release/);
+  for (const name of ['portable', 'registry-matrix', 'generated']) {
+    assert.match(workflow.jobs[name].if, /outputs.release == 'true'/);
+    assert.match(workflow.jobs[name].if, /outputs.full == 'true'/);
   }
-  assert.match(workflow.jobs.checks.if, /!cancelled\(\)/);
-  assert.match(workflow.jobs.checks.steps[1].if, /needs\.scope\.result != 'success'/);
-  for (const name of ['checks', 'portable']) {
-    const job = workflow.jobs[name];
-    assert.ok([job.needs].flat().includes('scope'));
-    assert.equal(job.if, '${{ !cancelled() }}');
-    assert.equal(job.steps[1].run, 'exit 1');
-    for (const step of job.steps.slice(2)) {
-      assert.match(step.if, /needs\.scope\.outputs\.full == 'true'/);
-    }
+  assert.equal(workflow.jobs['e2e-stable'], undefined);
+  const gate = workflow.jobs.gate;
+  assert.equal(gate.name, 'CI gate');
+  assert.equal(gate.if, '${{ always() }}');
+  const code = gate.steps[0].run.split("node --input-type=module -e '")[1].split("'")[0];
+  const results = (full, release, failure) =>
+    Object.fromEntries(
+      gate.needs.map((name) => [
+        name,
+        {
+          result:
+            name === failure
+              ? 'failure'
+              : (['portable', 'registry-matrix', 'generated'].includes(name) && !release) ||
+                  (name === 'plugin-ui' && !full)
+                ? 'skipped'
+                : 'success',
+          outputs: { full: String(full), release: String(release) },
+        },
+      ]),
+    );
+  for (const [full, release] of [
+    [false, false],
+    [true, false],
+    [true, true],
+  ]) {
+    const run = (failure) =>
+      execFileSync(process.execPath, ['--input-type=module', '-e', code], {
+        env: { ...process.env, RESULTS: JSON.stringify(results(full, release, failure)) },
+      });
+    run();
+    assert.throws(() => run('scope'));
+    assert.throws(() => run('checks'));
+    if (full) assert.throws(() => run('plugin-ui'));
+    if (full && release) assert.throws(() => run('generated'));
+  }
+});
+
+test('main rejects topic PRs and promotion runs the release checks', () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-promotion-'));
+  try {
+    const output = path.join(directory, 'output');
+    const run = (head) =>
+      execFileSync(process.execPath, ['scripts/ci-scope.mjs'], {
+        env: {
+          ...process.env,
+          GITHUB_EVENT_NAME: 'pull_request',
+          CI_TARGET_BRANCH: 'main',
+          CI_HEAD_BRANCH: head,
+          CI_BASE_SHA: '',
+          GITHUB_OUTPUT: output,
+        },
+        stdio: 'pipe',
+      });
+    assert.throws(() => run('codex/topic'));
+    run('staging');
+    assert.equal(readFileSync(output, 'utf8'), 'full=true\nrelease=true\n');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });
