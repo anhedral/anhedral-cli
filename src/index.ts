@@ -92,3 +92,12 @@ export {
 export type { ProjectConfig, ProjectSection } from './project-config.js';
 
 export { FULL_PRODUCT } from './registry/presets.js';
+export { inspectUiCatalog, parseUiSelector } from './ui/catalog.js';
+export { resolveUiConsumer } from './ui/target.js';
+export type {
+  UiPlatform,
+  UiInspectionOptions,
+  UiConsumerDescriptor,
+  UiConsumerResolution,
+  UiCatalogEntry,
+} from './ui/types.js';

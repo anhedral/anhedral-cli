@@ -243,13 +243,35 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   registry: {
     description: 'Inspect the bundled stack catalog and setup requirements.',
     usage: 'registry list | view <item> | capabilities [options]',
-    options: [],
+    options: [
+      {
+        flag: '--kind',
+        value: 'ui',
+        arity: 'required',
+        description: 'Inspect the candidate UI catalog without writes.',
+      },
+      {
+        flag: '--app',
+        value: 'workspace',
+        arity: 'required',
+        description: 'Select an explicit UI consumer workspace.',
+      },
+      {
+        flag: '--platform',
+        value: 'web|ios|android',
+        arity: 'required',
+        description: 'Select the UI runtime platform.',
+      },
+    ],
     examples: [
       'registry list',
       'registry view neon',
       'registry capabilities',
       'registry capabilities --json',
+      'registry list --kind ui --json',
+      'registry view ui/button --kind ui --app apps/mobile --platform web --json',
     ],
+    note: 'UI inspection is offline and read-only. Candidate source and installation remain unavailable; identified consumers do not establish foundation or runtime acceptance.',
   },
   doctor: {
     description: 'Check project provenance and local readiness without writes.',
