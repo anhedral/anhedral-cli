@@ -340,3 +340,75 @@ test('overlapping export patterns cannot advertise a blocked or redirected butto
     }
   }
 });
+
+test('fixed button export keys preserve namespace and target mapping', () => {
+  for (const [key, template, buttonExport] of [
+    ['./components/button', './src/components/button.tsx', '@fixture/ui/components/button'],
+    ['./components/*', './src/components/*.tsx', '@fixture/ui/components/button'],
+    ['./components/*', './src/components/button.tsx', '@fixture/ui/components/button'],
+    ['./button', './src/components/button.tsx', '@fixture/ui/button'],
+  ]) {
+    const f = fixture(['expo']);
+    try {
+      f.put('packages/ui/package.json', { name: '@fixture/ui', exports: { [key]: template } });
+      const result = resolveUiConsumer(f.root, { platform: 'web' });
+      assert.equal(result.state, 'migration-required', result.reason);
+      assert.equal(result.eligibility, 'unavailable');
+      assert.equal(result.consumer.uiPackage.buttonExport, buttonExport);
+      assert.deepEqual(result.consumer.uiPackage.buttonTargets, {
+        web: 'src/components/button.tsx',
+        ios: 'src/components/button.tsx',
+        android: 'src/components/button.tsx',
+      });
+    } finally {
+      f.close();
+    }
+  }
+});
+
+test('wildcard bounds reject repeated and exact-key markers even when expanded files exist', () => {
+  for (const [key, template, expanded] of [
+    ['./components/*', './src/components/**.tsx', 'src/components/buttonbutton.tsx'],
+    ['./components/*', './src/*/button.*', 'src/button/button.button'],
+    ['./button', './src/components/*.tsx', 'src/components/button.tsx'],
+  ]) {
+    const f = fixture(['expo']);
+    try {
+      f.put(`packages/ui/${expanded}`, 'export const Button = 2;');
+      f.put('packages/ui/package.json', { name: '@fixture/ui', exports: { [key]: template } });
+      const result = resolveUiConsumer(f.root);
+      assert.equal(result.state, 'invalid');
+      assert.match(result.reason, /Unsupported or escaping UI export target/);
+      assert.equal(result.consumer, null);
+    } finally {
+      f.close();
+    }
+  }
+});
+
+test('export traversal and final-file symlinks remain rejected', () => {
+  const f = fixture(['expo']);
+  try {
+    f.put('packages/outside.tsx', 'export const Button = 2;');
+    f.put('packages/ui/package.json', {
+      name: '@fixture/ui',
+      exports: { './button': './src/../../outside.tsx' },
+    });
+    const traversal = resolveUiConsumer(f.root);
+    assert.equal(traversal.state, 'invalid');
+    assert.match(traversal.reason, /portable workspace-relative path/);
+    f.put('packages/ui/package.json', {
+      name: '@fixture/ui',
+      exports: { './components/*': './src/components/*.tsx' },
+    });
+    const button = path.join(f.root, 'packages/ui/src/components/button.tsx');
+    rmSync(button);
+    symlinkSync(path.join(f.root, 'packages/outside.tsx'), button);
+    const linked = resolveUiConsumer(f.root);
+    assert.equal(linked.state, 'invalid');
+    assert.match(linked.reason, /symlink paths/);
+    assert.equal(linked.consumer, null);
+  } finally {
+    f.close();
+  }
+});

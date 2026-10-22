@@ -256,7 +256,7 @@ export function resolveUiConsumer(
         }
         // A narrow inspector must not advertise the broad pattern when another
         // matching pattern can block or redirect the same import.
-        const subpath = buttonKey.replace('*', 'button');
+        const subpath = buttonKey.replaceAll('*', 'button');
         if (
           buttonKey.includes('*') &&
           Object.keys(exports).some((key) => {
@@ -284,7 +284,7 @@ export function resolveUiConsumer(
             (template.match(/\*/g)?.length ?? 0) > (buttonKey.includes('*') ? 1 : 0)
           )
             throw new DeclarationError('Unsupported or escaping UI export target.');
-          const destination = template.replace('*', 'button').slice(2);
+          const destination = template.replaceAll('*', 'button').slice(2);
           const file = safe(root, `${target.directory}/${destination}`);
           if (!lstatSync(file).isFile())
             throw new DeclarationError('UI export must name a regular file.');
@@ -293,7 +293,7 @@ export function resolveUiConsumer(
         packages.push({
           root: target.directory,
           importNamespace: dependency,
-          buttonExport: `${dependency}${buttonKey.replace('*', 'button').slice(1)}`,
+          buttonExport: `${dependency}${buttonKey.replaceAll('*', 'button').slice(1)}`,
           buttonTargets,
         });
       }
