@@ -59,6 +59,7 @@
     "pretest": "pnpm build",
     "prepublishOnly": "pnpm test:all",
     "test:cli:validation": "node --test tests/test-cli-validation.test.mjs",
+    "test:contracts:types": "node tests/test-generated-contracts-types.mjs",
     "test:pack": "pnpm build && node tests/test-packed-cli.js",
     "test:pack:exact": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
     "test:packlist": "pnpm build && node tests/test-packlist.js",
