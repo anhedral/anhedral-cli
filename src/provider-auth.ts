@@ -1,12 +1,11 @@
 import type { StandardProduct } from './stack-registry.js';
-import { EAS_CLI_VERSION, STACK_DEPENDENCIES, VERCEL_CLI_VERSION } from './dependencies.js';
+import { EAS_CLI_VERSION, STACK_DEPENDENCIES } from './dependencies.js';
 import { realpathSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { readProjectSection } from './project-config.js';
 import { validateSetupPlan } from './readiness.js';
 import { resolveCommand } from './command.js';
 import { defaultRunner, type DeliveryRunner } from './project-state.js';
-import { providerConfiguration } from './providers/config.js';
 import {
   INTEGRATION_PROVIDERS,
   PROVIDER_DEFINITIONS,
@@ -29,35 +28,10 @@ export interface ProviderAuth {
 export const PROVIDER_AUTH: readonly ProviderAuth[] = [
   {
     id: 'cloudflare',
-    products: [
-      'expo',
-      'analytics-engine',
-      'images',
-      'realtimekit',
-      'video',
-      'stream',
-      'vinext',
-      'hono',
-      'd1',
-      'r2',
-      'kv',
-      'realtime',
-      'queues',
-      'cron',
-      'workflows',
-      'workers-ai',
-      'basin',
-    ],
+    products: ['expo', 'hono', 'd1', 'r2'],
     login: ['pnpm', 'dlx', `wrangler@${STACK_DEPENDENCIES.wrangler}`, 'login'],
     identity: ['pnpm', 'dlx', `wrangler@${STACK_DEPENDENCIES.wrangler}`, 'whoami', '--json'],
     setup: 'Select and connect the intended Cloudflare account before shipping.',
-  },
-  {
-    id: 'vercel',
-    products: [],
-    login: ['pnpm', 'dlx', `vercel@${VERCEL_CLI_VERSION}`, 'login'],
-    identity: ['pnpm', 'dlx', `vercel@${VERCEL_CLI_VERSION}`, 'whoami'],
-    setup: 'Connect the intended Vercel team and project before shipping.',
   },
   ...INTEGRATION_PROVIDERS.map((id): ProviderAuth => {
     const definition: ProviderDefinition = PROVIDER_DEFINITIONS[id];
@@ -108,13 +82,8 @@ export function requiredProviders(root: string): ProviderAuth[] {
     throw new Error('A valid Anhedral setup plan is required before authentication.');
   }
   validateSetupPlan(plan);
-  const providers = PROVIDER_AUTH.filter(
-    (provider) =>
-      provider.products.some((product) => plan.products.includes(product)) ||
-      (provider.id === 'cloudflare' &&
-        plan.products.includes('next') &&
-        plan.hosting === 'cloudflare') ||
-      (provider.id === 'vercel' && plan.products.includes('next') && plan.hosting === 'vercel'),
+  const providers = PROVIDER_AUTH.filter((provider) =>
+    provider.products.some((product) => plan.products.includes(product)),
   );
   return providers;
 }
@@ -164,7 +133,6 @@ export async function authenticateProviders(
   if (options.provider && !required.some((item) => item.id === options.provider))
     throw new Error('Requested provider is not required by this project.');
   const selected = required.filter((item) => !options.provider || item.id === options.provider);
-  const configuration = providerConfiguration(root);
   const checks: AuthCheck[] = [];
   for (const provider of selected) {
     let state: AuthState = 'unverified';
@@ -224,10 +192,7 @@ export async function authenticateProviders(
         endpoint = provider.runtime.endpoint;
         credentialAccess = 'runtime';
       }
-      if (provider.regionalEndpoints) {
-        const region = configuration.providers.posthog?.region;
-        endpoint = region ? provider.regionalEndpoints[region] : undefined;
-      }
+
       if (!credential) state = 'missing';
       else if (endpoint) {
         try {

@@ -8,7 +8,7 @@ import {
 import { INTEGRATION_PROVIDERS } from './providers/definitions.js';
 import { providerApi, ProviderRequestError, resourceId, type ApiRequest } from './providers/api.js';
 import { record } from './service-readers.js';
-import type { ServiceMetrics, ServiceObservation } from './service-model.js';
+import type { ServiceObservation } from './service-model.js';
 export interface IntegrationService {
   provider: IntegrationProvider;
   settings: ProviderSettings;
@@ -63,24 +63,7 @@ export async function inspectIntegrationResource(
   let value: Record<string, unknown>;
   let expected: string;
   let returned: unknown;
-  if (provider === 'neon') {
-    expected = selected(service, 'projectId', 'project');
-    value = record(record(await api(`/api/v2/projects/${expected}`)).project);
-    returned = value.id;
-    if (value.org_id !== setting(settings, 'organizationId'))
-      throw new Error('Neon organization differs.');
-  } else if (provider === 'clerk') {
-    if (record(await api('/v1/platform/me')).subject !== setting(settings, 'workspaceId'))
-      throw new Error('Clerk workspace differs.');
-    expected = selected(service, 'applicationId', 'application');
-    value = record(await api(`/v1/platform/applications/${expected}?include_secret_keys=false`));
-    returned = value.application_id;
-  } else if (provider === 'resend') {
-    expected = selected(service, 'domainId', 'domain');
-    value = record(await api(`/domains/${expected}`));
-    returned = value.id;
-    if (value.name !== setting(settings, 'domain')) throw new Error('Resend domain differs.');
-  } else if (provider === 'stripe') {
+  if (provider === 'stripe') {
     if (record(await api('/v1/account')).id !== setting(settings, 'accountId'))
       throw new Error('Stripe account differs.');
     expected = resourceId(service.resources.webhook);
@@ -95,25 +78,7 @@ export async function inspectIntegrationResource(
     expected = selected(service, 'projectId', 'project');
     value = record(await api(`/v2/projects/${expected}`));
     returned = value.id;
-  } else if (provider === 'sentry') {
-    const organization = resourceId(setting(settings, 'organization'));
-    const slug = resourceId(setting(settings, 'project'));
-    value = record(await api(`/api/0/projects/${organization}/${slug}/`));
-    expected = resourceId(service.resources.project ?? value.id);
-    returned = value.id;
-    if (record(value.organization).slug !== organization || value.slug !== slug)
-      throw new Error('Sentry organization or project differs.');
-  } else if (provider === 'posthog') {
-    expected = selected(service, 'projectId', 'project');
-    const organization = resourceId(setting(settings, 'organizationId'));
-    value = record(await api(`/api/organizations/${organization}/projects/${expected}/`));
-    returned = String(value.id);
-    if (value.organization !== organization) throw new Error('PostHog organization differs.');
-  } else {
-    expected = selected(service, 'projectId', 'project');
-    value = record(await api(`/v1/organization/projects/${expected}`));
-    returned = value.id;
-  }
+  } else throw new Error('Unsupported integration.');
   if (String(returned) !== expected) throw new Error('Provider resource identity differs.');
   return value;
 }
@@ -147,52 +112,4 @@ export async function observeIntegrationService(
         'Selected integration could not be verified. Check account configuration, identity and scoped permissions.',
     };
   }
-}
-export async function posthogServiceMetrics(
-  service: IntegrationService,
-  api: ApiRequest,
-  hours = 24,
-): Promise<ServiceMetrics> {
-  if (service.provider !== 'posthog' || ![1, 24, 168].includes(hours))
-    throw new Error('Unsupported analytics selection.');
-  await inspectIntegrationResource(service, api);
-  const end = new Date().toISOString();
-  const start = new Date(Date.parse(end) - hours * 3600000).toISOString();
-  const id = selected(service, 'projectId', 'project');
-  const date = (value: string) => value.slice(0, 19).replace('T', ' ');
-  const value = record(
-    await api(`/api/projects/${id}/query/`, 'POST', {
-      query: {
-        kind: 'HogQLQuery',
-        query: `SELECT formatDateTime(timestamp, '%Y-%m-%dT%H:00:00Z', 'UTC') AS time, count() AS events, uniqExact(distinct_id) AS visitors FROM events WHERE timestamp >= toDateTime('${date(start)}', 'UTC') AND timestamp < toDateTime('${date(end)}', 'UTC') GROUP BY time ORDER BY time LIMIT 1000`,
-      },
-      name: 'Anhedral selected-project hourly analytics',
-      async: false,
-    }),
-  );
-  if (!Array.isArray(value.results) || value.results.length >= 1000)
-    throw new Error('Analytics is pending, truncated or unavailable.');
-  const points = value.results.map((row) => {
-    if (
-      !Array.isArray(row) ||
-      row.length !== 3 ||
-      typeof row[0] !== 'string' ||
-      !Number.isFinite(Date.parse(row[0])) ||
-      row
-        .slice(1)
-        .some((count) => typeof count !== 'number' || !Number.isFinite(count) || count < 0)
-    )
-      throw new Error('Unsupported analytics output.');
-    return { time: row[0], values: { events: row[1] as number, visitors: row[2] as number } };
-  });
-  return {
-    start,
-    end,
-    fetchedAt: new Date().toISOString(),
-    source: 'PostHog hourly product analytics',
-    timezone: 'UTC',
-    sampled: false,
-    points,
-    units: { events: 'count', visitors: 'hourly bucket count' },
-  };
 }

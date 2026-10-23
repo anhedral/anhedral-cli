@@ -22,19 +22,6 @@ export {
 } from './delivery.js';
 export type { ApplicationProject, DeploymentTarget, DeliveryRunner } from './delivery.js';
 export { planProvisioning, provisionApplication } from './provision.js';
-export { supportsVoidRuntime, VOID_VERSION, VOID_NODE_ENGINE } from './void.js';
-
-export {
-  registerVercelApplication,
-  connectVercelApplication,
-  planVercelDelivery,
-  shipVercelApplication,
-  vercelApplicationStatus,
-  verifyVercelApplication,
-  rollbackVercelApplication,
-  adoptVercelApplication,
-  recoverVercelApplication,
-} from './vercel.js';
 
 export { setupRepository, githubRepository } from './repository.js';
 
@@ -56,7 +43,7 @@ export { buildMobileApplication } from './mobile-delivery.js';
 export type { MobileBuildOptions } from './mobile-delivery.js';
 
 export { shipCloudflareApplication } from './ship.js';
-export { shipSelectedStack, shipSelectedVercelApplication } from './ship.js';
+export { shipSelectedStack } from './ship.js';
 export { planProviderProvisioning, provisionSelectedProviders } from './providers/provision.js';
 export { providerConfigurationTemplate } from './providers/config.js';
 export type { ProviderConfiguration, IntegrationProvider } from './providers/config.js';
@@ -90,14 +77,3 @@ export {
   hasProjectSection,
 } from './project-config.js';
 export type { ProjectConfig, ProjectSection } from './project-config.js';
-
-export { FULL_PRODUCT } from './registry/presets.js';
-export { inspectUiCatalog, parseUiSelector } from './ui/catalog.js';
-export { resolveUiConsumer } from './ui/target.js';
-export type {
-  UiPlatform,
-  UiInspectionOptions,
-  UiConsumerDescriptor,
-  UiConsumerResolution,
-  UiCatalogEntry,
-} from './ui/types.js';

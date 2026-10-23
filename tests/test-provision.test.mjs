@@ -16,48 +16,11 @@ import {
 import { reconcileAccess } from '../dist/access.js';
 import { listCloudflare, cloudflareRequest } from '../dist/cloudflare.js';
 const account = 'a'.repeat(32);
-
-test('Basin creates private JSON streams, resolves bindings and refuses public ingestion during reconciliation', async () => {
-  const root = fixture({
-    pipelines: [{ binding: 'ANALYTICS', stream: 'REPLACE_WITH_BASIN_STREAM_ID' }],
-  });
-  const id = 'b'.repeat(32);
-  let created;
-  const request = async (method, endpoint, body) => {
-    if (method === 'POST') {
-      created = { id, ...body };
-      return { result: created };
-    }
-    if (endpoint.split('?')[0] === '/pipelines/v1/streams')
-      return { result: created ? [created] : [] };
-    return { result: created };
-  };
-  try {
-    await connectApplication(root, account, 'public', run);
-    const first = await provisionApplication(root, false, run, request);
-    assert.equal(first.resources[0].kind, 'stream');
-    assert.deepEqual(created.http, { enabled: false, authentication: true });
-    assert.deepEqual(created.worker_binding, { enabled: true });
-    assert.equal(
-      parse(readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8')).pipelines[0].stream,
-      id,
-    );
-    await provisionApplication(root, false, run, request);
-    created.http.enabled = true;
-    await assert.rejects(inspectApplicationResources(root, request), /private Worker binding/);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
 function fixture(config = {}) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-resource-test-'));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
   writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'example' }));
-  writeProjectSection(
-    root,
-    'setup',
-    createSetupPlan(parseStandardOptions([root, '--hono', '--vinext'])),
-  );
+  writeProjectSection(root, 'setup', createSetupPlan(parseStandardOptions([root])));
   writeFileSync(
     path.join(root, 'apps/web/package.json'),
     JSON.stringify({ scripts: { deploy: 'wrangler deploy' } }),
@@ -110,17 +73,16 @@ const config = {
 test('resource plans are read-only and provisioning is idempotent with comment-preserving binding updates', async () => {
   const root = fixture(config);
   try {
-    assert.equal(planProvisioning(root).resources.length, 6);
+    assert.equal(planProvisioning(root).resources.length, 2);
     assert.equal(existsSync(path.join(root, '.anhedral')), false);
     await connectApplication(root, account, 'public', run);
     const api = provider();
     const first = await provisionApplication(root, false, run, api.request);
-    assert.equal(first.resources.length, 5);
+    assert.equal(first.resources.length, 2);
     assert.equal(first.state, 'reconciled');
     const file = readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8');
     assert.ok(file.startsWith('// Preserve this comment'));
     assert.equal(parse(file).d1_databases[0].database_id, 'd1-id');
-    assert.equal(parse(file).kv_namespaces[0].id, 'kv-id');
     const before = api.calls.filter((call) => call.method === 'POST').length;
     const second = await provisionApplication(root, false, run, api.request);
     assert.ok(second.resources.every((item) => item.reused));
@@ -134,15 +96,12 @@ test('resource plans are read-only and provisioning is idempotent with comment-p
   }
 });
 test('resource failure preserves created identities and unsafe storage is rejected', async () => {
-  for (const options of [{ publicBucket: true }, { failQueue: true }]) {
+  for (const options of [{ publicBucket: true }]) {
     const root = fixture(config);
     try {
       await connectApplication(root, account, 'public', run);
       const api = provider(options);
-      await assert.rejects(
-        provisionApplication(root, false, run, api.request),
-        /public|Queue permission/,
-      );
+      await assert.rejects(provisionApplication(root, false, run, api.request), /public/);
       const receipt = JSON.parse(readFileSync(path.join(root, '.anhedral/resources.json'), 'utf8'));
       assert.equal(receipt.state, 'reconciling');
       assert.ok(receipt.resources.some((item) => item.kind === 'd1'));
@@ -280,7 +239,7 @@ test('resource recovery independently checks committed IDs without creation or c
     const before = readFileSync(file, 'utf8');
     const mutationCount = api.calls.filter((call) => call.method === 'POST').length;
     const recovered = await inspectApplicationResources(root, api.request);
-    assert.equal(recovered.resources.length, 6);
+    assert.equal(recovered.resources.length, 2);
     assert.equal(readFileSync(file, 'utf8'), before);
     assert.equal(existsSync(path.join(root, '.anhedral/resources.json')), false);
     assert.equal(api.calls.filter((call) => call.method === 'POST').length, mutationCount);
@@ -320,32 +279,6 @@ test('provisioning refuses a stale binding plan after asynchronous configuration
         .binding,
       'OTHER',
     );
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test('Void alone provisions new project resources; Anhedral never invokes a second resource writer', async () => {
-  const root = fixture({
-    d1_databases: [
-      { binding: 'DB', database_name: 'example-db', database_id: 'REPLACE_WITH_D1_ID' },
-    ],
-  });
-  try {
-    const project = readProjectSection(root, 'cloudflare');
-    project.deliveryEngine = 'void';
-    writeProjectSection(root, 'cloudflare', project);
-    const before = readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8');
-    const result = await provisionApplication(
-      root,
-      false,
-      async () => assert.fail('No provider CLI before Void'),
-      async () => assert.fail('No provider API before Void'),
-    );
-    assert.equal(result.writer, 'void');
-    assert.equal(result.deferredToDeployment, true);
-    assert.equal(result.mutation, false);
-    assert.equal(readFileSync(path.join(root, 'apps/web/wrangler.jsonc'), 'utf8'), before);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

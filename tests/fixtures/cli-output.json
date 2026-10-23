@@ -4,24 +4,24 @@
     "command": "init",
     "value": {
       "root": "/project",
-      "products": ["hono", "neon"],
+      "products": ["better-auth", "d1", "expo", "hono", "r2", "styling"],
       "hosting": "cloudflare"
     },
-    "expected": "Stack preview for /project.\nStack: hono, neon.\nHosting: cloudflare.\n\nNo files, provider resources or deployments were created."
+    "expected": "Stack preview for /project.\nStack: better-auth, d1, expo, hono, r2, styling.\nHosting: cloudflare.\n\nNo files, provider resources or deployments were created."
   },
   {
     "name": "created project",
     "command": "init",
     "value": {
       "root": "/project",
-      "products": ["vinext"],
+      "products": ["better-auth", "d1", "expo", "hono", "r2", "styling"],
       "hosting": "cloudflare",
       "generated": true,
       "catalog": {
         "state": "registered"
       }
     },
-    "expected": "Created /project.\nStack: vinext.\nHosting: cloudflare.\n\nRegistered in your local Anhedral dashboard.\nReview the generated source and provider settings in anhedral.json (providers).\nIn the project directory, start development with pnpm dev. Run pnpm check before delivery.\nNext: anhedral auth, then connect the intended hosting account and preview anhedral ship --dry-run."
+    "expected": "Created /project.\nStack: better-auth, d1, expo, hono, r2, styling.\nHosting: cloudflare.\n\nRegistered in your local Anhedral dashboard.\nReview the generated source and provider settings in anhedral.json (providers).\nIn the project directory, start development with pnpm dev. Run pnpm check before delivery.\nNext: anhedral auth, then connect the intended hosting account and preview anhedral ship --dry-run."
   },
   {
     "name": "pending registration",
@@ -44,12 +44,12 @@
           "key": "binding:apps/api:D1:DB"
         },
         {
-          "key": "provider:neon",
+          "key": "provider:revenuecat",
           "state": "pending"
         }
       ]
     },
-    "expected": "2 local service entries.\n  binding:apps/api:D1:DB\n  provider:neon — pending"
+    "expected": "2 local service entries.\n  binding:apps/api:D1:DB\n  provider:revenuecat \u2014 pending"
   },
   {
     "name": "service analytics",
@@ -108,19 +108,18 @@
     "command": "add",
     "value": {
       "root": "/project",
-      "items": ["resend"],
-      "files": ["packages/email/src/index.ts"],
+      "items": ["stripe"],
+      "files": ["packages/billing/src/index.ts"],
       "dryRun": true,
-      "filesChecked": false,
       "conflicts": ["package.json"],
       "previews": [
         {
-          "path": "packages/email/src/index.ts",
+          "path": "packages/billing/src/index.ts",
           "diff": "+ export {};"
         }
       ]
     },
-    "expected": "Addition preview.\nParts: resend.\nProject: /project.\n\n  packages/email/src/index.ts\nSource files were not checked: this selection needs the networked web bootstrap.\nConflicts: package.json.\n\npackages/email/src/index.ts\n+ export {};\n\nNo application files were changed."
+    "expected": "Addition preview.\nParts: stripe.\nProject: /project.\n\n  packages/billing/src/index.ts\nConflicts: package.json.\n\npackages/billing/src/index.ts\n+ export {};\n\nNo application files were changed."
   },
   {
     "name": "completed addition",
@@ -130,7 +129,7 @@
       "items": [],
       "files": []
     },
-    "expected": "Stack parts added.\nNo new stack parts.\nProject: /project.\nNext: Run anhedral doctor and review the selected services’ setup requirements."
+    "expected": "Stack parts added.\nNo new stack parts.\nProject: /project.\nNext: Run anhedral doctor and review the selected services\u2019 setup requirements."
   },
   {
     "name": "inspection evidence",
@@ -175,7 +174,7 @@
         "error": "Unavailable bindings"
       }
     },
-    "expected": "Project: fixture.\nLocal recorded evidence; authentication and live provider status are not checked.\nStack: hono.\n  apps/api — cloudflare (implemented)\n    Latest recorded target result: deployed.\n    Overall attempt: failed.\n    Last recorded success: release-1.\n    Review the latest attempt.\n  fail  lockfile — Missing lockfile\nconfiguration: Unavailable bindings.\nNext: Use --json for target-specific records. Review local checks, then explicitly run auth or ship when intended."
+    "expected": "Project: fixture.\nLocal recorded evidence; authentication and live provider status are not checked.\nStack: hono.\n  apps/api \u2014 cloudflare (implemented)\n    Latest recorded target result: deployed.\n    Overall attempt: failed.\n    Last recorded success: release-1.\n    Review the latest attempt.\n  fail  lockfile \u2014 Missing lockfile\nconfiguration: Unavailable bindings.\nNext: Use --json for target-specific records. Review local checks, then explicitly run auth or ship when intended."
   },
   {
     "name": "runtime authentication",
@@ -183,7 +182,7 @@
     "value": {
       "checks": [
         {
-          "provider": "clerk",
+          "provider": "stripe",
           "state": "verified",
           "access": "runtime",
           "nextAction": "Supply management access."
@@ -192,7 +191,7 @@
       "authenticated": true,
       "note": "Runtime access only."
     },
-    "expected": "Provider authentication\n  clerk       verified (runtime access)\nNext: Supply management access.\nRuntime access only.\nNext: Complete provider settings, connect the intended hosting account, then run anhedral ship --dry-run."
+    "expected": "Provider authentication\n  stripe      verified (runtime access)\nNext: Supply management access.\nRuntime access only.\nNext: Complete provider settings, connect the intended hosting account, then run anhedral ship --dry-run."
   },
   {
     "name": "empty authentication",
@@ -208,7 +207,7 @@
     "value": {
       "providers": [
         {
-          "provider": "neon",
+          "provider": "revenuecat",
           "operations": [
             {
               "operation": "operation-1",
@@ -218,7 +217,7 @@
         }
       ]
     },
-    "expected": "Integration receipts (recorded locally).\n  neon\n    operation-1: pending\nNext: Use --json to inspect the resource IDs and safe recovery descriptors. Unknown operations must be verified before retrying."
+    "expected": "Integration receipts (recorded locally).\n  revenuecat\n    operation-1: pending\nNext: Use --json to inspect the resource IDs and safe recovery descriptors. Unknown operations must be verified before retrying."
   },
   {
     "name": "integration recovery",
@@ -234,17 +233,17 @@
     "name": "registry item",
     "command": "registry",
     "value": {
-      "name": "neon",
-      "type": "database",
-      "description": "PostgreSQL",
-      "targets": ["packages/db"],
+      "name": "stripe",
+      "type": "integration",
+      "description": "Web payments and subscriptions",
+      "targets": ["packages/billing"],
       "registryDependencies": ["hono"],
       "setup": {
         "access": ["Use your account."],
-        "credentials": ["DATABASE_URL"]
+        "credentials": ["STRIPE_SECRET_KEY"]
       }
     },
-    "expected": "neon (database)\nPostgreSQL\nFiles: packages/db\nRequires: hono\naccess: Use your account.\ncredentials: DATABASE_URL\nNext: Inspect anhedral add neon --dry-run in your project."
+    "expected": "stripe (integration)\nWeb payments and subscriptions\nFiles: packages/billing\nRequires: hono\naccess: Use your account.\ncredentials: STRIPE_SECRET_KEY\nNext: Inspect anhedral add stripe --dry-run in your project."
   },
   {
     "name": "doctor checks",
@@ -270,7 +269,7 @@
         }
       ]
     },
-    "expected": "Local project checks need attention.\n  fail  source — Missing manifest\nNext: Generate source.\nProvider evidence: unverified.\n  pass  pnpm — Available\nLocal readiness does not certify production behavior."
+    "expected": "Local project checks need attention.\n  fail  source \u2014 Missing manifest\nNext: Generate source.\nProvider evidence: unverified.\n  pass  pnpm \u2014 Available\nLocal readiness does not certify production behavior."
   },
   {
     "name": "delivery preview",
@@ -293,17 +292,17 @@
       "integrations": {
         "providers": [
           {
-            "provider": "neon",
+            "provider": "revenuecat",
             "missing": ["organizationId"]
           },
           {
-            "provider": "resend",
+            "provider": "stripe",
             "missing": []
           }
         ]
       }
     },
-    "expected": "ship: preview only.\nProject: fixture (cloudflare).\n  d1  data (api)\n  neon: missing organizationId\n  resend: configuration selected\nNo provider resources or deployments were changed."
+    "expected": "ship: preview only.\nProject: fixture (cloudflare).\n  d1  data (api)\n  revenuecat: missing organizationId\n  stripe: configuration selected\nNo provider resources or deployments were changed."
   },
   {
     "name": "successful delivery",
@@ -318,7 +317,7 @@
       "integrations": {
         "results": [
           {
-            "provider": "neon",
+            "provider": "revenuecat",
             "ready": true,
             "nextActions": ["Review migrations."]
           }
@@ -334,7 +333,7 @@
         ]
       }
     },
-    "expected": "ship: deployed.\nRelease: release-1\nURL: https://app.example.com\n  neon: configured\nNext: Review migrations.\nProduct verification: required.\nOperation: completed (recorded locally).\n  checks: completed\nNext: Run anhedral verify to exercise the application’s configured acceptance checks."
+    "expected": "ship: deployed.\nRelease: release-1\nURL: https://app.example.com\n  revenuecat: configured\nNext: Review migrations.\nProduct verification: required.\nOperation: completed (recorded locally).\n  checks: completed\nNext: Run anhedral verify to exercise the application\u2019s configured acceptance checks."
   },
   {
     "name": "mixed partial delivery",
@@ -348,11 +347,13 @@
             "release": {
               "state": "deployed"
             }
-          }
+          },
+          "target": "api"
         },
         {
-          "provider": "vercel",
-          "state": "failed"
+          "provider": "cloudflare",
+          "state": "failed",
+          "target": "web"
         }
       ],
       "nextAction": "Inspect provider status.",
@@ -360,7 +361,7 @@
         "secret": "confidential-fixture"
       }
     },
-    "expected": "ship: partial.\n  cloudflare: deployed\n  vercel: failed\nNext: Inspect provider status."
+    "expected": "ship: partial.\n  cloudflare: deployed\n  cloudflare: failed\nNext: Inspect provider status."
   },
   {
     "name": "mobile artifact",
@@ -381,7 +382,7 @@
     "value": {
       "project": {
         "name": "fixture",
-        "provider": "vercel"
+        "provider": "cloudflare"
       },
       "evidence": "provider-refresh",
       "activeRecordedVersion": false,
@@ -397,7 +398,7 @@
       "branch": "main",
       "file": "/overview.html"
     },
-    "expected": "status: completed.\nProject: fixture (vercel).\nEvidence: provider-refresh.\nRecorded production version: not confirmed.\n  api: recorded version active\nRepository: owner/app\nBranch: main\nfile: /overview.html"
+    "expected": "status: completed.\nProject: fixture (cloudflare).\nEvidence: provider-refresh.\nRecorded production version: not confirmed.\n  api: recorded version active\nRepository: owner/app\nBranch: main\nfile: /overview.html"
   },
   {
     "name": "connection next action",

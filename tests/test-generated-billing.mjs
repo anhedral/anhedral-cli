@@ -8,7 +8,8 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { sqliteD1 } from './support/sqlite-d1.mjs';
 
-const root = path.resolve(process.argv[2] ?? 'examples/universal-reference');
+assert.ok(process.argv[2], 'Specify a generated, installed and built billing workspace');
+const root = path.resolve(process.argv[2]);
 const entry = path.join(root, 'apps/api/dist/index.js');
 const scratch = mkdtempSync(path.join(tmpdir(), 'anhedral-billing-engine-'));
 const sqlite = sqliteD1(path.join(root, 'packages/db/drizzle'));

@@ -76,8 +76,6 @@ function formatAdd(data: RecordValue, lines: string[]): void {
   );
   const files = Array.isArray(data.files) ? data.files : [];
   if (files.length) lines.push('', ...files.map((file) => `  ${string(file)}`));
-  if (data.filesChecked === false)
-    lines.push('Source files were not checked: this selection needs the networked web bootstrap.');
   if (names(data.conflicts)) lines.push(`Conflicts: ${names(data.conflicts)}.`);
   for (const preview of entries(data.previews))
     lines.push(
@@ -179,7 +177,12 @@ function formatRegistry(data: RecordValue, lines: string[]): void {
   const setup = record(data.setup);
   for (const key of ['access', 'credentials', 'resources', 'verify'])
     if (names(setup[key])) lines.push(`${key}: ${names(setup[key])}`);
-  next(lines, `Inspect anhedral add ${string(data.name)} --dry-run in your project.`);
+  next(
+    lines,
+    ['stripe', 'revenuecat'].includes(string(data.name))
+      ? `Inspect anhedral add ${string(data.name)} --dry-run in your project.`
+      : 'Included in every project created with anhedral init.',
+  );
 }
 
 function formatDoctor(data: RecordValue, lines: string[]): void {

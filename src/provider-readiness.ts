@@ -2,9 +2,7 @@ import { hasProjectSection, readProjectSection } from './project-config.js';
 import path from 'node:path';
 import { inspectProject } from './readiness.js';
 import { defaultRunner, type DeliveryRunner } from './project-state.js';
-import { vercelApplicationStatus } from './vercel.js';
 import { applicationStatus } from './delivery.js';
-import { supportsVoidRuntime, VOID_VERSION } from './void.js';
 import { supportsWorkspaceRuntime } from './runtime-policy.js';
 import { PACKAGE_MANAGER } from './dependencies.js';
 
@@ -32,41 +30,11 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
       checks.push({ id, ok: false, detail, nextAction });
     }
   };
-  let voidTargets: { directory: string }[] = [];
-  try {
-    const manifest = readProjectSection(root, 'cloudflare');
-    if (manifest.deliveryEngine === 'void' && Array.isArray(manifest.targets))
-      voidTargets = manifest.targets.filter(
-        (target: { directory?: unknown }) =>
-          typeof target.directory === 'string' && /^apps\/[a-z0-9-]+$/.test(target.directory),
-      );
-  } catch {
-    // Provider readiness below reports invalid or unconfigured manifests.
-  }
   checks.push({
     id: 'node',
-    ok: voidTargets.length
-      ? supportsVoidRuntime(process.versions.node)
-      : supportsWorkspaceRuntime(process.versions.node),
-    detail: voidTargets.length
-      ? 'Void applications require Node.js 24.21.0 or newer.'
-      : 'Generated workspaces require Node 22.13+ on 22.x, or Node 24+.',
+    ok: supportsWorkspaceRuntime(process.versions.node),
+    detail: 'Generated workspaces require Node 22.13+ on 22.x, or Node 24+.',
   });
-  for (const target of voidTargets)
-    await check(
-      `void:${target.directory}`,
-      async () =>
-        (
-          await run(
-            'pnpm',
-            ['exec', 'void', '--version'],
-            path.join(root, target.directory),
-            environment,
-          )
-        ).trim() === VOID_VERSION,
-      `Pinned Void ${VOID_VERSION} is available in ${target.directory}`,
-      'Install the committed workspace lockfile and the pinned Void version.',
-    );
   await check(
     'pnpm',
     async () =>
@@ -100,22 +68,18 @@ export async function inspectProviderReadiness(root: string, run: DeliveryRunner
     'Complete gh auth login locally for the intended GitHub account.',
   );
   const providers: {
-    provider: 'vercel' | 'cloudflare';
+    provider: 'cloudflare';
     connection: 'verified' | 'blocked';
     deployment: 'active-recorded' | 'unverified';
     nextAction?: string;
   }[] = [];
-  for (const provider of ['vercel', 'cloudflare'] as const) {
+  for (const provider of ['cloudflare'] as const) {
     try {
       if (!hasProjectSection(root, provider)) continue;
       const manifest = readProjectSection(root, provider);
-      const connected =
-        provider === 'vercel' ? manifest.projectId && manifest.teamId : manifest.accountId;
+      const connected = manifest.accountId;
       if (!connected || manifest.audience === 'unconfigured') throw new Error('unconfigured');
-      const status =
-        provider === 'vercel'
-          ? await vercelApplicationStatus(root, true, run)
-          : await applicationStatus(root, true, run);
+      const status = await applicationStatus(root, true, run);
       const active =
         'activeRecordedVersion' in status
           ? status.activeRecordedVersion === true

@@ -22,7 +22,7 @@ const operation = z
   .object({
     schemaVersion: z.literal(1),
     id: z.string().uuid(),
-    target: z.enum(['cloudflare', 'vercel', 'mixed', 'mobile']),
+    target: z.enum(['cloudflare', 'mobile']),
     state: z.enum(['running', 'blocked', 'completed', 'failed']),
     startedAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
@@ -102,7 +102,7 @@ export const inspectionSchema: z.ZodType<ProjectInspection> = z
         .object({
           cliVersion: label.nullable(),
           products: z.array(label).max(100),
-          hosting: z.enum(['cloudflare', 'vercel']).nullable(),
+          hosting: z.literal('cloudflare').nullable(),
         })
         .strict(),
     ),
@@ -167,7 +167,7 @@ export const inspectionSchema: z.ZodType<ProjectInspection> = z
           z
             .object({
               id: label,
-              provider: z.enum(['cloudflare', 'vercel', 'expo', 'desktop', 'extension']),
+              provider: z.enum(['cloudflare', 'expo']),
               application: label,
               audience: z.enum(['public', 'private', 'unconfigured', 'not-applicable']),
               accountReference: label.nullable(),

@@ -1,98 +1,136 @@
-// Regenerate both self-contained SVGs: node docs/assets/render-stack.mjs
+// Canonical artwork: node docs/assets/render-stack.mjs [--png]
 import { readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+
 const root = new URL('./', import.meta.url);
-const { logos } = JSON.parse(readFileSync(new URL('stack-catalog.json', root), 'utf8'));
-for (const light of [false, true]) {
+const { logos } = JSON.parse(readFileSync(new URL('stack-logos.json', root), 'utf8'));
+export const stackSize = { width: 1920, height: 1080 };
+const escape = (value) =>
+  value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
+
+export function renderStack(light = false) {
   const bg = light ? '#fafafa' : '#0d1117',
     surface = light ? '#ffffff' : '#151b23',
     border = light ? '#e3e5e8' : '#3d444d',
     ink = light ? '#202327' : '#f0f6fc',
-    muted = light ? '#7a8089' : '#9198a1',
+    muted = light ? '#646c77' : '#9198a1',
     wire = light ? '#c6cbd2' : '#59636e';
   const out = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc"><title id="title">Anhedral basic stack</title><desc id="desc">Expo web, iOS and Android connect to Hono on Cloudflare. Hono owns Better Auth, Drizzle/D1 and private R2. Supporting UI, workspace and distribution tools are grouped below. Backend capabilities are optional additions.</desc><rect width="1920" height="1080" fill="${bg}"/>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc"><title id="title">Anhedral default application stack</title><desc id="desc">Next.js App Router web through Cloudflare OpenNext and Expo iOS/Android connect to a Hono API on Cloudflare Workers. Drizzle with D1 and private R2 are included. Better Auth, shared design tokens, separate web/native UI and workspace tools support the foundation. Stripe and RevenueCat provide optional payments, with entitlements enforced by Hono. Dotted branches show extension points for additional clients such as desktop, browser extensions and AR/XR, and integrations such as AI and realtime.</desc><rect width="1920" height="1080" fill="${bg}"/>`,
   ];
-  const text = (x, y, s, size = 24, color = ink, anchor = 'middle') =>
+  const text = (x, y, value, size = 24, color = ink, anchor = 'middle') =>
     out.push(
-      `<text x="${x}" y="${y}" fill="${color}" text-anchor="${anchor}" font-family="Arial,Helvetica,sans-serif" font-size="${size}">${s}</text>`,
+      `<text x="${x}" y="${y}" fill="${color}" text-anchor="${anchor}" font-family="Arial,Helvetica,sans-serif" font-size="${size}">${escape(value)}</text>`,
     );
-  const icon = (d, x, y, size) => {
-    if (!logos[d]) throw Error(`Missing ${d}`);
-    out.push(`<image href="${logos[d]}" x="${x}" y="${y}" width="${size}" height="${size}"/>`);
+  const icon = (domain, x, y, size) => {
+    if (!logos[domain]) throw Error(`Missing ${domain}`);
+    out.push(`<image href="${logos[domain]}" x="${x}" y="${y}" width="${size}" height="${size}"/>`);
   };
-  const tile = (cx, cy, d, label, size = 104) => {
-    const x = cx - size / 2,
-      y = cy - size / 2;
+  const tile = (cx, cy, domain, label, size = 104, labelGap = 37) => {
     out.push(
-      `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="24" fill="${surface}" stroke="${border}" stroke-width="1.5"/><rect x="${cx - 28}" y="${cy - 28}" width="56" height="56" rx="12" fill="white"/>`,
+      `<rect x="${cx - size / 2}" y="${cy - size / 2}" width="${size}" height="${size}" rx="24" fill="${surface}" stroke="${border}" stroke-width="1.5"/><rect x="${cx - 28}" y="${cy - 28}" width="56" height="56" rx="12" fill="white"/>`,
     );
-    icon(d, cx - 23, cy - 23, 46);
-    text(cx, cy + size / 2 + 37, label, 24);
+    icon(domain, cx - 23, cy - 23, 46);
+    text(cx, cy + size / 2 + labelGap, label, 26);
   };
-  const connect = (x1, y1, x2, y2) => {
-    const m = (x1 + x2) / 2;
+  const additional = (cx, cy, size, examples) => {
     out.push(
-      `<path d="M${x1} ${y1}C${m} ${y1} ${m} ${y2} ${x2} ${y2}" fill="none" stroke="${wire}" stroke-width="2.5" stroke-linecap="round"/>`,
+      `<rect x="${cx - size / 2}" y="${cy - size / 2}" width="${size}" height="${size}" rx="20" fill="${surface}" stroke="${border}" stroke-width="1.5"/><path d="M${cx - 14} ${cy}h28M${cx} ${cy - 14}v28" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`,
+    );
+    text(cx, cy + size / 2 + 33, 'Additional', 26);
+    text(cx, cy + size / 2 + 61, examples, 18, muted);
+  };
+  const connect = (x1, y1, x2, y2, dotted = false) => {
+    const middle = (x1 + x2) / 2;
+    out.push(
+      `<path d="M${x1} ${y1}C${middle} ${y1} ${middle} ${y2} ${x2} ${y2}" fill="none" stroke="${wire}" stroke-width="2.5"${dotted ? ' stroke-dasharray="7 9"' : ''} stroke-linecap="round"/>`,
     );
   };
   text(96, 99, 'Anhedral', 42, ink, 'start');
-  text(1824, 95, 'THE BASIC STACK', 16, muted, 'end');
-  // Three balanced stages. Uniform horizontal curves meet the icon edges.
-  text(384, 218, 'CLIENTS', 16, muted);
-  text(960, 218, 'API', 16, muted);
-  text(1536, 218, 'SERVICES', 16, muted);
-  for (const y of [320, 475, 630]) connect(436, y, 900, 475);
-  for (const y of [320, 475, 630]) connect(1020, 475, 1484, y);
-  tile(384, 320, 'expo.dev', 'Expo web');
-  tile(384, 475, 'apple.com', 'Expo iOS');
-  tile(384, 630, 'android.com', 'Expo Android');
+  text(1824, 95, 'DEFAULT APPLICATION STACK', 16, muted, 'end');
+  text(384, 190, 'WEB & NATIVE CLIENTS', 16, muted);
+  text(384, 217, 'App Router · OpenNext', 18, muted);
+  text(960, 190, 'BACKEND API', 16, muted);
+  text(1536, 190, 'DATABASE AND STORAGE', 16, muted);
+  for (const y of [300, 430, 560]) connect(424, y, 900, 475);
+  connect(424, 690, 900, 475, true);
+  for (const y of [360, 600]) connect(1020, 475, 1484, y);
+  // Payment reconciliation belongs to Hono; a dashed connection marks optional scope.
+  out.push(
+    `<path d="M1020 510C1170 570 1170 650 1170 830" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
+    `<path d="M960 415C960 300 1070 285 1126 285" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
+  );
+  tile(384, 300, 'nextjs.org', 'Next.js web', 80, 33);
+  tile(384, 430, 'apple.com', 'Expo iOS', 80, 33);
+  tile(384, 560, 'android.com', 'Expo Android', 80, 33);
+  additional(384, 690, 80, 'Desktop · Browser Extension · AR/XR · etc.');
+  additional(1170, 285, 88, 'AI · Realtime · etc.');
   tile(960, 475, 'hono.dev', 'Hono', 120);
-  tile(1536, 320, 'better-auth.com', 'Better Auth');
-  tile(1536, 475, 'orm.drizzle.team', 'Drizzle + D1');
-  tile(1536, 630, 'cloudflare.com', 'Private R2');
-  text(960, 602, 'Shared contracts', 20, muted);
-  // Quiet supporting panels: no extra wiring or explanatory paragraphs.
-  const panels = [
-    {
-      x: 96,
-      w: 540,
-      title: 'INTERFACE',
-      rows: [
-        ['reactnativereusables.com', 'React Native Reusables'],
-        ['nativewind.dev', 'NativeWind + shared tokens'],
-        ['ui.shadcn.com', 'shadcn conventions'],
-      ],
-    },
-    {
-      x: 690,
-      w: 540,
-      title: 'WORKSPACE',
-      rows: [
-        ['typescriptlang.org', 'TypeScript'],
-        ['pnpm.io', 'pnpm + Turborepo'],
-        ['eslint.org', 'ESLint'],
-      ],
-    },
-    {
-      x: 1284,
-      w: 540,
-      title: 'HOSTING &amp; DELIVERY',
-      rows: [
-        ['cloudflare.com', 'Cloudflare Workers'],
-        ['expo.dev', 'EAS / local builds'],
-        ['apple.com', 'App Store + Google Play'],
-      ],
-    },
-  ];
-  for (const p of panels) {
-    out.push(`<rect x="${p.x}" y="800" width="${p.w}" height="208" rx="18" fill="${surface}"/>`);
-    text(p.x + 30, 840, p.title, 14, muted, 'start');
-    for (const [i, [domain, label]] of p.rows.entries()) {
-      const y = 879 + i * 44;
-      icon(domain, p.x + 30, y - 22, 26);
-      text(p.x + 72, y, label, 22, ink, 'start');
+  text(960, 605, 'Cloudflare Workers', 22, muted);
+  text(960, 638, 'Authorization & shared contracts', 20, muted);
+  tile(1536, 360, 'orm.drizzle.team', 'Drizzle / D1');
+  text(1536, 486, 'SQL records', 20, muted);
+  tile(1536, 600, 'cloudflare.com', 'Private R2');
+  text(1536, 726, 'Owner-authorized files', 20, muted);
+
+  out.push(`<rect x="96" y="830" width="540" height="220" rx="18" fill="${surface}"/>`);
+  text(126, 873, 'INCLUDED SUPPORT', 14, muted, 'start');
+  text(126, 927, 'Better Auth · shared contracts', 24, ink, 'start');
+  text(126, 970, 'Web shadcn · native Anhedral port', 24, ink, 'start');
+  text(126, 1013, 'TypeScript · pnpm · Turborepo', 22, muted, 'start');
+  out.push(`<rect x="690" y="830" width="1134" height="220" rx="18" fill="${surface}"/>`);
+  text(720, 873, 'OPTIONAL PAYMENTS', 14, muted, 'start');
+  for (const [x, domain, name, purpose] of [
+    [740, 'stripe.com', 'Stripe', 'Web checkout'],
+    [1300, 'revenuecat.com', 'RevenueCat', 'Native purchases'],
+  ]) {
+    out.push(`<rect x="${x}" y="910" width="72" height="72" rx="16" fill="white"/>`);
+    icon(domain, x + 10, 920, 52);
+    text(x + 102, 938, name, 30, ink, 'start');
+    text(x + 102, 973, purpose, 22, muted, 'start');
+  }
+  text(1257, 1020, 'Shared entitlements enforced by Hono', 20, muted);
+  return out.concat('</svg>').join('\n') + '\n';
+}
+
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
+  if (process.argv.slice(2).some((arg) => arg !== '--png'))
+    throw Error('Usage: node docs/assets/render-stack.mjs [--png]');
+  for (const light of [false, true])
+    writeFileSync(new URL(`anhedral-stack${light ? '-light' : ''}.svg`, root), renderStack(light));
+  if (process.argv.includes('--png')) {
+    // Documentation tooling reuses the installed inspector browser dependency.
+    // No browser/image renderer is added to the published CLI runtime.
+    const require = createRequire(
+      new URL('../../plugins/codex/inspector/package.json', import.meta.url),
+    );
+    const { chromium } = require('@playwright/test');
+    const browser = await chromium.launch({ channel: 'chrome', headless: true });
+    try {
+      const page = await browser.newPage({ viewport: stackSize, deviceScaleFactor: 1 });
+      for (const light of [false, true]) {
+        const name = `anhedral-stack${light ? '-light' : ''}`;
+        await page.goto(new URL(`${name}.svg`, root).href);
+        await page.evaluate(async () => {
+          await document.fonts.ready;
+          await Promise.all(
+            [...document.querySelectorAll('image')].map(
+              (element) =>
+                new Promise((resolve, reject) => {
+                  const image = new Image();
+                  image.onload = resolve;
+                  image.onerror = reject;
+                  image.src = element.getAttribute('href');
+                }),
+            ),
+          );
+        });
+        await page.screenshot({ path: new URL(`${name}.png`, root).pathname });
+      }
+    } finally {
+      await browser.close();
     }
   }
-  out.push('</svg>');
-  writeFileSync(new URL(`anhedral-stack${light ? '-light' : ''}.svg`, root), out.join('\n') + '\n');
+  console.log('Rendered the default stack and two optional payment providers.');
 }

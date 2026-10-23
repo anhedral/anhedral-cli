@@ -1,8 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { scaffoldBillingContracts } from './billing-contracts.js';
+import { scaffoldWebBilling } from './web-billing.js';
 import { scaffoldExpoBilling } from './expo-billing.js';
 import { scaffoldBillingSchema } from './billing-schema.js';
 import { BILLING_CONFIG } from './billing-config.js';
@@ -15,19 +16,14 @@ import { json, patchPackage, put, readJson, sharedPackage } from './files.js';
 
 function applicationBilling(context: RecipeContext): string {
   const { has } = context;
-  const database = has('neon') ? 'env.DATABASE_URL' : 'env.DB';
-  const authenticate = has('clerk')
-    ? `const state = await authenticate(request, env.CLERK_SECRET_KEY, env.CLERK_PUBLISHABLE_KEY, [new URL(env.BILLING_ORIGIN).origin]);
-  const subject = state.toAuth()?.userId;
-  if (!subject) throw new BillingError(401, 'Sign in to access billing.');
-  return subject;`
-    : `const session = await createAuth(createDatabase(${database}), env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).api.getSession({ headers: request.headers });
+  const database = 'env.DB';
+  const authenticate = `const session = await createAuth(createDatabase(env.DB), env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).api.getSession({ headers: request.headers });
   if (!session) throw new BillingError(401, 'Sign in to access billing.');
   return session.user.id;`;
   return `import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import { createDatabase } from '@workspace/db';
-import { ${has('clerk') ? 'authenticate' : 'createAuth'} } from '@workspace/auth';
+import { createAuth } from '@workspace/auth';
 import { createBilling, BillingError, type Billing } from '@workspace/billing/server';
 
 type BillingContext = Context<{ Bindings: Env }>;
@@ -120,6 +116,7 @@ function connectApi(context: RecipeContext): void {
     root,
     'apps/api/src/billing-env.d.ts',
     `import type { BillingEnv } from '@workspace/billing/config';
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Merge billing bindings with Wrangler's generated Env.
 declare global { interface Env extends BillingEnv {} }
 export {};
 `,
@@ -146,8 +143,7 @@ export default {
 };`,
         ),
     );
-  const voidSelected = existsSync(path.join(root, 'apps/api/void.config.ts'));
-  const configuration = `apps/api/${voidSelected ? 'anhedral.cloudflare.json' : 'wrangler.jsonc'}`;
+  const configuration = 'apps/api/wrangler.jsonc';
   const config = readJson(root, configuration);
   const triggers = (config.triggers ?? {}) as { crons?: string[] };
   config.triggers = {
@@ -155,23 +151,14 @@ export default {
     crons: [...new Set([...(triggers.crons ?? []), '*/5 * * * *'])],
   };
   json(root, configuration, config);
-  if (voidSelected)
-    put(
-      root,
-      'apps/api/crons/scheduled.ts',
-      `import application from '../src/index';
-export const cron = ['*/5 * * * *'];
-export default application.scheduled;
-`,
-    );
 }
 
 export function scaffoldBilling(context: RecipeContext): void {
   const { root, has } = context;
   if (!has('hono')) throw new Error('Billing requires the shared Hono runtime.');
-  if (!has('d1') && !has('neon')) throw new Error('Billing requires a selected database.');
+  if (!has('d1')) throw new Error('Billing requires the core D1 database.');
   scaffoldBillingContracts(root);
-  scaffoldBillingSchema(root, has('neon'));
+  scaffoldBillingSchema(root);
   sharedPackage(root, 'billing', "export { createBilling, BillingError } from './server';\n", {
     '@workspace/contracts': 'workspace:*',
     '@workspace/db': 'workspace:*',
@@ -213,6 +200,7 @@ export function scaffoldBilling(context: RecipeContext): void {
       : {}),
   });
   scaffoldExpoBilling(context);
+  scaffoldWebBilling(context);
   put(root, 'packages/billing/README.md', BILLING_README);
 }
 

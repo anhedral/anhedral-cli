@@ -1,3 +1,105 @@
+# Next.js web and Expo native architecture — October 23, 2026
+
+CLI 0.15 source preparation separates full Next.js App Router web (SSR/RSC through
+Cloudflare OpenNext) from Expo iOS/Android. The UI contracts are DOM shadcn for web
+and the Anhedral-maintained React Native port of shadcn for native, with shared
+semantic tokens and public API contracts. Hono, Drizzle/D1 and private R2 remain
+core; Stripe and RevenueCat remain the only additions.
+
+The canonical diagram was regenerated in both themes as self-contained SVG and
+1920×1080 PNG using the existing local Chrome renderer. The same SVG bytes are
+mirrored by the Platform landing. This is documentation/artwork verification;
+it does not establish generated-app, installed-plugin, native-device, provider,
+hosted-image or production acceptance. Record runtime evidence separately.
+
+## Next development proxy response framing — October 23, 2026
+
+The Platform Linux image proof reproduced a failed `/api/health` response through
+actual Next dev: Node fetch decoded the Hono sidecar's gzip body, but the generated
+proxy retained its compressed `Content-Encoding` and `Content-Length`. The next
+HTTP client attempted to decode the already-decoded response and failed.
+
+The development HTTP proxy now removes those stale wire headers before Next
+frames the response. The production service-binding path retains its existing
+response handling. A real loopback HTTP server supplies a gzip response in the
+regression test; all five Next web tests pass. `pnpm build` and `pnpm lint` also
+pass, including typecheck, formatting, source hygiene and release-policy checks.
+This evidence does not establish a deployed Platform runtime; its image and live
+initialization are verified separately in the Platform repository.
+
+The full `pnpm release:check` passed: 550 unit tests passed with one existing
+skip, frozen patch installation checks passed, and packed CLI smoke and packlist
+checks passed. Linux Next dev returned `200 {"ok":true}` through `/api/health`
+and `200 null` through `/api/auth/get-session` after applying the generated fix.
+
+## CLI 0.15 generated runtime acceptance — October 23, 2026
+
+The implementation agent recorded the following local evidence for the unpublished
+0.15 source preview, with Next.js web separate from Expo native:
+
+- Complete generated `pnpm check` passed: lint, typechecks, Fallow with zero issues,
+  dependency audit, available tests and builds. A manual fixture rsync temporarily
+  overwrote its patch policy; after restoring the ordinary-init policy, the full
+  check passed. This was a test-harness issue, not an initialization result.
+- The packed tarball completed ordinary initialization, including staged dependency
+  resolution, patches and frozen installation; doctor and target checks passed.
+- Both iOS and Android Hermes exports passed, with output retained locally at
+  `/tmp/anhedral-next-native-final-export`. This is export evidence, not device,
+  screen-reader, store or native interaction acceptance.
+- Production OpenNext running in local workerd passed SSR/RSC, guarded account,
+  cookie roundtrip, signup, reload, sign-in/sign-out and rejected native-origin
+  checks. Browser acceptance reported zero errors. The final typography-only
+  OpenNext rebuild passed: 5474.81 KiB upload, 1130.07 KiB gzip and 44 assets;
+  its additional browser/layout rerun was still pending when this entry was written.
+- Root Turbopack development reached first compile/browser readiness in 4825 ms.
+  A source edit reached HMR in 790 ms, preserving window state with zero browser
+  errors. Webpack development failed reproducibly in
+  `WasmHash._updateWithBuffer` with an undefined `length`; production webpack and
+  OpenNext builds passed. The supported default development path uses Turbopack.
+
+A small warm-workerd comparison used three fresh Chrome contexts before the final
+heading CSS adjustment. Next readiness was 115/90/78 ms, transferred bytes were
+172418/172089/172092 and FCP was 72/40/40 ms. The earlier Expo baseline medians
+were 149 ms readiness, 438928 transferred bytes and 48 ms FCP. These are tiny local
+samples with a warm server, not universal performance claims or live deployment
+measurements. They do not establish a consistent FCP improvement.
+
+No npm publication, installed-plugin update, hosted-image activation, production
+deployment, real payment or physical-device acceptance is established by these
+checks. Final serialized CLI/plugin/reference checks follow this documentation
+update and must be recorded separately if they expose further failures.
+
+# Focused core verification — October 23, 2026
+
+The 0.14.0 source intentionally narrows initialization to Expo + Hono + Drizzle/D1 + private R2, supporting Better Auth and styling, with only Stripe and RevenueCat additions. This supersedes the older catalog scope in the historical evidence below. Existing applications/resources were not migrated or deleted. Compiled 0.13 output was preserved locally before rebuilding; output and credentials remain ignored rather than committed.
+
+Validation of this change:
+
+- CLI build, typecheck, formatting/hygiene, release policy and static security passed.
+- Complete CLI unit suite after the streamlining pass: 545 passed, one platform-conditional skip, zero failures (546 tests).
+- Codex plugin check: typecheck/build and 61 tests passed; browser smoke 11/11 passed using installed Chrome.
+- Packed CLI installed/executed successfully; packlist allowlist passed (222 files, approximately 543 KB compressed at this validation).
+- OSV audit passed for all 56 unique locked/catalog dependency versions.
+- Generated all four supported selections in isolated tests; offline init, authored-source preservation, addition rollback/conflicts, private secret exclusion and generator provenance covered.
+- Private-file route tests against real Hono passed: anonymous and cross-user rejection, upload/download/delete, origin protection, actual streamed size enforcement and misleading Content-Length.
+- Installed generated both-payment workspace: lint and typecheck across seven packages, Fallow audit with zero issues, dependency audit under existing reviewed local-patch policy, Hono Worker bundle, Expo web export and gateway bundle passed. Generated pnpm test currently has no default product tests; successful execution alone is not test coverage.
+- Real local workerd: exported Expo routes, gateway service binding, isolated local D1 authentication/session/revocation and native scheme/origin handling passed.
+- Actual generated Hono/Better Auth/Drizzle signup/login/session/revocation passed with in-memory SQLite. Generated Stripe/RevenueCat billing reconciliation tests passed with synthetic vendor responses, including idempotency, webhook replay/order, ownership/CSRF, expiry/revocation, provider union and outage/retry recovery.
+
+The follow-up streamlining pass removed obsolete alternate-stack adapters and unused bootstrap test fixtures, aligned human help/plugin defaults with the supported stack, and removed a retired dependency's secret-scanner exemption. Regression tests cover actual core catalog paths and payment-only suggestions. CLI build/lint/static security, all unit tests, plugin check (61 tests), packed smoke and package allowlist passed again. The final package remains 222 files, approximately 543 KB compressed. README instructions distinguish the source candidate from a published npm release.
+
+Worktree recovery review also recovered a one-line inspector safe-area correction: project details now retain host top padding through the shared CSS variable. Two new browser regressions exercise 24px and 112px insets through project/tab/list navigation. Plugin typecheck/build and all 61 plugin tests passed; browser smoke passed 13/13 using installed Chrome. This simulates the host layout contract and does not claim installed native-host acceptance.
+
+The CLI presentation follow-up restores a connected static default-stack diagram in both themes, with only Stripe and RevenueCat marked optional. The README, stack guide, npm documentation and plugin references carry valid image targets. Only the two PNGs are added to the npm package; editable SVG/layout/logo source remains documentation source. CLI build/lint, documentation/plugin contracts, packed smoke and packlist passed (224 files, approximately 793 KB compressed). The platform landing mirrors the canonical SVGs rather than maintaining a second diagram layout. Artwork does not certify provider activation or deployment.
+
+Local staging acceptance generated a fresh core application through ordinary init, including dependency installation and Git initialization. Drizzle generation reported no schema changes; the generated lint, typechecks, Fallow/dependency audit and web/Worker builds passed. Local D1 migrations were applied explicitly. Browser acceptance reproduced a return-to-sign-in race after sign-out: the API accepted the new session while the account hook still held the earlier anonymous state. The generator now mounts the session hook on sign-in and awaits its refresh after server verification, before navigating. This follows the supported [Better Auth session hook](https://better-auth.com/docs/basic-usage#use-session).
+
+The expanded real-workerd browser regression passed signup, protected account, reload, sign-out, sign-in again, another reload and mobile viewport checks in a newly generated application. Local D1 session/revocation and native scheme/origin transport checks passed. Independent live local R2 checks exercised upload/download/delete, forced attachment headers, anonymous rejection, cross-user read/delete isolation, mutation-origin rejection and the 1 MiB bound. CLI build/lint and all 545 unit tests passed with one conditional skip. Logs are retained locally under `/tmp/anhedral-staging-init-*` and `/tmp/anhedral-staging-default-flow*.log`; generated applications and private local state remain ignored. These checks exercise web and API transport, not native-device execution.
+
+No cloud provisioning, real payment, configured-database migration, deployment, app-store/device acceptance, npm publication or installed-plugin update occurred. Existing installed runtimes remain separate from this source candidate. Historical provider reports below are dated evidence, not current live verification.
+
+---
+
 # Verification record
 
 Dated records below describe the source and environment exercised at that time. Earlier results are historical evidence, not acceptance of a later release. Current architecture and operating instructions live in the stack standard and software factory.

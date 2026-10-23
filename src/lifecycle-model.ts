@@ -3,7 +3,7 @@ export type PhaseState = 'running' | 'completed' | 'failed';
 export interface LifecycleOperation {
   schemaVersion: 1;
   id: string;
-  target: 'cloudflare' | 'vercel' | 'mixed' | 'mobile';
+  target: 'cloudflare' | 'mobile';
   state: OperationState;
   startedAt: string;
   updatedAt: string;
@@ -17,7 +17,7 @@ export function isLifecycleOperation(value: unknown): value is LifecycleOperatio
     operation.schemaVersion === 1 &&
     typeof operation.id === 'string' &&
     /^[a-f0-9-]{36}$/.test(operation.id) &&
-    ['cloudflare', 'vercel', 'mixed', 'mobile'].includes(operation.target) &&
+    ['cloudflare', 'mobile'].includes(operation.target) &&
     ['running', 'blocked', 'completed', 'failed'].includes(operation.state) &&
     [operation.startedAt, operation.updatedAt].every(
       (date) => typeof date === 'string' && Number.isFinite(Date.parse(date)),

@@ -34,12 +34,7 @@ export function scaffoldExpoAuth(root: string, scheme: string, linkHome = true):
   put(
     root,
     `${directory}/lib/auth-client.ts`,
-    `import { createAuthClient } from 'better-auth/react';
-
-let client: ReturnType<typeof createAuthClient> | undefined;
-export function getAuthClient() { return client ??= createAuthClient(); }
-export function authConfigurationError(): string | null { return null; }
-`,
+    `export { getAuthClient, authConfigurationError } from './auth-client.native';\n`,
   );
   put(
     root,
@@ -67,9 +62,7 @@ export function getAuthClient() { return client ??= createNativeClient(); }
   put(
     root,
     `${directory}/lib/session-api.ts`,
-    `import { createApplicationApiClient } from './api-client';
-export const sessionApi = createApplicationApiClient();
-`,
+    `export { sessionApi } from './session-api.native';\n`,
   );
   put(
     root,
@@ -88,12 +81,12 @@ export const sessionApi = createApplicationApiClient({ headers: async () => {
   put(
     root,
     `${directory}/components/auth-configuration.tsx`,
-    `import { Text, View } from 'react-native';
+    `import { Text, Screen } from '@workspace/native-ui';
 import { authConfigurationError } from '@/lib/auth-client';
 
 export function AuthConfiguration({ children }: { children: React.ReactNode }) {
   const error = authConfigurationError();
-  if (error) return <View style={{ padding: 24, gap: 12 }}><Text accessibilityRole="header">Configure the product API</Text><Text selectable>{error}</Text></View>;
+  if (error) return <Screen><Text accessibilityRole="header">Configure the product API</Text><Text selectable>{error}</Text></Screen>;
   return <>{children}</>;
 }
 `,
@@ -103,7 +96,7 @@ export function AuthConfiguration({ children }: { children: React.ReactNode }) {
     `${directory}/app/sign-in.tsx`,
     `import { useState } from 'react';
 import { router } from 'expo-router';
-import { ScrollView, Text, TextInput } from 'react-native';
+import { Screen, Text, Input as TextInput } from '@workspace/native-ui';
 import { Button } from '@/components/ui/button';
 import { AuthConfiguration } from '@/components/auth-configuration';
 import { getAuthClient } from '@/lib/auth-client';
@@ -124,6 +117,7 @@ async function authenticate(values: { create: boolean; name: string; email: stri
 }
 
 function SignIn() {
+  const { refetch } = getAuthClient().useSession();
   const [create, setCreate] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -135,12 +129,13 @@ function SignIn() {
     try {
       await authenticate({ create, name, email, password });
       await sessionApi.session();
+      await refetch();
       setPassword('');
       router.replace('/account');
     } catch (error) { setMessage(authenticationError(error)); }
     finally { setPending(false); }
   }
-  return <ScrollView contentContainerStyle={{ padding: 24, gap: 12 }} keyboardShouldPersistTaps="handled">
+  return <Screen>
     <Text accessibilityRole="header">{modeLabel(create)}</Text>
     {create && <TextInput accessibilityLabel="Name" placeholder="Name" value={name} onChangeText={setName} autoComplete="name" />}
     <TextInput accessibilityLabel="Email" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
@@ -148,7 +143,7 @@ function SignIn() {
     <Button disabled={pending} onPress={() => void submit()}>{submitLabel(pending, create)}</Button>
     <Text accessibilityLiveRegion="polite">{message}</Text>
     <Button disabled={pending} onPress={() => { setCreate(!create); setMessage(''); }}>{switchLabel(create)}</Button>
-  </ScrollView>;
+  </Screen>;
 }
 `,
   );
@@ -157,7 +152,7 @@ function SignIn() {
     `${directory}/app/account.tsx`,
     `import { useEffect, useState } from 'react';
 import { Link, Redirect, router } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Text, Screen } from '@workspace/native-ui';
 import type { Session } from '@workspace/contracts';
 import { Button } from '@/components/ui/button';
 import { AuthConfiguration } from '@/components/auth-configuration';
@@ -189,7 +184,7 @@ function Account() {
     } catch { setMessage('Unable to sign out. Check the connection and retry.'); }
     finally { setPending(false); }
   }
-  if (isPending) return <View style={{ padding: 24 }}><Text>Restoring session…</Text></View>;
+  if (isPending) return <Screen><Text>Restoring session…</Text></Screen>;
   if (!session) return <Redirect href="/sign-in" />;
   return <AccountContent userId={session.user.id} verified={verified} message={message} pending={pending} signOut={signOut} />;
 }
@@ -201,14 +196,14 @@ function accountMessage(userId: string, verified: Session['user'] | null, messag
 function AccountContent({ userId, verified, message, pending, signOut }: {
   userId: string; verified: Session['user'] | null; message: string; pending: boolean; signOut: () => Promise<void>;
 }) {
-  return <View style={{ padding: 24, gap: 12 }}>
+  return <Screen>
     <Text accessibilityRole="header">Account</Text>
     <Text>{accountMessage(userId, verified, message)}</Text>
     <Text accessibilityLiveRegion="polite">{message}</Text>
     <Button disabled={pending} onPress={() => void signOut()}>{pending ? 'Signing out…' : 'Sign out'}</Button>
     <Link href="/sign-in">Sign in again</Link>
     <Link href="/">Home</Link>
-  </View>;
+  </Screen>;
 }
 `,
   );

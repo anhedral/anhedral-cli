@@ -11,36 +11,24 @@ const secret = 'fixture-one-time-private-value';
 const settings = { name: 'example' };
 const body = { name: 'runtime' };
 const route = '/api-keys';
-const operation = digest({ key: 'sending-key', route, body });
+const operation = digest({ key: 'webhook', route, body });
 function fixture() {
   return mkdtempSync(path.join(tmpdir(), 'anhedral-minimal-receipts-'));
 }
 async function current(directory) {
   const state = new ProvisioningState(directory);
-  state.context('resend', settings);
+  state.context('stripe', settings);
   await state.create(
-    'resend',
-    'sending-key',
-    async () => ({ id: 'key_1', token: secret }),
+    'stripe',
+    'webhook',
+    async () => ({ id: 'key_1', secret: secret }),
     route,
     body,
   );
   return state;
 }
 for (const [provider, value, expected] of [
-  [
-    'neon',
-    { project: { id: 'project_1', connection_uri: secret }, password: secret },
-    { project: { id: 'project_1' } },
-  ],
-  [
-    'clerk',
-    { application_id: 'app_1', secret_key: secret, instances: [{ secret_key: secret }] },
-    { application_id: 'app_1' },
-  ],
-  ['posthog', { id: 42, api_token: secret }, { id: 42 }],
   ['revenuecat', { id: 'proj1', secret_api_key: secret }, { id: 'proj1' }],
-  ['sentry', { id: '123', secret: secret, dsn: { secret } }, { id: '123' }],
 ]) {
   test(`${provider}: receipts retain identities and discard unrelated payloads`, () => {
     const { receipt, credentials } = splitReceipt(provider, value);
@@ -50,19 +38,7 @@ for (const [provider, value, expected] of [
   });
 }
 for (const [provider, key, value, expected] of [
-  [
-    'resend',
-    'sending-key',
-    { id: 'key_1', token: secret, diagnostics: secret },
-    { id: 'key_1', token: secret },
-  ],
   ['stripe', 'webhook', { id: 'we_1', secret, diagnostics: secret }, { id: 'we_1', secret }],
-  [
-    'openai',
-    'service-account',
-    { id: 'user_1', api_key: { value: secret, diagnostics: secret }, diagnostics: secret },
-    { id: 'user_1', api_key: { value: secret } },
-  ],
 ]) {
   test(`${provider}: credentials survive restart without appearing in receipts or status`, async () => {
     const directory = fixture();
@@ -124,28 +100,22 @@ test('receipt write failure keeps unknown outcome pending even in the current in
     const state = new ProvisioningState(directory, (file, value) => {
       if (
         file.endsWith('/providers.json') &&
-        value.providers.resend.operations[operation]?.status === 'complete'
+        value.providers.stripe.operations[operation]?.status === 'complete'
       )
         throw new Error('receipt write interrupted');
       atomicJson(file, value);
     });
-    state.context('resend', settings);
+    state.context('stripe', settings);
     await assert.rejects(
-      state.create(
-        'resend',
-        'sending-key',
-        async () => ({ id: 'key_1', token: secret }),
-        route,
-        body,
-      ),
+      state.create('stripe', 'webhook', async () => ({ id: 'key_1', secret: secret }), route, body),
       /interrupted/,
     );
     for (const restored of [state, new ProvisioningState(directory)]) {
-      restored.context('resend', settings);
+      restored.context('stripe', settings);
       await assert.rejects(
         restored.create(
-          'resend',
-          'sending-key',
+          'stripe',
+          'webhook',
           async () => {
             throw new Error('must not replay');
           },
@@ -168,15 +138,15 @@ for (const value of [
     const directory = fixture();
     try {
       const state = new ProvisioningState(directory);
-      state.context('resend', settings);
+      state.context('stripe', settings);
       await assert.rejects(
-        state.create('resend', 'sending-key', async () => value, route, body),
+        state.create('stripe', 'webhook', async () => value, route, body),
         /identity|credential|invalid/,
       );
       const restored = new ProvisioningState(directory);
-      restored.context('resend', settings);
+      restored.context('stripe', settings);
       await assert.rejects(
-        restored.create('resend', 'sending-key', async () => value, route, body),
+        restored.create('stripe', 'webhook', async () => value, route, body),
         /unknown outcome/,
       );
     } finally {
@@ -200,12 +170,12 @@ for (const issue of ['permissions', 'symlink', 'unexpected-field', 'receipt-secr
       if (issue === 'unexpected-field')
         atomicJson(file, {
           schemaVersion: 1,
-          providers: { resend: { [operation]: { token: secret, leaked: secret } } },
+          providers: { stripe: { [operation]: { secret: secret, leaked: secret } } },
         });
       if (issue === 'receipt-secret') {
         const file = path.join(directory, 'providers.json');
         const data = JSON.parse(readFileSync(file));
-        data.providers.resend.operations[operation].value.token = secret;
+        data.providers.stripe.operations[operation].value.secret = secret;
         atomicJson(file, data);
       }
       assert.throws(() => new ProvisioningState(directory), /0600|regular|Invalid provider/);

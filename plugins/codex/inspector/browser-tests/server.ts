@@ -17,15 +17,10 @@ for (const name of ['atlas', 'empty-app']) {
     writeFileSync(path.join(directory, file), JSON.stringify(value));
   };
   save('package.json', { name });
+  // Synthetic source fixture: no dependencies are installed or cloud resources created.
+  save('pnpm-lock.yaml', { lockfileVersion: '9.0' });
   if (name === 'atlas') {
-    const options = parseStandardOptions([
-      directory,
-      '--hono',
-      '--d1',
-      '--r2',
-      '--skip-install',
-      '--no-git',
-    ]);
+    const options = parseStandardOptions([directory, '--skip-install', '--no-git']);
     writeProjectSection(directory, 'setup', createSetupPlan(options));
     save('apps/api/package.json', { name: '@atlas/api' });
     save('apps/api/wrangler.jsonc', {

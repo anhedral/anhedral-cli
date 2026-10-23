@@ -82,13 +82,18 @@ for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
       readFileSync(
         path.join(root, 'plugins/codex/distribution/assets/anhedral-mark-dark.svg'),
         'utf8',
-      ).replace(/fill="white"/g, field.endsWith('Dark') ? 'fill="white"' : 'fill="black"'),
+      ).replace(/fill="#ffffff"/g, field.endsWith('Dark') ? 'fill="#ffffff"' : 'fill="#17191d"'),
     ),
   );
 }
 for (const [name, contents] of files) {
   if (!name.endsWith('.md')) continue;
-  for (const match of contents.toString().matchAll(/\]\(([^)]+)\)/g)) {
+  const source = contents.toString();
+  const references = [
+    ...source.matchAll(/\]\(([^)]+)\)/g),
+    ...source.matchAll(/\b(?:src|srcset)="([^"]+)"/g),
+  ];
+  for (const match of references) {
     if (/^(?:https?:|plugin:|#)/.test(match[1])) continue;
     assert.ok(
       files.has(

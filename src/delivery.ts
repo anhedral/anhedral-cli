@@ -16,8 +16,6 @@ import {
 export { planDelivery, parseDeploymentOutput } from './delivery-evidence.js';
 export type { Release } from './delivery-evidence.js';
 import { projectConfigPath, writeProjectSection } from './project-config.js';
-import { deployVoidTarget, rollbackVoidTarget } from './void-execution.js';
-import { voidLogSnapshot, readVoidDeploymentReceipt } from './void-state.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -30,7 +28,6 @@ import { cloudflareRequest, type CloudflareRequest } from './cloudflare.js';
 import {
   atomicJson,
   configurationFile,
-  usesVoid,
   authenticate,
   defaultRunner,
   environment,
@@ -127,11 +124,9 @@ export async function shipApplication(
   root: string,
   run = defaultRunner,
   suppliedRequest?: CloudflareRequest,
-  options: { voidLogsDirectory?: string } = {},
 ) {
   root = realpathSync(root);
-  const registered = readApplication(root);
-  const { project } = planDelivery(root, usesVoid(registered));
+  const { project } = planDelivery(root);
   if (project.audience === 'unconfigured')
     throw new Error(
       'Select an explicit audience before shipping: public or private with allowed members.',
@@ -154,22 +149,8 @@ export async function shipApplication(
       const commit = (await run('git', ['rev-parse', 'HEAD'], root, env)).trim();
       if (!/^[a-f0-9]{40,64}$/.test(commit)) throw new Error('Invalid source commit.');
       const fingerprint = configurationFingerprint(root, project);
-      const lockChanges = new Set<string>();
-      const sourceChanged = async () => {
-        const dirty = (await run('git', ['status', '--porcelain'], root, env)).trimEnd();
-        if (!dirty) return false;
-        if (!usesVoid(project)) return true;
-        for (const line of dirty.split('\n')) {
-          const file = line.slice(3);
-          if (
-            !/^ [M?]|^\?\?/.test(line) ||
-            !project.targets.some((target) => file === `${target.directory}/void.lock.json`)
-          )
-            return true;
-          lockChanges.add(file);
-        }
-        return false;
-      };
+      const sourceChanged = async () =>
+        Boolean((await run('git', ['status', '--porcelain'], root, env)).trim());
       records = history(root, project);
       release = {
         operation: 'ship',
@@ -201,72 +182,12 @@ export async function shipApplication(
           );
         const output = path.join(outputDirectory, `${target.id}.ndjson`);
         let receipt: TargetRelease;
-        if (usesVoid(project)) {
-          const before = voidLogSnapshot(options.voidLogsDirectory);
-          const startedAt = Date.now();
-          await deployVoidTarget(targetDirectory(root, target), run, env);
-          receipt = readVoidDeploymentReceipt(
-            before,
-            targetDirectory(root, target),
-            target,
-            startedAt,
-            options.voidLogsDirectory,
-          );
-          release.targets.push(receipt);
-          save();
-          const api =
-            suppliedRequest ??
-            (await cloudflareRequest(project, targetDirectory(root, target), run, env));
-          const visibility = (
-            await api('GET', `/workers/scripts/${encodeURIComponent(target.workerName)}/subdomain`)
-          ).result as { enabled?: unknown };
-          const accountDomain =
-            visibility?.enabled === true
-              ? ((await api('GET', '/workers/subdomain')).result as { subdomain?: unknown })
-              : undefined;
-          const workersDevUrl =
-            typeof accountDomain?.subdomain === 'string' &&
-            /^[a-z0-9-]+$/i.test(accountDomain.subdomain)
-              ? `https://${target.workerName}.${accountDomain.subdomain}.workers.dev`
-              : undefined;
-          const config = readConfig(targetDirectory(root, target));
-          const hasCustomDomains =
-            Array.isArray(config.routes) &&
-            config.routes.some((route) => route?.custom_domain === true);
-          const domains = hasCustomDomains
-            ? (
-                await api(
-                  'GET',
-                  `/workers/domains?service=${encodeURIComponent(target.workerName)}`,
-                )
-              ).result
-            : [];
-          if (!Array.isArray(domains))
-            throw new Error('Cloudflare custom-domain evidence is unavailable.');
-          receipt.urls = Array.isArray(config.routes)
-            ? config.routes.flatMap((route: unknown) => {
-                if (!route || typeof route !== 'object') return [];
-                const value = route as Record<string, unknown>;
-                return value.custom_domain === true &&
-                  typeof value.pattern === 'string' &&
-                  /^[a-z0-9.-]+$/i.test(value.pattern) &&
-                  domains.some(
-                    (domain) =>
-                      domain?.hostname === value.pattern && domain?.service === target.workerName,
-                  )
-                  ? [`https://${value.pattern}`]
-                  : [];
-              })
-            : [];
-          if (workersDevUrl) receipt.urls.push(workersDevUrl);
-        } else {
-          await run('pnpm', ['run', 'deploy'], targetDirectory(root, target), {
-            ...env,
-            WRANGLER_OUTPUT_FILE_PATH: output,
-          });
-          receipt = parseDeploymentOutput(readFileSync(output, 'utf8'), target);
-          release.targets.push(receipt);
-        }
+        await run('pnpm', ['run', 'deploy'], targetDirectory(root, target), {
+          ...env,
+          WRANGLER_OUTPUT_FILE_PATH: output,
+        });
+        receipt = parseDeploymentOutput(readFileSync(output, 'utf8'), target);
+        release.targets.push(receipt);
         save();
         const provider = await providerStatus(root, project, target, run, suppliedRequest);
         if (!fullyActive(activeVersions(provider), receipt.versionId))
@@ -281,14 +202,7 @@ export async function shipApplication(
         (await sourceChanged())
       )
         throw new Error('Source or configuration changed during deployment.');
-      if (usesVoid(project)) {
-        const api =
-          suppliedRequest ??
-          (await cloudflareRequest(project, targetDirectory(root, project.targets[0]), run, env));
-        await inspectApplicationResources(root, api);
-      }
-      release.state = lockChanges.size ? 'configuration-required' : 'deployed';
-      if (lockChanges.size) release.configurationChanges = [...lockChanges].sort();
+      release.state = 'deployed';
       release.finishedAt = new Date().toISOString();
       save();
       const managementFile = writeManagementOverview(root, await applicationStatus(root));
@@ -297,15 +211,6 @@ export async function shipApplication(
         release,
         managementFile,
         productVerification: 'required',
-        ...(lockChanges.size
-          ? {
-              state: 'configuration-required' as const,
-              deployed: false as const,
-              activated: true as const,
-              nextAction:
-                'Review and commit the recorded void.lock.json resource identities, then ship the clean committed configuration before running verify. Active target receipts are retained; product verification has not passed.',
-            }
-          : {}),
         management: `https://dash.cloudflare.com/${project.accountId}/workers-and-pages`,
       };
     } catch (error) {
@@ -482,23 +387,14 @@ export async function rollbackApplication(
     // Resolve every version before changing the first target; unavailable resources still make provider rollback fail closed.
     for (const target of project.targets) {
       const version = desired.targets.find((item) => item.target === target.id)!;
-      const data = usesVoid(project)
-        ? ((
-            await (
-              request ?? (await cloudflareRequest(project, targetDirectory(root, target), run, env))
-            )(
-              'GET',
-              `/workers/scripts/${encodeURIComponent(target.workerName)}/versions/${encodeURIComponent(version.versionId)}`,
-            )
-          ).result as { id?: unknown })
-        : JSON.parse(
-            await run(
-              'pnpm',
-              ['exec', 'wrangler', 'versions', 'view', version.versionId, '--json'],
-              targetDirectory(root, target),
-              env,
-            ),
-          );
+      const data = JSON.parse(
+        await run(
+          'pnpm',
+          ['exec', 'wrangler', 'versions', 'view', version.versionId, '--json'],
+          targetDirectory(root, target),
+          env,
+        ),
+      );
       if (data.id !== version.versionId) throw new Error('Recorded Worker version is unavailable.');
     }
     const release: Release = {
@@ -516,22 +412,19 @@ export async function rollbackApplication(
     try {
       for (const target of [...project.targets].reverse()) {
         const receipt = desired.targets.find((item) => item.target === target.id)!;
-        if (usesVoid(project))
-          await rollbackVoidTarget(targetDirectory(root, target), receipt.versionId, run, env);
-        else
-          await run(
-            'pnpm',
-            [
-              'exec',
-              'wrangler',
-              'rollback',
-              receipt.versionId,
-              '--message',
-              `Anhedral restore ${desired.id}`,
-            ],
-            targetDirectory(root, target),
-            env,
-          );
+        await run(
+          'pnpm',
+          [
+            'exec',
+            'wrangler',
+            'rollback',
+            receipt.versionId,
+            '--message',
+            `Anhedral restore ${desired.id}`,
+          ],
+          targetDirectory(root, target),
+          env,
+        );
         const restored = { ...receipt, providerConfirmed: false };
         release.targets.push(restored);
         save();

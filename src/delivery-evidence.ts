@@ -2,10 +2,9 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { projectConfigPath } from './project-config.js';
-import { cloudflareRequest, type CloudflareRequest } from './cloudflare.js';
+import { type CloudflareRequest } from './cloudflare.js';
 import {
   configurationFile,
-  usesVoid,
   defaultRunner,
   environment,
   readApplication,
@@ -71,11 +70,7 @@ export function checkTargets(
       throw new Error('Wrangler configuration account conflicts with the registered account.');
     const pending = structuredClone(config);
     if (allowResourcePlaceholders) {
-      for (const [field, id] of [
-        ['d1_databases', 'database_id'],
-        ['kv_namespaces', 'id'],
-        ['pipelines', 'stream'],
-      ] as const) {
+      for (const [field, id] of [['d1_databases', 'database_id']] as const) {
         const entries = pending[field];
         if (Array.isArray(entries))
           for (const entry of entries) {
@@ -86,7 +81,7 @@ export function checkTargets(
     }
     if (
       /REPLACE_WITH_|YOUR_[A-Z_]+/.test(
-        allowResourcePlaceholders || usesVoid(project)
+        allowResourcePlaceholders
           ? JSON.stringify(pending)
           : readFileSync(configurationFile(directory), 'utf8'),
       )
@@ -102,43 +97,19 @@ export function configurationFingerprint(root: string, project: ApplicationProje
   for (const target of project.targets) {
     const directory = targetDirectory(root, target);
     hash.update(readFileSync(configurationFile(directory)));
-    if (usesVoid(project))
-      for (const name of ['void.config.ts', 'env.ts']) {
-        const file = path.join(directory, name);
-        hash.update(name).update(existsSync(file) ? readFileSync(file) : '<absent>');
-      }
   }
   return hash.digest('hex');
 }
 export function planDelivery(root: string, allowResourcePlaceholders = false) {
   const project = readApplication(root);
   checkTargets(root, project, allowResourcePlaceholders);
-  if (usesVoid(project)) {
-    const owners = project.targets.filter((target) => {
-      // Ownership is authored. Void may add a conventional migrations_dir to
-      // resolved consumer locks; those consumers must not become migration owners.
-      const config = JSON.parse(
-        readFileSync(configurationFile(targetDirectory(root, target)), 'utf8'),
-      ) as Record<string, unknown>;
-      return (
-        Array.isArray(config.d1_databases) &&
-        config.d1_databases.some((database) => database?.migrations_dir)
-      );
-    });
-    if (owners.length > 1)
-      throw new Error(
-        'Void delivery requires one D1 migration owner; other server targets must consume the shared database without deployment migrations.',
-      );
-  }
   return {
     project,
     checks: [['pnpm', 'run', 'check']],
     deployments: project.targets.map((target) => ({
       target: target.id,
       directory: target.directory,
-      command: usesVoid(project)
-        ? ['pnpm', 'exec', 'void', 'deploy', '--platform', 'cloudflare']
-        : ['pnpm', 'run', 'deploy'],
+      command: ['pnpm', 'run', 'deploy'],
     })),
     resourcesProvisioned: false,
     audience: project.audience,
@@ -208,26 +179,16 @@ export async function providerStatus(
   project: ApplicationProject,
   target: DeploymentTarget,
   run: typeof defaultRunner,
-  request?: CloudflareRequest,
+  _request?: CloudflareRequest,
 ): Promise<unknown> {
-  if (!usesVoid(project))
-    return JSON.parse(
-      await run(
-        'pnpm',
-        ['exec', 'wrangler', 'deployments', 'status', '--json'],
-        targetDirectory(root, target),
-        environment(project),
-      ),
-    );
-  const api =
-    request ??
-    (await cloudflareRequest(project, targetDirectory(root, target), run, environment(project)));
-  const result = (
-    await api('GET', `/workers/scripts/${encodeURIComponent(target.workerName)}/deployments`)
-  ).result as { deployments?: unknown[] };
-  if (!Array.isArray(result?.deployments) || !result.deployments.length)
-    throw new Error('No active Cloudflare deployment evidence.');
-  return result.deployments[0];
+  return JSON.parse(
+    await run(
+      'pnpm',
+      ['exec', 'wrangler', 'deployments', 'status', '--json'],
+      targetDirectory(root, target),
+      environment(project),
+    ),
+  );
 }
 export function fullyActive(versions: ActiveVersion[], versionId: string): boolean {
   return (

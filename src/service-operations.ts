@@ -2,12 +2,8 @@ import {
   resolveIntegrationService,
   integrationRequest,
   observeIntegrationService,
-  posthogServiceMetrics,
 } from './integration-service-readers.js';
-import { neonReadConnection, listNeonTables, browseNeonData } from './neon-service-data.js';
-import { vercelApplicationStatus, vercelServiceMetrics } from './vercel.js';
 import { browseR2Objects } from './r2-service-data.js';
-import { inspectApplication } from './project-inspector.js';
 import { readApplication, defaultRunner, targetDirectory } from './project-state.js';
 import { cloudflareRequest, type CloudflareRequest } from './cloudflare.js';
 import { resolveService } from './service-descriptor.js';
@@ -55,9 +51,6 @@ const requestFor: ServiceRequestFactory = async (root, analytics) => {
     { analytics, timeoutMs: 10000 },
   );
 };
-const vercelRunner: typeof defaultRunner = (command, args, cwd, env, input) =>
-  defaultRunner(command, args, cwd, { ...env, ANHEDRAL_COMMAND_TIMEOUT_MS: '30000' }, input);
-
 /** Shared operations; transports decide how private results are presented. */
 export async function serviceOperation(
   root: string,
@@ -70,41 +63,7 @@ export async function serviceOperation(
     const service = resolveIntegrationService(root, key);
     const api = integrationRequest(service);
     if (action === 'status') return { status: await observeIntegrationService(service, api) };
-    if (action === 'metrics')
-      return { metrics: await posthogServiceMetrics(service, api, options.hours ?? 24) };
-    if (action === 'tables' && service.provider === 'neon')
-      return { tables: await listNeonTables(await neonReadConnection(service, api)) };
-    if (action === 'data' && service.provider === 'neon')
-      return {
-        data: await browseNeonData(
-          await neonReadConnection(service, api),
-          options.table ?? '',
-          options.offset ?? 0,
-        ),
-      };
     throw new Error('This integration does not support that operation.');
-  }
-  if (key.startsWith('target:vercel:')) {
-    if (
-      !inspectApplication(root).targets.data.some(
-        (target) =>
-          key === `target:${target.provider}:${target.id}` && target.provider === 'vercel',
-      )
-    )
-      throw new Error('Choose a validated Vercel target.');
-    if (action === 'metrics')
-      return { metrics: await vercelServiceMetrics(root, options.hours ?? 24, vercelRunner) };
-    if (action !== 'status') throw new Error('Unsupported Vercel operation.');
-    const status = await vercelApplicationStatus(root, true, vercelRunner);
-    return {
-      status: {
-        state: 'available',
-        fetchedAt: new Date().toISOString(),
-        message: status.activeRecordedVersion
-          ? 'Provider confirmed the recorded deployment is active. Application health is separate.'
-          : 'Provider project verified. The recorded deployment is not confirmed active.',
-      },
-    };
   }
   const service = resolveService(root, key);
   if (service.kind === 'r2' && action === 'tables') return { tables: ['objects'] };
@@ -116,8 +75,7 @@ export async function serviceOperation(
   if (action === 'status') return { status: await observeService(service, request) };
   if (action === 'metrics')
     return { metrics: await readServiceMetrics(service, request, options.hours ?? 24) };
-  if (action === 'tables')
-    return { tables: service.kind === 'kv' ? ['keys'] : await listServiceTables(service, request) };
+  if (action === 'tables') return { tables: await listServiceTables(service, request) };
   if (action === 'data')
     return {
       data: await browseServiceData(

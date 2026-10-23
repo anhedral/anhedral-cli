@@ -27,17 +27,10 @@ const stage = (
   evidence: CapabilityEvidence = 'local-contract',
 ): CapabilityStage => ({ support, evidence, scope });
 const none = (scope: string) => stage('not-applicable', scope, 'unverified');
-const cloudflareResources = ['d1', 'r2', 'kv', 'queues', 'basin'];
-const deploymentBindings = [
-  'realtime',
-  'cron',
-  'workflows',
-  'workers-ai',
-  'analytics-engine',
-  'images',
-];
+const cloudflareResources = ['d1', 'r2'];
+
 function integration(id: string): IntegrationProvider | undefined {
-  const provider = id === 'ai-sdk' ? 'openai' : id;
+  const provider = id;
   return Object.hasOwn(PROVIDER_DEFINITIONS, provider)
     ? (provider as IntegrationProvider)
     : undefined;
@@ -61,33 +54,24 @@ function productCapability(id: StandardProduct): ProductCapability {
     );
   }
   if (cloudflareResources.includes(id)) {
-    provisioning = stage(
-      'implemented',
-      id === 'basin'
-        ? 'Private Cloudflare stream and Worker binding.'
-        : 'Selected Cloudflare resource and checked Worker binding.',
-    );
+    provisioning = stage('implemented', 'Selected Cloudflare resource and checked Worker binding.');
     limits.push(
       'Account eligibility, quotas, and live runtime behavior require authorized acceptance.',
     );
-    if (id === 'basin')
-      limits.push('Pipeline transforms and sinks are outside automated provisioning.');
   }
-  if (deploymentBindings.includes(id)) {
-    provisioning = stage(
-      'implemented',
-      'Worker deployment configures the selected binding or trigger.',
-    );
-    limits.push(
-      'Configured bindings and triggers do not establish application behavior or execution success.',
-    );
-  }
-  if (['vinext', 'next', 'hono'].includes(id))
+  if (id === 'next') {
     delivery = stage(
       'implemented',
-      id === 'next'
-        ? 'Selected Cloudflare or Vercel deployment with provider identity and source checks.'
-        : 'Cloudflare Worker deployment with provider identity and source checks.',
+      'Full Next.js OpenNext Worker and assets deployed through Wrangler with an API service binding.',
+    );
+    limits.push(
+      'Default adapter caching is not persistent ISR; provision separately scoped cache infrastructure before adding persistent ISR.',
+    );
+  }
+  if (id === 'hono')
+    delivery = stage(
+      'implemented',
+      'Cloudflare Worker deployment with provider identity and source checks.',
     );
   if (id === 'expo') {
     delivery = stage(
@@ -96,53 +80,6 @@ function productCapability(id: StandardProduct): ProductCapability {
     );
     limits.push(
       'No store submission; signing, enrollment, device testing, and store distribution remain developer responsibilities.',
-    );
-  }
-  if (id === 'electron' || id === 'wxt') {
-    delivery = stage(
-      'scaffold-only',
-      'Generated application and local build tooling; automated distribution is unavailable.',
-    );
-    limits.push(
-      id === 'electron'
-        ? 'Signing, notarization, installers, updates, and distribution require a separate delivery workflow.'
-        : 'Extension signing, store submission, review, and distribution require a separate delivery workflow.',
-    );
-  }
-  if (id === 'realtimekit' || id === 'video') {
-    provisioning = stage(
-      'scaffold-only',
-      'Manual account activation and service configuration; no provider activation or credential installation during generation.',
-      'unverified',
-    );
-    limits.push(
-      'Server-only helper; product authorization routes, client UI and live provider acceptance remain required.',
-    );
-  }
-  if (id === 'stream') {
-    provisioning = stage(
-      'scaffold-only',
-      'Manual Stream activation and live input setup; no automatic Stream provisioning or runtime credential installation.',
-      'unverified',
-    );
-    limits.push(
-      'Server management factory only; creator/player UI, WHIP/WHEP signaling and playback token issuance require application implementation.',
-      'Keep management tokens server-only and disclose secret WHIP URLs only to authorized creators; verify private media access independently of hosting protection.',
-      'One-to-many broadcasts; conferencing, recording, HLS/DASH bridging, restreaming and live viewer counts are outside this integration.',
-      'Usage-based viewer-minute billing, account eligibility and live broadcast/playback acceptance require separate verification.',
-    );
-  }
-  if (id === 'neon-realtime') {
-    provisioning = stage(
-      'scaffold-only',
-      'Manually enable Realtime on the intended Neon branch, configure allowed origins and supply its private secret and public URL; no automatic Realtime provisioning.',
-      'unverified',
-    );
-    limits.push(
-      'Neon Realtime is beta and does not support RLS; authenticate requests and seal only explicitly scoped, read-only application queries.',
-      'Keep DATABASE_URL and NEON_REALTIME_SECRET server-only; clients use the public NEON_REALTIME_URL and short-lived sealed queries.',
-      'The package exposes separate server/client factories and a Drizzle adapter; no arbitrary SQL endpoint or application subscription flow is generated.',
-      'Live subscriptions, renewal, revocation, allowed origins and cross-tenant isolation require authorized acceptance; live behavior remains unverified.',
     );
   }
   if (id === 'better-auth')
@@ -190,14 +127,6 @@ export const CAPABILITY_CONTRACT = {
       ),
       liveAcceptance: 'unverified' as const,
     },
-    {
-      id: 'vercel',
-      delivery: stage(
-        'implemented',
-        'Configure the selected project environment, deploy the web app, inspect provider identity and source receipts.',
-      ),
-      liveAcceptance: 'unverified' as const,
-    },
   ],
   plugin: [
     {
@@ -222,14 +151,14 @@ export const CAPABILITY_CONTRACT = {
       id: 'live-analytics',
       capability: stage(
         'implemented',
-        'Explicit selected-resource analytics for Cloudflare Workers/D1, Vercel and PostHog; provider access and metric availability require live acceptance.',
+        'Explicit selected-resource analytics for Cloudflare Workers/D1; provider access and metric availability require live acceptance.',
       ),
     },
     {
       id: 'live-database-reader',
       capability: stage(
         'implemented',
-        'Explicit bounded D1 and restricted read-only Neon data reads; masked rows and schema are private app metadata.',
+        'Explicit bounded D1 data reads; masked rows and schema are private app metadata.',
       ),
     },
     {
@@ -251,7 +180,6 @@ export const CAPABILITY_CONTRACT = {
   limits: [
     'Local contract tests are separate from live provider acceptance and completed application verification.',
     'Account selection, enrollment, billing approval, DNS ownership, and signing can require owner action.',
-    'Mixed hosting is sequential; no atomic cross-provider rollback or cached phase skipping is promised.',
     'The CLI scaffolds supported primitives; customer application features remain development work.',
   ],
 };
@@ -269,9 +197,8 @@ export function formatCapabilityContract(): string {
     '',
     'Providers: ' + CAPABILITY_CONTRACT.providers.map((provider) => provider.id).join(', '),
     'Expo delivery returns EAS artifacts; it does not submit to stores.',
-    'Electron and WXT distribution: scaffold only.',
     'Plugin: explicit selected-resource analytics, bounded database reads and provider status checks; live acceptance remains unverified.',
-    'Schedule execution history: unavailable. Resource status does not certify application health.',
+    'Resource status does not certify application health.',
     '',
     ...CAPABILITY_CONTRACT.limits,
     '',

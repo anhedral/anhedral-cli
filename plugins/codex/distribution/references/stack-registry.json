@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "name": "anhedral",
-  "cliVersion": "0.13.0",
+  "cliVersion": "0.15.0",
   "items": [
     {
       "name": "workspace",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [],
       "environment": [],
@@ -20,7 +20,7 @@
     },
     {
       "name": "typescript",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -35,7 +35,7 @@
     },
     {
       "name": "eslint",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -49,109 +49,47 @@
       ]
     },
     {
-      "name": "cloudflare-api",
-      "version": "0.13.0",
+      "name": "next",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
         "typescript",
-        "eslint"
+        "eslint",
+        "styling",
+        "hono"
       ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "foundation",
-      "description": "Shared server-only Cloudflare media management transport",
-      "targets": [
-        "packages/cloudflare-api"
-      ]
-    },
-    {
-      "name": "ui",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
+      "environment": [
+        "API_INTERNAL_URL",
+        "ANHEDRAL_PREVIEW_ORIGIN"
       ],
-      "environment": [],
-      "installer": "bootstrap",
-      "type": "foundation",
-      "description": "Shared shadcn/ui, React, Tailwind and Lucide foundation for web apps",
-      "targets": [
-        "packages/ui"
-      ]
-    },
-    {
-      "name": "vinext",
-      "version": "0.13.0",
-      "selection": {
-        "conflicts": [
-          "next"
-        ]
-      },
-      "registryDependencies": [
-        "ui"
-      ],
-      "environment": [],
       "installer": "recipe",
       "type": "application",
-      "description": "Vinext web application on Cloudflare Workers",
+      "description": "Full Next.js App Router web application on Cloudflare OpenNext",
       "targets": [
         "apps/web"
       ],
       "setup": {
-        "purpose": "Web application on Cloudflare",
+        "purpose": "Server-rendered web application",
         "tools": [
           "Browser control",
           "Wrangler"
         ],
-        "access": [],
+        "access": [
+          "Cloudflare Workers deployment access"
+        ],
         "credentials": [],
         "resources": [
-          "Vinext React application and Cloudflare Worker"
+          "Next.js Worker, assets and scoped ANHEDRAL_API binding"
         ],
         "verify": [
-          "Web flows, accessibility, production Worker build and deployed preview"
-        ]
-      }
-    },
-    {
-      "name": "next",
-      "version": "0.13.0",
-      "selection": {
-        "conflicts": [
-          "vinext"
-        ]
-      },
-      "registryDependencies": [
-        "ui"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "application",
-      "description": "Next.js web application on Vercel or OpenNext on Workers",
-      "targets": [
-        "apps/web"
-      ],
-      "setup": {
-        "purpose": "Web application",
-        "tools": [
-          "Browser control"
-        ],
-        "access": [],
-        "credentials": [],
-        "resources": [
-          "Next.js app; configure the selected hosting provider"
-        ],
-        "verify": [
-          "Web flows, accessibility, production hosting build and deployed preview"
+          "Request-rendered HTML, RSC, cookies and authenticated API routes"
         ]
       }
     },
     {
       "name": "expo",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -159,18 +97,20 @@
         "eslint",
         "styling"
       ],
-      "environment": [],
+      "environment": [
+        "EXPO_PUBLIC_API_URL"
+      ],
       "installer": "recipe",
       "type": "application",
-      "description": "Universal Expo web, iOS and Android client with a Cloudflare asset/API gateway",
+      "description": "Native Expo iOS and Android application with Anhedral native shadcn UI",
       "targets": [
-        "apps/mobile"
+        "apps/mobile",
+        "packages/native-ui"
       ],
       "setup": {
-        "purpose": "Universal web, iOS and Android application",
+        "purpose": "Native iOS and Android application",
         "tools": [
-          "Browser control",
-          "Wrangler"
+          "Simulator or device"
         ],
         "access": [
           "For requested native distribution only: client-owned Apple/Google developer accounts"
@@ -179,89 +119,16 @@
           "For requested native builds only: platform signing credentials and EAS access when used"
         ],
         "resources": [
-          "Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration"
+          "Expo native client; signing and store configuration"
         ],
         "verify": [
-          "Static web export/runtime; requested native delivery additionally needs simulator/device and signed-build acceptance"
-        ]
-      }
-    },
-    {
-      "name": "electron",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "application",
-      "description": "Electron desktop application with its own web UI",
-      "targets": [
-        "apps/desktop"
-      ],
-      "setup": {
-        "purpose": "Desktop application",
-        "tools": [
-          "Electron tooling",
-          "Platform packaging tools"
-        ],
-        "access": [
-          "Signing/notarization account for the target platform"
-        ],
-        "credentials": [
-          "Signing credentials; notarization credentials when required"
-        ],
-        "resources": [
-          "Electron app; packaging and distribution configuration"
-        ],
-        "verify": [
-          "Packaged desktop app, permissions, update/recovery behavior"
-        ]
-      }
-    },
-    {
-      "name": "wxt",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "styling"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "application",
-      "description": "WXT browser side-panel extension",
-      "targets": [
-        "apps/extension"
-      ],
-      "setup": {
-        "purpose": "Chrome side-panel extension",
-        "tools": [
-          "Chrome",
-          "WXT"
-        ],
-        "access": [
-          "Extension store publisher access for distribution"
-        ],
-        "credentials": [
-          "Store publishing credentials when required"
-        ],
-        "resources": [
-          "Extension app; minimal browser permissions and store package"
-        ],
-        "verify": [
-          "Installed side panel, background/content messaging and permission behavior"
+          "Simulator/device and signed-build acceptance"
         ]
       }
     },
     {
       "name": "hono",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -293,114 +160,22 @@
       }
     },
     {
-      "name": "neon",
-      "version": "0.13.0",
-      "selection": {
-        "conflicts": [
-          "d1"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "DATABASE_URL",
-        "DATABASE_URL_UNPOOLED"
-      ],
-      "installer": "recipe",
-      "type": "package",
-      "description": "Reusable server database package with Neon HTTP, Drizzle and explicit migrations",
-      "targets": [
-        "packages/db"
-      ],
-      "setup": {
-        "purpose": "PostgreSQL persistence through direct Neon HTTP and Drizzle",
-        "tools": [
-          "Neon integration or API"
-        ],
-        "access": [
-          "Client-owned Neon project/branch access"
-        ],
-        "credentials": [
-          "Server-side DATABASE_URL; direct DATABASE_URL_UNPOOLED for migrations; separate environment roles"
-        ],
-        "resources": [
-          "Neon project/branches, database roles and reviewed migrations"
-        ],
-        "verify": [
-          "Migration, runtime connectivity and authorization; HTTP has no interactive transactions"
-        ]
-      },
-      "runtime": "server"
-    },
-    {
-      "name": "neon-realtime",
-      "version": "0.13.0",
-      "selection": {
-        "requiresAny": [
-          "neon"
-        ]
-      },
+      "name": "d1",
+      "version": "0.15.0",
+      "selection": {},
       "registryDependencies": [
         "workspace",
         "typescript",
         "eslint",
-        "neon"
-      ],
-      "environment": [
-        "NEON_REALTIME_SECRET",
-        "NEON_REALTIME_URL"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Neon live SQL with server-sealed Drizzle queries and a browser-safe subscription client (beta)",
-      "targets": [
-        "packages/neon-realtime"
-      ],
-      "runtime": "server",
-      "setup": {
-        "purpose": "Live PostgreSQL query results on the selected Neon branch",
-        "tools": [
-          "Neon Console or Neon CLI",
-          "Browser control"
-        ],
-        "access": [
-          "Client-owned Neon project and branch with Realtime beta availability"
-        ],
-        "credentials": [
-          "Server-only NEON_REALTIME_SECRET; public NEON_REALTIME_URL; existing server DATABASE_URL"
-        ],
-        "resources": [
-          "Manually enable Realtime and logical replication on the selected branch; configure allowed browser origins",
-          "Tables with stable replica identity; authorized deterministic SELECT queries sealed on the server"
-        ],
-        "verify": [
-          "Authorized row isolation, access revocation, capability renewal, disconnect/reconnect and subscription cleanup",
-          "Beta has no RLS or performance guarantees; database compute and egress remain billable"
-        ]
-      }
-    },
-    {
-      "name": "d1",
-      "version": "0.13.0",
-      "selection": {
-        "conflicts": [
-          "neon"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
+        "hono"
       ],
       "environment": [],
       "installer": "recipe",
       "type": "package",
       "description": "Reusable Drizzle D1 database package and explicit migration tooling",
       "targets": [
-        "packages/db"
+        "packages/db",
+        "apps/api"
       ],
       "setup": {
         "purpose": "SQLite-compatible hosted persistence",
@@ -421,108 +196,22 @@
       "runtime": "worker"
     },
     {
-      "name": "local-data",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "package",
-      "description": "Interface for platform-specific local persistence adapters",
-      "targets": [
-        "packages/local-data"
-      ],
-      "setup": {
-        "purpose": "Device-local SQLite and files",
-        "tools": [
-          "Selected platform database/filesystem tooling"
-        ],
-        "access": [],
-        "credentials": [],
-        "resources": [
-          "Integration boundary; implement platform adapters and explicit synchronization if needed"
-        ],
-        "verify": [
-          "Persistence, offline writes and recovery on the selected device"
-        ]
-      },
-      "package": {
-        "name": "local-data",
-        "source": "// Device-local SQLite and filesystem need platform-specific adapters.\nexport interface LocalDataStore {\n  read(key: string): Promise<string | null>;\n  write(key: string, value: string): Promise<void>;\n}\n",
-        "dependencies": {}
-      }
-    },
-    {
-      "name": "clerk",
-      "version": "0.13.0",
-      "selection": {
-        "conflicts": [
-          "better-auth"
-        ],
-        "requiresAny": [
-          "vinext",
-          "next",
-          "hono"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
-        "CLERK_PUBLISHABLE_KEY",
-        "CLERK_SECRET_KEY"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Managed identity starter and runtime integration",
-      "targets": [
-        "apps/web",
-        "packages/auth"
-      ],
-      "setup": {
-        "purpose": "Managed identity",
-        "tools": [
-          "Clerk integration or dashboard"
-        ],
-        "access": [
-          "Client-owned Clerk project access"
-        ],
-        "credentials": [
-          "Clerk publishable key; server secret key; webhook secret when used"
-        ],
-        "resources": [
-          "Identity project, allowed URLs, SDK setup and protected routes"
-        ],
-        "verify": [
-          "Sign-in/out, session expiry, resource authorization and selected native client flows"
-        ]
-      },
-      "runtime": "server"
-    },
-    {
       "name": "better-auth",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {
-        "conflicts": [
-          "clerk"
-        ],
-        "requiresAny": [
-          "neon",
-          "d1"
+        "requiresAll": [
+          "d1",
+          "hono",
+          "expo"
         ]
       },
       "registryDependencies": [
         "workspace",
         "typescript",
-        "eslint"
+        "eslint",
+        "d1",
+        "expo",
+        "next"
       ],
       "environment": [
         "BETTER_AUTH_SECRET",
@@ -534,8 +223,9 @@
       "targets": [
         "packages/auth",
         "packages/db",
-        "apps/web",
-        "apps/api"
+        "apps/api",
+        "apps/mobile",
+        "apps/web"
       ],
       "setup": {
         "purpose": "Application-managed identity",
@@ -549,7 +239,7 @@
           "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
         ],
         "resources": [
-          "Selected Neon or D1 database, auth schema, trusted origins and application routes"
+          "D1 database, auth schema, trusted origins and application routes"
         ],
         "verify": [
           "Sign-in/out, session expiry, sign-up policy and resource authorization"
@@ -559,20 +249,21 @@
     },
     {
       "name": "r2",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
         "typescript",
-        "eslint"
+        "eslint",
+        "better-auth",
+        "hono"
       ],
       "environment": [],
       "installer": "recipe",
       "type": "integration",
-      "description": "Private file binding and authorization guidance",
+      "description": "Private authenticated file upload, download and deletion",
       "targets": [
-        "apps/web",
-        "apps/api"
+        "apps/api/src/private-files.ts"
       ],
       "setup": {
         "purpose": "Private remote files",
@@ -593,576 +284,24 @@
       "runtime": "worker"
     },
     {
-      "name": "kv",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "configuration",
-      "type": "integration",
-      "description": "Eventually consistent cache binding",
-      "targets": [
-        "apps/web",
-        "apps/api"
-      ],
-      "setup": {
-        "purpose": "Eventually consistent cache/configuration",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare KV namespace access"
-        ],
-        "credentials": [],
-        "resources": [
-          "KV namespace and CONFIG binding"
-        ],
-        "verify": [
-          "TTL and propagation behavior; never use KV as transactional authority"
-        ]
-      },
-      "runtime": "worker"
-    },
-    {
-      "name": "realtime",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "service",
-      "description": "Durable Object room Worker with authorization boundary",
-      "targets": [
-        "apps/realtime"
-      ],
-      "setup": {
-        "purpose": "Rooms and collaboration",
-        "tools": [
-          "Wrangler",
-          "Browser control"
-        ],
-        "access": [
-          "Cloudflare Durable Objects deployment access"
-        ],
-        "credentials": [],
-        "resources": [
-          "Realtime Worker, Durable Object namespace/migration and WebSocket authorization"
-        ],
-        "verify": [
-          "Authorized room isolation, disconnect/reconnect and deployed WebSockets"
-        ]
-      }
-    },
-    {
-      "name": "stream",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "STREAM_ACCOUNT_ID",
-        "STREAM_API_TOKEN"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Cloudflare Stream one-to-many live video with WHIP ingest and WHEP playback (GA)",
-      "targets": [
-        "packages/stream"
-      ],
-      "runtime": "server",
-      "setup": {
-        "purpose": "Ultra-low latency one-to-many live video",
-        "tools": [
-          "Cloudflare Stream API or dashboard",
-          "Browser control"
-        ],
-        "access": [
-          "Client-owned Cloudflare account with Stream enabled; usage-based delivery billing"
-        ],
-        "credentials": [
-          "Server-only STREAM_ACCOUNT_ID and account-scoped STREAM_API_TOKEN with Stream Write permission"
-        ],
-        "resources": [
-          "Manual Stream activation and live input setup; server management factory with secret WHIP and WHEP endpoints"
-        ],
-        "verify": [
-          "Creator/input ownership, viewer authorization and signed playback when private, browser media/ICE, reconnect and session cleanup; live behavior unverified"
-        ]
-      }
-    },
-    {
-      "name": "queues",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "service",
-      "description": "Queue producer binding, consumer and dead-letter handling",
-      "targets": [
-        "apps/jobs",
-        "apps/web",
-        "apps/api"
-      ],
-      "setup": {
-        "purpose": "Deferred jobs",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Queues configuration access"
-        ],
-        "credentials": [],
-        "resources": [
-          "Queue, producer/consumer bindings and failure handling"
-        ],
-        "verify": [
-          "Retries, idempotency, concurrency and dead-letter recovery"
-        ]
-      },
-      "runtime": "optional-worker"
-    },
-    {
-      "name": "cron",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "service",
-      "description": "Scheduled Worker",
-      "targets": [
-        "apps/scheduled"
-      ],
-      "setup": {
-        "purpose": "Scheduled work",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Worker deployment access"
-        ],
-        "credentials": [],
-        "resources": [
-          "Scheduled Worker and environment-specific Cron Triggers"
-        ],
-        "verify": [
-          "Schedule, idempotency, failure visibility and overlapping runs"
-        ]
-      }
-    },
-    {
-      "name": "workflows",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "service",
-      "description": "Durable multi-step Worker",
-      "targets": [
-        "apps/workflows"
-      ],
-      "setup": {
-        "purpose": "Durable multi-step processing",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Workflows deployment access"
-        ],
-        "credentials": [],
-        "resources": [
-          "Workflow Worker/binding and resumable steps"
-        ],
-        "verify": [
-          "Retry/resume, idempotency, cancellation and failure recovery"
-        ]
-      }
-    },
-    {
-      "name": "analytics-engine",
-      "version": "0.13.0",
-      "selection": {
-        "requiresAll": [
-          "hono"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Workers Analytics Engine dataset binding and server event helper",
-      "targets": [
-        "packages/analytics-engine"
-      ],
-      "runtime": "worker",
-      "setup": {
-        "purpose": "Custom server-side analytics",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Analytics Engine access"
-        ],
-        "credentials": [],
-        "resources": [
-          "EVENTS dataset binding; define event semantics and privacy policy"
-        ],
-        "verify": [
-          "Dataset ingestion, sampled query semantics and privacy filtering; not transactional billing state"
-        ]
-      }
-    },
-    {
-      "name": "images",
-      "version": "0.13.0",
-      "selection": {
-        "requiresAll": [
-          "hono"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Cloudflare Images binding and private image transform helper",
-      "targets": [
-        "packages/images"
-      ],
-      "runtime": "worker",
-      "setup": {
-        "purpose": "Image optimization",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Images account eligibility"
-        ],
-        "credentials": [],
-        "resources": [
-          "IMAGES binding; authorize source objects and define transform/usage limits"
-        ],
-        "verify": [
-          "Real transforms, source ownership and cache isolation"
-        ]
-      }
-    },
-    {
-      "name": "realtimekit",
-      "version": "0.13.0",
-      "selection": {
-        "requiresAll": [
-          "hono"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "cloudflare-api"
-      ],
-      "environment": [
-        "REALTIMEKIT_ACCOUNT_ID",
-        "REALTIMEKIT_APP_ID",
-        "REALTIMEKIT_API_TOKEN"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Cloudflare RealtimeKit server meeting and participant-token helpers",
-      "targets": [
-        "packages/realtimekit"
-      ],
-      "runtime": "worker",
-      "setup": {
-        "purpose": "Audio/video conferencing",
-        "tools": [
-          "Cloudflare RealtimeKit API or dashboard"
-        ],
-        "access": [
-          "Cloudflare RealtimeKit app and scoped Realtime permissions"
-        ],
-        "credentials": [
-          "Server-only account/app ID and API token"
-        ],
-        "resources": [
-          "Manual app activation and presets; implement authorized token routes and platform client SDK"
-        ],
-        "verify": [
-          "Meeting isolation, permissions, reconnect and actual device media/teardown"
-        ]
-      }
-    },
-    {
-      "name": "video",
-      "version": "0.13.0",
-      "selection": {
-        "requiresAll": [
-          "hono"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "cloudflare-api"
-      ],
-      "environment": [
-        "STREAM_ACCOUNT_ID",
-        "STREAM_API_TOKEN"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Cloudflare Stream private on-demand direct video upload helper",
-      "targets": [
-        "packages/video"
-      ],
-      "runtime": "worker",
-      "setup": {
-        "purpose": "Uploaded video processing and delivery",
-        "tools": [
-          "Cloudflare Stream API or dashboard"
-        ],
-        "access": [
-          "Cloudflare Stream activation and scoped Stream Write access"
-        ],
-        "credentials": [
-          "Server-only Stream account ID and API token"
-        ],
-        "resources": [
-          "Authorized one-time upload issuance; implement processing checks, signed playback and retention"
-        ],
-        "verify": [
-          "Creator ownership, upload/processing limits and private playback on selected devices"
-        ]
-      }
-    },
-    {
-      "name": "openai",
-      "version": "0.13.0",
-      "selection": {
-        "conflicts": [
-          "ai-sdk"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "OPENAI_API_KEY"
-      ],
-      "installer": "recipe",
-      "type": "package",
-      "runtime": "server",
-      "description": "Server-side OpenAI SDK factory",
-      "targets": [
-        "packages/ai"
-      ],
-      "setup": {
-        "purpose": "Direct OpenAI integration",
-        "tools": [
-          "OpenAI integration or API"
-        ],
-        "access": [
-          "Client-owned OpenAI project and model access"
-        ],
-        "credentials": [
-          "OPENAI_API_KEY"
-        ],
-        "resources": [
-          "Server SDK factory; implement application behavior and spending limits"
-        ],
-        "verify": [
-          "Selected model, failure handling, private inputs and cost controls"
-        ]
-      },
-      "package": {
-        "name": "ai",
-        "source": "import OpenAI from 'openai';\nexport function createAI(apiKey: string) { return new OpenAI({ apiKey }); }\n",
-        "dependencies": {
-          "openai": "6.49.0"
-        }
-      }
-    },
-    {
-      "name": "ai-sdk",
-      "version": "0.13.0",
-      "selection": {
-        "conflicts": [
-          "openai"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "OPENAI_API_KEY"
-      ],
-      "installer": "recipe",
-      "type": "package",
-      "runtime": "server",
-      "description": "Server-side AI SDK and provider exports",
-      "targets": [
-        "packages/ai"
-      ],
-      "setup": {
-        "purpose": "Streaming AI and provider abstraction",
-        "tools": [
-          "Selected AI provider integration or API"
-        ],
-        "access": [
-          "Selected provider project/model access"
-        ],
-        "credentials": [
-          "OPENAI_API_KEY for the generated default; selected provider credentials otherwise"
-        ],
-        "resources": [
-          "Server SDK factory; implement streaming, tools and application behavior"
-        ],
-        "verify": [
-          "Streaming, tool authorization, interruption and spending limits"
-        ]
-      },
-      "package": {
-        "name": "ai",
-        "source": "export { generateText, streamText } from 'ai';\nexport { createOpenAI } from '@ai-sdk/openai';\n",
-        "dependencies": {
-          "ai": "6.0.303",
-          "@ai-sdk/openai": "3.0.125"
-        }
-      }
-    },
-    {
-      "name": "workers-ai",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "configuration",
-      "type": "integration",
-      "description": "Workers AI runtime binding",
-      "targets": [
-        "apps/web",
-        "apps/api"
-      ],
-      "setup": {
-        "purpose": "Cloudflare-hosted inference",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Workers AI model access"
-        ],
-        "credentials": [],
-        "resources": [
-          "AI binding and selected model invocation"
-        ],
-        "verify": [
-          "Supported model behavior, authorization and usage limits"
-        ]
-      },
-      "runtime": "worker"
-    },
-    {
-      "name": "resend",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "RESEND_API_KEY"
-      ],
-      "installer": "recipe",
-      "type": "package",
-      "runtime": "server",
-      "description": "Server-side email SDK factory",
-      "targets": [
-        "packages/email"
-      ],
-      "setup": {
-        "purpose": "Outbound application email",
-        "tools": [
-          "Resend integration or API"
-        ],
-        "access": [
-          "Client-owned Resend project; sending-domain DNS access"
-        ],
-        "credentials": [
-          "RESEND_API_KEY; webhook secret when used"
-        ],
-        "resources": [
-          "Verified sending domain, sender and server integration"
-        ],
-        "verify": [
-          "Delivery, suppression/bounce handling and webhook verification; inbound routing is separate"
-        ]
-      },
-      "package": {
-        "name": "email",
-        "source": "import { Resend } from 'resend';\nexport function createEmail(apiKey: string) { return new Resend(apiKey); }\n",
-        "dependencies": {
-          "resend": "6.32.1"
-        }
-      }
-    },
-    {
       "name": "stripe",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {
         "requiresAll": [
-          "hono"
-        ],
-        "requiresAny": [
+          "hono",
           "better-auth",
-          "clerk"
+          "d1"
         ]
       },
       "registryDependencies": [
         "workspace",
         "typescript",
-        "eslint"
+        "eslint",
+        "hono",
+        "d1",
+        "better-auth",
+        "expo",
+        "next"
       ],
       "environment": [
         "BILLING_ORIGIN",
@@ -1179,7 +318,9 @@
       "targets": [
         "packages/billing",
         "packages/contracts",
-        "apps/api"
+        "apps/api",
+        "apps/mobile",
+        "apps/web"
       ],
       "setup": {
         "purpose": "Web payments and subscriptions",
@@ -1202,20 +343,23 @@
     },
     {
       "name": "revenuecat",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {
         "requiresAll": [
-          "hono"
-        ],
-        "requiresAny": [
+          "hono",
           "better-auth",
-          "clerk"
+          "d1"
         ]
       },
       "registryDependencies": [
         "workspace",
         "typescript",
-        "eslint"
+        "eslint",
+        "hono",
+        "d1",
+        "better-auth",
+        "expo",
+        "next"
       ],
       "environment": [
         "BILLING_ORIGIN",
@@ -1237,7 +381,9 @@
       "targets": [
         "packages/billing",
         "packages/contracts",
-        "apps/api"
+        "apps/api",
+        "apps/mobile",
+        "apps/web"
       ],
       "setup": {
         "purpose": "Cross-store subscription entitlements; Stripe is optional",
@@ -1260,137 +406,8 @@
       }
     },
     {
-      "name": "sentry",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "SENTRY_DSN"
-      ],
-      "installer": "recipe",
-      "type": "package",
-      "description": "Platform-specific monitoring integration boundary",
-      "targets": [
-        "packages/observability"
-      ],
-      "setup": {
-        "purpose": "Additional runtime/crash diagnostics",
-        "tools": [
-          "Sentry integration or API"
-        ],
-        "access": [
-          "Client-owned Sentry project access"
-        ],
-        "credentials": [
-          "SENTRY_DSN; source-map upload token when required"
-        ],
-        "resources": [
-          "Integration boundary; install/init runtime SDKs and configure private source-map uploads"
-        ],
-        "verify": [
-          "Captured runtime errors, source maps, privacy filtering and alert delivery"
-        ]
-      },
-      "package": {
-        "name": "observability",
-        "source": "// Initialize the platform-specific Sentry SDK in each application's runtime entrypoint.\nexport const redactFields = ['authorization', 'cookie', 'password', 'token'];\n",
-        "dependencies": {}
-      }
-    },
-    {
-      "name": "basin",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "package",
-      "description": "Cloudflare analytical stream binding and event helper",
-      "targets": [
-        "packages/analytics",
-        "packages/basin"
-      ],
-      "setup": {
-        "purpose": "Cloudflare analytical events",
-        "tools": [
-          "Wrangler",
-          "Cloudflare integration or API"
-        ],
-        "access": [
-          "Cloudflare analytics/Pipelines access; plan supporting selected services; Pipelines Setup grant for managed R2 sink setup"
-        ],
-        "credentials": [],
-        "resources": [
-          "Basin dataset/stream, ANALYTICS binding, optional private R2 sink and authorized sink writes"
-        ],
-        "verify": [
-          "Private ingestion, event delivery, query results and archive retrieval when selected"
-        ]
-      },
-      "package": {
-        "name": "analytics",
-        "source": "export interface EventStream { send(events: Record<string, unknown>[]): Promise<void> }\nexport async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) {\n  await stream.send(events);\n}\n",
-        "dependencies": {}
-      },
-      "runtime": "worker"
-    },
-    {
-      "name": "posthog",
-      "version": "0.13.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [
-        "POSTHOG_API_KEY",
-        "POSTHOG_HOST"
-      ],
-      "installer": "recipe",
-      "type": "package",
-      "runtime": "server",
-      "description": "Server-side product analytics factory",
-      "targets": [
-        "packages/analytics"
-      ],
-      "setup": {
-        "purpose": "Specialized product analytics",
-        "tools": [
-          "PostHog integration or API"
-        ],
-        "access": [
-          "Client-owned PostHog project access"
-        ],
-        "credentials": [
-          "POSTHOG_API_KEY; POSTHOG_HOST; separate privileged key if needed"
-        ],
-        "resources": [
-          "Analytics client factory; implement consent, event schema and privacy filtering"
-        ],
-        "verify": [
-          "Event receipt, consent behavior and redaction of private data"
-        ]
-      },
-      "package": {
-        "name": "analytics",
-        "source": "import { PostHog } from 'posthog-node';\nexport function createAnalytics(apiKey: string, host: string) { return new PostHog(apiKey, { host }); }\n",
-        "dependencies": {
-          "posthog-node": "5.55.2"
-        }
-      }
-    },
-    {
       "name": "styling",
-      "version": "0.13.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -1410,7 +427,7 @@
         "access": [],
         "credentials": [],
         "resources": [
-          "Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components"
+          "Shared light/dark tokens, web CSS and Anhedral native shadcn port"
         ],
         "verify": [
           "Consistency across selected interfaces; preserve platform-specific components"

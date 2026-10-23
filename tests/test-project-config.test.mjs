@@ -81,7 +81,7 @@ test('configuration writers share the source transaction lock across processes',
   fixture((root) => {
     writeProjectSection(root, 'identity', { schemaVersion: 1, id: 'retained' });
     const module = pathToFileURL(path.resolve('dist/project-config.js')).href;
-    const source = `import { writeProjectSection } from ${JSON.stringify(module)}; writeProjectSection(${JSON.stringify(root)}, 'vercel', { schemaVersion: 1, name: 'web' });`;
+    const source = `import { writeProjectSection } from ${JSON.stringify(module)}; writeProjectSection(${JSON.stringify(root)}, 'cloudflare', { schemaVersion: 1, name: 'web' });`;
     const child = () =>
       spawnSync(process.execPath, ['--input-type=module', '-e', source], {
         encoding: 'utf8',
@@ -91,11 +91,11 @@ test('configuration writers share the source transaction lock across processes',
       const result = child();
       assert.equal(result.status, 1);
       assert.match(result.stderr, /lock|transaction/i);
-      assert.equal(hasProjectSection(root, 'vercel'), false);
+      assert.equal(hasProjectSection(root, 'cloudflare'), false);
     });
     assert.equal(child().status, 0);
     assert.equal(readProjectSection(root, 'identity').id, 'retained');
-    assert.equal(readProjectSection(root, 'vercel').name, 'web');
+    assert.equal(readProjectSection(root, 'cloudflare').name, 'web');
     assert.deepEqual(readdirSync(root), ['anhedral.json']);
   }));
 

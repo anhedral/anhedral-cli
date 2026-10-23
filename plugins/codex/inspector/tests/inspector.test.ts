@@ -36,8 +36,8 @@ function fixture(run: (root: string, save: (file: string, value: unknown) => voi
   save('apps/web/package.json', { name: '@example/web' });
   writeProjectSection(root, 'standard', {
     schemaVersion: 1,
-    products: ['next', 'hono'],
-    hosting: 'vercel',
+    products: ['expo', 'hono', 'd1', 'r2', 'better-auth', 'styling'],
+    hosting: 'cloudflare',
   });
   writeProjectSection(root, 'cloudflare', {
     schemaVersion: 1,
@@ -49,19 +49,6 @@ function fixture(run: (root: string, save: (file: string, value: unknown) => voi
     accountId: 'a'.repeat(32),
     audience: 'public',
     targets: [{ id: 'api', directory: 'apps/api', workerName: 'example-api' }],
-  });
-  writeProjectSection(root, 'vercel', {
-    schemaVersion: 1,
-    id: vercelId,
-    name: 'mixed-application',
-    ownership: 'customer',
-    provider: 'vercel',
-    directory: 'apps/web',
-    projectId: 'prj_example',
-    teamId: 'team_example',
-    audience: 'private',
-    use: 'personal',
-    scope: 'example',
   });
   save('.anhedral/releases.json', {
     schemaVersion: 1,
@@ -90,20 +77,6 @@ function fixture(run: (root: string, save: (file: string, value: unknown) => voi
       },
     ],
   });
-  save('.anhedral/web-releases.json', {
-    schemaVersion: 1,
-    projectId: vercelId,
-    releases: [
-      {
-        id: 'web-success',
-        commit: 'c'.repeat(40),
-        startedAt: timestamp,
-        state: 'deployed',
-        operation: 'ship',
-        url: 'https://web.example.com',
-      },
-    ],
-  });
   try {
     run(root, save);
   } finally {
@@ -111,33 +84,27 @@ function fixture(run: (root: string, save: (file: string, value: unknown) => voi
   }
 }
 
-test('mixed delivery preserves independent latest attempt and last success without live claims', () =>
+test('Cloudflare delivery preserves independent latest attempt and last success without live claims', () =>
   fixture((root) => {
     const result = inspectApplication(root);
     assert.deepEqual(inspectionSchema.parse(result), result);
     const api = result.targets.data.find((target) => target.provider === 'cloudflare');
-    const web = result.targets.data.find((target) => target.provider === 'vercel');
     assert.equal(api?.latestAttempt?.id, 'cf-failure');
     assert.equal(api?.lastSuccessful?.id, 'cf-success');
     assert.equal(api?.lastSuccessful?.url, 'https://api.example.com/');
-    assert.equal(web?.latestAttempt?.id, 'web-success');
-    assert.equal(web?.lastSuccessful?.id, 'web-success');
     assert.equal(api?.liveStatus, 'unknown');
-    assert.equal(web?.liveStatus, 'unknown');
     assert.equal(result.authentication.state, 'not-checked');
   }));
 
-test('foreign Cloudflare journal isolates its error while retaining Vercel and workspace evidence', () =>
+test('foreign Cloudflare journal isolates its error while retaining workspace evidence', () =>
   fixture((root, save) => {
     save('.anhedral/releases.json', { schemaVersion: 1, projectId: vercelId, releases: [] });
     const result = inspectApplication(root);
     assert.deepEqual(inspectionSchema.parse(result), result);
     assert.equal(result.workspaces.state, 'available');
     const api = result.targets.data.find((target) => target.provider === 'cloudflare');
-    const web = result.targets.data.find((target) => target.provider === 'vercel');
     assert.ok(api?.error);
     assert.equal(api?.lastSuccessful, null);
-    assert.equal(web?.lastSuccessful?.id, 'web-success');
   }));
 
 test('an overall deployment receipt cannot prove success for an unrecorded Cloudflare target', () =>
@@ -151,27 +118,6 @@ test('an overall deployment receipt cannot prove success for an unrecorded Cloud
     const worker = result.targets.data.find((target) => target.id === 'cloudflare:worker');
     assert.ok(worker);
     assert.equal(worker.lastSuccessful, null);
-  }));
-
-test('receipt timestamps stay unavailable rather than borrowing inspection time', () =>
-  fixture((root, save) => {
-    save('.anhedral/web-releases.json', {
-      schemaVersion: 1,
-      projectId: vercelId,
-      releases: [
-        {
-          id: 'historical-release',
-          commit: 'c'.repeat(40),
-          state: 'deployed',
-          operation: 'ship',
-          url: 'https://web.example.com',
-        },
-      ],
-    });
-    const result = inspectApplication(root);
-    assert.deepEqual(inspectionSchema.parse(result), result);
-    const web = result.targets.data.find((target) => target.provider === 'vercel');
-    assert.equal(web?.lastSuccessful?.recordedAt, null);
   }));
 
 test('foreign mobile receipts never become successful artifact evidence', () =>
@@ -197,8 +143,8 @@ test('foreign mobile receipts never become successful artifact evidence', () =>
     assert.ok(mobile?.error);
     assert.equal(mobile?.lastSuccessful, null);
     assert.equal(
-      result.targets.data.find((target) => target.provider === 'vercel')?.lastSuccessful?.id,
-      'web-success',
+      result.targets.data.find((target) => target.provider === 'cloudflare')?.lastSuccessful?.id,
+      'cf-success',
     );
   }));
 
@@ -304,10 +250,6 @@ test('malformed consolidated hosting sections preserve independent valid evidenc
     writeProjectSection(root, 'cloudflare', { schemaVersion: 999 });
     const result = inspectApplication(root);
     assert.ok(result.targets.data.find((target) => target.id === 'cloudflare:unavailable')?.error);
-    assert.equal(
-      result.targets.data.find((target) => target.id === 'vercel:web')?.latestAttempt?.state,
-      'deployed',
-    );
     assert.equal(result.workspaces.state, 'available');
   }));
 

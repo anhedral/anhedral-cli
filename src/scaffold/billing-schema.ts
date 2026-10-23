@@ -2,13 +2,13 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { put } from './files.js';
 
-export function scaffoldBillingSchema(root: string, postgres: boolean): void {
-  const table = postgres ? 'pgTable' : 'sqliteTable';
-  const integer = postgres ? "bigint(name, { mode: 'number' })" : 'integer(name)';
+export function scaffoldBillingSchema(root: string): void {
+  const table = 'sqliteTable';
+  const integer = 'integer(name)';
   put(
     root,
     'packages/db/src/billing-schema.ts',
-    `import { ${table}, text, ${postgres ? 'bigint' : 'integer'}, index } from 'drizzle-orm/${postgres ? 'pg-core' : 'sqlite-core'}';
+    `import { ${table}, text, integer, index } from 'drizzle-orm/sqlite-core';
 const number = (name: string) => ${integer};
 
 // Billing IDs are verified auth subjects, including external identity providers.

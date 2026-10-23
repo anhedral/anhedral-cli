@@ -17,7 +17,7 @@ import {
 import { cloudflareRequest, listCloudflare, type CloudflareRequest } from './cloudflare.js';
 
 interface Resource {
-  kind: 'd1' | 'r2' | 'kv' | 'queue' | 'stream';
+  kind: 'd1' | 'r2';
   name: string;
   id?: string;
   target: string;
@@ -26,9 +26,6 @@ interface Resource {
 const resourceTypes = {
   d1: { endpoint: '/d1/database', nameField: 'name', idField: 'uuid' },
   r2: { endpoint: '/r2/buckets', nameField: 'name', idField: 'name' },
-  kv: { endpoint: '/storage/kv/namespaces', nameField: 'title', idField: 'id' },
-  queue: { endpoint: '/queues', nameField: 'queue_name', idField: 'queue_id' },
-  stream: { endpoint: '/pipelines/v1/streams', nameField: 'name', idField: 'id' },
 } as const;
 
 async function listResources(
@@ -36,24 +33,6 @@ async function listResources(
   kind: Resource['kind'],
 ): Promise<Record<string, unknown>[]> {
   const { endpoint } = resourceTypes[kind];
-  if (kind === 'stream') {
-    const streams: Record<string, unknown>[] = [];
-    let bytes = 0;
-    for (let page = 0; page < 1000; page++) {
-      const response = await request('GET', `${endpoint}?page=${page}&per_page=100`);
-      if (!Array.isArray(response.result)) throw new Error('Unsupported stream listing.');
-      if (response.result.some((item) => !item || typeof item !== 'object' || Array.isArray(item)))
-        throw new Error('Unsupported stream resource.');
-      streams.push(...response.result);
-      bytes += Buffer.byteLength(JSON.stringify(response.result));
-      if (streams.length > 10_000 || bytes > 10 * 1024 * 1024)
-        throw new Error(
-          'Stream listing exceeded collection limit; select resource IDs explicitly.',
-        );
-      if (response.result.length < 100) return streams;
-    }
-    throw new Error('Stream listing exceeded pagination limit.');
-  }
   if (kind !== 'r2') return listCloudflare(request, endpoint);
   const value = (await request('GET', endpoint)).result as {
     buckets?: Record<string, unknown>[];
@@ -64,23 +43,6 @@ async function listResources(
       'Unsupported or truncated R2 bucket listing; select resources explicitly with provider tooling.',
     );
   return value.buckets;
-}
-
-async function assertPrivateStream(request: CloudflareRequest, id: string): Promise<void> {
-  if (!/^[a-f0-9]{32}$/i.test(id)) throw new Error('Invalid Basin stream ID.');
-  const stream = (await request('GET', `${resourceTypes.stream.endpoint}/${id}`)).result as {
-    http?: { enabled?: unknown };
-    worker_binding?: { enabled?: unknown };
-    format?: { type?: unknown };
-  };
-  if (
-    stream?.http?.enabled !== false ||
-    stream.worker_binding?.enabled !== true ||
-    stream.format?.type !== 'json'
-  )
-    throw new Error(
-      'Basin stream must use a private Worker binding with JSON events and HTTP ingestion disabled.',
-    );
 }
 
 /** Provisioning and recovery use the same independently verified private-storage policy. */
@@ -118,7 +80,6 @@ export function planProvisioning(root: string) {
     for (const [kind, field] of [
       ['d1', 'd1_databases'],
       ['r2', 'r2_buckets'],
-      ['kv', 'kv_namespaces'],
     ] as const) {
       const entries = config[field];
       if (entries === undefined) continue;
@@ -126,14 +87,8 @@ export function planProvisioning(root: string) {
       entries.forEach((entry, index) => {
         if (!entry || typeof entry.binding !== 'string' || entry.jurisdiction)
           throw new Error('Use an explicit provider workflow for jurisdiction-specific resources.');
-        const name = resourceName(
-          kind === 'd1'
-            ? entry.database_name
-            : kind === 'r2'
-              ? entry.bucket_name
-              : (entry.anhedral_name ?? `${project.name}-${entry.binding.toLowerCase()}`),
-        );
-        const id = kind === 'd1' ? entry.database_id : kind === 'kv' ? entry.id : undefined;
+        const name = resourceName(kind === 'd1' ? entry.database_name : entry.bucket_name);
+        const id = kind === 'd1' ? entry.database_id : undefined;
         resources.push({
           kind,
           name,
@@ -143,48 +98,12 @@ export function planProvisioning(root: string) {
         });
       });
     }
-    const queues = config.queues as
-      | {
-          producers?: { queue?: unknown }[];
-          consumers?: { queue?: unknown; dead_letter_queue?: unknown }[];
-        }
-      | undefined;
-    for (const entry of [...(queues?.producers ?? []), ...(queues?.consumers ?? [])]) {
-      resources.push({ kind: 'queue', name: resourceName(entry.queue), target: target.id });
-      if ('dead_letter_queue' in entry && entry.dead_letter_queue)
-        resources.push({
-          kind: 'queue',
-          name: resourceName(entry.dead_letter_queue),
-          target: target.id,
-        });
-    }
-    if (config.pipelines !== undefined) {
-      if (!Array.isArray(config.pipelines)) throw new Error('Invalid Basin stream bindings.');
-      config.pipelines.forEach((entry, index) => {
-        if (
-          !entry ||
-          typeof entry.binding !== 'string' ||
-          typeof entry.stream !== 'string' ||
-          entry.pipeline
-        )
-          throw new Error('Use explicit Basin stream bindings.');
-        resources.push({
-          kind: 'stream',
-          name: resourceName(`${project.name}-${entry.binding.toLowerCase()}`),
-          target: target.id,
-          id: entry.stream.startsWith('REPLACE_WITH_') ? undefined : entry.stream,
-          field: ['pipelines', index, 'stream'],
-        });
-      });
-    }
   }
   return {
     projectId: project.id,
     accountId: project.accountId,
     resources,
-    externalIntegrations: ['hyperdrive'].filter((key) =>
-      project.targets.some((target) => key in readConfig(targetDirectory(root, target))),
-    ),
+    externalIntegrations: [],
   };
 }
 export async function provisionApplication(
@@ -197,8 +116,6 @@ export async function provisionApplication(
   const plan = planProvisioning(root);
   assertNoDeletedServices(root, plan.resources);
   if (dryRun) return { ...plan, mutation: false };
-  if (readApplication(root).deliveryEngine === 'void')
-    return { ...plan, mutation: false, writer: 'void' as const, deferredToDeployment: true };
   return withApplicationLock(root, async () => {
     const project = readApplication(root);
     const plan = planProvisioning(root);
@@ -248,9 +165,7 @@ export async function provisionApplication(
             !entry ||
             typeof entry !== 'object' ||
             Array.isArray(entry) ||
-            !['d1', 'r2', 'kv', 'queue', 'stream'].includes(
-              String((entry as { kind?: unknown }).kind),
-            ) ||
+            !['d1', 'r2'].includes(String((entry as { kind?: unknown }).kind)) ||
             ['name', 'id'].some(
               (field) => typeof (entry as Record<string, unknown>)[field] !== 'string',
             ) ||
@@ -288,13 +203,6 @@ export async function provisionApplication(
           value = (
             await request('POST', endpoint, {
               [nameField]: resource.name,
-              ...(resource.kind === 'stream'
-                ? {
-                    http: { enabled: false, authentication: true },
-                    worker_binding: { enabled: true },
-                    format: { type: 'json', unstructured: true },
-                  }
-                : {}),
             })
           ).result as Record<string, unknown>;
         if (!value || typeof value[idField] !== 'string' || !value[idField])
@@ -328,7 +236,6 @@ export async function provisionApplication(
           state: 'reconciling',
         });
         if (resource.kind === 'r2') await assertPrivateBucket(request, resource.name);
-        if (resource.kind === 'stream') await assertPrivateStream(request, receipt.id);
       }
       assertConfiguration();
       if (resource.id && receipt.id !== resource.id)
@@ -377,7 +284,6 @@ export async function inspectApplicationResources(root: string, request: Cloudfl
         'Committed resource identity differs from the registered account; recovery will not replace it.',
       );
     if (resource.kind === 'r2') await assertPrivateBucket(request, resource.name);
-    if (resource.kind === 'stream') await assertPrivateStream(request, id);
     receipts.push({ kind: resource.kind, name: resource.name, id, target: resource.target });
   }
   return { resources: receipts, externalIntegrations: plan.externalIntegrations };

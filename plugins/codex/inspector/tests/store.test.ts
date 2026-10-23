@@ -70,7 +70,9 @@ test('project projection exposes environment names and recorded configuration wi
     mkdirSync(path.join(root, 'apps', 'web'), { recursive: true });
     mkdirSync(path.join(root, '.anhedral'));
     writeProjectSection(root, 'cloudflare', cloudflareProject);
-    writeProjectSection(root, 'standard', { products: ['vinext', 'd1'] });
+    writeProjectSection(root, 'standard', {
+      products: ['expo', 'hono', 'd1', 'r2', 'better-auth', 'styling'],
+    });
     writeFileSync(
       path.join(root, 'apps/web/wrangler.jsonc'),
       '{"d1_databases":[{"binding":"DB","database_id":"REPLACE_WITH_DATABASE_ID"}],"triggers":{"crons":["0 * * * *"]}}',
@@ -354,7 +356,7 @@ test('dashboard projects only validated nonsecret operation progress and refuses
     const operation = {
       schemaVersion: 1,
       id: randomUUID(),
-      target: 'mixed',
+      target: 'cloudflare',
       state: 'blocked',
       startedAt: '2026-10-12T00:00:00.000Z',
       updatedAt: '2026-10-12T00:01:00.000Z',

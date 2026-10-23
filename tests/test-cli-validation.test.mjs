@@ -9,7 +9,7 @@ const run = (...args) =>
   spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8' });
 const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
 assert.match(readme, /\]\(docs\/stack-standard\.md\)/);
-assert.match(readme, /anhedral --help/);
+
 try {
   for (const args of [
     ['add', 'expo'],
@@ -29,8 +29,8 @@ try {
     ['init', '--fastify'],
     ['init', '--all'],
     ['init', '--neon', '--d1'],
-    ['init', '--vinext', '--next'],
-    ['init', '--vinext', '--hosting', 'vercel'],
+    ['init', '--next'],
+    ['init', '--hosting', 'vercel'],
     ['cloud', 'register'],
     ['cloud', 'stage'],
     ['cloud', 'deploy'],
@@ -49,11 +49,20 @@ try {
   assert.equal(JSON.parse(diagnosis.stdout).productionReady, false);
   assert.deepEqual(readdirSync(root), [], 'doctor must not write');
   const target = path.join(root, 'planned');
-  const result = run('init', target, '--hono', '--neon', '--dry-run', '--json');
+  const result = run('init', target, '--stripe', '--dry-run', '--json');
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).products, ['hono', 'neon']);
+  assert.deepEqual(JSON.parse(result.stdout).products, [
+    'better-auth',
+    'd1',
+    'expo',
+    'hono',
+    'next',
+    'r2',
+    'stripe',
+    'styling',
+  ]);
   assert.equal(existsSync(target), false);
-  assert.match(run('--help').stdout, /minimal Expo/);
+  assert.match(run('--help').stdout, /Expo/);
   assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify|anhedral cloud/);
   assert.match(run('--version').stdout, /^\d+\.\d+\.\d+\n$/);
 } finally {

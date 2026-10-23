@@ -1,7 +1,9 @@
+import { createRequire } from 'node:module';
+import path from 'node:path';
 import type { RecipeContext } from '../registry/types.js';
 import { json, patchPackage, put, readJson } from './files.js';
 
-/** Shared data and a Tailwind v3 preset for Expo/NativeWind and WXT. */
+/** One shared token source for native components and DOM CSS. */
 export function scaffoldStyling({ root }: RecipeContext): void {
   put(
     root,
@@ -53,42 +55,39 @@ exports.dark = {
 exports.spacing = { small: 4, medium: 8, large: 16 };
 `,
   );
+  patchPackage(root, 'packages/styling/package.json', {
+    exports: {
+      '.': './src/index.ts',
+      './globals.css': './globals.css',
+    },
+  });
+  const tokens = createRequire(import.meta.url)(
+    path.join(root, 'packages/styling/src/tokens.cjs'),
+  ) as { light: Record<string, string>; dark: Record<string, string> };
+  const rule = (selector: string, values: Record<string, string>) =>
+    selector +
+    ' {\n' +
+    Object.entries(values)
+      .map(([key, value]) => '  ' + key + ': ' + value + ';')
+      .join('\n') +
+    '\n}\n';
   put(
     root,
-    'packages/styling/tailwind.cjs',
-    `const { light, dark } = require('./src/tokens.cjs');
-const color = (name) => 'hsl(var(--' + name + '))';
-const surface = (name) => ({ DEFAULT: color(name), foreground: color(name + '-foreground') });
-
-module.exports = {
-  darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        border: color('border'), input: color('input'), ring: color('ring'),
-        background: color('background'), foreground: color('foreground'),
-        primary: surface('primary'), secondary: surface('secondary'),
-        destructive: surface('destructive'), muted: surface('muted'),
-        accent: surface('accent'), popover: surface('popover'), card: surface('card'),
-      },
-      borderRadius: {
-        lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)',
-      },
-    },
-  },
-  plugins: [function themeVariables({ addBase }) {
-    addBase({ ':root': light, '.dark:root': dark });
-  }],
-};
-`,
+    'packages/styling/globals.css',
+    rule(':root', tokens.light) +
+      '@media (prefers-color-scheme: dark) {\n' +
+      rule(':root', tokens.dark) +
+      '}\n',
   );
-  patchPackage(root, 'packages/styling/package.json', {
-    exports: { '.': './src/index.ts', './tailwind': './tailwind.cjs' },
-  });
+  put(
+    root,
+    'packages/styling/src/tokens.d.cts',
+    'export const light: Record<string, string>;\nexport const dark: Record<string, string>;\nexport const spacing: { small: number; medium: number; large: number };\n',
+  );
   const config = readJson(root, 'packages/styling/tsconfig.json');
   json(root, 'packages/styling/tsconfig.json', {
     ...config,
     compilerOptions: { ...(config.compilerOptions as Record<string, unknown>), allowJs: true },
-    include: ['src/**/*.ts', 'src/**/*.cjs', 'tailwind.cjs'],
+    include: ['src/**/*.ts', 'src/**/*.cjs'],
   });
 }

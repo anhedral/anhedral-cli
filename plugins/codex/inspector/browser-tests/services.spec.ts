@@ -138,3 +138,25 @@ test('confirmed deletion removes only the fixture resource and displays its rece
   await card.getByRole('button', { name: 'Check live status' }).click();
   await expect(card.getByText('Resource not found in the selected account.')).toBeVisible();
 });
+
+for (const top of [24, 112]) {
+  test(`project detail preserves a ${top}px host safe area after navigation`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    // Exercise the host layout contract without claiming native-host acceptance.
+    await page.evaluate((inset) => {
+      document.documentElement.style.setProperty('--host-inset-top', `${inset}px`);
+      document.documentElement.style.setProperty('--host-inset-bottom', '48px');
+    }, top);
+    await page.getByRole('button', { name: /atlas/ }).click();
+    const detail = page.locator('main.detail');
+    await expect(detail).toHaveCSS('padding-top', `${top + 16}px`);
+    const topbar = await detail.locator('.topbar').boundingBox();
+    expect(topbar).not.toBeNull();
+    expect(topbar!.y).toBeGreaterThanOrEqual(top);
+    await page.getByRole('tab', { name: 'Services', exact: true }).click();
+    await expect(detail).toHaveCSS('padding-top', `${top + 16}px`);
+    await page.getByRole('button', { name: 'Projects', exact: true }).click();
+    await expect(page.locator('main.listing')).toHaveCSS('padding-top', `${top + 32}px`);
+  });
+}

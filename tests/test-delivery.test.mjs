@@ -26,11 +26,7 @@ const account = 'a'.repeat(32),
   commit = 'b'.repeat(40);
 function fixture(targets = ['api', 'web']) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-delivery-test-'));
-  writeProjectSection(
-    root,
-    'setup',
-    createSetupPlan(parseStandardOptions([root, '--hono', '--vinext'])),
-  );
+  writeProjectSection(root, 'setup', createSetupPlan(parseStandardOptions([root])));
   writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'test-app' }));
   for (const id of targets) {
     mkdirSync(path.join(root, 'apps', id), { recursive: true });
@@ -543,7 +539,7 @@ test('registration rejects incomplete or inconsistent setup before writing appli
   const file = path.join(root, 'anhedral.json');
   try {
     rmSync(file);
-    const setup = createSetupPlan(parseStandardOptions([root, '--hono']));
+    const setup = createSetupPlan(parseStandardOptions([root]));
     for (const invalid of [{ hosting: 'cloudflare' }, { ...setup, products: ['unknown'] }]) {
       writeProjectSection(root, 'setup', invalid);
       const before = readFileSync(path.join(root, '.gitignore'), 'utf8');

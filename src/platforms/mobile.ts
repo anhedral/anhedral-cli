@@ -3,109 +3,10 @@ import path from 'node:path';
 import { writeReactLintConfig } from './lint.js';
 import { appendGitignore, writeFile } from '../util.js';
 import { childPackageName, jsString } from '../render.js';
-import {
-  MOBILE_APP_DEPENDENCIES,
-  MOBILE_NATIVEWIND_DEPENDENCIES,
-  EAS_CLI_VERSION,
-} from '../dependencies.js';
+import { MOBILE_APP_DEPENDENCIES, EAS_CLI_VERSION } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
+import { scaffoldNativeUI } from '../scaffold/native-ui.js';
 import { scaffoldExpoRuntime } from '../scaffold/expo-runtime.js';
-function writeReactNativeReusablesConfig(dir: string): void {
-  writeFile(
-    path.join(dir, 'components.json'),
-    JSON.stringify(
-      {
-        $schema: 'https://ui.shadcn.com/schema.json',
-        style: 'new-york',
-        rsc: false,
-        tsx: true,
-        tailwind: {
-          config: 'tailwind.config.js',
-          css: 'global.css',
-          baseColor: 'neutral',
-          cssVariables: true,
-        },
-        aliases: {
-          components: '@/components',
-          utils: '@/lib/utils',
-          ui: '@/components/ui',
-          lib: '@/lib',
-          hooks: '@/hooks',
-        },
-        iconLibrary: 'lucide',
-      },
-      null,
-      2,
-    ) + '\n',
-  );
-  writeFile(
-    path.join(dir, 'lib/utils.ts'),
-    `import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-`,
-  );
-  writeFile(
-    path.join(dir, 'components/ui/button.tsx'),
-    `import { Pressable, Text, type PressableProps } from 'react-native';
-import { cn } from '@/lib/utils';
-
-type ButtonProps = Omit<PressableProps, 'children'> & { children: string; className?: string };
-
-export function Button({ children, className, ...props }: ButtonProps) {
-  return <Pressable accessibilityRole="button" className={cn('h-10 items-center justify-center rounded-md bg-primary px-4', className)} {...props}>
-    <Text className="font-medium text-primary-foreground">{children}</Text>
-  </Pressable>;
-}
-`,
-  );
-  writeFile(
-    path.join(dir, 'babel.config.js'),
-    `module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
-  };
-};
-`,
-  );
-  writeFile(
-    path.join(dir, 'metro.config.js'),
-    `const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
-
-const config = getDefaultConfig(__dirname);
-
-module.exports = withNativeWind(config, { input: './global.css', inlineRem: 16 });
-`,
-  );
-  writeFile(path.join(dir, 'nativewind-env.d.ts'), '/// <reference types="nativewind/types" />\n');
-  writeFile(path.join(dir, 'styles.d.ts'), "declare module '*.css';\n");
-  writeFile(
-    path.join(dir, 'tailwind.config.js'),
-    `const { hairlineWidth } = require('nativewind/theme');
-
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
-  presets: [require('nativewind/preset'), require('@workspace/styling/tailwind')],
-  theme: { extend: { borderWidth: { hairline: hairlineWidth() } } },
-  future: { hoverOnlyWhenSupported: true },
-  plugins: [require('tailwindcss-animate')],
-};
-`,
-  );
-  writeFile(
-    path.join(dir, 'global.css'),
-    `@tailwind base;
-@tailwind components;
-@tailwind utilities;
-`,
-  );
-}
 function expoScheme(projectName: string): string {
   const unscoped = projectName.replace(/^@[^/]+\//, '');
   const safe = unscoped.toLowerCase().replace(/[^a-z0-9+.-]+/g, '-');
@@ -125,6 +26,10 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
   const nameLiteral = jsString(displayName);
   writeReactLintConfig(dir);
   writeFile(
+    path.join(dir, 'babel.config.js'),
+    "module.exports = function(api) { api.cache(true); return { presets: ['babel-preset-expo'] }; };\n",
+  );
+  writeFile(
     path.join(dir, 'package.json'),
     JSON.stringify(
       {
@@ -133,24 +38,22 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
         private: true,
         main: 'expo-router/entry',
         scripts: {
-          dev: 'expo start -c',
           android: 'expo start -c --android',
           ios: 'expo start -c --ios',
-          web: 'expo start -c --web',
-          build: 'pnpm typecheck && pnpm build:web',
-          'build:web': 'expo export --platform web',
+          start: 'expo start -c',
+          build: 'pnpm typecheck',
+          typecheck: 'tsc --noEmit',
+          lint: 'eslint . --max-warnings 0',
           'eas:login': `pnpm dlx eas-cli@${EAS_CLI_VERSION} login`,
           'build:simulator:ios': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform ios --profile simulator`,
           'build:internal:ios': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform ios --profile preview`,
           'build:internal:android': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform android --profile preview`,
           'build:production:ios': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform ios --profile production`,
           'build:production:android': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform android --profile production`,
-          typecheck: 'tsc --noEmit',
-          lint: 'eslint app components lib --max-warnings 0',
         },
         dependencies: {
           ...MOBILE_APP_DEPENDENCIES.dependencies,
-          ...MOBILE_NATIVEWIND_DEPENDENCIES.dependencies,
+          '@workspace/native-ui': 'workspace:*',
           '@workspace/styling': 'workspace:*',
         },
         devDependencies: {
@@ -174,7 +77,7 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
           orientation: 'portrait',
           userInterfaceStyle: 'automatic',
           scheme: expoScheme(projectName),
-          web: { bundler: 'metro', output: 'static' },
+          platforms: ['ios', 'android'],
           plugins: ['expo-router', 'expo-status-bar'],
           experiments: { reactCompiler: true, typedRoutes: true },
         },
@@ -193,30 +96,27 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
           noUncheckedIndexedAccess: true,
           paths: { '@/*': ['./*'] },
         },
-        include: [
-          '**/*.ts',
-          '**/*.tsx',
-          '.expo/types/**/*.ts',
-          'expo-env.d.ts',
-          'nativewind-env.d.ts',
-        ],
+        include: ['**/*.ts', '**/*.tsx', '.expo/types/**/*.ts', 'expo-env.d.ts'],
         exclude: ['node_modules', 'worker', '.output', 'worker-configuration.d.ts'],
       },
       null,
       2,
     ) + '\n',
   );
-  writeReactNativeReusablesConfig(dir);
+  scaffoldNativeUI(root);
+  writeFile(
+    path.join(dir, 'components/ui/button.tsx'),
+    "export { Button } from '@workspace/native-ui';\n",
+  );
   writeFile(
     path.join(dir, 'app/_layout.tsx'),
-    `import '@/global.css';
-import '@/lib/development-client';
-
-import { PortalHost } from '@rn-primitives/portal';
+    `import '@/lib/development-client';
+import { ThemeProvider } from '@workspace/native-ui';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 
 export default function RootLayout() {
-  return <><Stack /><PortalHost /></>;
+  return <SafeAreaProvider><ThemeProvider><Stack /></ThemeProvider></SafeAreaProvider>;
 }
 `,
   );
@@ -224,14 +124,15 @@ export default function RootLayout() {
   writeFile(path.join(dir, 'lib/development-client.native.ts'), "import 'expo-dev-client';\n");
   writeFile(
     path.join(dir, 'app/index.tsx'),
-    `${context.has('hono') ? "import { useEffect, useState } from 'react';\nimport { api } from '@/lib/api-client';\n" : ''}import { StatusBar } from 'expo-status-bar';
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+    `import { useEffect, useState } from 'react';
+import { api } from '@/lib/api-client';
+import { StatusBar } from 'expo-status-bar';
+import { Linking } from 'react-native';
+import { Screen, Stack, Text } from '@workspace/native-ui';
 import { Button } from '@/components/ui/button';
 
 export default function HomeScreen() {
-  ${
-    context.has('hono')
-      ? `const [connection, setConnection] = useState('Connecting to the API…');
+  const [connection, setConnection] = useState('Connecting to the API…');
   const [pending, setPending] = useState(true);
   useEffect(() => {
     let active = true;
@@ -248,34 +149,15 @@ export default function HomeScreen() {
     catch { setConnection('Unable to reach the API. Check the server and device API origin.'); }
     finally { setPending(false); }
   }
-`
-      : ''
-  }
-  return (
-    <ScrollView style={styles.screen} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.container}>
-      <StatusBar style="auto" />
-      <View style={styles.content}>
-        <Text accessibilityRole="header" style={styles.title}>{${nameLiteral}}</Text>
-        <Text selectable style={styles.subtitle}>Expo application scaffold generated by Anhedral.</Text>
-        ${
-          context.has('hono')
-            ? `<Text accessibilityLiveRegion="polite">{connection}</Text>
-        <Button disabled={pending} onPress={() => void checkConnection()}>{pending ? 'Connecting…' : 'Check API connection'}</Button>`
-            : ''
-        }
-        <Button onPress={() => void Linking.openURL('https://docs.expo.dev')}>Learn more</Button>
-      </View>
-    </ScrollView>
-  );
-}
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 32 },
-  content: { gap: 12 },
-  title: { color: '#0f172a', fontSize: 34, fontWeight: '700' },
-  subtitle: { color: '#475569', fontSize: 17, paddingBottom: 12 },
-});
+  return <Screen><StatusBar style="auto" /><Stack>
+    <Text variant="heading" accessibilityRole="header">{${nameLiteral}}</Text>
+    <Text variant="muted">Native iOS and Android application generated by Anhedral.</Text>
+    <Text accessibilityLiveRegion="polite">{connection}</Text>
+    <Button disabled={pending} onPress={() => void checkConnection()}>{pending ? 'Connecting…' : 'Check API connection'}</Button>
+    <Button onPress={() => void Linking.openURL('https://docs.expo.dev')}>Learn more</Button>
+  </Stack></Screen>;
+}
 `,
   );
   writeFile(path.join(dir, '.env.example'), '');

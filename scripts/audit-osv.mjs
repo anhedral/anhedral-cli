@@ -23,7 +23,7 @@ collectLockfilePackages(
   lockfileArgument ? path.resolve(process.cwd(), lockfileArgument) : defaultLockfile,
 );
 if (!lockfileArgument) {
-  for (const file of ['dependencies.ts', 'void.ts']) {
+  for (const file of ['dependencies.ts']) {
     const source = readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8');
     for (const { name, version } of collectCatalogDependencyPins(source, file))
       addPackage(name, version);

@@ -24,7 +24,7 @@ export async function runServiceCommand(root: string, input: string[]) {
     const inspection = inspectApplication(root);
     const keys = [
       ...inspection.setupProviders.data
-        .filter((provider) => !['cloudflare', 'vercel', 'expo'].includes(provider.id))
+        .filter((provider) => !['cloudflare', 'expo'].includes(provider.id))
         .map((provider) => `provider:${provider.id}`),
       ...inspection.integrations.data.flatMap((provider) =>
         provider.operations.map(
@@ -47,18 +47,12 @@ export async function runServiceCommand(root: string, input: string[]) {
               provider: service.provider,
               capabilities: {
                 status: true,
-                metrics: service.provider === 'posthog',
-                data: service.provider === 'neon',
+                metrics: false,
+                data: false,
                 delete: false,
               },
             };
           }
-          if (key.startsWith('target:vercel:'))
-            return {
-              key,
-              provider: 'vercel',
-              capabilities: { status: true, metrics: true, data: false, delete: false },
-            };
           const service = resolveService(root, key);
           return { ...service, capabilities: serviceCapabilities(service.kind) };
         } catch {
