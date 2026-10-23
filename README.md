@@ -1,4 +1,10 @@
-# Anhedral
+# Anhedral CLI
+
+Anhedral CLI is the starter foundation for applications built with Anhedral. It brings web, iOS, Android, backend services, authentication, data storage, and shared design foundations into one maintained application stack. Generated projects contain editable source, established architectural boundaries, and the configuration and development conventions needed to build on that foundation.
+
+The CLI gives each application a consistent starting point that Anhedral Agents and developers can extend together, carrying a shared architecture from initial setup into ongoing development and cloud delivery.
+
+Anhedral Platform is the shared workspace for collaboration, planning, and software delivery. Anhedral Agents is the orchestration layer for programming agents, isolated development environments, and source management. Anhedral Cloud is the managed hosting and application services layer. See the [Anhedral product family](https://www.anhedral.com/work) for how they fit together.
 
 Anhedral is open source under the [Apache License 2.0](LICENSE).
 Generated applications are editable source that developers can customize and license for their products.

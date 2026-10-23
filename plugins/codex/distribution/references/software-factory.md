@@ -1,5 +1,7 @@
 # Software factory
 
+Anhedral CLI supplies the starter foundation for applications built with Anhedral. Developers and Anhedral Agents extend its editable source; Anhedral Platform brings collaboration and delivery oversight together, and Anhedral Cloud hosts applications and their managed services. The workflow below describes the technical steps supporting that foundation.
+
 Use one maintained architecture: Next.js web + Expo native + Hono + Drizzle/D1 + private R2, supporting Better Auth and shared styling. Stripe and RevenueCat are the only optional additions. The [stack standard](stack-standard.md) owns architectural boundaries.
 
 ## Generate

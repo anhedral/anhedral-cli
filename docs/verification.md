@@ -746,3 +746,8 @@ shared temporary clone directory; rerunning sequentially resolved that setup fai
 without changing tests or adding retries. These results do not establish Windows,
 Linux, signed macOS distribution or store acceptance. Hosted PR checks provide
 separate evidence. This focused repair has no version bump or npm publication.
+
+
+## 2026-10-23 — Product family naming
+
+Positioned Anhedral CLI as the starter foundation in the README and software factory, alongside Anhedral Platform, Anhedral Agents, and Anhedral Cloud. This documentation change does not publish a package or activate provider services. Validation: Git whitespace checks; canonical software-factory reference refreshed through the normal build.
