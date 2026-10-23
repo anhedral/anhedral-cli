@@ -6,7 +6,7 @@ Generated applications are editable source that developers can customize and lic
 One command creates one stack:
 
 - **Next.js App Router** for the web, with DOM shadcn UI and Cloudflare OpenNext.
-- **Expo** for iOS and Android, with the Anhedral native shadcn port and NativeWind.
+- **Expo** for iOS and Android, with the Anhedral-maintained native shadcn port using StyleSheet and shared tokens.
 - **Hono** on Cloudflare Workers for application APIs and authorization.
 - **Drizzle / D1** for SQL persistence and explicit migrations.
 - **Private R2** for authenticated, owner-scoped files.

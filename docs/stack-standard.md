@@ -7,7 +7,7 @@ Anhedral generates one application architecture. The public CLI is maintained as
 | Owner | Responsibility |
 | --- | --- |
 | apps/web | Next.js App Router web application, DOM shadcn UI, SSR/RSC and Cloudflare OpenNext |
-| apps/mobile | Expo iOS/Android application, NativeWind and the Anhedral native shadcn port |
+| apps/mobile | Expo iOS/Android application and the Anhedral native shadcn port using StyleSheet and shared tokens |
 | apps/api | Hono Worker, authentication, application routes and authorization |
 | packages/contracts | Framework-independent schemas, JSON contracts and transport |
 | packages/db | Drizzle/D1 schema and explicit migrations |
