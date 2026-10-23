@@ -16,7 +16,9 @@ existing delivery selections.
    options to verify account/project and access protection.
 2. Review the intended source, checks, bindings and migrations. Choose one release
    path: `ship --dry-run --json` then authorized `ship --json`, or an authorized
-   Git deployment followed by `adopt --json`. Do not deploy the same revision twice.
+   Git deployment followed by `adopt --json`. Do not run both delivery paths for
+   the same target/change. Deliberate recovery or redeployment can reuse a source
+   revision after inspecting its prior outcome and current target state.
    Ship can create resources, apply reviewed migrations and publish code.
 3. If selected, deliver Hono before dependent frontends. Expo exports static web from
    `apps/mobile/dist`; `worker/index.ts` is the Cloudflare asset gateway, named
@@ -28,8 +30,10 @@ existing delivery selections.
    server-only HTTPS `API_URL`. For a private
    Cloudflare Access API, configure its scoped service-token policy and Vercel’s
    server-only `API_ACCESS_CLIENT_ID`/`API_ACCESS_CLIENT_SECRET`. API auth uses
-   the canonical public web origin. Check web-to-API health and sessions after
-   delivery. Inspect retained failure records before retrying a partial release;
+   the canonical public web origin. When Hono is selected, check API health after
+   delivery, including web-to-API routing when a frontend is present. Check sessions
+   only when application authentication and its session route are implemented.
+   Inspect retained failure records before retrying a partial release;
    reconcile uncertain effects.
 4. Refresh provider evidence with `status --refresh --json` and run meaningful live
    checks/`verify --json`. For private hosting, test anonymous denial and permitted

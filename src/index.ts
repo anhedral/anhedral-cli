@@ -91,4 +91,4 @@ export {
 } from './project-config.js';
 export type { ProjectConfig, ProjectSection } from './project-config.js';
 
-export { FULL_PRODUCT } from './registry/presets.js';
+export { FULL_PRODUCT, PORTAL_FULL_STACK } from './registry/presets.js';

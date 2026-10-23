@@ -34,6 +34,20 @@ function operationError(error: unknown) {
   };
 }
 const UI_RESOURCE = 'ui://anhedral/projects/v1.html';
+const serviceDescriptions: Record<(typeof SERVICE_TOOLS)[number], string> = {
+  refresh_service:
+    'Read current provider status for one selected service. Resource existence is distinct from application health. Use a catalog project id and exact service key from get_project_services.',
+  get_service_metrics:
+    'Read aggregate analytics for one supported service over 1, 24 or 168 hours. D1 and Vercel use complete UTC days. Use get_project_services for the project service key; no traffic is not proof of health.',
+  list_service_tables:
+    'List database tables or available KV/R2 metadata views for one selected service. Table names stay in app-only metadata. Requires a catalog project id and exact service key.',
+  browse_service_data:
+    'Read a bounded data page from a listed table or KV/R2 metadata view. Use the returned table and offset for database pages or returned cursor for KV/R2 pages. Rows stay app-only and sensitive columns are masked.',
+  plan_service_deletion:
+    'Prepare a short-lived deletion plan for one project-created D1 database or KV namespace. Does not delete the resource. The UI must review the impact and collect the exact resource name; the single-use token stays app-only.',
+  delete_service:
+    'Delete the exact project-created D1 database or KV namespace using its fresh single-use plan token and typed resource name. Rechecks identity and dependencies; never retries deletion automatically. Confirmation evidence stays app-only.',
+};
 const PROJECT_ICONS = [
   { theme: 'light' as const, mark: projectMark },
   { theme: 'dark' as const, mark: projectMarkDark },
@@ -188,10 +202,7 @@ export function createDashboardServer(
       name,
       {
         title: name.replaceAll('_', ' '),
-        description:
-          name === 'delete_service'
-            ? 'Delete the exact project-created service after its single-use plan and typed-name confirmation. Rechecks identity and dependencies; never retries deletion automatically.'
-            : 'Explicit selected-service operation. Credentials stay server-side. Table data and confirmation tokens are UI-only.',
+        description: serviceDescriptions[name],
         inputSchema: serviceArgumentsSchema,
         outputSchema: z
           .object({ summary: z.string(), response: serviceResponseSchema.optional() })

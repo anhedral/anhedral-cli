@@ -11,9 +11,9 @@
 
 > 🚧 **Under construction.** Anhedral is in active development; features and APIs may change.
 
-Anhedral creates TypeScript application workspaces and helps deliver them to your own cloud accounts. Start with a minimal universal frontend, add the services your product needs, and keep the source code, infrastructure, data and billing under your control.
+Anhedral creates TypeScript application workspaces and helps deliver them to your own cloud accounts. Start with a connected universal application, add the optional services your product needs, and keep the source code, infrastructure, data and billing under your control.
 
-The default is a **minimal Expo web/iOS/Android app** with React Native Reusables using shadcn conventions, NativeWind, shared styling, TypeScript, pnpm and Turborepo. Cloudflare hosts its static web export. Add API, accounts, data, files, payments or AI when needed; the resolver supplies dependencies. `--preset full-product` selects the complete compatible product foundation without activating services.
+The default is **Expo web/iOS/Android + Hono + Drizzle/D1 + private R2 + Better Auth**, with TypeScript, pnpm and Turborepo. Browser UI uses official **Base UI Nova shadcn** source; native counterparts share its design tokens and support system/light/dark appearance. Cloudflare hosts the static web gateway and Hono API. Optional payments, AI, email and media remain explicit. Use `--preset minimal` for a client-only Expo app with the same design system. Initialization does not activate services.
 
 ## Start locally
 
@@ -36,7 +36,7 @@ Initialization creates the selected frontend and API foundations, downloads any 
 ### Choose a starting point
 
 ```sh
-anhedral init my-app                              # Minimal Expo app
+anhedral init my-app                              # Connected Expo/Hono/D1/private R2 app
 anhedral init my-app --better-auth                # Add Hono, D1 and accounts
 anhedral init my-app --next --r2                   # Next/Vercel + Cloudflare API/files
 anhedral init my-app --preset full-product        # Complete compatible foundation
@@ -55,7 +55,7 @@ for recipes, `anhedral registry view <recipe> --json` for details, and
 
 ## Progressive stack
 
-Plain init creates only the Expo client, styling and tooling. Add capabilities for
+Plain init creates the connected default stack and shared design system. Add optional capabilities for
 real requirements, or use `--preset full-product` for the complete compatible
 foundation. [See the concise stack page](docs/anhedral-stack.md).
 
@@ -67,16 +67,17 @@ foundation. [See the concise stack page](docs/anhedral-stack.md).
 
 The diagram shows the basic connected app: Expo web/iOS/Android, Hono, Better Auth,
 Drizzle/D1 and private R2, with shared UI, contracts and workspace tooling.
-Plain init starts with Expo; API, accounts and data are added when needed.
+Plain init includes Expo, Hono, accounts, Drizzle/D1 and private R2.
 All additional capabilities and alternatives are listed below.
 
 | Need | Selection | Added automatically |
 | --- | --- | --- |
-| Minimal client | Plain init / `--preset minimal` | Expo, NativeWind, shared tokens and workspace tooling |
+| Connected app | Plain init | Expo, Hono, Drizzle/D1, Better Auth, private R2 and shared UI |
+| Minimal client | `--preset minimal` | Expo, shared UI/tokens and workspace tooling |
 | Server logic | `--expo --hono` | Hono API and public contracts |
 | Persistence | `--d1` | Hono and Drizzle/D1 |
 | Accounts | `--better-auth` | Hono, a database and browser/native auth |
-| AI | `--workers-ai` | Hono and AI binding; no implicit accounts or billing |
+| AI | `--workers-ai` | AI binding on the default foundation; no implicit billing |
 | Full product | `--preset full-product` | All compatible Cloudflare layers, WXT, payments, email and monitoring |
 
 The full preset includes Expo, WXT side panel, Hono, Better Auth, D1, R2, KV,
@@ -247,7 +248,7 @@ is authoritative for what Anhedral generates.
 | Extension UX | [WXT](https://wxt.dev/) + [Chrome sidePanel API](https://developer.chrome.com/docs/extensions/reference/api/sidePanel); declare permissions and validate packaged behavior. |
 | Billing | [Stripe Checkout](https://docs.stripe.com/payments/checkout), [customer portal](https://docs.stripe.com/customer-management), [RevenueCat entitlements](https://www.revenuecat.com/docs/getting-started/entitlements), StoreKit and Play Billing. Hono verifies webhooks and enforces shared entitlements; neither provider requires the other. |
 | Tests | [Playwright](https://playwright.dev/docs/intro), [Cloudflare Vitest integration](https://developers.cloudflare.com/workers/testing/vitest-integration/) and [Fallow](https://fallow.tools/docs/); test native/store flows on their actual platforms. |
-| Design | React Native Reusables with **shadcn conventions** for Expo; DOM shadcn/ui for web/extension interfaces. [Vercel guidelines](https://vercel.com/design/guidelines), [Typeset](https://ui.shadcn.com/typeset), [shadcn MCP](https://ui.shadcn.com/docs/mcp), [React Bits](https://reactbits.dev/get-started/introduction/) and [vgpu](https://vgpu.sh) are optional references/tools; DOM components are not automatically native-compatible. |
+| Design | Official **Base UI Nova shadcn** on Expo web; React Native counterparts with shared tokens, native touch targets and system text scaling. [Vercel guidelines](https://vercel.com/design/guidelines), [Typeset](https://ui.shadcn.com/typeset), [shadcn MCP](https://ui.shadcn.com/docs/mcp), [React Bits](https://reactbits.dev/get-started/introduction/) and [vgpu](https://vgpu.sh) are optional references/tools; DOM components are not automatically native-compatible. |
 
 ## Build and deliver
 

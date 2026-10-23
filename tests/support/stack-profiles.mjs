@@ -2,6 +2,7 @@ export const STACK_PROFILES = {
   web: ['--vinext'],
   universal: [],
   'universal-auth': ['--better-auth'],
+  'portal-full-stack': ['--preset=portal-full-stack', '--anhedral-ui', '--managed-email'],
   'universal-billing': ['--stripe', '--revenuecat'],
   'web-auth': ['--vinext', '--better-auth'],
   vercel: ['--next'],

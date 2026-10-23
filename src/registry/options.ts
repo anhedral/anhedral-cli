@@ -54,6 +54,14 @@ function parseStandardFlags(remaining: readonly string[]) {
     products.add(value as StandardProduct);
   }
   if (preset) applyPreset(preset, products);
+  else if (
+    products.has('expo') ||
+    ![...products].some((id) => ['next', 'vinext', 'hono', 'electron', 'wxt'].includes(id))
+  ) {
+    for (const id of ['expo', 'hono', 'r2'] as const) products.add(id);
+    if (!products.has('neon') && !products.has('neon-realtime')) products.add('d1');
+    if (!products.has('clerk')) products.add('better-auth');
+  }
   if (!hostingSpecified && products.has('next')) hosting = 'vercel';
   return { products, hosting, hostingSpecified, gitSpecified };
 }

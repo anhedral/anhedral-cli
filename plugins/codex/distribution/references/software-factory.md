@@ -24,7 +24,7 @@ For a booking app, “a member can create a booking, see it after reload, and ca
 
 Choose only the necessary catalog components. Decide whether the app is public or private, whether several clients share an API, and who owns production operations. Resolve decisions that materially affect architecture, access or cost before creating resources.
 
-Choose the smallest sufficient capability set from the [stack catalog](stack-standard.md#progressive-selection-and-full-product-preset). Plain init creates only Expo, shared styling and workspace tooling. Add Hono for server logic, Drizzle/D1 for persistence, Better Auth for accounts and private R2 for uploads only when needed. Dependencies are resolved automatically; no accounts or billing are inferred for an AI-only app. Use `--preset full-product` for the complete compatible foundation including Cloudflare AI, analytics, realtime/conferencing, image/video, jobs and both payment providers. Explicit provider/frontend alternatives replace preset defaults. Inspect generated guides and support metadata; scaffolding does not activate services or establish product behavior. Existing backend ownership and edited source remain protected. New Expo/Images/Analytics Engine/Queues/Basin use Wrangler; additions do not silently migrate an existing Void workspace.
+Choose the smallest sufficient capability set from the [stack catalog](stack-standard.md#progressive-selection-and-full-product-preset). Plain init creates Expo, Hono, Drizzle/D1, Better Auth, private R2 and the shared design system. Use --preset minimal for a client-only app. Dependencies are resolved automatically; payments remain explicit. Use --preset minimal with selected server capabilities when the product needs an anonymous API without the connected defaults. Use `--preset full-product` for the complete compatible foundation including Cloudflare AI, analytics, realtime/conferencing, image/video, jobs and both payment providers. Explicit provider/frontend alternatives replace preset defaults. Inspect generated guides and support metadata; scaffolding does not activate services or establish product behavior. Existing backend ownership and edited source remain protected. New Expo/Images/Analytics Engine/Queues/Basin use Wrangler; additions do not silently migrate an existing Void workspace.
 
 Record what each recipe supplies and what the product still needs. Sentry, device-local data and RevenueCat require platform integration work; SDK factories need consumers; room messaging, live video, job processing and workflows need product behavior. Select `--stream` for one-to-many WHIP/WHEP broadcasts; Stream activation, live input ownership, creator/player UI and private playback verification remain explicit integration work. The catalog's generated-scope and setup columns describe these boundaries.
 
@@ -241,7 +241,15 @@ Expo remains pinned to SDK 57; current SDK 58 documentation is not an upgrade in
 
 ## Cross-platform identity and optional billing
 
-New Expo workspaces include Better Auth, Drizzle/D1 and private R2. Expo generates separate browser/native session clients, an exact trusted app scheme, SecureStore cookie transport and sign-in/account screens. Native calls the reachable `EXPO_PUBLIC_API_URL`; Hono derives the user from the session. Local browser/API checks and native exports are separate from development-build/device acceptance. Explicit Clerk retains its own adapter/setup requirements.
+Plain CLI initialization creates the connected Expo/Hono/Drizzle-D1/private-R2/Better-Auth foundation and shared UI. Optional integrations remain explicit; --preset minimal selects a client-only app. The
+managed `portal-full-stack` profile includes Better Auth, Drizzle/D1, private R2,
+Anhedral UI and managed email; it is separate from the minimal CLI default.
+When Better Auth is selected, Expo generates separate browser/native session
+clients, an exact trusted app scheme, SecureStore cookie transport and
+sign-in/account screens. Native calls the reachable `EXPO_PUBLIC_API_URL`; Hono
+derives the user from the session. Local browser/API checks and native exports
+are separate from development-build/device acceptance. Explicit Clerk retains
+its own adapter/setup requirements.
 
 Select `--stripe`, `--revenuecat` or both explicitly. They add shared Hono billing, database schema, public contracts and selected Expo billing UI. Neither requires the other. Web uses server-created Stripe Checkout and Customer Portal; native RevenueCat provides purchase, restore and management flows. The verified auth `user.id` is the shared billing identity. Client purchase results and SDK `CustomerInfo` never grant server access.
 

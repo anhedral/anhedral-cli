@@ -8,13 +8,7 @@ import path from 'node:path';
 import { writeBetterAuthSchema } from '../auth-schema.js';
 import type { RecipeContext } from '../registry/types.js';
 import { put, patchPackage, sharedPackage } from './files.js';
-export function scaffoldBetterAuth({
-  root,
-  options,
-  runtimeApp,
-  has,
-  updating,
-}: RecipeContext): void {
+export function scaffoldBetterAuth({ root, options, runtimeApp, has }: RecipeContext): void {
   const scheme = has('expo') ? expoAuthScheme(root) : undefined;
   writeBetterAuthSchema(root, has('neon'));
   sharedPackage(
@@ -102,7 +96,7 @@ export { handler as GET, handler as POST };
     },
   );
   if (has('hono') && (has('vinext') || has('next'))) scaffoldWebAuth(root);
-  if (scheme) scaffoldExpoAuth(root, scheme, !updating);
+  if (scheme) scaffoldExpoAuth(root, scheme);
   if (has('hono'))
     put(
       root,

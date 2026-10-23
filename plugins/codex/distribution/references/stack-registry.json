@@ -1103,6 +1103,88 @@
       "runtime": "worker"
     },
     {
+      "name": "anhedral-ui",
+      "version": "0.13.0",
+      "selection": {
+        "requiresAll": [
+          "expo"
+        ]
+      },
+      "registryDependencies": [
+        "workspace",
+        "typescript",
+        "eslint",
+        "expo",
+        "styling"
+      ],
+      "environment": [],
+      "installer": "recipe",
+      "type": "package",
+      "description": "Base UI Nova web components and themed native counterparts for Expo",
+      "targets": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "setup": {
+        "purpose": "Anhedral UI",
+        "tools": [],
+        "access": [],
+        "credentials": [],
+        "resources": [
+          "Shared source-owned Expo components and semantic tokens"
+        ],
+        "verify": [
+          "Browser and native rendering, accessibility and focus behavior"
+        ]
+      }
+    },
+    {
+      "name": "managed-email",
+      "version": "0.13.0",
+      "selection": {
+        "requiresAll": [
+          "hono",
+          "better-auth"
+        ],
+        "conflicts": [
+          "resend"
+        ]
+      },
+      "registryDependencies": [
+        "workspace",
+        "typescript",
+        "eslint",
+        "better-auth"
+      ],
+      "environment": [
+        "ANHEDRAL_EMAIL_SCOPE",
+        "ANHEDRAL_EMAIL_CAPABILITY"
+      ],
+      "installer": "recipe",
+      "type": "integration",
+      "runtime": "worker",
+      "description": "Anhedral-managed transactional email for application authentication",
+      "targets": [
+        "packages/managed-email",
+        "packages/auth",
+        "apps/api"
+      ],
+      "setup": {
+        "purpose": "Managed application email",
+        "tools": [],
+        "access": [],
+        "credentials": [
+          "Anhedral-provisioned app/environment email capability; no client provider account"
+        ],
+        "resources": [
+          "Scoped mail broker binding and verified Anhedral-managed sender"
+        ],
+        "verify": [
+          "Verification/reset callbacks, tenant isolation and real delivery acceptance"
+        ]
+      }
+    },
+    {
       "name": "resend",
       "version": "0.13.0",
       "selection": {},
@@ -1410,7 +1492,7 @@
         "access": [],
         "credentials": [],
         "resources": [
-          "Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components"
+          "Shared Nova light/dark tokens, native sRGB values and a Tailwind v3 transport for WXT"
         ],
         "verify": [
           "Consistency across selected interfaces; preserve platform-specific components"

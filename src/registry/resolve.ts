@@ -63,6 +63,7 @@ export function resolveStandardProducts(
   for (const id of selected) getStackDefinition(id);
   const applications = [...selected].filter((id) => getStackDefinition(id).type === 'application');
   if (!applications.length) selected.add(hosting === 'vercel' ? 'next' : 'expo');
+  if (selected.has('expo')) selected.add('anhedral-ui');
   // Resolve to a fixed point: an addition may introduce another dependency.
   // Readiness/add callers preserve an existing web-owned backend; new profiles
   // use Hono whenever privileged server behavior is selected.

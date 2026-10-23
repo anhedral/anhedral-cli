@@ -200,12 +200,11 @@ process.exitCode = result.status ?? 1;
       'apps/*/crons/**/*.{ts,mts,js,mjs}',
       ...(has('electron') ? ['apps/desktop/src/main/preload.cts'] : []),
     ],
-    // Expo web export and NativeWind load these runtime dependencies dynamically.
+    // Expo web export and native navigation load these runtime dependencies dynamically.
     ...(has('expo')
       ? {
           ignoreDependencies: [
             'react-native-web',
-            'react-native-css-interop',
             'react-native-reanimated',
             'react-native-worklets',
           ],
@@ -283,7 +282,7 @@ process.exitCode = result.status ?? 1;
     bootstrap: updating
       ? readProjectSection(root, 'standard').bootstrap
       : {
-          command: BOOTSTRAP_COMMAND.join(' '),
+          command: has('next') || has('vinext') ? BOOTSTRAP_COMMAND.join(' ') : null,
           upstreamPackageManager: existing.packageManager,
         },
     status: 'starter',

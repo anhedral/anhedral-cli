@@ -10,9 +10,8 @@ acceptance criteria. Ask for an app idea only when none exists. Inspect the
 destination first; continue an existing application instead of initializing over it.
 
 Default to the smallest useful Expo web/iOS/Android app in `apps/mobile`, with
-React Native Reusables using shadcn conventions, NativeWind, shared tokens,
-TypeScript, pnpm and Turborepo. Cloudflare serves its static web export. No API,
-auth, database, R2 or payment provider is selected by plain init.
+official Base UI Nova shadcn on web, native React Native counterparts, shared tokens,
+TypeScript, pnpm and Turborepo. Plain init includes Hono, Drizzle/D1, Better Auth and private R2; payments and other integrations remain optional. --preset minimal keeps a client-only app.
 
 Select capabilities from actual flows: Hono for server logic/secrets, Drizzle/D1
 for persistence, Better Auth for accounts, R2 for private files. The CLI resolves
@@ -21,12 +20,14 @@ identity and durable state. AI or image processing alone does not require accoun
 or billing. Use `--expo --hono` for a connected universal app; `--hono` alone is
 API-only, and `--wxt` alone is a standalone browser side panel.
 
-Use `--preset full-product` when a complete foundation is requested. It selects
-Expo, WXT, Hono, D1, Better Auth, R2, KV, Stripe/RevenueCat, Workers AI, Analytics
-Engine, Basin/Pipelines, Durable Object rooms, RealtimeKit, Images, Stream live and
-uploaded video, Queues/Cron/Workflows, Resend and Sentry. This generates compatible
-scaffolds and bindings; provider activation, product implementation and acceptance
-remain separate. It does not activate every vendor or conflicting alternative.
+Use `--preset full-product` when a complete foundation is requested. Read the
+bundled [stack registry](../../references/stack-registry.json) for component
+contracts and the [selection guidance](../../references/stack-standard.md#progressive-selection-and-full-product-preset)
+for defaults and overrides. Use the selected CLI's dry run for the exact resolved
+preset selection.
+This generates compatible scaffolds and bindings; provider activation, product
+implementation and acceptance remain separate. It does not activate every vendor
+or conflicting alternative.
 
 Next.js on Vercel (`--next`) is the usual explicit web alternative; Vinext on
 Cloudflare (`--vinext`) is also available. Explicit Neon and Clerk replace the full

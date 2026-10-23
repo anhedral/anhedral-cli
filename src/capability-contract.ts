@@ -149,6 +149,16 @@ function productCapability(id: StandardProduct): ProductCapability {
     limits.push(
       'Configure private authentication secret and public origin; apply and verify database migrations and authorization rules.',
     );
+  if (id === 'managed-email') {
+    provisioning = stage(
+      'scaffold-only',
+      'Anhedral operations must provision the app/environment mail capability, managed sender and broker binding.',
+      'unverified',
+    );
+    limits.push(
+      'No client email-provider account is required. Real delivery, suppression, inbound routing and native link handling need managed-service acceptance.',
+    );
+  }
   return {
     id,
     description: item.description,

@@ -70,7 +70,7 @@ test('runtime and database dependencies precede auth and resolve deterministical
 test('plans resolve runtime-specific destinations, package names and bindings', () => {
   const item = (args, name) => resolve(args).items.find((entry) => entry.name === name);
   const expo = item([], 'expo');
-  assert.deepEqual(expo.environment, []);
+  assert.deepEqual(expo.environment, ['EXPO_PUBLIC_API_URL']);
   assert.ok(item(['--hono', '--expo'], 'expo').environment.includes('EXPO_PUBLIC_API_URL'));
   assert.ok(expo.environment.every((key) => key.startsWith('EXPO_PUBLIC_')));
   assert.ok(expo.setup.tools.includes('Wrangler'));
@@ -254,15 +254,22 @@ test('recipes compose all compatible products without package collisions, and in
 test('minimal defaults and optional capabilities stay independent', () => {
   const products = (flags = []) =>
     parseStandardOptions(['example', ...flags, '--skip-install']).products;
-  assert.deepEqual(products(), ['expo']);
+  assert.deepEqual(products(), ['anhedral-ui', 'better-auth', 'd1', 'expo', 'hono', 'r2']);
   assert.deepEqual(products(['--wxt']), ['wxt']);
-  assert.deepEqual(products(['--neon']), ['expo', 'hono', 'neon']);
+  assert.deepEqual(products(['--neon']), [
+    'anhedral-ui',
+    'better-auth',
+    'expo',
+    'hono',
+    'neon',
+    'r2',
+  ]);
   for (const provider of ['stripe', 'revenuecat']) {
     const selected = products([`--${provider}`]);
     assert.ok(selected.includes(provider));
     assert.equal(selected.includes(provider === 'stripe' ? 'revenuecat' : 'stripe'), false);
     for (const item of ['better-auth', 'd1', 'expo', 'hono']) assert.ok(selected.includes(item));
-    assert.ok(!selected.includes('r2'));
+    assert.ok(selected.includes('r2'));
   }
   assert.deepEqual(products(['--hono']), ['hono']);
   assert.deepEqual(products(['--vinext']), ['vinext']);

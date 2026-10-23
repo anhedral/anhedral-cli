@@ -24,7 +24,10 @@ for (const profile of selected) {
   const root = path.join(temporary, profile);
   process.env.ANHEDRAL_PLUGIN_DATA = path.join(temporary, 'catalog');
   try {
-    if (process.platform === 'win32') {
+    if (
+      process.platform === 'win32' &&
+      profiles[profile].some((flag) => flag === '--next' || flag === '--vinext')
+    ) {
       const result = spawnSync(
         process.execPath,
         [cli, 'init', root, ...profiles[profile], '--no-git'],

@@ -1,9 +1,10 @@
+import { expoUiSource } from './anhedral-ui.js';
 import { writeEnvironmentFile } from './environment.js';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
-import { patchPackage, put } from './files.js';
+import { patchPackage, put as writeSource } from './files.js';
 
 /** Native store purchases and web Stripe checkout share only server-verified entitlements. */
 export function scaffoldExpoBilling({ root, has }: RecipeContext): void {
@@ -225,7 +226,8 @@ export async function openBillingURL(_url: string): Promise<void> { throw new Er
 function billingScreenSource(): string {
   return `import { useCallback, useEffect, useRef, useState } from 'react';
 import { Redirect } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { Screen, Stack } from '@workspace/ui/components/layout';
+import { Text } from '@workspace/ui/components/text';
 import type { BillingIdentity, BillingEntitlements } from '@workspace/contracts';
 import { AuthConfiguration } from '@/components/auth-configuration';
 import { Button } from '@/components/ui/button';
@@ -295,30 +297,34 @@ function Billing() {
   return <SessionBilling userId={session.user.id} data={data} message={message} pending={pending} run={run} checkout={checkout} retry={() => setReload((value) => value + 1)} />;
 }
 function SessionBilling({ userId, data, message, pending, run, checkout, retry }: Actions & { userId: string; data: Data | null; message: string; checkout: (plan: string) => Promise<void>; retry: () => void }) {
-  if (data?.identity.appUserId !== userId) return <View style={{ padding: 24, gap: 12 }}><Text>{message || 'Loading subscriptions…'}</Text><Button onPress={retry}>Retry subscriptions</Button></View>;
+  if (data?.identity.appUserId !== userId) return <Stack><Text>{message || 'Loading subscriptions…'}</Text><Button onPress={retry}>Retry subscriptions</Button></Stack>;
   return <BillingContent data={data} message={message} pending={pending} run={run} checkout={checkout} />;
 }
 function Entitlements({ state }: { state: BillingEntitlements }) {
-  return <View><Text accessibilityRole="header">Last server-verified access</Text>{state.entitlements.map((item) => <Text key={item.key}>{item.key}: {item.active ? 'Active' : 'Inactive'}</Text>)}<Text>Checked: {state.checkedAt}</Text></View>;
+  return <Stack><Text variant="title" accessibilityRole="header">Last server-verified access</Text>{state.entitlements.map((item) => <Text key={item.key}>{item.key}: {item.active ? 'Active' : 'Inactive'}</Text>)}<Text>Checked: {state.checkedAt}</Text></Stack>;
 }
 type Actions = { pending: boolean; run: (action: () => Promise<void>) => Promise<void> };
 function WebPlans({ data, pending, run, checkout }: Actions & { data: Data; checkout: (plan: string) => Promise<void> }) {
   if (!data.identity.providers.stripe) return <Text>Web checkout is not configured for this product.</Text>;
-  return <View style={{ gap: 12 }}>{data.identity.plans.map((plan) => <Button key={plan.id} disabled={pending} onPress={() => void run(() => checkout(plan.id))}>{plan.label}</Button>)}<Button disabled={pending} onPress={() => void run(async () => openBillingURL((await billingApi.portal()).url))}>Manage web subscription</Button></View>;
+  return <Stack>{data.identity.plans.map((plan) => <Button key={plan.id} disabled={pending} onPress={() => void run(() => checkout(plan.id))}>{plan.label}</Button>)}<Button disabled={pending} onPress={() => void run(async () => openBillingURL((await billingApi.portal()).url))}>Manage web subscription</Button></Stack>;
 }
 function NativePlans({ data, pending, run }: Actions & { data: Data }) {
   if (!data.identity.providers.revenuecat) return <Text>Native store purchases are not selected.</Text>;
-  return <View style={{ gap: 12 }}>{data.offers.map((offer) => <Button key={offer.id} disabled={pending} onPress={() => void run(() => purchaseStoreOffer(offer.id))}>{offer.label + ' — ' + offer.price}</Button>)}<Button disabled={pending} onPress={() => void run(restoreStorePurchases)}>Restore purchases</Button><Button disabled={pending} onPress={() => void run(manageStorePurchases)}>Manage store subscription</Button></View>;
+  return <Stack>{data.offers.map((offer) => <Button key={offer.id} disabled={pending} onPress={() => void run(() => purchaseStoreOffer(offer.id))}>{offer.label + ' — ' + offer.price}</Button>)}<Button disabled={pending} onPress={() => void run(restoreStorePurchases)}>Restore purchases</Button><Button disabled={pending} onPress={() => void run(manageStorePurchases)}>Manage store subscription</Button></Stack>;
 }
 function BillingContent({ data, message, pending, run, checkout }: Actions & { data: Data; message: string; checkout: (plan: string) => Promise<void> }) {
-  return <ScrollView contentContainerStyle={{ padding: 24, gap: 16 }}>
-    <Text accessibilityRole="header">Subscriptions</Text>
+  return <Screen>
+    <Text variant="title" accessibilityRole="header">Subscriptions</Text>
     <Entitlements state={data.state} />
     {billingPlatform === 'web' ? <WebPlans data={data} pending={pending} run={run} checkout={checkout} /> : <NativePlans data={data} pending={pending} run={run} />}
     <Button disabled={pending} onPress={() => void run(async () => undefined)}>Refresh server access</Button>
     <Text accessibilityLiveRegion="polite">{message}</Text>
     <Text>Purchases grant access only after server verification. Store account transfers follow the configured provider policy.</Text>
-  </ScrollView>;
+  </Screen>;
 }
 `;
+}
+
+function put(root: string, file: string, source: string): void {
+  writeSource(root, file, file.startsWith('apps/mobile/') ? expoUiSource(root, source) : source);
 }

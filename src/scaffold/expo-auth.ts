@@ -1,8 +1,7 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
+import { expoUiSource } from './anhedral-ui.js';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { jsString } from '../render.js';
-import { json, patchPackage, put, readJson } from './files.js';
+import { json, patchPackage, put as writeSource, readJson } from './files.js';
 
 export function expoAuthScheme(root: string): string {
   const config = readJson(root, 'apps/mobile/app.json');
@@ -13,7 +12,7 @@ export function expoAuthScheme(root: string): string {
 }
 
 /** Platform resolution keeps SecureStore and the native plugin out of the browser bundle. */
-export function scaffoldExpoAuth(root: string, scheme: string, linkHome = true): void {
+export function scaffoldExpoAuth(root: string, scheme: string): void {
   const directory = 'apps/mobile';
   patchPackage(root, `${directory}/package.json`, {
     dependencies: {
@@ -88,12 +87,13 @@ export const sessionApi = createApplicationApiClient({ headers: async () => {
   put(
     root,
     `${directory}/components/auth-configuration.tsx`,
-    `import { Text, View } from 'react-native';
+    `import { Screen } from '@workspace/ui/components/layout';
+import { Text } from '@workspace/ui/components/text';
 import { authConfigurationError } from '@/lib/auth-client';
 
 export function AuthConfiguration({ children }: { children: React.ReactNode }) {
   const error = authConfigurationError();
-  if (error) return <View style={{ padding: 24, gap: 12 }}><Text accessibilityRole="header">Configure the product API</Text><Text selectable>{error}</Text></View>;
+  if (error) return <Screen><Text variant="heading" accessibilityRole="header">Configure the product API</Text><Text selectable>{error}</Text></Screen>;
   return <>{children}</>;
 }
 `,
@@ -103,7 +103,9 @@ export function AuthConfiguration({ children }: { children: React.ReactNode }) {
     `${directory}/app/sign-in.tsx`,
     `import { useState } from 'react';
 import { router } from 'expo-router';
-import { ScrollView, Text, TextInput } from 'react-native';
+import { Screen, Stack } from '@workspace/ui/components/layout';
+import { Text } from '@workspace/ui/components/text';
+import { Input } from '@workspace/ui/components/input';
 import { Button } from '@/components/ui/button';
 import { AuthConfiguration } from '@/components/auth-configuration';
 import { getAuthClient } from '@/lib/auth-client';
@@ -140,15 +142,18 @@ function SignIn() {
     } catch (error) { setMessage(authenticationError(error)); }
     finally { setPending(false); }
   }
-  return <ScrollView contentContainerStyle={{ padding: 24, gap: 12 }} keyboardShouldPersistTaps="handled">
-    <Text accessibilityRole="header">{modeLabel(create)}</Text>
-    {create && <TextInput accessibilityLabel="Name" placeholder="Name" value={name} onChangeText={setName} autoComplete="name" />}
-    <TextInput accessibilityLabel="Email" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
-    <TextInput accessibilityLabel="Password" placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete={create ? 'new-password' : 'current-password'} />
+  return <Screen><Stack>
+    <Text variant="heading" accessibilityRole="header">{modeLabel(create)}</Text>
+    {create && <Text variant="label">Name</Text>}
+    {create && <Input accessibilityLabel="Name" placeholder="Name" value={name} onChangeText={setName} autoComplete="name" />}
+    <Text variant="label">Email</Text>
+    <Input accessibilityLabel="Email" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
+    <Text variant="label">Password</Text>
+    <Input accessibilityLabel="Password" placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete={create ? 'new-password' : 'current-password'} />
     <Button disabled={pending} onPress={() => void submit()}>{submitLabel(pending, create)}</Button>
     <Text accessibilityLiveRegion="polite">{message}</Text>
     <Button disabled={pending} onPress={() => { setCreate(!create); setMessage(''); }}>{switchLabel(create)}</Button>
-  </ScrollView>;
+  </Stack></Screen>;
 }
 `,
   );
@@ -156,8 +161,10 @@ function SignIn() {
     root,
     `${directory}/app/account.tsx`,
     `import { useEffect, useState } from 'react';
-import { Link, Redirect, router } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Redirect, router } from 'expo-router';
+import { AppLink as Link } from '@/components/app-link';
+import { Screen, Stack } from '@workspace/ui/components/layout';
+import { Text } from '@workspace/ui/components/text';
 import type { Session } from '@workspace/contracts';
 import { Button } from '@/components/ui/button';
 import { AuthConfiguration } from '@/components/auth-configuration';
@@ -189,7 +196,7 @@ function Account() {
     } catch { setMessage('Unable to sign out. Check the connection and retry.'); }
     finally { setPending(false); }
   }
-  if (isPending) return <View style={{ padding: 24 }}><Text>Restoring session…</Text></View>;
+  if (isPending) return <Screen><Text>Restoring session…</Text></Screen>;
   if (!session) return <Redirect href="/sign-in" />;
   return <AccountContent userId={session.user.id} verified={verified} message={message} pending={pending} signOut={signOut} />;
 }
@@ -201,29 +208,19 @@ function accountMessage(userId: string, verified: Session['user'] | null, messag
 function AccountContent({ userId, verified, message, pending, signOut }: {
   userId: string; verified: Session['user'] | null; message: string; pending: boolean; signOut: () => Promise<void>;
 }) {
-  return <View style={{ padding: 24, gap: 12 }}>
-    <Text accessibilityRole="header">Account</Text>
+  return <Screen><Stack>
+    <Text variant="heading" accessibilityRole="header">Account</Text>
     <Text>{accountMessage(userId, verified, message)}</Text>
     <Text accessibilityLiveRegion="polite">{message}</Text>
     <Button disabled={pending} onPress={() => void signOut()}>{pending ? 'Signing out…' : 'Sign out'}</Button>
     <Link href="/sign-in">Sign in again</Link>
     <Link href="/">Home</Link>
-  </View>;
+  </Stack></Screen>;
 }
 `,
   );
-  // Additions expose /account and /sign-in without rewriting existing product screens.
-  if (!linkHome) return;
-  const home = `${directory}/app/index.tsx`;
-  const source = readFileSync(path.join(root, home), 'utf8');
-  if (source.includes('<Link href="/account">')) return;
-  put(
-    root,
-    home,
-    "import { Link } from 'expo-router';\n" +
-      source.replace(
-        "<Button onPress={() => void Linking.openURL('https://docs.expo.dev')}>Learn more</Button>",
-        '<Link href="/account">Account and sign in</Link>\n        <Button onPress={() => void Linking.openURL(\'https://docs.expo.dev\')}>Learn more</Button>',
-      ),
-  );
+}
+
+function put(root: string, file: string, source: string): void {
+  writeSource(root, file, file.startsWith('apps/mobile/') ? expoUiSource(root, source) : source);
 }

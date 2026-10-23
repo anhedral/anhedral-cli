@@ -15,6 +15,7 @@ import { runStagedTransaction } from './transaction.js';
 import { createSetupPlan } from './capabilities.js';
 import {
   bootstrapWorkspace,
+  bootstrapUniversalWorkspace,
   assertBootstrapPlatform,
   assertWorkspaceRuntime,
 } from './scaffold/bootstrap.js';
@@ -38,7 +39,7 @@ export async function scaffoldStandardProject(
     printResult('init', plan, { ...output, json: options.json });
     return;
   }
-  assertBootstrapPlatform(run);
+  if (options.products.some((id) => id === 'next' || id === 'vinext')) assertBootstrapPlatform(run);
   assertWorkspaceRuntime(run);
   const voidWorkspace = usesVoidSelection(options.products, options.hosting);
   if (voidWorkspace && run === execFile && !supportsVoidRuntime(process.versions.node))
@@ -70,8 +71,10 @@ export async function scaffoldStandardProject(
         if (entries.length) throw new Error('Destination changed before generation.');
       },
       build: async (stageRoot) => {
-        printProgress('Creating the shadcn/Turborepo workspace…', display);
-        bootstrapWorkspace(stageRoot, options.name, run);
+        printProgress('Creating the selected pnpm/Turborepo workspace…', display);
+        if (options.products.some((id) => id === 'next' || id === 'vinext'))
+          bootstrapWorkspace(stageRoot, options.name, run);
+        else bootstrapUniversalWorkspace(stageRoot, options.name);
         printProgress('Composing the selected stack…', display);
         await composeStack(stageRoot, options, plan.registry);
         writeProjectSection(stageRoot, 'identity', {

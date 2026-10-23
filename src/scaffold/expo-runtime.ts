@@ -138,7 +138,6 @@ export function createApplicationApiClient(options: Options = {}) {
   };
 }
 
-export const api = createApplicationApiClient();
 `,
   );
   writeEnvironmentFile(root, `${directory}/.env.example`, { EXPO_PUBLIC_API_URL: '' });

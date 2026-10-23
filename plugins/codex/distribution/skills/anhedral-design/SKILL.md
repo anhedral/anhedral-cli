@@ -9,9 +9,7 @@ Start with the user flow, existing design system and repository layout rules.
 Choose hierarchy, typography, spacing, density and responsive behavior before
 effects. Preserve established identity unless a redesign is requested.
 
-- For Expo universal web/iOS/Android, default to React Native Reusables with
-  shadcn conventions, native primitives, NativeWind and shared design tokens. Adapt component source to the product rather than mixing in
-  DOM-only shadcn components. Check browser keyboard behavior and native
+- For Expo universal web/iOS/Android, use official Base UI Nova shadcn web components and explicit native React Native counterparts with shared design tokens. Use platform-specific exports; browser Base UI must remain outside native bundles. Root ThemeProvider owns System/Light/Dark preferences above navigation and overlays. Check browser keyboard behavior and native
   touch, safe areas and platform APIs. DOM shadcn components are not native UI.
   Explicit Next.js on Vercel or Vinext on Cloudflare apps use shared shadcn
   primitives; inspect `components.json`

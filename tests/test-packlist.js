@@ -17,6 +17,10 @@ const requiredFiles = new Set([
   'assets/patches/node-forge@1.4.0.patch',
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
+  'assets/ui/web/button.tsx',
+  'assets/ui/native/button.tsx',
+  'assets/ui/UPSTREAM.json',
+  'assets/ui/LICENSE.shadcn',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -142,7 +146,11 @@ try {
       'assets/patches/audit-deps.mjs',
     ].includes(file.path);
     const allowed =
-      allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation || allowedPatch;
+      allowedRootFiles.has(file.path) ||
+      allowedDist ||
+      allowedDocumentation ||
+      allowedPatch ||
+      file.path.startsWith('assets/ui/');
     assert.ok(allowed, `unexpected published path: ${file.path}`);
     if (!allowedDocumentation)
       assert.doesNotMatch(

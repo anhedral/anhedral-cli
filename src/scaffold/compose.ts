@@ -1,7 +1,7 @@
 import { scaffoldCloudflareServiceContext } from './cloudflare-services.js';
 import { writeProjectSection } from '../project-config.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
-import { existsSync, rmSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { installStackItem } from '../stack-registry.js';
 import { createRecipeContext } from '../registry/context.js';
@@ -18,10 +18,6 @@ export async function composeStack(
   registry: ResolvedStackRegistry,
 ): Promise<void> {
   const context = createRecipeContext(root, options);
-  if (!context.has('next') && !context.has('vinext')) {
-    for (const directory of ['apps/web', 'packages/ui'])
-      rmSync(path.join(root, directory), { recursive: true, force: true });
-  }
   for (const item of registry.items) Object.assign(context.bindings, item.bindings);
   for (const item of registry.items) {
     if (item.installer === 'recipe') await installStackItem(item, context);

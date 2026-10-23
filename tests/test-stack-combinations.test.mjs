@@ -30,6 +30,7 @@ const rejectedSelection = /Choose one|requires|select it explicitly|--hosting ap
 const optionsFor = (directory, runtime, products) =>
   parseStandardOptions([
     directory,
+    ...(runtime.some((flag) => flag.startsWith('--preset')) ? [] : ['--preset=minimal']),
     ...runtime,
     ...products.map((product) => `--${product}`),
     '--skip-install',
@@ -128,7 +129,7 @@ test('every option generates coherent targets, workspaces, environment and synta
         generated++;
         rmSync(root, { recursive: true, force: true });
       }
-    assert.equal(generated, 228);
+    assert.equal(generated, 242);
     for (const product of STANDARD_PRODUCTS) assert.ok(covered.has(product), product);
   } finally {
     rmSync(temporary, { recursive: true, force: true });

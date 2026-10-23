@@ -119,12 +119,33 @@ try {
       ({ status }) => status === 'planned',
     ),
   );
-  assert.deepEqual(options('default').products, ['expo']);
+  assert.deepEqual(options('default').products, [
+    'anhedral-ui',
+    'better-auth',
+    'd1',
+    'expo',
+    'hono',
+    'r2',
+  ]);
   assert.deepEqual(options('explicit-vercel', ['--next']).products, ['next']);
   assert.equal(options('explicit-vercel', ['--next']).hosting, 'vercel');
   assert.equal(options('supported-default', ['--hosting=cloudflare']).hosting, 'cloudflare');
-  assert.deepEqual(options('mobile', ['--expo']).products, ['expo']);
-  assert.deepEqual(options('auth', ['--clerk']).products, ['clerk', 'expo', 'hono']);
+  assert.deepEqual(options('mobile', ['--expo']).products, [
+    'anhedral-ui',
+    'better-auth',
+    'd1',
+    'expo',
+    'hono',
+    'r2',
+  ]);
+  assert.deepEqual(options('auth', ['--clerk']).products, [
+    'anhedral-ui',
+    'clerk',
+    'd1',
+    'expo',
+    'hono',
+    'r2',
+  ]);
   for (const flags of [
     ['--all'],
     ['--neon', '--d1'],
@@ -148,7 +169,14 @@ try {
       '--r2',
     ]);
     await scaffoldStandardProject(universal, runner);
-    assert.deepEqual(universal.products, ['better-auth', 'd1', 'expo', 'hono', 'r2']);
+    assert.deepEqual(universal.products, [
+      'anhedral-ui',
+      'better-auth',
+      'd1',
+      'expo',
+      'hono',
+      'r2',
+    ]);
     assert.equal(universal.hosting, 'cloudflare');
     const delivery = readProjectSection(universal.root, 'cloudflare');
     assert.equal(delivery.deliveryEngine, 'wrangler');
@@ -944,7 +972,14 @@ try {
     { encoding: 'utf8' },
   );
   assert.equal(cli.status, 0, cli.stderr);
-  assert.deepEqual(JSON.parse(cli.stdout).products, ['expo']);
+  assert.deepEqual(JSON.parse(cli.stdout).products, [
+    'anhedral-ui',
+    'better-auth',
+    'd1',
+    'expo',
+    'hono',
+    'r2',
+  ]);
   assert.equal(existsSync(path.join(temp, 'cli')), false);
   const invalid = spawnSync(process.execPath, ['dist/bin.js', 'init', '--all', '--json'], {
     encoding: 'utf8',

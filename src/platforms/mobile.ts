@@ -1,111 +1,12 @@
 import { NATIVE_ESLINT_VERSION } from '../dependencies.js';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { writeReactLintConfig } from './lint.js';
 import { appendGitignore, writeFile } from '../util.js';
 import { childPackageName, jsString } from '../render.js';
-import {
-  MOBILE_APP_DEPENDENCIES,
-  MOBILE_NATIVEWIND_DEPENDENCIES,
-  EAS_CLI_VERSION,
-} from '../dependencies.js';
+import { MOBILE_APP_DEPENDENCIES, EAS_CLI_VERSION } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { scaffoldExpoRuntime } from '../scaffold/expo-runtime.js';
-function writeReactNativeReusablesConfig(dir: string): void {
-  writeFile(
-    path.join(dir, 'components.json'),
-    JSON.stringify(
-      {
-        $schema: 'https://ui.shadcn.com/schema.json',
-        style: 'new-york',
-        rsc: false,
-        tsx: true,
-        tailwind: {
-          config: 'tailwind.config.js',
-          css: 'global.css',
-          baseColor: 'neutral',
-          cssVariables: true,
-        },
-        aliases: {
-          components: '@/components',
-          utils: '@/lib/utils',
-          ui: '@/components/ui',
-          lib: '@/lib',
-          hooks: '@/hooks',
-        },
-        iconLibrary: 'lucide',
-      },
-      null,
-      2,
-    ) + '\n',
-  );
-  writeFile(
-    path.join(dir, 'lib/utils.ts'),
-    `import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-`,
-  );
-  writeFile(
-    path.join(dir, 'components/ui/button.tsx'),
-    `import { Pressable, Text, type PressableProps } from 'react-native';
-import { cn } from '@/lib/utils';
-
-type ButtonProps = Omit<PressableProps, 'children'> & { children: string; className?: string };
-
-export function Button({ children, className, ...props }: ButtonProps) {
-  return <Pressable accessibilityRole="button" className={cn('h-10 items-center justify-center rounded-md bg-primary px-4', className)} {...props}>
-    <Text className="font-medium text-primary-foreground">{children}</Text>
-  </Pressable>;
-}
-`,
-  );
-  writeFile(
-    path.join(dir, 'babel.config.js'),
-    `module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
-  };
-};
-`,
-  );
-  writeFile(
-    path.join(dir, 'metro.config.js'),
-    `const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
-
-const config = getDefaultConfig(__dirname);
-
-module.exports = withNativeWind(config, { input: './global.css', inlineRem: 16 });
-`,
-  );
-  writeFile(path.join(dir, 'nativewind-env.d.ts'), '/// <reference types="nativewind/types" />\n');
-  writeFile(path.join(dir, 'styles.d.ts'), "declare module '*.css';\n");
-  writeFile(
-    path.join(dir, 'tailwind.config.js'),
-    `const { hairlineWidth } = require('nativewind/theme');
-
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
-  presets: [require('nativewind/preset'), require('@workspace/styling/tailwind')],
-  theme: { extend: { borderWidth: { hairline: hairlineWidth() } } },
-  future: { hoverOnlyWhenSupported: true },
-  plugins: [require('tailwindcss-animate')],
-};
-`,
-  );
-  writeFile(
-    path.join(dir, 'global.css'),
-    `@tailwind base;
-@tailwind components;
-@tailwind utilities;
-`,
-  );
-}
 function expoScheme(projectName: string): string {
   const unscoped = projectName.replace(/^@[^/]+\//, '');
   const safe = unscoped.toLowerCase().replace(/[^a-z0-9+.-]+/g, '-');
@@ -122,7 +23,6 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
   const dir = path.join(root, 'apps/mobile');
   const projectName = options.name;
   const displayName = options.name;
-  const nameLiteral = jsString(displayName);
   writeReactLintConfig(dir);
   writeFile(
     path.join(dir, 'package.json'),
@@ -150,7 +50,6 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
         },
         dependencies: {
           ...MOBILE_APP_DEPENDENCIES.dependencies,
-          ...MOBILE_NATIVEWIND_DEPENDENCIES.dependencies,
           '@workspace/styling': 'workspace:*',
         },
         devDependencies: {
@@ -192,90 +91,59 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
           strict: true,
           noUncheckedIndexedAccess: true,
           paths: { '@/*': ['./*'] },
+          customConditions: ['react-native'],
         },
-        include: [
-          '**/*.ts',
-          '**/*.tsx',
-          '.expo/types/**/*.ts',
-          'expo-env.d.ts',
-          'nativewind-env.d.ts',
-        ],
+        include: ['**/*.ts', '**/*.tsx', '.expo/types/**/*.ts', 'expo-env.d.ts'],
         exclude: ['node_modules', 'worker', '.output', 'worker-configuration.d.ts'],
       },
       null,
       2,
     ) + '\n',
   );
-  writeReactNativeReusablesConfig(dir);
+  writeFile(
+    path.join(dir, 'babel.config.js'),
+    "module.exports = function(api) { api.cache(true); return { presets: ['babel-preset-expo'] }; };\n",
+  );
+  writeFile(
+    path.join(dir, 'metro.config.js'),
+    "const { getDefaultConfig } = require('expo/metro-config');\nmodule.exports = getDefaultConfig(__dirname);\n",
+  );
+  writeFile(path.join(dir, 'styles.d.ts'), "declare module '*.css';\n");
+  writeFile(
+    path.join(dir, 'components/ui/button.tsx'),
+    "export { Button } from '@workspace/ui/components/button';\n",
+  );
   writeFile(
     path.join(dir, 'app/_layout.tsx'),
-    `import '@/global.css';
+    `import '@/components/app-styles';
 import '@/lib/development-client';
-
-import { PortalHost } from '@rn-primitives/portal';
 import { Stack } from 'expo-router';
-
-export default function RootLayout() {
-  return <><Stack /><PortalHost /></>;
-}
+import { AppProviders } from '@/components/app-providers';
+export default function RootLayout() { return <AppProviders><Stack screenOptions={{ headerShown: false }} /></AppProviders>; }
 `,
+  );
+  writeFile(
+    path.join(dir, 'lib/starter.ts'),
+    `export const starterTitle = ${jsString(displayName)};\n`,
   );
   writeFile(path.join(dir, 'lib/development-client.ts'), 'export {};\n');
   writeFile(path.join(dir, 'lib/development-client.native.ts'), "import 'expo-dev-client';\n");
   writeFile(
     path.join(dir, 'app/index.tsx'),
-    `${context.has('hono') ? "import { useEffect, useState } from 'react';\nimport { api } from '@/lib/api-client';\n" : ''}import { StatusBar } from 'expo-status-bar';
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Button } from '@/components/ui/button';
-
+    `import { router } from 'expo-router';
+import { Screen, Stack } from '@workspace/ui/components/layout';
+import { Text } from '@workspace/ui/components/text';
+import { Button } from '@workspace/ui/components/button';
+import { ThemeSwitcher } from '@workspace/ui/components/theme-switcher';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@workspace/ui/components/card';
+import { starterTitle } from '@/lib/starter';
 export default function HomeScreen() {
-  ${
-    context.has('hono')
-      ? `const [connection, setConnection] = useState('Connecting to the API…');
-  const [pending, setPending] = useState(true);
-  useEffect(() => {
-    let active = true;
-    void api.health().then(
-      () => { if (active) setConnection('API connected'); },
-      () => { if (active) setConnection('Unable to reach the API. Check the server and device API origin.'); },
-    ).finally(() => { if (active) setPending(false); });
-    return () => { active = false; };
-  }, []);
-  async function checkConnection() {
-    setPending(true);
-    setConnection('Connecting to the API…');
-    try { await api.health(); setConnection('API connected'); }
-    catch { setConnection('Unable to reach the API. Check the server and device API origin.'); }
-    finally { setPending(false); }
-  }
-`
-      : ''
-  }
-  return (
-    <ScrollView style={styles.screen} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.container}>
-      <StatusBar style="auto" />
-      <View style={styles.content}>
-        <Text accessibilityRole="header" style={styles.title}>{${nameLiteral}}</Text>
-        <Text selectable style={styles.subtitle}>Expo application scaffold generated by Anhedral.</Text>
-        ${
-          context.has('hono')
-            ? `<Text accessibilityLiveRegion="polite">{connection}</Text>
-        <Button disabled={pending} onPress={() => void checkConnection()}>{pending ? 'Connecting…' : 'Check API connection'}</Button>`
-            : ''
-        }
-        <Button onPress={() => void Linking.openURL('https://docs.expo.dev')}>Learn more</Button>
-      </View>
-    </ScrollView>
-  );
+  return <Screen><ThemeSwitcher /><Stack><Text accessibilityRole="header" variant="heading">{starterTitle}</Text><Text variant="muted">Your workspace is ready.</Text></Stack>
+    <Card><CardHeader><CardTitle>Start building</CardTitle><CardDescription>One application for web, iOS and Android.</CardDescription></CardHeader><CardContent><Text>Use the shared components to keep every screen consistent.</Text>
+    ${context.has('better-auth') ? "<Button onPress={() => router.push('/account')}>Account and sign in</Button>" : ''}
+    <Button variant="outline" onPress={() => router.push('/design-system')}>Explore components</Button></CardContent></Card>
+  </Screen>;
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 32 },
-  content: { gap: 12 },
-  title: { color: '#0f172a', fontSize: 34, fontWeight: '700' },
-  subtitle: { color: '#475569', fontSize: 17, paddingBottom: 12 },
-});
 `,
   );
   writeFile(path.join(dir, '.env.example'), '');
@@ -300,6 +168,23 @@ const styles = StyleSheet.create({
     ) + '\n',
   );
   scaffoldExpoRuntime(context);
+  writeApplicationShell(dir);
+  if (context.has('next') || context.has('vinext'))
+    for (const file of [
+      'app/index.tsx',
+      'app/design-system.tsx',
+      'components/app-providers.tsx',
+      'components/app-styles.web.ts',
+      'components/ui/button.tsx',
+      'components/app-link.web.tsx',
+      'components/app-link.tsx',
+    ]) {
+      const target = path.join(dir, file);
+      writeFile(
+        target,
+        readFileSync(target, 'utf8').replaceAll('@workspace/ui', '@workspace/expo-ui'),
+      );
+    }
   appendGitignore(dir, [
     '.env',
     '.env.*',
@@ -310,4 +195,81 @@ const styles = StyleSheet.create({
     'dist',
     'node_modules',
   ]);
+}
+
+function writeApplicationShell(dir: string): void {
+  writeFile(
+    path.join(dir, 'app/_layout.web.tsx'),
+    `import '@/components/app-styles';
+import { Slot } from 'expo-router';
+import { AppProviders } from '@/components/app-providers';
+export default function WebLayout() { return <AppProviders><Slot /></AppProviders>; }
+`,
+  );
+
+  writeFile(
+    path.join(dir, 'components/app-link.tsx'),
+    `import { Link, type Href } from 'expo-router';
+import { Pressable, Text } from 'react-native';
+import type { ReactNode } from 'react';
+import { useTheme } from '@workspace/ui/theme';
+export function AppLink({ href, children }: { href: Href; children: ReactNode }) { const { colors } = useTheme(); return <Link href={href} asChild><Pressable accessibilityRole="link" style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ color: colors.primary, fontSize: 14, fontWeight: '500' }}>{children}</Text></Pressable></Link>; }
+`,
+  );
+  writeFile(
+    path.join(dir, 'components/app-link.web.tsx'),
+    `import { Link, type Href } from 'expo-router';
+import type { ReactNode } from 'react';
+import { buttonVariants } from '@workspace/ui/web/button';
+export function AppLink({ href, children }: { href: Href; children: ReactNode }) { return <Link href={href} asChild><a data-slot="button" className={buttonVariants({ variant: 'link' })}>{children}</a></Link>; }
+`,
+  );
+
+  writeFile(path.join(dir, 'components/app-styles.ts'), 'export {};\n');
+  writeFile(path.join(dir, 'components/app-styles.web.ts'), "import '@workspace/ui/styles.css';\n");
+  writeFile(
+    path.join(dir, 'components/app-providers.tsx'),
+    `import { type ReactNode } from 'react';
+import { DefaultTheme, DarkTheme, ThemeProvider as NavigationThemeProvider } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { ThemeProvider, useTheme } from '@workspace/ui/theme';
+function NavigationTheme({ children }: { children: ReactNode }) {
+  const { mode, colors } = useTheme();
+  const base = mode === 'dark' ? DarkTheme : DefaultTheme;
+  return <NavigationThemeProvider value={{ ...base, colors: { ...base.colors, primary: colors.primary, background: colors.background, card: colors.card, text: colors.foreground, border: colors.border, notification: colors.destructive } }}><StatusBar style={mode === 'dark' ? 'light' : 'dark'} />{children}</NavigationThemeProvider>;
+}
+export function AppProviders({ children }: { children: ReactNode }) { return <SafeAreaProvider><ThemeProvider><NavigationTheme>{children}</NavigationTheme></ThemeProvider></SafeAreaProvider>; }
+`,
+  );
+  writeFile(
+    path.join(dir, 'app/+html.tsx'),
+    `import type { PropsWithChildren } from 'react';
+const themeScript = "var p='system';try{p=localStorage.getItem('anhedral-theme')}catch{}var d=p==='dark'||(p!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light'";
+export default function HTML({ children }: PropsWithChildren) { return <html lang="en"><head><meta charSet="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" /><meta name="theme-color" content="#ffffff" /><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head><body>{children}</body></html>; }
+`,
+  );
+  writeFile(
+    path.join(dir, 'app/design-system.tsx'),
+    `import { useState } from 'react';
+import { router } from 'expo-router';
+import { Screen, Stack } from '@workspace/ui/components/layout';
+import { Text } from '@workspace/ui/components/text';
+import { Button } from '@workspace/ui/components/button';
+import { Input } from '@workspace/ui/components/input';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@workspace/ui/components/card';
+import { Dialog } from '@workspace/ui/components/dialog';
+import { ThemeSwitcher } from '@workspace/ui/components/theme-switcher';
+export default function DesignSystem() {
+  const [open, setOpen] = useState(false); const [value, setValue] = useState('');
+  return <Screen><Button variant="ghost" onPress={() => router.replace('/')}>Home</Button><ThemeSwitcher /><Text accessibilityRole="header" variant="heading">Design system</Text><Text variant="muted">Nova on web. Native components on iOS and Android.</Text>
+    <Card><CardHeader><CardTitle>Controls</CardTitle><CardDescription>Shared variants, readable type and accessible states.</CardDescription></CardHeader><CardContent><Stack>
+    {(['default', 'outline', 'secondary', 'ghost', 'destructive', 'link'] as const).map((variant) => <Button key={variant} variant={variant}>{variant}</Button>)}
+    <Button disabled>Disabled</Button><Input accessibilityLabel="Example field" placeholder="Write something" value={value} onChangeText={setValue} /><Input accessibilityLabel="Invalid field" placeholder="Invalid value" invalid /><Input accessibilityLabel="Example text area" placeholder="Longer text" multiline />
+    <Dialog open={open} onOpenChange={setOpen} title="Example dialog" description="Dismiss with Close, Escape or the system back action." triggerLabel="Open dialog"><Text>Dialogs inherit the app theme.</Text></Dialog>
+    </Stack></CardContent></Card>
+  </Screen>;
+}
+`,
+  );
 }

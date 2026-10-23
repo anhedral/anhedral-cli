@@ -35,10 +35,13 @@ const read = (root, file) => readFileSync(path.join(root, file), 'utf8');
 
 test('Neon Realtime defaults and auth database choices are independent of flag order', () => {
   assert.deepEqual(parseStandardOptions(['app', '--neon-realtime']).products, [
+    'anhedral-ui',
+    'better-auth',
     'expo',
     'hono',
     'neon',
     'neon-realtime',
+    'r2',
   ]);
   for (const flags of [
     ['--better-auth', '--neon-realtime'],

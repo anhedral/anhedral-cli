@@ -146,8 +146,8 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       })),
       {
         flag: '--preset',
-        description: 'Start minimal or select the complete compatible product stack.',
-        value: 'minimal|full-product',
+        description: 'Select a minimal, complete or Anhedral-managed portal stack.',
+        value: 'minimal|full-product|portal-full-stack',
         arity: 'required',
       },
       {
@@ -169,7 +169,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       'init product --preset full-product --dry-run',
       'init product --next --hono --neon --clerk --dry-run',
     ],
-    note: `Default: minimal Expo web/iOS/Android app on Cloudflare; no API, auth, database or paid integrations. Add capabilities with resolved dependencies, or use --preset full-product.\nProducts: ${STANDARD_PRODUCTS.join(', ')}\nOnly bundled options are supported. --all is intentionally unsupported.`,
+    note: `Default: Expo web/iOS/Android, Hono, Drizzle/D1, private R2, Better Auth and Base UI Nova with native counterparts. Use --preset minimal for a client-only app. Optional paid integrations remain explicit.\nProducts: ${STANDARD_PRODUCTS.join(', ')}\nOnly bundled options are supported. --all is intentionally unsupported.`,
   },
   auth: {
     description: 'Check or guide authentication for the selected providers.',

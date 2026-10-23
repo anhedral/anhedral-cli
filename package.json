@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
   "version": "0.13.0",
-  "description": "Start with a minimal Expo app and progressively add Hono, identity, data and Cloudflare services.",
+  "description": "Create Expo apps with Hono, Drizzle/D1, private R2 and Base UI Nova with native counterparts.",
   "type": "module",
   "exports": {
     ".": {
@@ -16,6 +16,7 @@
   },
   "files": [
     "dist",
+    "assets/ui",
     "assets/patches/braces@3.0.3.patch",
     "assets/patches/LICENSE.braces",
     "assets/patches/node-forge@1.4.0.patch",

@@ -1,0 +1,54 @@
+{
+  "style": "base-nova",
+  "retrieved": "2026-10-21",
+  "files": {
+    "button": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/button.json",
+      "sha256": "bc0b97cbd544328a0e2e4b3ab5996373a9cc26994815111c1effb6d7ca98081c"
+    },
+    "input": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/input.json",
+      "sha256": "b4d1fa668ce203a2d78af7eb23e3769de303d46c983e3e40bed7018423efccb2"
+    },
+    "textarea": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/textarea.json",
+      "sha256": "19959203ac648f1113045bacea79099c08502208c6b641ae5edda2138d5c941a"
+    },
+    "card": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/card.json",
+      "sha256": "a3b2cb98311bb9ce9475b6cf07d28b9a8eaac282ea6ff51ea77d1d3516947e54"
+    },
+    "label": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/label.json",
+      "sha256": "ef2ca2ddbd0eb67f3a0f59ee5d970c213172a8edc7bb2b28c9d69020bc6ba950"
+    },
+    "badge": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/badge.json",
+      "sha256": "7146df48455374961e3e7b4a4fb6529486a6c9760d3844d2aa74113a7000bbc3"
+    },
+    "alert": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/alert.json",
+      "sha256": "cfbca450df71b3571701d659c1b7eb9e27d3d92efb7afdf5c292c685f95e3949"
+    },
+    "skeleton": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/skeleton.json",
+      "sha256": "54d562ca0b09e7f5e06cc44214672c1aefb82b3bd03575f109eaa9c317064d37"
+    },
+    "dialog": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/dialog.json",
+      "sha256": "ace3d5ba732f66e14bd1062306f9022a32040f7c168a697ebb483b4e80cbd7fd"
+    },
+    "spinner": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/spinner.json",
+      "sha256": "7fb9eb43d314813bbd5a22e3c7853172d4d7c0adbd010425a04726a1f5200b8d"
+    },
+    "empty": {
+      "source": "https://ui.shadcn.com/r/styles/base-nova/empty.json",
+      "sha256": "ad67aa7ddbafea2eb8149fafbcc68fe0e35037aa7c4dfceb30f15b3268776617"
+    }
+  },
+  "adaptations": [
+    "Registry import paths resolved to local modules.",
+    "Registry icon placeholders resolved to Lucide XIcon and Loader2Icon."
+  ]
+}

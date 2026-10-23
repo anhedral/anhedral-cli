@@ -2,6 +2,88 @@
 
 Dated records below describe the source and environment exercised at that time. Earlier results are historical evidence, not acceptance of a later release. Current architecture and operating instructions live in the stack standard and software factory.
 
+## Plugin skill review — 2026-10-20
+
+### Follow-up fixes and embedded-host verification
+
+Corrected the factory's unconditional Expo identity/data/file defaults and
+distinguished the managed portal profile. Auth now adds application accounts only
+when required by the requested product flow. Hosting distinguishes duplicate
+delivery paths from deliberate same-revision recovery. Each service MCP operation
+now has its own description; shared argument schemas explain discovery, analytics
+windows, pagination and app-only confirmation evidence without changing access.
+
+Added a synthetic browser host using the installed MCP Apps `AppBridge` and real
+built inspector in an iframe. It verifies selected-project model context, active
+and new unsent drafts, unsupported web/desktop and failed-composer fallbacks, and
+actual toolbar clearance. The regression observed a 16px detail toolbar position
+despite the 112px host inset. Changing the detail view to set its shared padding
+token preserves the inset calculation; the same assertion then passed.
+
+The first browser attempt lacked Playwright's downloaded browser; rerunning with
+installed Chrome worked. The initial fixture correctly hit preview's
+`frame-ancestors 'none'` protection; embedding now uses a test-only route and leaves
+production preview headers intact. The fixture reads request metadata from the
+SDK handler context, where the installed SDK exposes it. Its four host cases and
+all eleven existing browser cases passed (15 total). Inspector typecheck/build,
+all 62 inspector tests, both package/archive workflow tests, CLI build steps and
+typecheck, source hygiene and whitespace checks passed. Runtime and bundled
+references were refreshed from the current working tree.
+
+The main platform repository's root build passed; root check first stopped at
+sandbox loopback denial, then passed all 20 tasks with local-listener permission.
+The platform API/auth proposal lives in that repository's
+`docs/plans/authenticated-platform-plugin-and-api.md`; no token issuer, delegated
+grant, platform MCP endpoint or new client permission was enabled here.
+
+Native host verification remains unavailable: Computer Use explicitly disallowed
+access to the desktop host app, and this chat has no Anhedral MCP App surface.
+The synthetic bridge tests do not establish real ChatGPT host acceptance. No
+publication, installed-plugin update, live message or provider mutation occurred.
+
+Reviewed the six canonical skills and their UI metadata, skill references, plugin
+manifest/MCP configuration, assets, bundled architecture/catalog/evidence
+references, inspector server/shared/frontend source, build configuration and tests.
+Compiled dependency bundles were rebuilt and integrity-tested rather than treated
+as independently reviewed upstream source. Existing concurrent portal-profile/UI/
+managed-email work was preserved; this evidence applies to the local working tree.
+
+Dev now resolves a dashboard-selected catalog ID with `get_project_context` before
+source work, while retaining direct-path/headless use. Dev, Hosting and the Expo
+runtime reference condition health/session checks on the selected capabilities
+and implemented transport/routes. Init uses the registry for component contracts,
+the stack standard for selection guidance and a CLI dry run for the exact preset
+selection instead of repeating its service inventory.
+
+Validation passed: CLI build steps and type checking; source hygiene; plugin
+archive contract; isolated packaged-plugin/CLI workflow; six skills' frontmatter
+and UI metadata parsing and 43 bundled Markdown file targets; five read-only init
+plans covering minimal, API-only, Expo/API, auth and full-product. Inspector types
+and build passed. Its suite passed 61 tests in the sandbox; the remaining loopback
+preview test passed separately with local-listener permission. The first package
+workflow run caught canonical docs changing concurrently; refreshing generated
+references resolved it. The pnpm wrapper attempted dependency replacement and
+stopped without a TTY, so build/check scripts used the existing installed tools
+directly. PyYAML remains unavailable; YAML checks used the repository's YAML parser.
+
+Recommended follow-ups, not implemented in this pass:
+
+- Correct the software factory's unconditional Expo/auth/D1/R2 statement under
+  cross-platform identity; distinguish minimal CLI and managed portal profiles.
+- Make Auth's missing-identity addition conditional on the requested application
+  flow; a provider-login task alone should not add application accounts.
+- Narrow Hosting's same-revision deployment ban to duplicate delivery paths for
+  the same target/change, preserving deliberate recovery and redeployment.
+- Give service MCP tools distinct descriptions and argument guidance instead of
+  the shared generic operation description.
+- Verify real host project-context selection, unsent drafts, clipboard fallback
+  and safe-area behavior; local preview/protocol tests do not establish host UI
+  acceptance or reduced conversational cost from the instruction changes.
+
+No publication, installed-plugin update, provider mutation or configured database
+migration was performed. Full release gates and live host/provider acceptance
+were not run.
+
 ## README stack catalog and static artwork — 2026-10-19
 
 Replaced the README Mermaid diagram with dark/light static artwork. After reviewing the earlier connected reference, refined the illustration to Expo web/iOS/Android → Hono → Better Auth / Drizzle + D1 / private R2, with Cloudflare hosting, native distribution, shared UI/contracts and workspace tools. Large icons, short labels and thin curves follow the landing hero style. The caption explicitly preserves plain init's Expo-only selection; backend/auth/data are added when needed. The README retains the under-construction notice, early starting commands, all CLI selections and upstream documentation for 117 named ecosystem options.
@@ -509,7 +591,6 @@ The listener and empty-cache failures are environment limitations, not proven ap
 
 No provider resources, publication, production deployment or source commit were performed during this review. Detailed local evidence and prior pass results are recorded in `docs/verification.md`.
 
-
 ## Progressive stack — local checkout, 2026-10-18
 
 Plain initialization now selects Expo only. Capability dependencies resolve to a
@@ -573,3 +654,68 @@ README artwork. Existing plugin manifest and MCP asset paths remain valid.
 Local CLI build, typecheck, format check, source hygiene and plugin archive tests
 passed. The archive test verifies both theme variants against the updated source.
 No npm release, remote push or installed-plugin update was performed.
+
+### 2026-10-20 — managed portal full-stack candidate
+
+Added the strict `portal-full-stack` preset with Expo/Hono, Drizzle/D1, private
+R2, Better Auth, initial shared Anhedral UI primitives and managed verification/
+reset email. Provider keys and sender configuration stay in Anhedral's private
+email service; generated apps receive only a scope and revocable capability.
+The profile is local source on top of 0.13.0, not a new published npm release.
+
+TypeScript build, changed-source formatting, source hygiene, managed-email tests,
+progressive/standard/registry tests and stack-combination tests passed. The matrix
+covered 239 compatible generated/syntax-checked combinations. Generator tests
+exercise real Better Auth callbacks and broker idempotency without real email.
+The portal's separate Linux image and Worker/SQLite proof provide additional
+runtime evidence in its dated full-stack verification document. Native/store,
+real-provider delivery and production publication are not established here.
+
+## 2026-10-21 — Starter theme and service summary (local)
+
+The Expo home screen now uses NativeWind semantic theme tokens, the generated
+shadcn-style Button port, an explicit light/dark switch, and a service summary
+selected from the recipe capabilities. The account link follows the theme too.
+Declared the Babel JSX transform used by NativeWind so fresh isolated installs
+can export the web app without relying on a transitive package being hoisted.
+
+CLI TypeScript and source hygiene pass; managed-email/preset generated regression
+checks pass (2 tests). A fresh portal-full-stack fixture passes generated mobile
+TypeScript and Expo web export. Chrome screenshots verify both themes and the
+switch in the real exported application. The local fixture mocks health and
+execution services; no provider provisioning or native-device proof is claimed.
+The main repository local runtime tarball was repackaged, not published; rebuilding
+and deploying the execution image remains outside this local-only request.
+
+### 2026-10-21 — Minimal starter follow-up
+
+The generated home now contains only starterTitle from lib/starter.ts, the theme
+switch and selected service summary. Removed API polling/status/action buttons,
+Learn more and automatic home account navigation; auth routes remain available.
+The managed execution initializer writes the server-owned codebase name into this
+source module on first scaffold, before checkpoint/build, without rewriting
+restored source. Fresh generated mobile TypeScript/export and 2 preset tests pass.
+Chrome confirms the codebase title and minimal content in the local portal iframe.
+No published package or execution image was changed.
+
+
+## 2026-10-21 — Connected Expo default and Nova client design system
+
+Local source implementation only; no npm publication, installed-plugin update, provider provisioning, database migration or application deployment was performed.
+
+Plain init now selects Expo, Hono, Drizzle/D1, private R2, Better Auth and shared UI. Explicit minimal, API-only, web, desktop and extension profiles remain available. Default Expo includes the design system; mixed Expo/web workspaces isolate it in `packages/expo-ui` so the web application's `packages/ui` remains intact. Non-web generation uses a source-owned workspace foundation and records no external bootstrap command. The old disposable Next bootstrap, Expo NativeWind setup, new-york configuration, stale home navigation string patch, unused API singleton and unused Expo styling dependencies were removed from this path.
+
+Web components are vendored official Base UI Nova source with provenance hashes, documented import/icon adaptation and the MIT notice. Native counterparts use React Native primitives, semantic tokens converted from the same Nova OKLCH values, system text scaling and larger touch targets. Shared themes, navigation, status bars and persistent System/Light/Dark preference are owned above routes and overlays. Native appearance resets use the installed React Native 0.86 `unspecified` value. Expo Router's own theme exports are used rather than a second navigation context. DOM layouts use normal browser scrolling; native layouts retain Stack navigation and safe-area/keyboard handling.
+
+Verification:
+
+- Final CLI unit suite: 756 passed, 2 optional checks skipped, 0 failures across 758 tests. Log: `/private/tmp/anhedral-cli-design-all-tests-final.log`.
+- CLI TypeScript, formatting, source hygiene, static security/dependency pin policy, release policy and npm packlist checks passed. The package includes the UI templates and license; optional inspector runtime/source integrity was rebuilt and verified.
+- The generated connected app's complete `pnpm check` passed, including Fallow, the reviewed dependency-patch audit gate, lint/typechecks, test tasks, Expo web export and both Worker dry runs. No configured database was accessed. Log: `/private/tmp/anhedral-cli-design-check-final.log`.
+- Final iOS/Android Hermes exports with source maps passed. Their module inventories contain no Base UI, DOM UI source, NativeWind or CSS-interop modules. Log: `/private/tmp/anhedral-cli-design-native-export-final.log`.
+- Browser inspection exercised both appearance modes, reload persistence, navigation to the shared starter/gallery, document scrolling, invalid/disabled controls and the official Base UI dialog. Escape dismissed the dialog and restored its trigger focus. Screenshots: `/private/tmp/anhedral-cli-nova-home.png` and `/private/tmp/anhedral-cli-nova-dark.png`.
+- Theme regressions cover blocked browser storage, cross-tab updates, native persistence and returning appearance control to the operating system. Existing source-preservation/progressive-addition, mixed-runtime, auth and deployment contract tests remain enabled.
+
+Intermediate failures were retained in temporary logs: malformed generated auth JSX was corrected; the first direct lint foundation resolved an unsupported TypeScript 7 peer and now pins the compatible TypeScript 6 parser runtime; native `null` reset failed the installed RN type contract and was corrected to `unspecified`. The manual composition fixture initially omitted the CLI's dependency-patch configuration phase; its dependency audit failed closed until that normal phase and patched install were applied. No audit assertions or security gates were disabled.
+
+Native exports and transport/source tests do not establish physical-device interaction, VoiceOver/TalkBack, signing, store acceptance or live application-provider behavior. The previously deployed proof app was not republished by this work.

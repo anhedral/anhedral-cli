@@ -5,6 +5,12 @@ description: "Implement, debug and extend an Anhedral application using its gene
 
 # Anhedral Dev
 
+For a project selected in the plugin dashboard, use `get_project_context` with
+its catalog ID to resolve the source directory before inspecting or editing it.
+If the intended project is unclear, use `list_projects` to identify it; do not
+infer a source path from its display name. These tools are optional when the user
+has already supplied the source directory and do not grant filesystem access.
+
 Inspect the app's instructions, source, Git state and `anhedral.json`. Preserve
 user work and suitable existing architecture. Use the selected CLI version and
 workspace scripts; do not reinitialize an app to add features.
@@ -14,8 +20,10 @@ only adapt/proxy calls. Put public schemas and HTTP transport in
 `packages/contracts`, database schema/migrations in `packages/db`, and auth
 factories in `packages/auth`. Apps never import another app’s source. Use the
 API request’s lazy `database` factory; never import server packages in clients.
-Check web `/api/health` and authenticated `/api/session` through the generated
-proxy. Preserve cookie, origin and cache protections when extending it.
+When Hono is selected, check `/api/health` directly and through any generated web
+proxy. Check authenticated `/api/session` only when application authentication
+is selected and that route is implemented. Preserve cookie, origin and cache
+protections when extending the proxy.
 
 ## Development loop
 
@@ -35,8 +43,7 @@ proxy. Preserve cookie, origin and cache protections when extending it.
    ownership or integration boundaries change.
 
 Keep deployable apps in `apps/*` and reusable code in `packages/*`. New universal
-frontends live in `apps/mobile` with Expo, React Native Reusables using shadcn
-conventions, NativeWind and shared design tokens. Reuse accessible native primitives and platform adapters;
+frontends live in `apps/mobile` with Expo, official Base UI Nova shadcn web components, native counterparts and shared design tokens. Reuse accessible native primitives and platform adapters;
 keep reusable components in shared packages when multiple clients consume them. Explicit Next.js on Vercel or Vinext on Cloudflare apps use shared shadcn UI. Reuse the generated
 compiler, lint and Tailwind configuration. Preserve existing conventions when maintaining an adopted app.
 
@@ -67,7 +74,7 @@ for gateway routing, native origins, exports and the local development loop.
 [Development tools](references/development-tools.md) covers optional code analysis,
 GitHub and browser verification; load only what the task needs.
 
-Plain init is client-only. Add API, data, identity, files, AI, payments and WXT
+Plain init includes Hono, Drizzle/D1, Better Auth, private R2 and shared UI. Use --preset minimal for a client-only app. Add AI, payments and WXT
 only for concrete needs; dependency resolution supplies prerequisites. Enforce
 file ownership in Hono before exposing
 R2 routes; a private bucket binding does not authorize application users.

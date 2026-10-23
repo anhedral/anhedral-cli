@@ -80,10 +80,10 @@ export const EXTENSION_DEPENDENCIES: DependencyGroup = {
 
 export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
   dependencies: {
-    // renovate: datasource=npm depName=@rn-primitives/portal
-    '@rn-primitives/portal': '1.5.2',
-    // renovate: datasource=npm depName=clsx
-    clsx: '2.1.1',
+    // renovate: datasource=npm depName=expo-system-ui
+    'expo-system-ui': '57.0.3',
+    // renovate: datasource=npm depName=@react-native-async-storage/async-storage
+    '@react-native-async-storage/async-storage': '2.2.0',
     // renovate: datasource=npm depName=expo
     expo: '57.0.8',
     // renovate: datasource=npm depName=expo-dev-client
@@ -110,10 +110,6 @@ export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
     'react-native-worklets': '0.10.0',
     // renovate: datasource=npm depName=react-native-web
     'react-native-web': '0.21.2',
-    // renovate: datasource=npm depName=tailwind-merge
-    'tailwind-merge': '3.5.0',
-    // renovate: datasource=npm depName=tailwindcss-animate
-    'tailwindcss-animate': '1.0.7',
   },
   devDependencies: {
     // renovate: datasource=npm depName=@babel/core
@@ -133,14 +129,19 @@ export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
   },
 };
 
-export const MOBILE_NATIVEWIND_DEPENDENCIES: DependencyGroup = {
+// Browser-only shadcn Nova tooling; native bundles resolve React Native counterparts.
+export const CLIENT_WEB_UI_DEPENDENCIES: DependencyGroup = {
   dependencies: {
-    // renovate: datasource=npm depName=nativewind
-    nativewind: '4.2.6',
-    // renovate: datasource=npm depName=react-native-css-interop
-    'react-native-css-interop': '0.2.6',
-    // renovate: datasource=npm depName=tailwindcss
-    tailwindcss: '3.4.19',
+    '@base-ui/react': '1.9.0',
+    cn: '0.5.0',
+    'class-variance-authority': '0.7.1',
+    'lucide-react': '1.61.0',
+  },
+  devDependencies: {
+    tailwindcss: '4.3.3',
+    'tw-animate-css': '1.4.0',
+    '@tailwindcss/postcss': '4.3.3',
+    postcss: '8.5.31',
   },
 };
 
@@ -163,6 +164,8 @@ export const NEXT_VERCEL_VERSION = '16.4.0';
 export const NEXT_OPENNEXT_VERSION = '16.3.8';
 
 export const STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=eslint-plugin-react-hooks
+  'eslint-plugin-react-hooks': '7.1.1',
   // renovate: datasource=npm depName=zod
   zod: '4.6.6',
   // renovate: datasource=npm depName=@typescript-eslint/parser

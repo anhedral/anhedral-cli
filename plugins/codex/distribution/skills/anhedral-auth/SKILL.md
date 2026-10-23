@@ -19,7 +19,9 @@ Distinguish provider login, hosting protection and application identity.
   the server Expo plugin with exact trusted scheme, SecureStore native client/cookie
   adapter, separate browser client and shared protected session contracts.
   Keep credentials out of client bundles and chat.
-- If identity is missing, preview the compatible catalog addition with
+- Add application identity only when the requested product flow needs accounts.
+  A provider-login task alone does not require application authentication. If
+  application identity is needed and missing, preview the compatible addition with
   `anhedral add better-auth --cwd my-app --dry-run --json` before applying it.
   Review migrations against the intended development database explicitly.
 - Verify sign-in/out, expired/revoked sessions, denied users and cross-user resource

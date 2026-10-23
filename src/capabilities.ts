@@ -73,7 +73,9 @@ export function createSetupPlan(
     products: options.products,
     hosting: options.hosting,
     registry,
-    bootstrap: [...BOOTSTRAP_COMMAND],
+    bootstrap: options.products.some((id) => id === 'next' || id === 'vinext')
+      ? [...BOOTSTRAP_COMMAND]
+      : [],
     dryRun: options.dryRun,
     setup: {
       tools: [

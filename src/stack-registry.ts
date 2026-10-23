@@ -6,6 +6,7 @@ import {
   scaffoldVideo,
 } from './scaffold/cloudflare-services.js';
 import { usesVoidSelection } from './runtime-policy.js';
+import { scaffoldAnhedralUi } from './scaffold/anhedral-ui.js';
 import { scaffoldStyling } from './scaffold/styling.js';
 import { resourceName } from './render.js';
 import { STACK_DEPENDENCIES } from './dependencies.js';
@@ -17,6 +18,7 @@ import { scaffoldDatabase } from './scaffold/database.js';
 import { scaffoldStream } from './scaffold/stream.js';
 import { scaffoldNeonRealtime } from './scaffold/neon-realtime.js';
 import { scaffoldBetterAuth, scaffoldClerk } from './scaffold/auth.js';
+import { scaffoldManagedEmail } from './scaffold/managed-email.js';
 import {
   scaffoldRealtime,
   scaffoldQueues,
@@ -634,6 +636,47 @@ export interface LocalDataStore {
     runtime: 'worker',
     resolveTargets: (context) => [runtimeConfiguration(context)],
   },
+  'anhedral-ui': {
+    type: 'package',
+    description: 'Base UI Nova web components and themed native counterparts for Expo',
+    targets: ['packages/ui', 'apps/mobile'],
+    selection: { requiresAll: ['expo'] },
+    resolveTargets: ({ has }) => [
+      has('next') || has('vinext') ? 'packages/expo-ui' : 'packages/ui',
+      'apps/mobile',
+    ],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'expo', 'styling'],
+    setup: requirements(
+      'Anhedral UI',
+      [],
+      [],
+      [],
+      ['Shared source-owned Expo components and semantic tokens'],
+      ['Browser and native rendering, accessibility and focus behavior'],
+    ),
+    install: scaffoldAnhedralUi,
+  },
+  'managed-email': {
+    type: 'integration',
+    runtime: 'worker',
+    description: 'Anhedral-managed transactional email for application authentication',
+    targets: ['packages/managed-email', 'packages/auth', 'apps/api'],
+    selection: { requiresAll: ['hono', 'better-auth'], conflicts: ['resend'] },
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'better-auth'],
+    setup: requirements(
+      'Managed application email',
+      [],
+      [],
+      ['Anhedral-provisioned app/environment email capability; no client provider account'],
+      ['Scoped mail broker binding and verified Anhedral-managed sender'],
+      ['Verification/reset callbacks, tenant isolation and real delivery acceptance'],
+    ),
+    install: scaffoldManagedEmail,
+    environment: ['ANHEDRAL_EMAIL_SCOPE', 'ANHEDRAL_EMAIL_CAPABILITY'],
+    configure: () => ({
+      services: [{ binding: 'ANHEDRAL_EMAIL', service: 'anhedral-application-email' }],
+    }),
+  },
   resend: {
     type: 'package',
     runtime: 'server',
@@ -804,9 +847,7 @@ export async function recordEvents(stream: EventStream, events: Record<string, u
       [],
       [],
       [],
-      [
-        'Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components',
-      ],
+      ['Shared Nova light/dark tokens, native sRGB values and a Tailwind v3 transport for WXT'],
       ['Consistency across selected interfaces; preserve platform-specific components'],
     ),
     package: packageSource(

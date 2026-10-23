@@ -26,7 +26,13 @@ const runner = (_command, args, cwd) => {
 const read = (root, file) => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
 async function generate(root, flags = []) {
   await scaffoldStandardProject(
-    parseStandardOptions([root, ...flags, '--skip-install', '--no-git']),
+    parseStandardOptions([
+      root,
+      ...(flags.some((flag) => flag.startsWith('--preset')) ? [] : ['--preset=minimal']),
+      ...flags,
+      '--skip-install',
+      '--no-git',
+    ]),
     runner,
     { quiet: true },
   );
@@ -56,15 +62,27 @@ async function importGenerated(root, name) {
 }
 
 test('minimal defaults omit backend resources and secrets; capabilities resolve only needed dependencies', () => {
-  const products = (...flags) => parseStandardOptions(['app', ...flags]).products;
-  assert.deepEqual(products(), ['expo']);
-  assert.deepEqual(products('--preset=minimal'), ['expo']);
+  const products = (...flags) =>
+    parseStandardOptions([
+      'app',
+      ...(flags.some((flag) => flag.startsWith('--preset')) ? [] : ['--preset=minimal']),
+      ...flags,
+    ]).products;
+  assert.deepEqual(products(), ['anhedral-ui', 'expo']);
+  assert.deepEqual(products('--preset=minimal'), ['anhedral-ui', 'expo']);
   assert.deepEqual(products('--wxt'), ['wxt']);
-  assert.deepEqual(products('--d1'), ['d1', 'expo', 'hono']);
-  assert.deepEqual(products('--better-auth'), ['better-auth', 'd1', 'expo', 'hono']);
-  assert.deepEqual(products('--workers-ai'), ['expo', 'hono', 'workers-ai']);
-  assert.deepEqual(products('--images'), ['expo', 'hono', 'images']);
-  assert.deepEqual(products('--revenuecat'), ['better-auth', 'd1', 'expo', 'hono', 'revenuecat']);
+  assert.deepEqual(products('--d1'), ['anhedral-ui', 'd1', 'expo', 'hono']);
+  assert.deepEqual(products('--better-auth'), ['anhedral-ui', 'better-auth', 'd1', 'expo', 'hono']);
+  assert.deepEqual(products('--workers-ai'), ['anhedral-ui', 'expo', 'hono', 'workers-ai']);
+  assert.deepEqual(products('--images'), ['anhedral-ui', 'expo', 'hono', 'images']);
+  assert.deepEqual(products('--revenuecat'), [
+    'anhedral-ui',
+    'better-auth',
+    'd1',
+    'expo',
+    'hono',
+    'revenuecat',
+  ]);
   const full = products('--preset', 'full-product');
   for (const id of FULL_PRODUCT) assert.ok(full.includes(id), id);
   assert.deepEqual(products('--images', '--better-auth'), products('--better-auth', '--images'));
@@ -74,7 +92,7 @@ test('minimal defaults omit backend resources and secrets; capabilities resolve 
     assert.ok(overridden.includes(id));
   assert.throws(() => products('--preset=everything'), /preset must/);
   assert.throws(() => products('--preset'), /Supply a value/);
-  const minimal = createSetupPlan(parseStandardOptions(['app']));
+  const minimal = createSetupPlan(parseStandardOptions(['app', '--preset=minimal']));
   assert.deepEqual(minimal.registry.items.find((item) => item.name === 'expo').environment, []);
   assert.ok(!minimal.setup.tools.includes('Selected database tooling'));
 });

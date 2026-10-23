@@ -532,6 +532,46 @@
       ],
       "selection": {}
     },
+    "anhedral-ui": {
+      "purpose": "Anhedral UI",
+      "tools": [],
+      "access": [],
+      "credentials": [],
+      "resources": [
+        "Shared source-owned Expo components and semantic tokens"
+      ],
+      "verify": [
+        "Browser and native rendering, accessibility and focus behavior"
+      ],
+      "selection": {
+        "requiresAll": [
+          "expo"
+        ]
+      }
+    },
+    "managed-email": {
+      "purpose": "Managed application email",
+      "tools": [],
+      "access": [],
+      "credentials": [
+        "Anhedral-provisioned app/environment email capability; no client provider account"
+      ],
+      "resources": [
+        "Scoped mail broker binding and verified Anhedral-managed sender"
+      ],
+      "verify": [
+        "Verification/reset callbacks, tenant isolation and real delivery acceptance"
+      ],
+      "selection": {
+        "requiresAll": [
+          "hono",
+          "better-auth"
+        ],
+        "conflicts": [
+          "resend"
+        ]
+      }
+    },
     "resend": {
       "purpose": "Outbound application email",
       "tools": [
@@ -668,7 +708,7 @@
       "access": [],
       "credentials": [],
       "resources": [
-        "Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components"
+        "Shared Nova light/dark tokens, native sRGB values and a Tailwind v3 transport for WXT"
       ],
       "verify": [
         "Consistency across selected interfaces; preserve platform-specific components"

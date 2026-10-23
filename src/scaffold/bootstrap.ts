@@ -3,6 +3,8 @@ import path from 'node:path';
 import { execFile, appendGitignore } from '../util.js';
 import { bootstrapArguments } from '../registry/bootstrap.js';
 import type { StandardRunner } from '../registry/types.js';
+import { json, put } from './files.js';
+import { STACK_DEPENDENCIES, PACKAGE_MANAGER, MOBILE_APP_DEPENDENCIES } from '../dependencies.js';
 import { supportsWorkspaceRuntime } from '../runtime-policy.js';
 
 export function assertBootstrapPlatform(run: StandardRunner, platform = process.platform): void {
@@ -57,4 +59,53 @@ export function bootstrapWorkspace(
   } finally {
     rmSync(temporary, { recursive: true, force: true });
   }
+}
+
+/** Native/server profiles have no dependency on a disposable Next.js application. */
+export function bootstrapUniversalWorkspace(root: string, name: string): void {
+  json(root, 'package.json', { name, private: true, packageManager: PACKAGE_MANAGER, scripts: {} });
+  put(root, 'pnpm-workspace.yaml', 'packages:\n  - "apps/*"\n  - "packages/*"\n');
+  json(root, 'packages/typescript-config/package.json', {
+    name: '@workspace/typescript-config',
+    private: true,
+  });
+  json(root, 'packages/typescript-config/base.json', {
+    compilerOptions: {
+      target: 'ES2022',
+      module: 'ESNext',
+      moduleResolution: 'Bundler',
+      strict: true,
+      skipLibCheck: true,
+      noEmit: true,
+    },
+  });
+  json(root, 'packages/eslint-config/package.json', {
+    name: '@workspace/eslint-config',
+    private: true,
+    type: 'module',
+    exports: { './base': './base.js', './react-internal': './react-internal.js' },
+    devDependencies: {
+      'eslint-plugin-react-hooks': STACK_DEPENDENCIES['eslint-plugin-react-hooks'],
+      typescript: MOBILE_APP_DEPENDENCIES.devDependencies!.typescript,
+      eslint: STACK_DEPENDENCIES.eslint,
+      '@typescript-eslint/parser': STACK_DEPENDENCIES['@typescript-eslint/parser'],
+      '@typescript-eslint/eslint-plugin': STACK_DEPENDENCIES['@typescript-eslint/eslint-plugin'],
+    },
+  });
+  put(
+    root,
+    'packages/eslint-config/base.js',
+    `import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+export const config = [{ ignores: ['**/node_modules/**', '**/dist/**', '**/.expo/**', '**/.wrangler/**', '**/worker-configuration.d.ts'] }, {
+  files: ['**/*.{ts,tsx,cts,mts}'], languageOptions: { parser, parserOptions: { ecmaFeatures: { jsx: true } } },
+  plugins: { '@typescript-eslint': plugin }, rules: { '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }] },
+}];
+`,
+  );
+  put(
+    root,
+    'packages/eslint-config/react-internal.js',
+    "import hooks from 'eslint-plugin-react-hooks';\nimport { config as base } from './base.js';\nexport const config = [...base, hooks.configs.flat.recommended];\n",
+  );
 }
