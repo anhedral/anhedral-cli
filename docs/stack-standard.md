@@ -6,15 +6,15 @@ Anhedral generates one application architecture. The public CLI is maintained as
 
 | Owner | Responsibility |
 | --- | --- |
-| apps/mobile | Expo web/iOS/Android interface, NativeWind and React Native Reusables |
-| apps/mobile/worker | Static web assets and private API transport |
+| apps/web | Next.js App Router web application, DOM shadcn UI, SSR/RSC and Cloudflare OpenNext |
+| apps/mobile | Expo iOS/Android application, NativeWind and the Anhedral native shadcn port |
 | apps/api | Hono Worker, authentication, application routes and authorization |
 | packages/contracts | Framework-independent schemas, JSON contracts and transport |
 | packages/db | Drizzle/D1 schema and explicit migrations |
 | packages/auth | Better Auth server construction and session contracts |
 | packages/styling | Shared colors, spacing and light/dark tokens |
 
-Plain `anhedral init my-app` includes Expo, Hono, D1, private R2, supporting Better Auth and styling. TypeScript, pnpm, Turborepo and shared checks are supporting infrastructure. There is no frontend, database, hosting or preset selection menu.
+Plain `anhedral init my-app` includes Next.js web, Expo native, Hono, D1, private R2, supporting Better Auth and styling. TypeScript, pnpm, Turborepo and shared checks are supporting infrastructure. There is no frontend, database, hosting or preset selection menu.
 
 D1 is the supported database. Neon/PostgreSQL is not an available addition in this release. A future migration would require schema conversion, data movement and validation; it is not a connection-string change.
 
@@ -47,8 +47,8 @@ Stripe and RevenueCat are independent. Configure products, prices/offerings, env
 
 Hono owns privileged behavior. Applications do not import each other's source. Shared schema/transport stays framework-independent. Use request-scoped database and service factories. Private responses must not enter shared caches. No credentials or raw secrets in clients, generated source, logs or Git.
 
-Cloudflare Workers host the web gateway and API. Wrangler owns local Worker development and delivery. Native signing, device/store acceptance and store submission remain separate from a web deployment or Expo export. See [workflow](software-factory.md) for supported commands and evidence boundaries.
+Cloudflare Workers host the OpenNext web application and Hono API. The web Worker calls Hono through its `ANHEDRAL_API` service binding. Next server rendering and actions adapt requests to Hono; they never own database/auth-server access. Web UI uses DOM shadcn components; native UI uses the Anhedral-maintained shadcn port. Both share contracts and design tokens. Native signing, device/store acceptance and store submission remain separate from OpenNext deployment. See [workflow](software-factory.md) for supported commands and evidence boundaries.
 
-## Breaking scope reduction in 0.14
+## Version compatibility
 
-The former 33-product catalog is retired. The remaining eight recipe records describe six always-present components plus Stripe and RevenueCat. Registry inspection may show supporting records; it does not make those records independently selectable additions. Legacy application source and provider resources are never deleted or migrated by this change. Preserve old CLI pins for old projects and retain dated verification as historical evidence.
+Version 0.15 replaces Expo web with full Next.js App Router through OpenNext and keeps Expo for iOS/Android only. The former broad catalog remains retired. Core records are always present; only Stripe and RevenueCat can be selected as additions. Registry inspection may show supporting records; it does not make those records independently selectable additions. Legacy application source and provider resources are never deleted or migrated by this change. Preserve old CLI pins for old projects and retain dated verification as historical evidence.

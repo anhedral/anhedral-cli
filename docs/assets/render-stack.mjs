@@ -17,7 +17,7 @@ export function renderStack(light = false) {
     muted = light ? '#646c77' : '#9198a1',
     wire = light ? '#c6cbd2' : '#59636e';
   const out = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc"><title id="title">Anhedral default application stack</title><desc id="desc">Expo web, iOS and Android connect to a Hono API on Cloudflare Workers. Drizzle with D1 and private R2 are included. Better Auth, shared styling and workspace tools support the foundation. Stripe and RevenueCat are the only optional additions, with entitlements enforced by Hono.</desc><rect width="1920" height="1080" fill="${bg}"/>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc"><title id="title">Anhedral default application stack</title><desc id="desc">Next.js App Router web through Cloudflare OpenNext and Expo iOS/Android connect to a Hono API on Cloudflare Workers. Drizzle with D1 and private R2 are included. Better Auth, shared design tokens, separate web/native UI and workspace tools support the foundation. Stripe and RevenueCat are the only optional additions, with entitlements enforced by Hono.</desc><rect width="1920" height="1080" fill="${bg}"/>`,
   ];
   const text = (x, y, value, size = 24, color = ink, anchor = 'middle') =>
     out.push(
@@ -42,7 +42,8 @@ export function renderStack(light = false) {
   };
   text(96, 99, 'Anhedral', 42, ink, 'start');
   text(1824, 95, 'DEFAULT APPLICATION STACK', 16, muted, 'end');
-  text(384, 218, 'EXPO FRONTEND', 16, muted);
+  text(384, 218, 'WEB & NATIVE CLIENTS', 16, muted);
+  text(384, 245, 'App Router · OpenNext', 18, muted);
   text(960, 218, 'HONO API', 16, muted);
   text(1536, 218, 'DATA & FILES', 16, muted);
   for (const y of [320, 475, 630]) connect(436, y, 900, 475);
@@ -51,7 +52,7 @@ export function renderStack(light = false) {
   out.push(
     `<path d="M1020 510C1170 570 1170 650 1170 780" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
   );
-  tile(384, 320, 'expo.dev', 'Expo web');
+  tile(384, 320, 'nextjs.org', 'Next.js web');
   tile(384, 475, 'apple.com', 'Expo iOS');
   tile(384, 630, 'android.com', 'Expo Android');
   tile(960, 475, 'hono.dev', 'Hono', 120);
@@ -64,8 +65,8 @@ export function renderStack(light = false) {
 
   out.push(`<rect x="96" y="780" width="540" height="240" rx="18" fill="${surface}"/>`);
   text(126, 823, 'INCLUDED SUPPORT', 14, muted, 'start');
-  text(126, 877, 'Better Auth sessions', 24, ink, 'start');
-  text(126, 920, 'Shared styling & UI', 24, ink, 'start');
+  text(126, 877, 'Better Auth · shared contracts', 24, ink, 'start');
+  text(126, 920, 'Web shadcn · native Anhedral port', 24, ink, 'start');
   text(126, 963, 'TypeScript · pnpm · Turborepo', 22, muted, 'start');
   out.push(`<rect x="690" y="780" width="1134" height="240" rx="18" fill="${surface}"/>`);
   text(720, 823, 'OPTIONAL PAYMENTS', 14, muted, 'start');

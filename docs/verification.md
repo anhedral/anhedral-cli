@@ -1,3 +1,17 @@
+# Next.js web and Expo native architecture — October 23, 2026
+
+CLI 0.15 source preparation separates full Next.js App Router web (SSR/RSC through
+Cloudflare OpenNext) from Expo iOS/Android. The UI contracts are DOM shadcn for web
+and the Anhedral-maintained React Native port of shadcn for native, with shared
+semantic tokens and public API contracts. Hono, Drizzle/D1 and private R2 remain
+core; Stripe and RevenueCat remain the only additions.
+
+The canonical diagram was regenerated in both themes as self-contained SVG and
+1920×1080 PNG using the existing local Chrome renderer. The same SVG bytes are
+mirrored by the Platform landing. This is documentation/artwork verification;
+it does not establish generated-app, installed-plugin, native-device, provider,
+hosted-image or production acceptance. Record runtime evidence separately.
+
 # Focused core verification — October 23, 2026
 
 The 0.14.0 source intentionally narrows initialization to Expo + Hono + Drizzle/D1 + private R2, supporting Better Auth and styling, with only Stripe and RevenueCat additions. This supersedes the older catalog scope in the historical evidence below. Existing applications/resources were not migrated or deleted. Compiled 0.13 output was preserved locally before rebuilding; output and credentials remain ignored rather than committed.

@@ -5,7 +5,7 @@ description: "Maintain Better Auth sessions and owner authorization in the Anhed
 
 # Anhedral Auth
 
-Better Auth is supporting core identity, not an optional provider choice. Inspect the generated packages/auth, D1 schema, Hono routes and Expo browser/native session adapters. Use the verified server session subject for ownership. Clients cannot choose account or tenant authority.
+Better Auth is supporting core identity, not an optional provider choice. Inspect the generated packages/auth, D1 schema, Hono routes and Next.js browser and Expo native session adapters. Use the verified server session subject for ownership. Clients cannot choose account or tenant authority.
 
 Keep auth secrets private; configure canonical HTTPS API origins, native schemes and trusted callback origins. Preserve cookie/origin/cache protections and bounded validation. Apply reviewed migrations explicitly, never during builds/tests/startup against a configured database.
 
