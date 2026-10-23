@@ -1,3 +1,54 @@
+# Next.js web and Expo native architecture — October 23, 2026
+
+CLI 0.15 source preparation separates full Next.js App Router web (SSR/RSC through
+Cloudflare OpenNext) from Expo iOS/Android. The UI contracts are DOM shadcn for web
+and the Anhedral-maintained React Native port of shadcn for native, with shared
+semantic tokens and public API contracts. Hono, Drizzle/D1 and private R2 remain
+core; Stripe and RevenueCat remain the only additions.
+
+The canonical diagram was regenerated in both themes as self-contained SVG and
+1920×1080 PNG using the existing local Chrome renderer. The same SVG bytes are
+mirrored by the Platform landing. This is documentation/artwork verification;
+it does not establish generated-app, installed-plugin, native-device, provider,
+hosted-image or production acceptance. Record runtime evidence separately.
+
+## CLI 0.15 generated runtime acceptance — October 23, 2026
+
+The implementation agent recorded the following local evidence for the unpublished
+0.15 source preview, with Next.js web separate from Expo native:
+
+- Complete generated `pnpm check` passed: lint, typechecks, Fallow with zero issues,
+  dependency audit, available tests and builds. A manual fixture rsync temporarily
+  overwrote its patch policy; after restoring the ordinary-init policy, the full
+  check passed. This was a test-harness issue, not an initialization result.
+- The packed tarball completed ordinary initialization, including staged dependency
+  resolution, patches and frozen installation; doctor and target checks passed.
+- Both iOS and Android Hermes exports passed, with output retained locally at
+  `/tmp/anhedral-next-native-final-export`. This is export evidence, not device,
+  screen-reader, store or native interaction acceptance.
+- Production OpenNext running in local workerd passed SSR/RSC, guarded account,
+  cookie roundtrip, signup, reload, sign-in/sign-out and rejected native-origin
+  checks. Browser acceptance reported zero errors. The final typography-only
+  OpenNext rebuild passed: 5474.81 KiB upload, 1130.07 KiB gzip and 44 assets;
+  its additional browser/layout rerun was still pending when this entry was written.
+- Root Turbopack development reached first compile/browser readiness in 4825 ms.
+  A source edit reached HMR in 790 ms, preserving window state with zero browser
+  errors. Webpack development failed reproducibly in
+  `WasmHash._updateWithBuffer` with an undefined `length`; production webpack and
+  OpenNext builds passed. The supported default development path uses Turbopack.
+
+A small warm-workerd comparison used three fresh Chrome contexts before the final
+heading CSS adjustment. Next readiness was 115/90/78 ms, transferred bytes were
+172418/172089/172092 and FCP was 72/40/40 ms. The earlier Expo baseline medians
+were 149 ms readiness, 438928 transferred bytes and 48 ms FCP. These are tiny local
+samples with a warm server, not universal performance claims or live deployment
+measurements. They do not establish a consistent FCP improvement.
+
+No npm publication, installed-plugin update, hosted-image activation, production
+deployment, real payment or physical-device acceptance is established by these
+checks. Final serialized CLI/plugin/reference checks follow this documentation
+update and must be recorded separately if they expose further failures.
+
 # Focused core verification — October 23, 2026
 
 The 0.14.0 source intentionally narrows initialization to Expo + Hono + Drizzle/D1 + private R2, supporting Better Auth and styling, with only Stripe and RevenueCat additions. This supersedes the older catalog scope in the historical evidence below. Existing applications/resources were not migrated or deleted. Compiled 0.13 output was preserved locally before rebuilding; output and credentials remain ignored rather than committed.

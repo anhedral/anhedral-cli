@@ -5,6 +5,7 @@ import { GENERATOR_VERSION } from './version.js';
 import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
 import { scaffoldBetterAuth } from './scaffold/auth.js';
+import { scaffoldWeb } from './platforms/web.js';
 import { scaffoldExpo } from './platforms/mobile.js';
 import { scaffoldPrivateFiles } from './scaffold/integrations.js';
 import { scaffoldBilling } from './scaffold/billing.js';
@@ -65,22 +66,34 @@ function defineItems<T extends Record<string, ItemConfiguration>>(
 
 /** Every product owns its source recipe, setup requirements and composition policy here. */
 const PRODUCT_ITEMS = defineItems({
+  next: {
+    type: 'application',
+    description: 'Full Next.js App Router web application on Cloudflare OpenNext',
+    targets: ['apps/web'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'styling', 'hono'],
+    setup: requirements(
+      'Server-rendered web application',
+      ['Browser control', 'Wrangler'],
+      ['Cloudflare Workers deployment access'],
+      [],
+      ['Next.js Worker, assets and scoped ANHEDRAL_API binding'],
+      ['Request-rendered HTML, RSC, cookies and authenticated API routes'],
+    ),
+    install: scaffoldWeb,
+    environment: ['API_INTERNAL_URL', 'ANHEDRAL_PREVIEW_ORIGIN'],
+  },
   expo: {
     type: 'application',
-    description: 'Universal Expo web, iOS and Android client with a Cloudflare asset/API gateway',
-    targets: ['apps/mobile'],
+    description: 'Native Expo iOS and Android application with Anhedral native shadcn UI',
+    targets: ['apps/mobile', 'packages/native-ui'],
     registryDependencies: ['workspace', 'typescript', 'eslint', 'styling'],
     setup: requirements(
-      'Universal web, iOS and Android application',
-      ['Browser control', 'Wrangler'],
+      'Native iOS and Android application',
+      ['Simulator or device'],
       ['For requested native distribution only: client-owned Apple/Google developer accounts'],
       ['For requested native builds only: platform signing credentials and EAS access when used'],
-      [
-        'Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration',
-      ],
-      [
-        'Static web export/runtime; requested native delivery additionally needs simulator/device and signed-build acceptance',
-      ],
+      ['Expo native client; signing and store configuration'],
+      ['Simulator/device and signed-build acceptance'],
     ),
     install: scaffoldExpo,
     environment: ['EXPO_PUBLIC_API_URL'],
@@ -130,9 +143,9 @@ const PRODUCT_ITEMS = defineItems({
   'better-auth': {
     type: 'integration',
     description: 'Database-backed identity schema and runtime routes',
-    targets: ['packages/auth', 'packages/db', 'apps/api', 'apps/mobile'],
+    targets: ['packages/auth', 'packages/db', 'apps/api', 'apps/mobile', 'apps/web'],
     selection: { requiresAll: ['d1', 'hono', 'expo'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'd1', 'expo'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'd1', 'expo', 'next'],
     setup: requirements(
       'Application-managed identity',
       ['Selected database tooling'],
@@ -169,7 +182,7 @@ const PRODUCT_ITEMS = defineItems({
   stripe: {
     type: 'integration',
     description: 'Authenticated Stripe checkout, portal and server entitlement projection',
-    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile'],
+    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile', 'apps/web'],
     selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
     registryDependencies: [
       'workspace',
@@ -179,6 +192,7 @@ const PRODUCT_ITEMS = defineItems({
       'd1',
       'better-auth',
       'expo',
+      'next',
     ],
     setup: requirements(
       'Web payments and subscriptions',
@@ -194,7 +208,7 @@ const PRODUCT_ITEMS = defineItems({
   revenuecat: {
     type: 'integration',
     description: 'Native purchases, restore and server-enforced cross-store entitlements',
-    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile'],
+    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile', 'apps/web'],
     selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
     registryDependencies: [
       'workspace',
@@ -204,6 +218,7 @@ const PRODUCT_ITEMS = defineItems({
       'd1',
       'better-auth',
       'expo',
+      'next',
     ],
     setup: requirements(
       'Cross-store subscription entitlements; Stripe is optional',
@@ -237,9 +252,7 @@ const PRODUCT_ITEMS = defineItems({
       [],
       [],
       [],
-      [
-        'Shared light/dark tokens and Tailwind v3 preset for Expo; adapt platform typography and components',
-      ],
+      ['Shared light/dark tokens, web CSS and Anhedral native shadcn port'],
       ['Consistency across selected interfaces; preserve platform-specific components'],
     ),
     package: packageSource(

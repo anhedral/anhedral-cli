@@ -1,6 +1,6 @@
 // Explicit generated-app integration: local checks and workerd only; no provider writes.
 import assert from 'node:assert/strict';
-import { mkdtempSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, existsSync, rmSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { STACK_PROFILES } from './support/stack-profiles.mjs';
@@ -26,7 +26,17 @@ for (const profile of selected) {
     execFile('pnpm', ['db:generate'], root);
     execFile('pnpm', ['check'], root);
     assert.ok(existsSync(path.join(root, 'apps/api/dist/index.js')));
-    assert.ok(existsSync(path.join(root, 'apps/mobile/dist/index.html')));
+    assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
+    const assets = path.join(root, 'apps/web/.open-next/assets');
+    for (const file of readdirSync(assets, { recursive: true }).filter((file) =>
+      file.endsWith('.js'),
+    )) {
+      assert.doesNotMatch(
+        readFileSync(path.join(assets, file), 'utf8'),
+        /react-native|expo-router|react-native-purchases|NativeWind/,
+        'Native modules must not enter a browser bundle: ' + file,
+      );
+    }
     await verifyUniversalDevelopment(root);
     execFile(
       process.execPath,

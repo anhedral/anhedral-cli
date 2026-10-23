@@ -5,7 +5,7 @@ description: "Provision and verify the core Cloudflare Worker, D1 and private R2
 
 # Anhedral Hosting
 
-Inspect source revision, CLI version/help, anhedral.json and existing resource receipts. Hosting is Cloudflare Workers through Wrangler: Expo static gateway plus Hono API, D1 and private R2. Preserve original hosting for older applications; this skill does not authorize migration or reinitialization.
+Inspect source revision, CLI version/help, anhedral.json and existing resource receipts. Hosting is Cloudflare Workers through Wrangler: Next.js App Router/OpenNext plus Hono API, D1 and private R2. Preserve original hosting for older applications; this skill does not authorize migration or reinitialization.
 
 Generation, provisioning, database migrations, secret installation, deployment and acceptance are separate steps. Preview supported plans first. Use authorized existing accounts and explicit environment selection. Never publish credentials or weaken account/audience/source checks to unblock delivery.
 

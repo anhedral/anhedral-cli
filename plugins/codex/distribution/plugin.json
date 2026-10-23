@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
-  "version": "0.14.0",
-  "description": "Create and maintain Expo, Hono, Drizzle/D1 and private R2 applications with optional Stripe and RevenueCat.",
+  "version": "0.15.0",
+  "description": "Create and maintain Next.js web, native Expo, Hono, Drizzle/D1 and private R2 applications with optional Stripe and RevenueCat.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Build and ship applications",
-        "longDescription": "Six focused workflows for one stack: Expo frontend, Hono Worker, Drizzle/D1, private R2 and supporting Better Auth. Stripe and RevenueCat are the only optional additions. Generate editable source, keep provider credentials private, and verify product flows separately from deployment.",
+        "longDescription": "Six focused workflows for one stack: Next.js OpenNext web and native Expo frontends, Hono Worker, Drizzle/D1, private R2 and supporting Better Auth. Stripe and RevenueCat are the only optional additions. Generate editable source, keep provider credentials private, and verify product flows separately from deployment.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
         "composerIcon": "./assets/anhedral-mark.svg",

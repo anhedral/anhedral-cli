@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "name": "anhedral",
-  "cliVersion": "0.14.0",
+  "cliVersion": "0.15.0",
   "items": [
     {
       "name": "workspace",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [],
       "environment": [],
@@ -20,7 +20,7 @@
     },
     {
       "name": "typescript",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -35,7 +35,7 @@
     },
     {
       "name": "eslint",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -49,8 +49,47 @@
       ]
     },
     {
+      "name": "next",
+      "version": "0.15.0",
+      "selection": {},
+      "registryDependencies": [
+        "workspace",
+        "typescript",
+        "eslint",
+        "styling",
+        "hono"
+      ],
+      "environment": [
+        "API_INTERNAL_URL",
+        "ANHEDRAL_PREVIEW_ORIGIN"
+      ],
+      "installer": "recipe",
+      "type": "application",
+      "description": "Full Next.js App Router web application on Cloudflare OpenNext",
+      "targets": [
+        "apps/web"
+      ],
+      "setup": {
+        "purpose": "Server-rendered web application",
+        "tools": [
+          "Browser control",
+          "Wrangler"
+        ],
+        "access": [
+          "Cloudflare Workers deployment access"
+        ],
+        "credentials": [],
+        "resources": [
+          "Next.js Worker, assets and scoped ANHEDRAL_API binding"
+        ],
+        "verify": [
+          "Request-rendered HTML, RSC, cookies and authenticated API routes"
+        ]
+      }
+    },
+    {
       "name": "expo",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -63,15 +102,15 @@
       ],
       "installer": "recipe",
       "type": "application",
-      "description": "Universal Expo web, iOS and Android client with a Cloudflare asset/API gateway",
+      "description": "Native Expo iOS and Android application with Anhedral native shadcn UI",
       "targets": [
-        "apps/mobile"
+        "apps/mobile",
+        "packages/native-ui"
       ],
       "setup": {
-        "purpose": "Universal web, iOS and Android application",
+        "purpose": "Native iOS and Android application",
         "tools": [
-          "Browser control",
-          "Wrangler"
+          "Simulator or device"
         ],
         "access": [
           "For requested native distribution only: client-owned Apple/Google developer accounts"
@@ -80,16 +119,16 @@
           "For requested native builds only: platform signing credentials and EAS access when used"
         ],
         "resources": [
-          "Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration"
+          "Expo native client; signing and store configuration"
         ],
         "verify": [
-          "Static web export/runtime; requested native delivery additionally needs simulator/device and signed-build acceptance"
+          "Simulator/device and signed-build acceptance"
         ]
       }
     },
     {
       "name": "hono",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -122,7 +161,7 @@
     },
     {
       "name": "d1",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -158,7 +197,7 @@
     },
     {
       "name": "better-auth",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {
         "requiresAll": [
           "d1",
@@ -171,7 +210,8 @@
         "typescript",
         "eslint",
         "d1",
-        "expo"
+        "expo",
+        "next"
       ],
       "environment": [
         "BETTER_AUTH_SECRET",
@@ -184,7 +224,8 @@
         "packages/auth",
         "packages/db",
         "apps/api",
-        "apps/mobile"
+        "apps/mobile",
+        "apps/web"
       ],
       "setup": {
         "purpose": "Application-managed identity",
@@ -208,7 +249,7 @@
     },
     {
       "name": "r2",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -244,7 +285,7 @@
     },
     {
       "name": "stripe",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {
         "requiresAll": [
           "hono",
@@ -259,7 +300,8 @@
         "hono",
         "d1",
         "better-auth",
-        "expo"
+        "expo",
+        "next"
       ],
       "environment": [
         "BILLING_ORIGIN",
@@ -277,7 +319,8 @@
         "packages/billing",
         "packages/contracts",
         "apps/api",
-        "apps/mobile"
+        "apps/mobile",
+        "apps/web"
       ],
       "setup": {
         "purpose": "Web payments and subscriptions",
@@ -300,7 +343,7 @@
     },
     {
       "name": "revenuecat",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {
         "requiresAll": [
           "hono",
@@ -315,7 +358,8 @@
         "hono",
         "d1",
         "better-auth",
-        "expo"
+        "expo",
+        "next"
       ],
       "environment": [
         "BILLING_ORIGIN",
@@ -338,7 +382,8 @@
         "packages/billing",
         "packages/contracts",
         "apps/api",
-        "apps/mobile"
+        "apps/mobile",
+        "apps/web"
       ],
       "setup": {
         "purpose": "Cross-store subscription entitlements; Stripe is optional",
@@ -362,7 +407,7 @@
     },
     {
       "name": "styling",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -382,7 +427,7 @@
         "access": [],
         "credentials": [],
         "resources": [
-          "Shared light/dark tokens and Tailwind v3 preset for Expo; adapt platform typography and components"
+          "Shared light/dark tokens, web CSS and Anhedral native shadcn port"
         ],
         "verify": [
           "Consistency across selected interfaces; preserve platform-specific components"

@@ -84,6 +84,8 @@ test('maintained dependency catalog audits the focused core and payment dependen
   const pins = collectCatalogDependencyPins(source);
   for (const name of [
     'expo',
+    'next',
+    '@opennextjs/cloudflare',
     'hono',
     'drizzle-orm',
     'better-auth',
@@ -95,14 +97,6 @@ test('maintained dependency catalog audits the focused core and payment dependen
       pins.some((pin) => pin.name === name),
       name,
     );
-  for (const name of [
-    'next',
-    'vinext',
-    'void',
-    'vercel',
-    'electron',
-    'wxt',
-    '@neondatabase/serverless',
-  ])
+  for (const name of ['vinext', 'void', 'vercel', 'electron', 'wxt', '@neondatabase/serverless'])
     assert.ok(!pins.some((pin) => pin.name === name), name);
 });

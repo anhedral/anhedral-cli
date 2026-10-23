@@ -51,7 +51,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     const installed = path.join(temporary, 'node_modules/anhedral');
     mkdirSync(installed, { recursive: true });
     cpSync(path.join(root, 'dist'), path.join(installed, 'dist'), { recursive: true });
-    cpSync(path.join(root, 'assets/patches'), path.join(installed, 'assets/patches'), {
+    cpSync(path.join(root, 'assets'), path.join(installed, 'assets'), {
       recursive: true,
     });
     cpSync(path.join(root, 'package.json'), path.join(installed, 'package.json'));
@@ -89,7 +89,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     ]);
     const app = path.join(temporary, 'my-first-app');
     const plan = JSON.parse(successful('init', app, '--dry-run', '--json'));
-    assert.deepEqual(plan.products, ['better-auth', 'd1', 'expo', 'hono', 'r2', 'styling']);
+    assert.deepEqual(plan.products, ['better-auth', 'd1', 'expo', 'hono', 'next', 'r2', 'styling']);
     assert.equal(plan.hosting, 'cloudflare');
     assert.equal(existsSync(app), false, 'Planning must not create the app');
     const api = await import(pathToFileURL(path.join(installed, 'dist/index.js')).href);
@@ -122,7 +122,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     assert.equal(delivery.resourcesProvisioned, false);
     assert.deepEqual(
       delivery.deployments.map(({ directory }) => directory),
-      ['apps/api', 'apps/mobile'],
+      ['apps/api', 'apps/web'],
     );
     assert.equal(delivery.project.deliveryEngine, 'wrangler');
     assert.equal(delivery.project.id, before.project.id);

@@ -1,6 +1,6 @@
 # Software factory
 
-Use one maintained architecture: Expo + Hono + Drizzle/D1 + private R2, supporting Better Auth and shared styling. Stripe and RevenueCat are the only optional additions. The [stack standard](stack-standard.md) owns architectural boundaries.
+Use one maintained architecture: Next.js web + Expo native + Hono + Drizzle/D1 + private R2, supporting Better Auth and shared styling. Stripe and RevenueCat are the only optional additions. The [stack standard](stack-standard.md) owns architectural boundaries.
 
 ## Generate
 
@@ -15,7 +15,7 @@ Review generated README, AGENTS, anhedral.json, environment templates, migration
 
 ## Develop and validate
 
-Run generated `pnpm dev`. The Worker gateway serves Expo's static export and forwards API requests to Hono; native Metro is a separate Expo command. If the generated development command builds the export once, re-export after browser-source edits; do not claim HMR without a running export watcher/Metro integration.
+Run generated `pnpm dev` for Next.js web and Hono. Start Expo Metro separately for iOS/Android with the generated mobile command. Web uses the full App Router, including SSR and React Server Components; production builds run through Cloudflare OpenNext rather than static export. The OpenNext Worker forwards API requests through `ANHEDRAL_API`; native clients use the configured HTTPS origin. Keep web DOM shadcn components separate from the Anhedral native shadcn port, sharing contracts and design tokens.
 
 Build complete vertical slices with persistent data, validation, owner authorization, error/loading states and meaningful tests. Verify session isolation and denied private-file access. Apply migrations explicitly to isolated local fixtures. Builds and tests must never migrate a configured remote database.
 

@@ -1,5 +1,10 @@
 import { readProjectSection, writeProjectSection, hasProjectSection } from '../project-config.js';
-import { STACK_DEPENDENCIES, WORKSPACE_NODE_ENGINE, PACKAGE_MANAGER } from '../dependencies.js';
+import {
+  OPENNEXT_GLOB_VERSION,
+  STACK_DEPENDENCIES,
+  WORKSPACE_NODE_ENGINE,
+  PACKAGE_MANAGER,
+} from '../dependencies.js';
 import { writeDependencyAudit } from '../dependency-patches.js';
 import { setPnpmPolicy } from '../pnpm-policy.js';
 import type { ResolvedStackRegistry } from '../registry/resolve.js';
@@ -25,7 +30,7 @@ export function writeStandardRoot(
     engines: { node: WORKSPACE_NODE_ENGINE },
     scripts: {
       dev: 'turbo dev',
-      build: 'turbo build',
+      build: 'turbo build --concurrency=1',
       lint: 'turbo lint',
       typecheck: 'turbo typecheck',
       test: 'turbo test',
@@ -52,17 +57,15 @@ process.exitCode = result.status ?? 1;
 `,
   );
   json(root, '.fallowrc.json', {
-    ignoreDependencies: [
-      'react-native-web',
-      'react-native-css-interop',
-      'react-native-reanimated',
-      'react-native-worklets',
-    ],
+    publicPackages: ['@workspace/native-ui'],
+    ignoreDependencies: ['react-native-reanimated', 'react-native-worklets'],
     ignorePatterns: [
       'scripts/audit.mjs',
       'scripts/audit-deps.mjs',
       '**/.wrangler/**',
       '**/dist/**',
+      '**/.next/**',
+      '**/.open-next/**',
       '**/worker-configuration.d.ts',
     ],
   });
@@ -82,11 +85,16 @@ process.exitCode = result.status ?? 1;
         cache: false,
         passThroughEnv: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'],
       },
-      build: { dependsOn: ['^build'], outputs: ['dist/**', '.output/**'] },
+      build: {
+        dependsOn: ['^build'],
+        outputs: ['dist/**', '.open-next/**', '.next/**', '!.next/cache/**'],
+      },
     },
   });
   setPnpmPolicy(root, {
     ...(!updating ? { packages: ['apps/*', 'packages/*'] } : {}),
+    // OpenNext's node-minify dependency pins the vulnerable glob CLI.
+    overrides: { '@node-minify/core>glob': OPENNEXT_GLOB_VERSION },
     sharedWorkspaceLockfile: true,
     allowBuilds: undefined,
     onlyBuiltDependencies: ['esbuild', 'sharp', 'unrs-resolver', 'workerd'],
@@ -95,6 +103,9 @@ process.exitCode = result.status ?? 1;
     'node_modules/',
     'dist/',
     '.output/',
+    '.next/',
+    '.open-next/',
+    '*.tsbuildinfo',
     '.turbo/',
     '.expo/',
     '.wrangler/',

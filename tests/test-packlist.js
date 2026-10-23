@@ -18,6 +18,10 @@ const requiredFiles = new Set([
   'assets/patches/node-forge@1.4.0.patch',
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
+  'assets/ui/native/button.tsx',
+  'assets/ui/theme.tsx',
+  'assets/ui/LICENSE.shadcn',
+  'assets/ui/UPSTREAM.json',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -156,6 +160,10 @@ try {
   );
 
   for (const file of packed.files) {
+    const allowedNativeUI =
+      /^assets\/ui\/(?:web\/button\.tsx|native\/(?:button|card|dialog|input|label|layout|text|theme-switcher)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json)$/.test(
+        file.path,
+      );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
       file.path === 'docs/anhedral-stack.md' ||
@@ -171,6 +179,7 @@ try {
     ].includes(file.path);
     const allowed =
       allowedRootFiles.has(file.path) ||
+      allowedNativeUI ||
       allowedDist ||
       allowedDocumentation ||
       allowedArtwork.has(file.path) ||

@@ -56,6 +56,7 @@ try {
     'd1',
     'expo',
     'hono',
+    'next',
     'r2',
     'stripe',
     'styling',

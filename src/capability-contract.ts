@@ -59,6 +59,15 @@ function productCapability(id: StandardProduct): ProductCapability {
       'Account eligibility, quotas, and live runtime behavior require authorized acceptance.',
     );
   }
+  if (id === 'next') {
+    delivery = stage(
+      'implemented',
+      'Full Next.js OpenNext Worker and assets deployed through Wrangler with an API service binding.',
+    );
+    limits.push(
+      'Default adapter caching is not persistent ISR; provision separately scoped cache infrastructure before adding persistent ISR.',
+    );
+  }
   if (id === 'hono')
     delivery = stage(
       'implemented',
