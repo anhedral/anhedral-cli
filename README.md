@@ -13,6 +13,12 @@ One command creates one stack:
 
 The only optional additions are **Stripe** for web billing and **RevenueCat** for native purchases. They can be selected independently or together. Provider accounts, activation, product configuration and acceptance remain explicit work.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/anhedral-stack.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/anhedral-stack-light.png">
+  <img alt="Expo web, iOS and Android connect to Hono, Drizzle/D1 and private R2. Stripe and RevenueCat are optional payment additions." src="docs/assets/anhedral-stack-light.png" width="1200">
+</picture>
+
 The commands below target the 0.14 release. Until it is published, build this repository with `pnpm install && pnpm build` and use `node /path/to/anhedral-cli/dist/bin.js` in place of `anhedral`.
 
 ```sh

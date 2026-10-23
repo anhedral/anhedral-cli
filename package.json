@@ -26,7 +26,9 @@
     "docs/stack-standard.md",
     "docs/software-factory.md",
     "docs/verification.md",
-    "docs/anhedral-stack.md"
+    "docs/anhedral-stack.md",
+    "docs/assets/anhedral-stack.png",
+    "docs/assets/anhedral-stack-light.png"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {

@@ -88,7 +88,12 @@ for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
 }
 for (const [name, contents] of files) {
   if (!name.endsWith('.md')) continue;
-  for (const match of contents.toString().matchAll(/\]\(([^)]+)\)/g)) {
+  const source = contents.toString();
+  const references = [
+    ...source.matchAll(/\]\(([^)]+)\)/g),
+    ...source.matchAll(/\b(?:src|srcset)="([^"]+)"/g),
+  ];
+  for (const match of references) {
     if (/^(?:https?:|plugin:|#)/.test(match[1])) continue;
     assert.ok(
       files.has(
