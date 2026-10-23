@@ -301,7 +301,7 @@ small {
   font-size: 12px;
 }
 .detail {
-  padding-top: 16px;
+  --page-padding-top: 16px;
 }
 .detail .topbar {
   max-width: none;
