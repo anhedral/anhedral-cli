@@ -91,6 +91,7 @@ export function Sidebar({
         <nav aria-label="Control panel">
           <SidebarMenu>
             {[
+              "Overview",
               "Infrastructure",
               "Checklist",
               "Checks",

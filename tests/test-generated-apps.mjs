@@ -25,7 +25,7 @@ function verifyMobileSecurityGate(root) {
   }
 }
 
-const profiles = { web: [], api: ['--hono', '--d1', '--better-auth', '--r2'], desktop: ['--electron'], extension: ['--wxt'], mobile: ['--expo'] };
+const profiles = { web: [], 'web-database': ['--next', '--neon'], api: ['--hono', '--d1', '--better-auth', '--r2'], desktop: ['--electron'], extension: ['--wxt'], mobile: ['--expo'] };
 const selected = process.argv[2] ? [process.argv[2]] : Object.keys(profiles);
 const cli = path.resolve(import.meta.dirname, '../dist/bin.js');
 process.env.WRANGLER_SEND_METRICS = 'false';
@@ -55,7 +55,7 @@ for (const profile of selected) {
     } else {
       execFile('pnpm', ['check'], root);
     }
-    if (profile === 'web') assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
+    if (profile === 'web' || profile === 'web-database') assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
     if (profile === 'api') assert.ok(existsSync(path.join(root, 'apps/api/dist/index.js')));
     if (profile === 'extension') assert.ok(existsSync(path.join(root, 'apps/extension/.output/chrome-mv3/manifest.json')));
     if (profile === 'mobile') assert.ok(existsSync(path.join(root, 'apps/mobile/dist/index.html')));

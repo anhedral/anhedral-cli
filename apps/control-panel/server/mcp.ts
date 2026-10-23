@@ -76,7 +76,7 @@ export function createControlServer() {
     {
       title: "Anhedral",
       description:
-        "Open the Anhedral developer control panel: projects, infrastructure, access requirements, local readiness and delivery checks.",
+        "Open the live Anhedral app overview: your app, planned stack, observed progress, next action and preview/live links. Describe app needs in the conversation; Codex builds the application. Technical checks are available in details.",
       inputSchema,
       annotations: {
         readOnlyHint: true,

@@ -10,6 +10,7 @@ import { scaffoldMobile } from './platforms/mobile.js';
 import { scaffoldExtension } from './platforms/extension.js';
 import type { ProjectOptions } from './project.js';
 import { createSetupPlan, resolveStandardProducts } from './capabilities.js';
+import { inspectProgressIdentity, updateProjectProgress } from './progress.js';
 
 import { STANDARD_PRODUCTS, type StandardProduct } from './standard-products.js';
 export { STANDARD_PRODUCTS } from './standard-products.js';
@@ -39,6 +40,7 @@ Examples:
   anhedral new website --next --stripe --resend
   anhedral init --wxt
   anhedral doctor [directory] --json
+  anhedral progress [directory] [--update report.json] [--json]
 
 --skip-install skips the final workspace install; the official shadcn bootstrap
 still requires network access and may install its own dependencies.
@@ -241,14 +243,14 @@ function addDatabase(root: string, options: StandardOptions, runtimeApp: string)
   if (has('neon') || has('d1')) {
     sharedPackage(root, 'db', has('neon') ? `import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema.js';
+import * as schema from './schema';
 export function createDatabase(connectionString: string) {
   // Pass env.HYPERDRIVE.connectionString from the Worker. Disable caching for authoritative reads in Hyperdrive configuration.
   const client = postgres(connectionString, { prepare: false, max: 5 });
   return { db: drizzle(client, { schema }), close: () => client.end() };
 }
 ` : `import { drizzle } from 'drizzle-orm/d1';
-import * as schema from './schema.js';
+import * as schema from './schema';
 export function createDatabase(binding: Parameters<typeof drizzle>[0]) { return drizzle(binding, { schema }); }
 `, { 'drizzle-orm': '^0.45.3', ...(has('neon') ? { postgres: '^3.4.0' } : {}) });
     put(root, 'packages/db/src/schema.ts', '// Define product tables here; generate and review SQL before migration.\nexport {};\n');
@@ -259,6 +261,27 @@ export default defineConfig({ dialect: 'sqlite', schema: './src/schema.ts', out:
 `);
     patchPackage(root, 'packages/db/package.json', { devDependencies: { 'drizzle-kit': '^0.31.0' }, scripts: { 'db:generate': 'drizzle-kit generate' } });
     patchPackage(root, `apps/${runtimeApp}/package.json`, { dependencies: { '@workspace/db': 'workspace:*' } });
+    if (runtimeApp === 'web' && options.hosting === 'cloudflare') {
+      patchPackage(root, 'apps/web/package.json', { dependencies: { 'drizzle-orm': '^0.45.3' } });
+      put(root, 'apps/web/cloudflare-env.d.ts', `interface CloudflareEnv { ${has('neon') ? 'HYPERDRIVE: { connectionString: string };' : "DB: Parameters<typeof import('drizzle-orm/d1').drizzle>[0];"} }\n`);
+      put(root, 'apps/web/app/api/health/route.ts', `import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { createDatabase } from '@workspace/db';
+import { sql } from 'drizzle-orm';
+export const dynamic = 'force-dynamic';
+export async function GET() {
+  try {
+    const { env } = await getCloudflareContext({ async: true });
+    const database = ${has('neon') ? 'createDatabase(env.HYPERDRIVE.connectionString)' : 'createDatabase(env.DB)'};
+    try {
+      await ${has('neon') ? 'database.db.execute(sql`select 1`)' : 'database.run(sql`select 1`)'};
+      return Response.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
+    } finally { ${has('neon') ? 'await database.close();' : '/* D1 bindings need no connection cleanup. */'} }
+  } catch {
+    return Response.json({ ok: false }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  }
+}
+`);
+    }
   }
 }
 
@@ -501,6 +524,8 @@ function writeSetupDocumentation(root: string, options: StandardOptions): void {
 
 Keep accounts, source, infrastructure, billing, and recovery client-owned. Use macOS, OpenAI/Codex, Computer Use and Control Chrome during implementation and verification. Use provider plugins, APIs/MCP and CLIs for operations; Cloudflare plugin + cf where available, Wrangler for project commands.
 
+Continue from anhedral.progress.json and actual source/provider state. The Anhedral plugin guides the conversation, Codex performs the work, and the npm package supplies construction. Record independent capability milestones with dated non-secret evidence for each environment using anhedral_report_observations when available, or the package progress API/CLI. Discover callable session tools, the local developer environment, authenticated account/scope and working integrations separately. Recheck stale or changed configuration before reusing evidence. anhedral.setup.json remains a requirements plan; generated source is not provisioned infrastructure or a verified product.
+
 Cloudflare-first, free-first where suitable. Human approval is required for paid activation, material spending, architecture exceptions, and production releases. Do not deploy or activate providers as part of initialization.
 
 Add apps and shared packages only when needed. All services belong in apps/*, reusable code in packages/*. Shared styling is named styling. Keep secrets and privileged integrations out of client bundles. Use Clerk, Better Auth, or no auth according to project needs. Protect product routes explicitly and implement resource authorization.
@@ -517,12 +542,15 @@ Initialized from the official shadcn pnpm/Turborepo monorepo, with the Anhedral 
 
 Selected: ${options.products.join(', ')}. ${has('next') ? `Next.js hosting: ${options.hosting === 'cloudflare' ? 'Cloudflare Workers + OpenNext' : 'Vercel (explicit architecture exception)'}.` : ''}
 
+Describe your app's needs to Codex with the Anhedral plugin. It continues implementation, connects selected resources through available provider tools, verifies product behavior and records the next action. anhedral.progress.json stores portable, non-secret progress independently of the requirements in anhedral.setup.json. Read it with anhedral progress; milestones apply only to their recorded environment and evidence.
+
 Run pnpm install, commit pnpm-lock.yaml, then pnpm dev. Run pnpm check for lint, types, Fallow audit, tests and build. Without a Git comparison base, audit runs the full Fallow gate. Add meaningful product tests and integration checks as behavior is implemented. The tests task runs only workspaces that define tests; init does not claim product verification.
 
 Cloudflare bindings contain REPLACE_WITH_* IDs. Create separate preview/production resources in client-owned accounts, replace IDs, and generate Worker types before development. Workers expose local dev and explicit deploy scripts. Next.js uses pnpm --filter web preview to exercise the Workers runtime (use the actual package name from apps/web/package.json). No infrastructure or production deployment is performed by init.
 
 ${has('next') && options.hosting === 'cloudflare' ? 'OpenNext is configured without a provisioned incremental-cache bucket. Choose and configure a cache adapter before using ISR or cache features that require shared persistence.\n' : ''}
 ${has('neon') ? 'Create Hyperdrive against Neon; disable query caching for correctness-sensitive reads. DATABASE_URL is for reviewed migration tooling, while Workers use the HYPERDRIVE binding. Close direct PostgreSQL clients after use.\n' : ''}
+${(has('neon') || has('d1')) && has('next') && !has('hono') && options.hosting === 'cloudflare' ? 'The web /api/health route checks database connectivity with a read-only query and returns 503 without internal details when unavailable. It does not verify product tables, permissions or user workflows.\n' : ''}
 ${has('better-auth') ? 'Generate Better Auth tables into the Drizzle schema, review and apply migrations before using /api/auth. Configure BETTER_AUTH_SECRET, BETTER_AUTH_URL and trusted origins for the correct environment.\n' : ''}
 ${has('clerk') ? 'Clerk middleware exposes server identity; protect selected routes explicitly. The web starter includes ClerkProvider and sign-in/sign-up pages. Configure the selected native SDKs when implementing account flows.\n' : ''}
 ${has('r2') ? 'FILES is a private R2 binding. Implement authentication and file-level authorization before exposing file routes. Clients never receive R2 credentials.\n' : ''}
@@ -609,6 +637,18 @@ export async function scaffoldStandardProject(options: StandardOptions, run: Sta
         if (seededIgnore) appendGitignore(stageRoot, seededIgnore.split(/\r?\n/));
         await applyStandardOverlays(stageRoot, options);
         run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
+        // Construction is local evidence only; resource and product milestones remain unobserved.
+        const generatedIdentity = inspectProgressIdentity(stageRoot);
+        await updateProjectProgress(stageRoot, {
+          expectedRevision: 0, appName: options.name, selected: options.products, hosting: options.hosting,
+          nextAction: 'Build the requested product behavior and connect the selected services.',
+          observations: options.products.map((capability) => ({
+            capability, environment: 'default', milestone: 'generated', status: 'succeeded',
+            summary: 'Generated starter source; product behavior and provider access need verification.',
+            evidence: ['anhedral.setup.json', 'package.json'], observedAt: new Date().toISOString(), source: 'local-check',
+            identity: { configDigest: generatedIdentity.configDigest },
+          })),
+        });
         commitPaths.push(...readdirSync(stageRoot).filter((name) => name !== 'node_modules'));
       },
       afterCommit: () => {

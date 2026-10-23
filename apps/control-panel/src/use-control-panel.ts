@@ -3,7 +3,7 @@ import type { Snapshot } from "../server/status.js";
 import { ask, call, connect, openDashboard } from "./bridge.js";
 export function useControlPanel() {
   const [data, setData] = useState<Snapshot>();
-  const [tab, setTab] = useState("Infrastructure");
+  const [tab, setTab] = useState("Overview");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");

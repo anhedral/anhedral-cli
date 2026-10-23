@@ -12,9 +12,11 @@ export function PageHeading({
     <div className="page-heading">
       <div>
         <div className="eyebrow">{project?.name || "Welcome to Anhedral"}</div>
-        <h1>{tab === "Infrastructure" ? "Build your stack." : tab}</h1>
+        <h1>{tab === "Overview" ? "Your app, taking shape." : tab === "Infrastructure" ? "Build your stack." : tab}</h1>
         <p>
-          {tab === "Infrastructure"
+          {tab === "Overview"
+            ? "Describe what you need in the conversation. Anhedral builds and tracks the work here."
+            : tab === "Infrastructure"
             ? "Choose the pieces. Set up the infrastructure. Ship a verified application."
             : `Manage ${tab.toLowerCase()} for the ${environment} environment.`}
         </p>

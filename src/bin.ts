@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import path from 'node:path';
+import { readFileSync, statSync } from 'node:fs';
+import { readProjectProgress, updateProjectProgress, validateProgressUpdate } from './progress.js';
 import { inspectProject } from './readiness.js';
 import { argv } from 'node:process';
 import { STANDARD_USAGE, parseStandardOptions, scaffoldStandardProject } from './standard.js';
@@ -18,12 +20,16 @@ async function main(): Promise<void> {
     console.log(json ? JSON.stringify({ version: GENERATOR_VERSION }) : GENERATOR_VERSION);
     return;
   }
+  if (command === 'progress') {
+    await runProgress(args);
+    return;
+  }
   if (command === 'doctor') {
     runDoctor(args);
     return;
   }
   if (command !== 'new' && command !== 'init') {
-    throw new Error(`Unknown command: ${command}. Use new, init, doctor, --help, or --version.`);
+    throw new Error(`Unknown command: ${command}. Use new, init, doctor, progress, --help, or --version.`);
   }
   if (args.some((arg) => ['--help', '-h'].includes(arg))) {
     console.log(json ? JSON.stringify({ usage: STANDARD_USAGE }) : STANDARD_USAGE);
@@ -31,6 +37,27 @@ async function main(): Promise<void> {
   }
   const options = readOptions(command, args);
   if (options) await scaffoldStandardProject(options);
+}
+
+async function runProgress(args: string[]): Promise<void> {
+  const usage = 'Usage: anhedral progress [directory] [--update report.json] [--json]';
+  let directory: string | undefined;
+  let updateFile: string | undefined;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--json') continue;
+    if (arg === '--update') {
+      if (updateFile || !args[index + 1] || args[index + 1].startsWith('-')) throw new Error(usage);
+      updateFile = args[++index];
+    } else if (arg.startsWith('-') || directory) throw new Error(usage);
+    else directory = arg;
+  }
+  const root = path.resolve(directory ?? process.cwd());
+  if (updateFile && statSync(updateFile).size > 1_000_000) throw new Error('Progress update exceeds size limit');
+  const result = updateFile
+    ? await updateProjectProgress(root, validateProgressUpdate(JSON.parse(readFileSync(updateFile, 'utf8'))))
+    : readProjectProgress(root);
+  console.log(JSON.stringify(result, null, 2));
 }
 
 function runDoctor(args: string[]): void {
@@ -57,7 +84,7 @@ try {
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   const code = error instanceof PostCommitError ? 'POST_COMMIT_FAILED'
-    : command === 'doctor' ? 'INVALID_ARGUMENT'
+    : command === 'doctor' || command === 'progress' ? 'INVALID_ARGUMENT'
     : command === 'new' || command === 'init' ? 'GENERATION_FAILED' : 'UNKNOWN_COMMAND';
   console.error(json ? JSON.stringify({ error: message, code }) : `Error: ${message}`);
   process.exitCode = 1;

@@ -4,8 +4,11 @@ import {
   progressInput,
   pieceInput,
   environmentId,
+  validatePlan,
 } from "../shared/assembly.js";
-import { draftInput } from "./projects.js";
+import { draftInput, projectFor, readProjectFile } from "./projects.js";
+import { reportInput } from "../shared/report.js";
+import { readProjectProgress, updateProjectProgress } from "../../../src/progress.js";
 import {
   createDraft,
   savePlan,
@@ -19,6 +22,25 @@ const scope = {
   revision: z.number().int().nonnegative(),
 };
 export const lifecycleActions = {
+  anhedral_report_observations: {
+    title: "Update application progress",
+    description: "Record non-secret, dated observations from actual work in the registered project’s portable anhedral.progress.json. Use work.revision (or 0 for a missing record), distinct environment/account identities and independent capability milestones. Source labels describe the evidence reported by the agent; the tool does not verify providers or execute commands. Returns the updated live app overview. Never record credentials or infer available tools/authentication from installed plugins.",
+    schema: z.object(reportInput).strict(),
+    run: async (input: unknown) => {
+      const { projectId, ...update } = z.object(reportInput).strict().parse(input);
+      const project = projectFor(projectId);
+      if (project.planned) throw new Error("Initialize and register the planned folder before recording portable observations.");
+      readProjectFile(project.root, "anhedral.progress.json");
+      const existing = readProjectProgress(project.root);
+      const planned = existing ? undefined : (await snapshot(projectId)).assembly;
+      if (update.selected || update.hosting) validatePlan(update.selected || existing?.selected || planned?.selected || [], update.hosting || existing?.hosting || planned?.hosting || "cloudflare");
+      await updateProjectProgress(project.root, {
+        ...(!existing ? { selected: planned?.selected || [], hosting: planned?.hosting, appName: project.name } : {}),
+        ...update,
+      });
+      return snapshot(projectId, update.observations?.[0]?.environment || update.links?.environment || "default");
+    },
+  },
   anhedral_create_project: {
     title: "Plan a new Anhedral project",
     description:
@@ -37,7 +59,17 @@ export const lifecycleActions = {
         .object({ ...scope, ...planInput })
         .strict()
         .parse(input);
-      savePlan(projectId, environment, revision, plan);
+      validatePlan(plan.selected, plan.hosting);
+      const before = await snapshot(projectId, environment);
+      if (before.assembly?.revision !== revision) throw new Error("The plan changed. Refresh before saving.");
+      const project = projectFor(projectId);
+      if (!project.planned) {
+        readProjectFile(project.root, "anhedral.progress.json");
+        const work = readProjectProgress(project.root);
+        if (work) await updateProjectProgress(project.root, { expectedRevision: work.revision, ...plan });
+      }
+      try { savePlan(projectId, environment, revision, plan); }
+      catch (error) { throw new Error(`The portable plan was saved, but the workspace plan changed concurrently. Refresh and reconcile the plan before continuing. ${error instanceof Error ? error.message : ""}`); }
       return snapshot(projectId, environment);
     },
   },

@@ -5,6 +5,8 @@ import {
   needsCloudflare,
   type Assembly,
 } from "../shared/assembly.js";
+import { readProjectProgress, inspectProgressIdentity } from "../../../src/progress.js";
+import { stackOverview } from "../shared/overview.js";
 import { CAPABILITIES } from "../../../src/capabilities.js";
 import { inspectProject } from "../../../src/readiness.js";
 import {
@@ -276,14 +278,20 @@ export async function snapshot(
     ...CAPABILITIES[id],
     status: "starter",
   }));
+  if (!project.planned) readProjectFile(project.root, "anhedral.progress.json");
+  const work = project.planned ? null : readProjectProgress(project.root);
   const storedAssembly = readRegistry().assemblies[project.id]?.[environment];
-  const assembly: Assembly = storedAssembly || {
+  let assembly: Assembly = storedAssembly || {
     selected: products,
     hosting: standard?.hosting === "vercel" ? "vercel" : "cloudflare",
     revision: 0,
     progress: {},
     pieces: {},
   };
+  if (work) {
+    const samePlan = assembly.hosting === work.hosting && [...assembly.selected].sort().join() === [...work.selected].sort().join();
+    assembly = { ...assembly, selected: work.selected, hosting: work.hosting, ...(!samePlan ? { progress: {}, pieces: {} } : {}) };
+  }
   const resources = project.planned
     ? []
     : workerResources(project.root, environment);
@@ -293,9 +301,13 @@ export async function snapshot(
     ? []
     : ["anhedral.setup.json", "anhedral.standard.json"])
     readProjectFile(project.root, file);
+  const progressIdentity = project.planned ? {} : inspectProgressIdentity(project.root);
   const checked = await checkResources(resources, selected, refresh);
   return {
     catalog: CATALOG,
+    work,
+    progressIdentity,
+    overview: stackOverview(work?.selected || assembly.selected, work, environment, progressIdentity, selected.cloudflareAccountId),
     assembly,
     checklist: checklist(assembly, !project.planned),
     projects: list,
@@ -305,6 +317,7 @@ export async function snapshot(
       ...new Set([
         "default",
         ...Object.keys(settings),
+        ...(work?.observations.map((item) => item.environment) || []),
         ...Object.keys(readRegistry().assemblies[project.id] || {}),
       ]),
     ],

@@ -80,3 +80,12 @@ export async function openDashboard(url: string) {
   if (preview) window.open(url, "_blank", "noopener,noreferrer");
   else await host.openLink({ url });
 }
+
+export async function openAppLink(url: string) {
+  const target = new URL(url);
+  const local = ["localhost", "127.0.0.1", "[::1]"].includes(target.hostname);
+  if (target.username || target.password || target.hash || (target.protocol !== "https:" && !(local && target.protocol === "http:")))
+    throw new Error("Invalid application link.");
+  if (preview) window.open(url, "_blank", "noopener,noreferrer");
+  else await host.openLink({ url });
+}

@@ -10,6 +10,7 @@ import { ProjectDialog } from "./project-dialog.js";
 import { Sidebar } from "./sidebar.js";
 import { Toolbar } from "./toolbar.js";
 import { PageHeading } from "./pageheading.js";
+import { Overview } from "./overview.js";
 import { Infrastructure } from "./infrastructure.js";
 import { Readiness } from "./readiness.js";
 import { Delivery } from "./delivery.js";
@@ -68,14 +69,15 @@ function Dashboard() {
           )}
           {data && !project && (
             <Empty title="What are you building?">
-              Create an application or connect existing code. Choose the needed
-              stack, then work through setup and delivery with Anhedral.
+              Describe your app in the conversation. Anhedral chooses the stack,
+              builds it and keeps your progress here.
               <br />
               <Button onClick={() => setAdding(true)}>Start a project</Button>
             </Empty>
           )}
           {project && (
             <>
+              {tab === "Overview" && <Overview {...controller} />}
               {(tab === "Infrastructure" || tab === "Checklist") && (
                 <NextAction {...controller} />
               )}

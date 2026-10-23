@@ -1051,3 +1051,17 @@ code {
     margin-right: 6px;
   }
 }
+
+.app-overview { display: grid; gap: 24px; }
+.app-links { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.stack-map { padding: 24px; border: 1px solid var(--border); border-radius: 12px; }
+.stack-map .stack-pieces { margin-top: 20px; }
+.stack-issue { border-color: var(--destructive); }
+.milestone-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.milestone { border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; font-size: 11px; }
+.milestone.failed, .milestone.blocked { color: var(--destructive); }
+.stack-relationships { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px 0 0; list-style: none; }
+.stack-relationships li { font-size: 12px; border: 1px solid var(--border); padding: 10px; border-radius: 8px; }
+.stack-relationships small { display: block; opacity: .65; margin-top: 4px; }
+.progress-evidence { padding: 16px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.progress-evidence small { opacity: .65; }
