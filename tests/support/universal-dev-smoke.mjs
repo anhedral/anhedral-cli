@@ -152,16 +152,26 @@ export async function verifyUniversalDevelopment(root, { browser = false } = {})
           : {}),
       });
       const page = await chromium.newPage();
+      const email = `browser-${randomUUID()}@example.invalid`;
       await page.goto(origin + '/sign-in');
       await page.getByRole('button', { name: 'Create an account', exact: true }).click();
       await page.getByPlaceholder('Name').fill('Browser verification');
-      await page.getByPlaceholder('Email').fill(`browser-${randomUUID()}@example.invalid`);
+      await page.getByPlaceholder('Email').fill(email);
       await page.getByPlaceholder('Password').fill('synthetic-browser-password-12345');
       await page.getByRole('button', { name: 'Create account', exact: true }).click();
       await page.waitForURL('**/account');
       await page.getByText(/browser-.*@example.invalid/).waitFor();
       await page.reload();
       await page.getByText(/browser-.*@example.invalid/).waitFor();
+      await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+      await page.waitForURL('**/sign-in');
+      await page.getByPlaceholder('Email').fill(email);
+      await page.getByPlaceholder('Password').fill('synthetic-browser-password-12345');
+      await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+      await page.waitForURL('**/account');
+      await page.getByText(email, { exact: true }).waitFor();
+      await page.reload();
+      await page.getByText(email, { exact: true }).waitFor();
       await page.getByRole('button', { name: 'Sign out', exact: true }).click();
       await page.waitForURL('**/sign-in');
       await page.setViewportSize({ width: 390, height: 844 });
@@ -171,7 +181,9 @@ export async function verifyUniversalDevelopment(root, { browser = false } = {})
         true,
       );
       await page.screenshot({ path: path.join(scratch, 'mobile.png') });
-      console.log('PASS browser: signup, protected account, reload, sign-out, mobile viewport.');
+      console.log(
+        'PASS browser: signup, protected account, reload, sign-out/sign-in, mobile viewport.',
+      );
     }
     console.log(
       'PASS universal: exported routes, workerd service binding, D1 auth, protected contracts, revocation, native scheme transport and origin rejection.',
