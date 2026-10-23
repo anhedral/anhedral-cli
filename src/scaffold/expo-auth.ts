@@ -124,6 +124,7 @@ async function authenticate(values: { create: boolean; name: string; email: stri
 }
 
 function SignIn() {
+  const { refetch } = getAuthClient().useSession();
   const [create, setCreate] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -135,6 +136,7 @@ function SignIn() {
     try {
       await authenticate({ create, name, email, password });
       await sessionApi.session();
+      await refetch();
       setPassword('');
       router.replace('/account');
     } catch (error) { setMessage(authenticationError(error)); }
