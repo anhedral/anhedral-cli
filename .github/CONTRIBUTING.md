@@ -6,7 +6,7 @@ Use the issue forms, search existing reports, and include the CLI version and a 
 
 For a pull request, fork the repository, branch from `staging`, and target `staging`. Run `pnpm install --frozen-lockfile`, `pnpm build`, focused `node --test tests/<affected>.test.mjs` checks and `pnpm lint`; describe the behavior and results. Include meaningful regression tests for code fixes. Keep unrelated formatting out of the diff. Full release checks belong at promotion, not every local edit.
 
-Anhedral (`@anhedral`, `anhedral.dev@gmail.com`) is the primary maintainer account.
+Anhedral (`@anhedral`) is the primary maintainer account.
 Anhedral, Ryan (`@rswearin`) and Paul (`@PaulManes`) may review and merge changes.
 Review is shared among these maintainers; no rule requires Ryan's personal approval.
 Required CI and CodeQL checks must pass; dependency updates are reviewed rather than automatically merged. Releases use verified artifacts and npm trusted publishing. Release credentials are never available to contribution workflows.
