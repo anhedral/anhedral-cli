@@ -4,18 +4,12 @@ import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { StandardRunner } from '../registry/types.js';
 import { json, put } from './files.js';
 
-export function assertBootstrapPlatform(_run: StandardRunner, _platform = process.platform): void {}
 export function assertWorkspaceRuntime(run: StandardRunner, version = process.versions.node): void {
   if (run === execFile && !supportsWorkspaceRuntime(version))
     throw new Error('Generated workspaces require Node.js 22.13+ on the 22.x line or Node.js 24+.');
 }
 /** No downloaded template, disposable Next app or initialization-time cloud operation. */
-export function bootstrapWorkspace(
-  root: string,
-  name: string,
-  run: StandardRunner,
-  _webOnly = false,
-): void {
+export function bootstrapWorkspace(root: string, name: string, run: StandardRunner): void {
   assertWorkspaceRuntime(run);
   json(root, 'package.json', { name, private: true });
   put(root, 'pnpm-workspace.yaml', 'packages:\n  - apps/*\n  - packages/*\n');

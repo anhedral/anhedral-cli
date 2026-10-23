@@ -13,6 +13,8 @@ One command creates one stack:
 
 The only optional additions are **Stripe** for web billing and **RevenueCat** for native purchases. They can be selected independently or together. Provider accounts, activation, product configuration and acceptance remain explicit work.
 
+The commands below target the 0.14 release. Until it is published, build this repository with `pnpm install && pnpm build` and use `node /path/to/anhedral-cli/dist/bin.js` in place of `anhedral`.
+
 ```sh
 pnpm dlx anhedral@0.14.0 init my-app
 cd my-app

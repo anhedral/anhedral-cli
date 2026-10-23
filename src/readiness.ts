@@ -135,7 +135,7 @@ export function validateSetupPlan(plan: unknown): asserts plan is {
   if (value.hosting !== 'cloudflare') throw new Error('Invalid hosting.');
   validateRequirements(value.setup, value.products);
   const selected = new Set<StandardProduct>(value.products);
-  resolveStandardProducts(selected, value.hosting, false, false);
+  resolveStandardProducts(selected, value.hosting);
   if (selected.size !== value.products.length)
     throw new Error('Invalid or incomplete setup selection.');
   if (value.name !== undefined && typeof value.name !== 'string')

@@ -67,7 +67,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
         flag: '--table',
         value: 'table',
         arity: 'required',
-        description: 'Existing database table or keys for KV metadata.',
+        description: 'Existing D1 database table.',
       },
       {
         flag: '--offset',
@@ -95,7 +95,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       },
     ],
     examples: ['services list --json', 'services status binding:apps/api:D1:DB --json'],
-    note: 'Provider calls occur only when requested. Data output can contain private values. Deletion is limited to verified project-created D1/KV resources and requires a fresh plan and typed resource name.',
+    note: 'Provider calls occur only when requested. Data output can contain private values. Deletion is limited to verified project-created D1 databases and requires a fresh plan and typed resource name.',
   },
   inspect: {
     description: 'Inspect local stack, setup requirements and recorded delivery evidence.',
@@ -191,8 +191,8 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Connect the intended hosting account and audience first. Commit source before shipping; resolved tracked bindings require review and another commit. Mobile builds return links and never submit to stores.',
   },
   add: {
-    description: 'Add bundled stack parts while preserving edited source.',
-    usage: 'add <items...> [options]',
+    description: 'Add Stripe or RevenueCat while preserving edited source.',
+    usage: 'add <stripe|revenuecat> [...] [options]',
     options: [
       { flag: '--dry-run', description: 'Preview changed paths without installing them.' },
       {
@@ -214,7 +214,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       '--cwd client-app add stripe --dry-run',
       'add stripe --diff --cwd client-app',
     ],
-    note: 'Source previews are local and bounded. A new web bootstrap cannot be previewed offline; the plan reports that limitation. Edited-source conflicts require review; there is no force overwrite.',
+    note: 'Source previews are local and bounded. Edited-source conflicts require review; there is no force overwrite.',
   },
   registry: {
     description: 'Inspect the core stack and payment additions.',

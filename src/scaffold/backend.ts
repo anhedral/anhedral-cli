@@ -47,5 +47,3 @@ export function createHttpClient(baseURL: string, options: HttpOptions = {}) {
 `,
   );
 }
-
-/** A single trusted upstream; never forward provider/edge identity headers from browsers. */

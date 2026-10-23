@@ -118,7 +118,7 @@ test('current CLI has one initialization command and selects addition projects w
     assert.equal(JSON.parse(removed.stderr).code, 'UNKNOWN_COMMAND');
     assert.equal(run(root, 'new', '--help').status, 1);
     assert.doesNotMatch(run(root, '--help').stdout, /compatibility alias/);
-    const positional = run(root, 'add', './destination', 'resend', '--dry-run', '--json');
+    const positional = run(root, 'add', './destination', 'stripe', '--dry-run', '--json');
     assert.equal(positional.status, 1);
     assert.equal(JSON.parse(positional.stderr).code, 'INVALID_ARGUMENT');
     assert.match(JSON.parse(positional.stderr).nextAction, /--cwd/);
@@ -158,18 +158,18 @@ test('human provider summaries show actionable prerequisites without dumping cre
     integrations: {
       results: [
         {
-          provider: 'resend',
+          provider: 'stripe',
           ready: false,
-          nextActions: ['Publish the required DNS records.'],
-          runtime: { RESEND_API_KEY: 'confidential' },
+          nextActions: ['Configure the Stripe webhook.'],
+          runtime: { STRIPE_SECRET_KEY: 'confidential' },
         },
       ],
     },
     diagnostics: 'confidential',
   });
-  assert.match(result, /resend: setup pending/);
-  assert.match(result, /Next: Publish/);
-  assert.doesNotMatch(result, /confidential|RESEND_API_KEY|diagnostics/);
+  assert.match(result, /stripe: setup pending/);
+  assert.match(result, /Next: Configure/);
+  assert.doesNotMatch(result, /confidential|STRIPE_SECRET_KEY|diagnostics/);
   const local = formatResult('doctor', {
     localReady: true,
     checks: [],
@@ -235,10 +235,10 @@ test('human auth output distinguishes runtime access from management permissions
   const result = formatResult('auth', {
     checks: [
       {
-        provider: 'clerk',
+        provider: 'stripe',
         state: 'verified',
         access: 'runtime',
-        nextAction: 'Supply CLERK_PLATFORM_API_KEY for application provisioning.',
+        nextAction: 'Supply an account-scoped STRIPE_SECRET_KEY for webhook provisioning.',
       },
     ],
     authenticated: true,
@@ -246,6 +246,6 @@ test('human auth output distinguishes runtime access from management permissions
     note: 'Authentication checks do not establish every provisioning permission.',
   });
   assert.match(result, /verified \(runtime access\)/);
-  assert.match(result, /CLERK_PLATFORM_API_KEY/);
+  assert.match(result, /STRIPE_SECRET_KEY/);
   assert.match(result, /do not establish every provisioning permission/);
 });

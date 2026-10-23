@@ -10,11 +10,7 @@ import { execFile } from './util.js';
 import { registerApplication } from './delivery.js';
 import { runStagedTransaction } from './transaction.js';
 import { createSetupPlan } from './capabilities.js';
-import {
-  bootstrapWorkspace,
-  assertBootstrapPlatform,
-  assertWorkspaceRuntime,
-} from './scaffold/bootstrap.js';
+import { bootstrapWorkspace, assertWorkspaceRuntime } from './scaffold/bootstrap.js';
 import { composeStack } from './scaffold/compose.js';
 import { parseStandardOptions } from './registry/options.js';
 import { STANDARD_USAGE } from './registry/usage.js';
@@ -35,7 +31,6 @@ export async function scaffoldStandardProject(
     printResult('init', plan, { ...output, json: options.json });
     return;
   }
-  assertBootstrapPlatform(run);
   assertWorkspaceRuntime(run);
   const root = options.root;
   const previousQuiet = process.env.ANHEDRAL_QUIET;

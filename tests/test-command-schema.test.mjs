@@ -8,7 +8,7 @@ import {
   inlineArguments,
   validateCommand,
 } from '../dist/cli-arguments.js';
-import { COMMAND_HELP, commandHelp } from '../dist/registry/usage.js';
+import { COMMAND_HELP, STANDARD_USAGE, commandHelp } from '../dist/registry/usage.js';
 
 const invalid = (command, args, pattern) =>
   assert.throws(
@@ -129,4 +129,17 @@ test('command option collection follows schema arity, aliases and repeatable ord
   assert.equal(commandArguments('add', ['stripe', '--diff']).has('--diff'), true);
   assert.throws(() => commandArguments('ship', ['--provider']), /Supply a value/);
   assert.throws(() => commandArguments('ship', ['--provider', 'one', '--provider', 'two']), /once/);
+});
+
+test('addition and service help describe only the maintained stack', () => {
+  assert.match(commandHelp('add'), /Stripe or RevenueCat/);
+  assert.doesNotMatch(commandHelp('add'), /new web bootstrap|cannot be previewed offline/);
+  assert.match(commandHelp('services'), /D1 databases/);
+  assert.doesNotMatch(commandHelp('services'), /KV/);
+});
+
+test('top-level help describes the core and payment additions without retired selectors', () => {
+  assert.match(STANDARD_USAGE, /Expo \+ Hono \+ Drizzle\/D1 \+ private R2/);
+  assert.match(STANDARD_USAGE, /--stripe --revenuecat/);
+  assert.doesNotMatch(STANDARD_USAGE, /minimal Expo|--preset|full-product/);
 });

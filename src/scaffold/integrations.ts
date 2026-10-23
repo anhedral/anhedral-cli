@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { put } from './files.js';
 import type { RecipeContext } from '../registry/types.js';
-import { scaffoldBilling } from './billing.js';
 import { PRIVATE_FILES_SOURCE } from './private-files.js';
 
 export function scaffoldPrivateFiles({ root }: RecipeContext): void {
@@ -18,10 +17,4 @@ export function scaffoldPrivateFiles({ root }: RecipeContext): void {
         "app.route('/api/files', privateFileRoutes);\nexport default app;",
       ),
   );
-}
-export function scaffoldStripe(context: RecipeContext): void {
-  scaffoldBilling(context);
-}
-export function scaffoldRevenueCat(context: RecipeContext): void {
-  scaffoldBilling(context);
 }

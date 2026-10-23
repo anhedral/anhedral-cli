@@ -85,13 +85,13 @@ test('capability command is offline metadata with consistent human, JSON, quiet,
 });
 test('capability inspection never includes environment credential values', () => {
   const token = 'fixture-private-management-value';
-  const previous = process.env.OPENAI_ADMIN_KEY;
+  const previous = process.env.STRIPE_SECRET_KEY;
   try {
-    process.env.OPENAI_ADMIN_KEY = token;
+    process.env.STRIPE_SECRET_KEY = token;
     assert.equal(JSON.stringify(CAPABILITY_CONTRACT).includes(token), false);
     assert.equal(formatCapabilityContract().includes(token), false);
   } finally {
-    if (previous === undefined) delete process.env.OPENAI_ADMIN_KEY;
-    else process.env.OPENAI_ADMIN_KEY = previous;
+    if (previous === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = previous;
   }
 });

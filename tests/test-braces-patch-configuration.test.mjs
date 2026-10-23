@@ -18,7 +18,6 @@ import { spawnSync } from 'node:child_process';
 import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.js';
 import { addStackItems } from '../dist/registry/add.js';
 import { sourceFiles, recordScaffoldFiles } from '../dist/registry/receipt.js';
-import { bootstrap } from './support/workspace-bootstrap.mjs';
 import { configureDependencyPatches, writeDependencyAudit } from '../dist/dependency-patches.js';
 
 const patch = 'patches/braces@3.0.3.patch';
@@ -174,10 +173,7 @@ function resolutionRunner(
   shouldResolveForge = () => false,
 ) {
   return (_command, args, cwd) => {
-    if (args[0] === 'dlx') {
-      bootstrap(path.join(args[args.indexOf('--cwd') + 1], args[args.indexOf('--name') + 1]));
-      return;
-    }
+    assert.notEqual(args[0], 'dlx', 'the bundled bootstrap must not download another template');
     if (args.includes('--lockfile-only')) {
       const policy = parse(readFileSync(path.join(cwd, 'pnpm-workspace.yaml'), 'utf8'));
       const coordinates = [

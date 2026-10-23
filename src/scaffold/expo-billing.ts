@@ -7,7 +7,6 @@ import { patchPackage, put } from './files.js';
 
 /** Native store purchases and web Stripe checkout share only server-verified entitlements. */
 export function scaffoldExpoBilling({ root, has }: RecipeContext): void {
-  if (!has('expo')) return;
   const directory = 'apps/mobile';
   if (has('revenuecat')) {
     writeEnvironmentFile(root, `${directory}/.env.example`, {

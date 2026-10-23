@@ -6,7 +6,6 @@ export function createRecipeContext(root: string, options: StandardOptions): Rec
     root,
     options,
     has: (product) => selected.has(product),
-    runtimeApp: 'api',
     bindings: {},
   };
 }

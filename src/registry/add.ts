@@ -16,11 +16,7 @@ import { execFile } from '../util.js';
 import { put } from '../scaffold/files.js';
 import { writeStandardRoot } from '../scaffold/workspace.js';
 import { createRecipeContext } from './context.js';
-import {
-  resolveBillingProducts,
-  resolveStackRegistry,
-  resolveStandardProducts,
-} from './resolve.js';
+import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
 import { sourceFiles, configurationFingerprints } from './receipt.js';
 import type { StandardOptions, StandardProduct, StandardRunner } from './types.js';
 import {
@@ -89,8 +85,7 @@ export async function addStackItems(
     if (!['stripe', 'revenuecat'].includes(id)) throw new Error(`Unknown stack product: ${id}.`);
     selected.add(id as StandardProduct);
   }
-  resolveBillingProducts(selected);
-  resolveStandardProducts(selected, plan.hosting, false, false);
+  resolveStandardProducts(selected, plan.hosting);
   const options: StandardOptions = {
     root,
     name: plan.name ?? path.basename(root),
@@ -149,7 +144,7 @@ export async function addStackItems(
         (item) => !isDeepStrictEqual(oldItems.get(item.name), item) && item.bindings,
       );
       if (configurationItems.length) {
-        const directory = `apps/${context.runtimeApp}`;
+        const directory = 'apps/api';
         const file = `${directory}/${existsSync(path.join(stage, directory, 'anhedral.cloudflare.json')) ? 'anhedral.cloudflare.json' : 'wrangler.jsonc'}`;
         let content = readFileSync(path.join(stage, file), 'utf8');
         const config = parse(content) as Record<string, unknown>;

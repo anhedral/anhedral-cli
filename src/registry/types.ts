@@ -31,7 +31,6 @@ export interface RecipeContext {
   updating?: boolean;
   root: string;
   options: StandardOptions;
-  runtimeApp: 'api';
   bindings: Json;
   has: (product: string) => boolean;
 }
@@ -59,9 +58,4 @@ export interface StackRegistryItem {
 export interface ItemDefinition extends Omit<StackRegistryItem, 'bindings'> {
   install?: Recipe;
   configure?: (context: RecipeContext) => Json;
-  resolveEnvironment?: (context: RecipeContext) => string[];
-  resolveTargets?: (context: RecipeContext) => string[];
-  resolvePackage?: (context: RecipeContext, recipe: PackageRecipe) => PackageRecipe;
-  resolveDependencies?: (context: RecipeContext) => string[];
-  fallbackDependency?: string;
 }

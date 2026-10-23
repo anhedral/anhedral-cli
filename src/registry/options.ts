@@ -12,7 +12,6 @@ function readGitFlag(token: string, previous: boolean | undefined): boolean {
 function parseStandardFlags(remaining: readonly string[]) {
   const products = new Set<StandardProduct>();
   const hosting = 'cloudflare' as const;
-  const hostingSpecified = false;
   let gitSpecified: boolean | undefined;
   for (const token of remaining) {
     if (['--skip-install', '--dry-run', '--json', '--verbose'].includes(token)) continue;
@@ -28,7 +27,7 @@ function parseStandardFlags(remaining: readonly string[]) {
       `Unknown init option: ${token}. The core stack is always included; optional additions are --stripe and --revenuecat.`,
     );
   }
-  return { products, hosting, hostingSpecified, gitSpecified };
+  return { products, hosting, gitSpecified };
 }
 
 export function parseStandardOptions(args: readonly string[]): StandardOptions {
@@ -38,8 +37,8 @@ export function parseStandardOptions(args: readonly string[]): StandardOptions {
   if (!directory || directory.startsWith('-'))
     throw new Error('Specify a valid initialization directory.');
   const root = path.resolve(directory);
-  const { products, hosting, hostingSpecified, gitSpecified } = parseStandardFlags(remaining);
-  resolveStandardProducts(products, hosting, hostingSpecified);
+  const { products, hosting, gitSpecified } = parseStandardFlags(remaining);
+  resolveStandardProducts(products, hosting);
   return {
     root,
     name: packageNameFromText(path.basename(root)),

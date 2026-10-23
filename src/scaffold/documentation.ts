@@ -1,9 +1,6 @@
 import type { StandardOptions } from '../registry/types.js';
 import { put } from './files.js';
 
-export function workerBuildSuffix(_options: StandardOptions): string {
-  return '';
-}
 export function writeSetupDocumentation(root: string, options: StandardOptions): void {
   put(
     root,

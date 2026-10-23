@@ -17,11 +17,11 @@ export function commandHelp(command: string): string | undefined {
   return `${entry.description}\n\nUsage: anhedral ${entry.usage}\n\nOptions:\n${[...entry.options, ...common].map((option) => `  ${option}`).join('\n')}\n\nExamples:\n${entry.examples.map((example) => `  anhedral ${example}`).join('\n')}${entry.note ? `\n\n${entry.note}` : ''}\n`;
 }
 
-export const STANDARD_USAGE = `Anhedral\nScaffold source, authenticate your providers, and ship your selected stack.\n\nUsage: anhedral <command> [options]\n\nStart here:\n${primary.map((name) => `  ${name.padEnd(12)}${COMMAND_HELP[name].description}`).join('\n')}\n\nDelivery tools:\n${Object.entries(
+export const STANDARD_USAGE = `Anhedral\nCreate and ship applications with one consistent core stack.\n\nUsage: anhedral <command> [options]\n\nStart here:\n${primary.map((name) => `  ${name.padEnd(12)}${COMMAND_HELP[name].description}`).join('\n')}\n\nDelivery tools:\n${Object.entries(
   COMMAND_HELP,
 )
   .filter(([name]) => !primary.includes(name))
   .map(([name, entry]) => `  ${name.padEnd(12)}${entry.description}`)
   .join(
     '\n',
-  )}\n\nDefault: minimal Expo web, iOS and Android app in a pnpm/Turborepo workspace. Add API, identity, data and services when needed; --preset full-product selects the complete compatible stack.\nExamples:\n  anhedral init client-app\n  anhedral auth client-app\n  anhedral ship client-app --dry-run\n\nUse anhedral <command> --help for options and examples.\nUse anhedral help <command> for the same focused help.\nGlobal options:\n${common.map((option) => `  ${option}`).join('\n')}\n  -v, --version  Show the CLI version.\n`;
+  )}\n\nDefault: Expo + Hono + Drizzle/D1 + private R2, with Better Auth and shared styling. Stripe and RevenueCat are the only optional additions.\nExamples:\n  anhedral init client-app\n  anhedral init client-app --stripe --revenuecat\n  anhedral auth client-app\n  anhedral ship client-app --dry-run\n\nUse anhedral <command> --help for options and examples.\nUse anhedral help <command> for the same focused help.\nGlobal options:\n${common.map((option) => `  ${option}`).join('\n')}\n  -v, --version  Show the CLI version.\n`;

@@ -16,19 +16,11 @@ export const CORE_PRODUCTS: readonly StandardProduct[] = [
   'better-auth',
   'styling',
 ];
-export function resolveBillingProducts(selected: Set<StandardProduct>): void {
-  for (const product of CORE_PRODUCTS) selected.add(product);
-}
 /** Every initialization uses one foundation; only payment additions are optional. */
-export function resolveStandardProducts(
-  selected: Set<StandardProduct>,
-  hosting: Hosting,
-  _hostingSpecified = false,
-  _initializing = true,
-): void {
+export function resolveStandardProducts(selected: Set<StandardProduct>, hosting: Hosting): void {
   if (hosting !== 'cloudflare') throw new Error('Anhedral applications use Cloudflare Workers.');
   for (const id of selected) getStackDefinition(id);
-  resolveBillingProducts(selected);
+  for (const product of CORE_PRODUCTS) selected.add(product);
   resolveStackRegistry({ products: [...selected], hosting });
 }
 export interface ResolvedStackRegistry {
@@ -52,18 +44,7 @@ export function resolveStackRegistry(
     if (resolved.has(name)) return;
     const definition = getStackDefinition(name);
     const metadata = getStackItem(name);
-    metadata.registryDependencies = [
-      ...new Set([
-        ...definition.registryDependencies,
-        ...(definition.resolveDependencies?.(context) ?? []),
-      ]),
-    ];
-    metadata.environment = definition.resolveEnvironment?.(context) ?? metadata.environment;
-    metadata.targets = definition.resolveTargets?.(context) ?? metadata.targets;
     if (definition.configure) metadata.bindings = definition.configure(context);
-    if (definition.package)
-      metadata.package =
-        definition.resolvePackage?.(context, definition.package) ?? definition.package;
     resolved.set(name, metadata);
     for (const dependency of metadata.registryDependencies) collect(dependency);
   }

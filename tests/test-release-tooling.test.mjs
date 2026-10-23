@@ -568,7 +568,7 @@ console.error(response.message || 'registry unavailable'); process.exit(response
 
 console.log('Release tooling negative-path tests passed');
 
-test('secret scanning distinguishes dynamic URI builders from literal credentials and limits vendor author exemptions', () => {
+test('secret scanning distinguishes dynamic URI builders from literal credentials without retired vendor exemptions', () => {
   const dynamic =
     'postgresql://' +
     '${encodeURIComponent(config.user)}' +
@@ -587,12 +587,11 @@ test('secret scanning distinguishes dynamic URI builders from literal credential
     ),
   );
   const author = ['brian.m.carlson', 'gmail.com'].join('@');
-  assert.deepEqual(
+  assert.ok(
     scanText(
       'plugins/codex/distribution/runtime/server.mjs',
       Buffer.from('author: "Brian Carlson <' + author + '>"'),
-    ),
-    [],
+    ).some((finding) => finding.pattern === 'email-address'),
   );
   assert.ok(
     scanText(

@@ -189,7 +189,7 @@ export function formatCapabilityContract(): string {
     'Providers: ' + CAPABILITY_CONTRACT.providers.map((provider) => provider.id).join(', '),
     'Expo delivery returns EAS artifacts; it does not submit to stores.',
     'Plugin: explicit selected-resource analytics, bounded database reads and provider status checks; live acceptance remains unverified.',
-    'Schedule execution history: unavailable. Resource status does not certify application health.',
+    'Resource status does not certify application health.',
     '',
     ...CAPABILITY_CONTRACT.limits,
     '',

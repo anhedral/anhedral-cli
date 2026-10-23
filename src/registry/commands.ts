@@ -76,13 +76,13 @@ export async function runAdd(args: string[], output: OutputOptions = {}): Promis
   }
   const items = positional;
   if (!items.length)
-    throw new Error('Select bundled parts: anhedral add <items...> [--cwd <directory>].');
+    throw new Error('Select payments: anhedral add stripe revenuecat [--cwd <directory>].');
   for (const item of items) {
     if (['stripe', 'revenuecat'].includes(item)) continue;
-    const correction = suggest(item, STANDARD_PRODUCTS);
+    const correction = suggest(item, ['stripe', 'revenuecat']);
     throw new CliArgumentError(
       `Unknown stack part.${correction ? ` Did you mean ${correction}?` : ''}`,
-      'Select a project with --cwd <directory> and run anhedral registry list for bundled parts.',
+      'Select a project with --cwd <directory>; optional additions are stripe and revenuecat.',
     );
   }
   printResult(

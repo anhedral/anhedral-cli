@@ -6,11 +6,8 @@ import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
 import { scaffoldBetterAuth } from './scaffold/auth.js';
 import { scaffoldExpo } from './platforms/mobile.js';
-import {
-  scaffoldPrivateFiles,
-  scaffoldStripe,
-  scaffoldRevenueCat,
-} from './scaffold/integrations.js';
+import { scaffoldPrivateFiles } from './scaffold/integrations.js';
+import { scaffoldBilling } from './scaffold/billing.js';
 import { sharedPackage } from './scaffold/files.js';
 import type {
   ItemDefinition,
@@ -29,10 +26,6 @@ function requirements(
   verify: string[],
 ): SetupRequirements {
   return { purpose, tools, access, credentials, resources, verify };
-}
-
-function billingDependencies({ has }: RecipeContext): string[] {
-  return ['hono', 'd1', 'better-auth', ...(has('expo') ? ['expo'] : [])];
 }
 
 const BILLING_ENVIRONMENT_KEYS = [
@@ -90,8 +83,7 @@ const PRODUCT_ITEMS = defineItems({
       ],
     ),
     install: scaffoldExpo,
-    environment: [],
-    resolveEnvironment: ({ has }) => (has('hono') ? ['EXPO_PUBLIC_API_URL'] : []),
+    environment: ['EXPO_PUBLIC_API_URL'],
   },
   hono: {
     type: 'application',
@@ -111,9 +103,9 @@ const PRODUCT_ITEMS = defineItems({
   d1: {
     type: 'package',
     description: 'Reusable Drizzle D1 database package and explicit migration tooling',
-    targets: ['packages/db'],
+    targets: ['packages/db', 'apps/api'],
     selection: {},
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'hono'],
     setup: requirements(
       'SQLite-compatible hosted persistence',
       ['Wrangler'],
@@ -134,15 +126,13 @@ const PRODUCT_ITEMS = defineItems({
       ],
     }),
     runtime: 'worker',
-    resolveDependencies: () => ['hono'],
-    resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
   },
   'better-auth': {
     type: 'integration',
     description: 'Database-backed identity schema and runtime routes',
-    targets: ['packages/auth', 'packages/db', 'apps/web', 'apps/api'],
+    targets: ['packages/auth', 'packages/db', 'apps/api', 'apps/mobile'],
     selection: { requiresAll: ['d1', 'hono', 'expo'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'd1', 'expo'],
     setup: requirements(
       'Application-managed identity',
       ['Selected database tooling'],
@@ -152,22 +142,14 @@ const PRODUCT_ITEMS = defineItems({
       ['Sign-in/out, session expiry, sign-up policy and resource authorization'],
     ),
     install: scaffoldBetterAuth,
-    fallbackDependency: 'd1',
     environment: ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'],
     runtime: 'server',
-    resolveDependencies: ({ has }) => ['d1', ...(has('expo') ? ['expo'] : [])],
-    resolveTargets: ({ runtimeApp, has }) => [
-      'packages/auth',
-      'packages/db',
-      `apps/${runtimeApp}`,
-      ...(has('expo') ? ['apps/mobile'] : []),
-    ],
   },
   r2: {
     type: 'integration',
     description: 'Private authenticated file upload, download and deletion',
-    targets: ['apps/web', 'apps/api'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
+    targets: ['apps/api/src/private-files.ts'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'better-auth', 'hono'],
     setup: requirements(
       'Private remote files',
       ['Wrangler'],
@@ -183,21 +165,20 @@ const PRODUCT_ITEMS = defineItems({
       r2_buckets: [{ binding: 'FILES', bucket_name: resourceName(options.name, 'private-files') }],
     }),
     runtime: 'worker',
-    resolveDependencies: () => ['better-auth', 'hono'],
-    resolveTargets: () => ['apps/api/src/private-files.ts'],
   },
   stripe: {
     type: 'integration',
     description: 'Authenticated Stripe checkout, portal and server entitlement projection',
-    targets: ['packages/billing', 'packages/contracts', 'apps/api'],
+    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile'],
     selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    resolveDependencies: billingDependencies,
-    resolveTargets: ({ has }) => [
-      'packages/billing',
-      'packages/contracts',
-      'apps/api',
-      ...(has('expo') ? ['apps/mobile'] : []),
+    registryDependencies: [
+      'workspace',
+      'typescript',
+      'eslint',
+      'hono',
+      'd1',
+      'better-auth',
+      'expo',
     ],
     setup: requirements(
       'Web payments and subscriptions',
@@ -207,21 +188,22 @@ const PRODUCT_ITEMS = defineItems({
       ['Products/prices, signed webhooks and entitlement implementation'],
       ['Test purchase/cancellation, webhook replay and transactional idempotency'],
     ),
-    install: scaffoldStripe,
+    install: scaffoldBilling,
     environment: [...BILLING_ENVIRONMENT_KEYS, 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
   },
   revenuecat: {
     type: 'integration',
     description: 'Native purchases, restore and server-enforced cross-store entitlements',
-    targets: ['packages/billing', 'packages/contracts', 'apps/api'],
+    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile'],
     selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    resolveDependencies: billingDependencies,
-    resolveTargets: ({ has }) => [
-      'packages/billing',
-      'packages/contracts',
-      'apps/api',
-      ...(has('expo') ? ['apps/mobile'] : []),
+    registryDependencies: [
+      'workspace',
+      'typescript',
+      'eslint',
+      'hono',
+      'd1',
+      'better-auth',
+      'expo',
     ],
     setup: requirements(
       'Cross-store subscription entitlements; Stripe is optional',
@@ -233,7 +215,7 @@ const PRODUCT_ITEMS = defineItems({
       ],
       ['Sandbox purchase/restore, verified webhooks and entitlement reconciliation'],
     ),
-    install: scaffoldRevenueCat,
+    install: scaffoldBilling,
     environment: [
       ...BILLING_ENVIRONMENT_KEYS,
       'REVENUECAT_SECRET_KEY',
@@ -312,16 +294,7 @@ const DEFINITIONS = freeze({ ...FOUNDATION_ITEMS, ...PRODUCT_ITEMS });
 export type StackItemId = keyof typeof DEFINITIONS;
 
 function describe(definition: ItemDefinition): StackRegistryItem {
-  const {
-    install: _install,
-    configure: _configure,
-    resolveTargets: _targets,
-    resolveEnvironment: _environment,
-    resolveDependencies: _dependencies,
-    resolvePackage: _package,
-    fallbackDependency: _fallback,
-    ...metadata
-  } = definition;
+  const { install: _install, configure: _configure, ...metadata } = definition;
   return structuredClone(metadata);
 }
 export function getStackDefinition(name: string): ItemDefinition {
