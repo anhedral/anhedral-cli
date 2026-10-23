@@ -1,3 +1,0 @@
-packages: ["apps/*","packages/*"]
-sharedWorkspaceLockfile: true
-onlyBuiltDependencies: ["esbuild","sharp","unrs-resolver","workerd"]

@@ -9,7 +9,7 @@ import {
   deliverUnsentDraft,
 } from '../shared/starter.ts';
 
-test('Create site opens a fresh editable draft and never submits or targets an existing project', () => {
+test('Create project opens a fresh editable draft and never submits or targets an existing project', () => {
   const message = newProjectDraftMessage();
   assert.equal(message._meta['openai/message'].target, 'new');
   assert.equal(message._meta['openai/message'].send, false);

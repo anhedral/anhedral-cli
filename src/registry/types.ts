@@ -2,7 +2,7 @@ import type { StandardProduct } from '../stack-registry.js';
 import type { Json } from '../scaffold/files.js';
 
 export type { StandardProduct } from '../stack-registry.js';
-export type Hosting = 'cloudflare' | 'vercel';
+export type Hosting = 'cloudflare';
 export interface StandardOptions {
   root: string;
   name: string;
@@ -31,7 +31,6 @@ export interface RecipeContext {
   updating?: boolean;
   root: string;
   options: StandardOptions;
-  runtimeApp: 'api' | 'web';
   bindings: Json;
   has: (product: string) => boolean;
 }
@@ -59,9 +58,4 @@ export interface StackRegistryItem {
 export interface ItemDefinition extends Omit<StackRegistryItem, 'bindings'> {
   install?: Recipe;
   configure?: (context: RecipeContext) => Json;
-  resolveEnvironment?: (context: RecipeContext) => string[];
-  resolveTargets?: (context: RecipeContext) => string[];
-  resolvePackage?: (context: RecipeContext, recipe: PackageRecipe) => PackageRecipe;
-  resolveDependencies?: (context: RecipeContext) => string[];
-  fallbackDependency?: string;
 }

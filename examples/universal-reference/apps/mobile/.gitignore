@@ -1,8 +1,0 @@
-.env
-.env.*
-!.env.example
-.expo
-.wrangler
-.output
-dist
-node_modules

@@ -21,7 +21,7 @@ function fixture() {
       },
     }),
   );
-  writeProjectSection(root, 'setup', createSetupPlan(parseStandardOptions([root, '--expo'])));
+  writeProjectSection(root, 'setup', createSetupPlan(parseStandardOptions([root])));
   writeFileSync(
     path.join(root, 'apps/mobile/eas.json'),
     JSON.stringify({

@@ -1,4 +1,3 @@
-import { resolveVoidCloudflareConfig } from './project-state.js';
 import { projectLifecycle } from './project-lifecycle.js';
 import path from 'node:path';
 import { existsSync, lstatSync, readdirSync, realpathSync } from 'node:fs';
@@ -239,21 +238,12 @@ export function inspectApplication(root: string): ProjectInspection {
           permissions: 'unknown',
           billing: 'unknown',
         });
-      if (
-        products.includes('hono') ||
-        products.includes('vinext') ||
-        (products.includes('next') && selection.data.hosting === 'cloudflare')
-      )
+      if (products.includes('hono'))
         add('cloudflare', null, [
           'Authenticate and connect the intended account and audience; verify service eligibility and required scopes.',
         ]);
-      if (products.includes('next') && selection.data.hosting === 'vercel')
-        add('vercel', null, [
-          'Authenticate and connect the intended team, project, plan, and audience.',
-        ]);
       for (const [id, definition] of Object.entries(PROVIDER_DEFINITIONS))
-        if (products.includes(id) || (id === 'openai' && products.includes('ai-sdk')))
-          add(id, definition.credential, definition.ownerSteps);
+        if (products.includes(id)) add(id, definition.credential, definition.ownerSteps);
       if (products.includes('expo'))
         add('expo', null, [
           'Authenticate the intended Expo owner; choose a build profile and supply signing prerequisites. No store submission.',
@@ -327,13 +317,7 @@ export function inspectApplication(root: string): ProjectInspection {
         });
       };
       for (const application of apps()) {
-        const declaration = document(`${application}/anhedral.cloudflare.json`);
-        const lock = declaration ? document(`${application}/void.lock.json`) : null;
-        const config = declaration
-          ? lock
-            ? resolveVoidCloudflareConfig(declaration, lock)
-            : declaration
-          : document(`${application}/wrangler.jsonc`);
+        const config = document(`${application}/wrangler.jsonc`);
         if (config) {
           for (const [field, kind, idField] of [
             ['d1_databases', 'D1', 'database_id'],
@@ -439,8 +423,7 @@ export function inspectApplication(root: string): ProjectInspection {
     for (const value of values) {
       try {
         let entry: ReleaseEvidence;
-        if (target.provider === 'vercel') entry = release(value, value.url);
-        else {
+        {
           const members = array(value.targets ?? []).map(object);
           const ids = members.map((member) => name(member.target));
           if (new Set(ids).size !== ids.length || ids.some((id) => !known.includes(id)))
@@ -478,7 +461,7 @@ export function inspectApplication(root: string): ProjectInspection {
 
   function hostingTargets(): TargetEvidence[] {
     const targets: TargetEvidence[] = [];
-    for (const provider of ['cloudflare', 'vercel'] as const) {
+    for (const provider of ['cloudflare'] as const) {
       try {
         const project = projectSection(provider);
         if (!project) continue;
@@ -553,22 +536,6 @@ export function inspectApplication(root: string): ProjectInspection {
   const targets = section<TargetEvidence[]>([], 'Delivery targets are unavailable.', () => {
     const values = hostingTargets();
     const applications = apps();
-    for (const [app, provider] of [
-      ['apps/desktop', 'desktop'],
-      ['apps/extension', 'extension'],
-    ] as const)
-      if (applications.includes(app))
-        values.push({
-          id: `${provider}:application`,
-          provider,
-          application: app,
-          audience: 'not-applicable',
-          accountReference: null,
-          latestAttempt: null,
-          lastSuccessful: null,
-          delivery: 'scaffold-only',
-          liveStatus: 'unknown',
-        });
     if (applications.includes('apps/mobile')) {
       for (const platform of ['ios', 'android']) {
         const target: TargetEvidence = {

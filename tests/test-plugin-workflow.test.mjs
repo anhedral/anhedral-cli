@@ -89,7 +89,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     ]);
     const app = path.join(temporary, 'my-first-app');
     const plan = JSON.parse(successful('init', app, '--dry-run', '--json'));
-    assert.deepEqual(plan.products, ['expo']);
+    assert.deepEqual(plan.products, ['better-auth', 'd1', 'expo', 'hono', 'r2', 'styling']);
     assert.equal(plan.hosting, 'cloudflare');
     assert.equal(existsSync(app), false, 'Planning must not create the app');
     const api = await import(pathToFileURL(path.join(installed, 'dist/index.js')).href);
@@ -103,67 +103,13 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     const log = console.log;
     console.log = () => {};
     try {
-      await api.scaffoldStandardProject(options, (command, args, cwd) => {
-        if (args[0] === 'dlx') {
-          const target = path.join(
-            args[args.indexOf('--cwd') + 1],
-            args[args.indexOf('--name') + 1],
-          );
-          for (const directory of [
-            'apps/web/app',
-            'packages/ui',
-            'packages/eslint-config',
-            'packages/typescript-config',
-          ])
-            mkdirSync(path.join(target, directory), { recursive: true });
-          const write = (name, contents) => writeFileSync(path.join(target, name), contents);
-          write(
-            'packages/eslint-config/package.json',
-            JSON.stringify({ name: '@workspace/eslint-config' }),
-          );
-          write(
-            'packages/typescript-config/package.json',
-            JSON.stringify({ name: '@workspace/typescript-config' }),
-          );
-          write(
-            'package.json',
-            JSON.stringify({
-              name: 'fixture',
-              packageManager: 'pnpm@10.34.5',
-              scripts: {},
-              devDependencies: { turbo: '^2' },
-            }),
-          );
-          write(
-            'apps/web/package.json',
-            JSON.stringify({
-              name: 'web',
-              scripts: { build: 'next build' },
-              dependencies: { next: '16.4.0' },
-            }),
-          );
-          write(
-            'apps/web/next.config.ts',
-            'export default { transpilePackages: ["@workspace/ui"] };\n',
-          );
-          write(
-            'apps/web/app/layout.tsx',
-            'export default function Layout({ children }: { children: React.ReactNode }) { return <html><body>{children}</body></html>; }\n',
-          );
-          write(
-            'packages/ui/package.json',
-            JSON.stringify({ name: '@workspace/ui', dependencies: { shadcn: '4.21.1' } }),
-          );
-          write('pnpm-workspace.yaml', 'packages:\n  - "apps/*"\n  - "packages/*"\n');
-          write('turbo.json', JSON.stringify({ tasks: { build: {}, dev: { persistent: true } } }));
-          write('.gitignore', 'node_modules/\n');
-        } else if (args.includes('--lockfile-only'))
-          writeFileSync(path.join(cwd, 'pnpm-lock.yaml'), 'lockfileVersion: "9.0"\n');
-        else throw new Error(`Unexpected bootstrap command: ${command}`);
-      });
+      await api.scaffoldStandardProject(options, () =>
+        assert.fail('Offline generation must not spawn commands'),
+      );
     } finally {
       console.log = log;
     }
+    writeFileSync(path.join(app, 'pnpm-lock.yaml'), 'lockfileVersion: \"9.0\"\n');
     const diagnosis = JSON.parse(successful('doctor', app, '--json'));
     assert.equal(diagnosis.localReady, true);
     assert.equal(diagnosis.productionReady, false);
@@ -176,7 +122,7 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
     assert.equal(delivery.resourcesProvisioned, false);
     assert.deepEqual(
       delivery.deployments.map(({ directory }) => directory),
-      ['apps/mobile'],
+      ['apps/api', 'apps/mobile'],
     );
     assert.equal(delivery.project.deliveryEngine, 'wrangler');
     assert.equal(delivery.project.id, before.project.id);

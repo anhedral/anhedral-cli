@@ -185,7 +185,7 @@ function requestedDelay(value: string | null, maximum: number): number | undefin
  * Only GET requests retry transient failures; unknown mutation outcomes never replay. */
 export function providerApi(
   id: IntegrationProvider,
-  settings: ProviderSettings,
+  _settings: ProviderSettings,
   environment: NodeJS.ProcessEnv,
   send: typeof fetch,
   options: ProviderRetryOptions = {},
@@ -194,7 +194,7 @@ export function providerApi(
   if (!token || /[^\x21-\x7e]/.test(token)) throw new Error(`${id}: supply ${CREDENTIALS[id]}.`);
   const policy = retryPolicy(options);
   const definition: ProviderDefinition = PROVIDER_DEFINITIONS[id];
-  const origin = definition.regionalOrigins?.[settings.region ?? ''] ?? definition.origin;
+  const origin = definition.origin;
   return async (route, method = 'GET', body, operation) => {
     if (
       !route.startsWith('/') ||
@@ -225,7 +225,7 @@ export function providerApi(
         headers['Content-Type'] = 'application/json';
       }
     }
-    if (operation && (id === 'stripe' || id === 'resend')) headers['Idempotency-Key'] = operation;
+    if (operation && id === 'stripe') headers['Idempotency-Key'] = operation;
     const started = performance.now();
     const attempts = method === 'GET' ? policy.maxAttempts : 1;
     for (let attempt = 0; attempt < attempts; attempt++) {

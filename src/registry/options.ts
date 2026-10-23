@@ -1,8 +1,6 @@
-import { applyPreset } from './presets.js';
 import { resolveStandardProducts } from './resolve.js';
 import path from 'node:path';
 import { packageNameFromText } from '../render.js';
-import { STANDARD_PRODUCTS } from '../stack-registry.js';
 import type { StandardOptions, StandardProduct } from './types.js';
 
 function readGitFlag(token: string, previous: boolean | undefined): boolean {
@@ -11,51 +9,25 @@ function readGitFlag(token: string, previous: boolean | undefined): boolean {
   return value;
 }
 
-function readHostingFlag(
-  value: string | undefined,
-  previous: StandardOptions['hosting'],
-  specified: boolean,
-): StandardOptions['hosting'] {
-  if (value !== 'cloudflare' && value !== 'vercel')
-    throw new Error('hosting must be cloudflare or vercel.');
-  if (specified && previous !== value) throw new Error('Conflicting hosting options.');
-  return value;
-}
-
 function parseStandardFlags(remaining: readonly string[]) {
   const products = new Set<StandardProduct>();
-  let hosting: StandardOptions['hosting'] = 'cloudflare';
-  let hostingSpecified = false;
+  const hosting = 'cloudflare' as const;
   let gitSpecified: boolean | undefined;
-  let preset: string | undefined;
-  for (let index = 0; index < remaining.length; index++) {
-    const token = remaining[index];
+  for (const token of remaining) {
     if (['--skip-install', '--dry-run', '--json', '--verbose'].includes(token)) continue;
     if (token === '--git' || token === '--no-git') {
       gitSpecified = readGitFlag(token, gitSpecified);
       continue;
     }
-    if (token === '--preset' || token.startsWith('--preset=')) {
-      if (preset !== undefined) throw new Error('Specify --preset once.');
-      preset = token === '--preset' ? remaining[++index] : token.slice('--preset='.length);
-      if (!preset || preset.startsWith('-')) throw new Error('Supply a value for --preset.');
+    if (token === '--stripe' || token === '--revenuecat') {
+      products.add(token.slice(2) as StandardProduct);
       continue;
     }
-    if (token === '--hosting' || token.startsWith('--hosting=')) {
-      const value = token === '--hosting' ? remaining[++index] : token.slice('--hosting='.length);
-      hosting = readHostingFlag(value, hosting, hostingSpecified);
-      hostingSpecified = true;
-      continue;
-    }
-    const value = token.replace(/^--/, '');
-    if (!STANDARD_PRODUCTS.includes(value as StandardProduct)) {
-      throw new Error(`Unknown standard product: ${token}. Select only required products.`);
-    }
-    products.add(value as StandardProduct);
+    throw new Error(
+      `Unknown init option: ${token}. The core stack is always included; optional additions are --stripe and --revenuecat.`,
+    );
   }
-  if (preset) applyPreset(preset, products);
-  if (!hostingSpecified && products.has('next')) hosting = 'vercel';
-  return { products, hosting, hostingSpecified, gitSpecified };
+  return { products, hosting, gitSpecified };
 }
 
 export function parseStandardOptions(args: readonly string[]): StandardOptions {
@@ -65,8 +37,8 @@ export function parseStandardOptions(args: readonly string[]): StandardOptions {
   if (!directory || directory.startsWith('-'))
     throw new Error('Specify a valid initialization directory.');
   const root = path.resolve(directory);
-  const { products, hosting, hostingSpecified, gitSpecified } = parseStandardFlags(remaining);
-  resolveStandardProducts(products, hosting, hostingSpecified);
+  const { products, hosting, gitSpecified } = parseStandardFlags(remaining);
+  resolveStandardProducts(products, hosting);
   return {
     root,
     name: packageNameFromText(path.basename(root)),

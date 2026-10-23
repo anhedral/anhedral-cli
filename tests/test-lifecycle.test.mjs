@@ -53,7 +53,7 @@ test('failed phases persist sanitized progress and release the lock', async () =
   const { root, run } = fixture();
   try {
     await assert.rejects(
-      withLifecycleOperation(root, 'vercel', run, async (session) => {
+      withLifecycleOperation(root, 'cloudflare', run, async (session) => {
         await session.phase('checks', async () => {});
         await session.phase('deployment', async () => {
           throw new Error('private-token customer-data');
@@ -72,7 +72,7 @@ test('failed phases persist sanitized progress and release the lock', async () =
       /private-token|customer-data/,
     );
     assert.equal(existsSync(path.join(root, '.anhedral/ship.lock')), false);
-    const resumed = await withLifecycleOperation(root, 'vercel', run, async () => ({
+    const resumed = await withLifecycleOperation(root, 'cloudflare', run, async () => ({
       state: 'configuration-required',
     }));
     assert.equal(resumed.operation.state, 'blocked');

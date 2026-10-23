@@ -34,7 +34,7 @@ export interface ReleaseEvidence {
 }
 export interface TargetEvidence {
   id: string;
-  provider: 'cloudflare' | 'vercel' | 'expo' | 'desktop' | 'extension';
+  provider: 'cloudflare' | 'expo';
   application: string;
   audience: 'public' | 'private' | 'unconfigured' | 'not-applicable';
   accountReference: string | null;
@@ -74,7 +74,7 @@ export interface ProjectInspection {
   selection: InspectionSection<{
     cliVersion: string | null;
     products: string[];
-    hosting: 'cloudflare' | 'vercel' | null;
+    hosting: 'cloudflare' | null;
   }>;
   setupProviders: InspectionSection<
     {

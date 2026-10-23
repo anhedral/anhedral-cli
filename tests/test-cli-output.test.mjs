@@ -13,3 +13,25 @@ for (const { name, command, value, expected } of fixtures) {
     assert.doesNotMatch(output, /confidential-fixture/);
   });
 }
+
+test('core registry items explain inclusion rather than suggesting an unsupported addition', () => {
+  const output = formatResult('registry', {
+    name: 'd1',
+    type: 'service',
+    description: 'Drizzle with Cloudflare D1',
+  });
+  assert.match(output, /Included in every project created with anhedral init/);
+  assert.doesNotMatch(output, /anhedral add/);
+});
+
+test('ordinary initialization summarizes the core without dumping registry or setup metadata', () => {
+  const output = formatResult('init', {
+    root: '/project',
+    products: ['better-auth', 'd1', 'expo', 'hono', 'r2', 'styling'],
+    hosting: 'cloudflare',
+    registry: { items: [{ source: 'confidential-fixture' }] },
+    setup: { credentials: ['confidential-fixture'] },
+  });
+  assert.match(output, /Stack: better-auth, d1, expo, hono, r2, styling/);
+  assert.doesNotMatch(output, /confidential-fixture|registry|credentials/);
+});

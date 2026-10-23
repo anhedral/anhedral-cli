@@ -10,31 +10,14 @@ import { authenticateProviders, requiredProviders } from '../dist/provider-auth.
 
 function fixture(flags) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-auth-test-'));
-  const options = parseStandardOptions([root, ...flags, '--skip-install']);
+  const options = parseStandardOptions([
+    root,
+    ...flags.filter((flag) => ['--stripe', '--revenuecat'].includes(flag)),
+    '--skip-install',
+  ]);
   writeProjectSection(root, 'setup', createSetupPlan(options));
   return root;
 }
-
-test('provider selection follows the stack and deduplicates Cloudflare access', () => {
-  const root = fixture(['--hono', '--d1', '--r2', '--queues', '--workers-ai']);
-  try {
-    assert.deepEqual(
-      requiredProviders(root).map((p) => p.id),
-      ['cloudflare'],
-    );
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-  const local = fixture(['--electron', '--local-data']);
-  try {
-    assert.deepEqual(
-      requiredProviders(local).map(({ id }) => id),
-      [],
-    );
-  } finally {
-    rmSync(local, { recursive: true, force: true });
-  }
-});
 
 test('status does not open login; interactive auth retries and verifies the provider session', async () => {
   const root = fixture(['--vinext']);
@@ -51,7 +34,7 @@ test('status does not open login; interactive auth retries and verifies the prov
   try {
     const status = await authenticateProviders(
       root,
-      { status: true, interactive: true },
+      { status: true, interactive: true, provider: 'cloudflare' },
       run,
       undefined,
       login,
@@ -61,7 +44,7 @@ test('status does not open login; interactive auth retries and verifies the prov
     assert.equal(logins, 0);
     const result = await authenticateProviders(
       root,
-      { interactive: true },
+      { interactive: true, provider: 'cloudflare' },
       run,
       undefined,
       login,
@@ -77,40 +60,6 @@ test('status does not open login; interactive auth retries and verifies the prov
   }
 });
 
-test('API authentication distinguishes permissions and never returns credential or response values', async () => {
-  const root = fixture(['--hono', '--neon', '--resend', '--openai']);
-  const token = 'test-value';
-  const calls = [];
-  const send = async (url, options) => {
-    calls.push({ url, options });
-    assert.equal(options.headers.Authorization, `Bearer ${token}`);
-    assert.equal(options.redirect, 'error');
-    return new Response(JSON.stringify({ diagnostic: token }), {
-      status: url.includes('resend') ? 403 : 200,
-    });
-  };
-  try {
-    const result = await authenticateProviders(
-      root,
-      { status: true },
-      async () => JSON.stringify({ loggedIn: true, accounts: [{ id: 'a'.repeat(32) }] }),
-      send,
-      undefined,
-      { NEON_API_KEY: token, RESEND_API_KEY: token, OPENAI_API_KEY: token },
-    );
-    assert.equal(calls.length, 3);
-    assert.equal(result.checks.find((c) => c.provider === 'neon').state, 'verified');
-    assert.equal(
-      result.checks.find((c) => c.provider === 'resend').state,
-      'insufficient-permissions',
-    );
-    assert.equal(result.authenticated, false);
-    assert.doesNotMatch(JSON.stringify(result), /test-value|diagnostic/);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
 for (const [status, state] of [
   [200, 'verified'],
   [401, 'missing'],
@@ -119,12 +68,12 @@ for (const [status, state] of [
   [500, 'unverified'],
 ]) {
   test(`auth status HTTP ${status} reports ${state} without login or mutation`, async () => {
-    const root = fixture(['--hono', '--neon']);
+    const root = fixture(['--hono', '--revenuecat']);
     let logins = 0;
     try {
       const result = await authenticateProviders(
         root,
-        { provider: 'neon', status: true, interactive: true },
+        { provider: 'revenuecat', status: true, interactive: true },
         async () => '',
         async (_url, options) => {
           assert.equal(options.method, undefined);
@@ -133,7 +82,7 @@ for (const [status, state] of [
         async () => {
           logins++;
         },
-        { NEON_API_KEY: 'private-token' },
+        { RC_API_KEY: 'private-token' },
       );
       assert.equal(result.checks[0].state, state);
       assert.equal(result.authenticated, state === 'verified');
@@ -172,7 +121,7 @@ for (const output of [
   });
 }
 test('missing API credential skips network and failed login remains missing', async () => {
-  const root = fixture(['--hono', '--neon']);
+  const root = fixture(['--hono', '--revenuecat']);
   let calls = 0;
   try {
     const result = await authenticateProviders(
@@ -198,10 +147,7 @@ test('missing API credential skips network and failed login remains missing', as
   }
 });
 
-for (const [flags, provider] of [
-  [['--next', '--hosting=vercel'], 'vercel'],
-  [['--expo'], 'expo'],
-]) {
+for (const [flags, provider] of [[[], 'expo']]) {
   test(`${provider}: CLI session requires a single bounded identity, not diagnostic output`, async () => {
     const root = fixture(flags);
     try {
@@ -232,79 +178,3 @@ for (const [flags, provider] of [
     }
   });
 }
-
-for (const [provider, runtimeCredential, managementCredential, runtimePath, managementPath] of [
-  ['clerk', 'CLERK_SECRET_KEY', 'CLERK_PLATFORM_API_KEY', '/v1/users/count', '/v1/platform/me'],
-  ['openai', 'OPENAI_API_KEY', 'OPENAI_ADMIN_KEY', '/v1/models', '/v1/organization/projects'],
-]) {
-  test(`${provider}: runtime access is labeled separately and management credentials take precedence`, async () => {
-    const root = fixture(['--hono', `--${provider}`]);
-    try {
-      for (const management of [false, true]) {
-        const environment = {
-          [runtimeCredential]: 'runtime-private',
-          ...(management ? { [managementCredential]: 'management-private' } : {}),
-        };
-        const result = await authenticateProviders(
-          root,
-          { provider, status: true },
-          async () => '',
-          async (url, options) => {
-            assert.ok(url.endsWith(management ? managementPath : runtimePath));
-            assert.equal(
-              options.headers.Authorization,
-              `Bearer ${management ? 'management-private' : 'runtime-private'}`,
-            );
-            return new Response('{}');
-          },
-          undefined,
-          environment,
-        );
-        assert.equal(result.checks[0].access, management ? 'management' : 'runtime');
-        assert.equal(result.provisioningReady, false);
-        assert.doesNotMatch(JSON.stringify(result), /management-private|runtime-private/);
-      }
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-}
-
-test('PostHog authentication requires the configured region before sending management credentials', async () => {
-  const root = fixture(['--hono', '--posthog']);
-  try {
-    let calls = 0;
-    const send = async (url) => {
-      calls++;
-      assert.equal(url, 'https://eu.posthog.com/api/organizations/');
-      return new Response('{}');
-    };
-    const environment = { POSTHOG_PERSONAL_API_KEY: 'private-key' };
-    const pending = await authenticateProviders(
-      root,
-      { provider: 'posthog', status: true },
-      async () => '',
-      send,
-      undefined,
-      environment,
-    );
-    assert.equal(pending.checks[0].state, 'unverified');
-    assert.equal(calls, 0);
-    writeProjectSection(root, 'providers', {
-      schemaVersion: 1,
-      providers: { posthog: { region: 'eu' } },
-    });
-    const checked = await authenticateProviders(
-      root,
-      { provider: 'posthog', status: true },
-      async () => '',
-      send,
-      undefined,
-      environment,
-    );
-    assert.equal(checked.checks[0].access, 'management');
-    assert.equal(calls, 1);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});

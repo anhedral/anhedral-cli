@@ -1,4 +1,3 @@
-import { usesVoidSelection } from './runtime-policy.js';
 import { resolveStackRegistry } from './registry/resolve.js';
 import { BOOTSTRAP_COMMAND } from './registry/bootstrap.js';
 import { GENERATOR_VERSION } from './version.js';
@@ -25,15 +24,9 @@ export const CAPABILITY_REGISTRY = {
 
 const HOSTING_SETUP = {
   cloudflare: {
-    tools: ['Cloudflare integration or API', 'Void', 'Wrangler'],
+    tools: ['Wrangler'],
     access: [
       'Client-owned Cloudflare account; account ID; scoped OAuth/API access; service-compatible plan; DNS access only when needed',
-    ],
-  },
-  vercel: {
-    tools: ['Vercel integration or CLI'],
-    access: [
-      'Client-owned Vercel team/project access; Hobby only for personal non-commercial use; suitable authorized plan for commercial apps',
     ],
   },
 };
@@ -42,7 +35,6 @@ export function createSetupPlan(
   options: StandardOptions,
   registry = resolveStackRegistry(options),
 ) {
-  const voidWorkspace = usesVoidSelection(options.products, options.hosting);
   const items = new Map(registry.items.map((item) => [item.name, item]));
   const capabilities = options.products.map((id) => {
     const item = items.get(id)!;
@@ -55,14 +47,11 @@ export function createSetupPlan(
   });
   const providers = [
     ...new Set<StandardOptions['hosting']>([
-      ...(options.products.includes('next') || options.products.includes('vinext')
-        ? [options.hosting]
-        : []),
       ...capabilities.flatMap(({ tools }) =>
         tools.includes('Wrangler') ? ['cloudflare' as const] : [],
       ),
     ]),
-  ].map((provider) => HOSTING_SETUP[provider]);
+  ].map(() => HOSTING_SETUP.cloudflare);
   return {
     schemaVersion: 1,
     cliVersion: GENERATOR_VERSION,
@@ -79,22 +68,15 @@ export function createSetupPlan(
       tools: [
         ...new Set([
           'Git',
-          voidWorkspace
-            ? 'Node.js 24.21.0+ for Void workspaces'
-            : 'Node.js 22.13+ on 22.x, or Node.js 24+ for generated workspaces',
+          'Node.js 22.13+ on 22.x, or Node.js 24+ for generated workspaces',
           PACKAGE_MANAGER.replace('@', ' '),
           'GitHub integration or gh',
-          'Fallow',
-          'Cloudflare security audit skill',
           ...providers.flatMap((provider) => provider.tools),
           ...capabilities.flatMap((item) => item.tools),
         ]),
       ],
       access: [
         'User-owned GitHub repository and CI access',
-        ...(options.hosting === 'vercel' && options.products.includes('next')
-          ? ['Vercel GitHub installation access for the selected web repository']
-          : []),
         ...providers.flatMap((provider) => provider.access),
       ],
       capabilities,

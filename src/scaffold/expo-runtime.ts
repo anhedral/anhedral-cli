@@ -5,10 +5,9 @@ import type { RecipeContext } from '../registry/types.js';
 import { json, patchPackage, put, workerConfig } from './files.js';
 
 /** Expo remains a static universal client. Its Worker owns only assets and API transport. */
-export function scaffoldExpoRuntime({ root, options, has }: RecipeContext): void {
+export function scaffoldExpoRuntime({ root, options }: RecipeContext): void {
   const directory = 'apps/mobile';
-  const api = has('hono');
-  const webPort = has('vinext') || has('next') ? 3001 : 3000;
+  const webPort = 3000;
   json(root, `${directory}/wrangler.jsonc`, {
     ...workerConfig(resourceName(options.name, 'mobile')),
     main: 'worker/index.ts',
@@ -19,7 +18,7 @@ export function scaffoldExpoRuntime({ root, options, has }: RecipeContext): void
       html_handling: 'auto-trailing-slash',
       not_found_handling: '404-page',
     },
-    ...(api ? { services: [{ binding: 'API', service: resourceName(options.name, 'api') }] } : {}),
+    services: [{ binding: 'API', service: resourceName(options.name, 'api') }],
   });
   patchPackage(root, `${directory}/package.json`, {
     scripts: {
@@ -34,7 +33,7 @@ export function scaffoldExpoRuntime({ root, options, has }: RecipeContext): void
       'typecheck:worker': 'tsc --project tsconfig.worker.json --noEmit',
       lint: 'eslint app components lib worker --max-warnings 0',
     },
-    ...(api ? { dependencies: { '@workspace/contracts': 'workspace:*' } } : {}),
+    dependencies: { '@workspace/contracts': 'workspace:*' },
     devDependencies: { wrangler: STACK_DEPENDENCIES.wrangler },
   });
   json(root, `${directory}/tsconfig.worker.json`, {
@@ -54,14 +53,12 @@ export function scaffoldExpoRuntime({ root, options, has }: RecipeContext): void
     root,
     `${directory}/worker/index.ts`,
     `interface Binding { fetch(request: Request): Promise<Response> }
-interface Env { ASSETS: Binding; ${api ? 'API: Binding;' : ''} }
+interface Env { ASSETS: Binding; API: Binding }
 
-${
-  api
-    ? `// Browser-supplied edge identity headers never cross the API boundary.
+// Browser-supplied edge identity headers never cross the API boundary.
 function forwardedHeaders(request: Request): Headers {
   const headers = new Headers();
-  for (const name of ['accept', 'content-type', 'cookie', 'origin', 'authorization', 'sec-fetch-site', 'expo-origin', 'idempotency-key']) {
+  for (const name of ['accept', 'content-type', 'content-length', 'cookie', 'origin', 'authorization', 'sec-fetch-site', 'expo-origin', 'idempotency-key']) {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }
@@ -88,20 +85,17 @@ async function proxyApi(request: Request, env: Env): Promise<Response> {
     return Response.json({ error: 'API unavailable' }, { status: 503, headers: { 'cache-control': 'private, no-store' } });
   }
 }
-`
-    : ''
-}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const pathname = new URL(request.url).pathname;
     const apiPath = pathname === '/api' || pathname.startsWith('/api/');
     if (!apiPath) return env.ASSETS.fetch(request);
-    ${api ? 'return proxyApi(request, env);' : "return Response.json({ error: 'API not configured' }, { status: 404, headers: { 'cache-control': 'private, no-store' } });"}
+    return proxyApi(request, env);
   },
 };
 `,
   );
-  if (!api) return;
   put(
     root,
     `${directory}/lib/api-client.ts`,

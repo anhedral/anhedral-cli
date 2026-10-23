@@ -4,8 +4,6 @@ import { STACK_REGISTRY, STANDARD_PRODUCTS, getStackItem } from '../stack-regist
 import { printResult, type OutputOptions } from '../cli-output.js';
 import { commandHelp } from './usage.js';
 import { CliArgumentError, suggest, commandArguments } from '../cli-arguments.js';
-import { inspectUiCatalog } from '../ui/catalog.js';
-import type { UiPlatform } from '../ui/types.js';
 export async function runRegistry(
   args: string[],
   json: boolean,
@@ -17,46 +15,6 @@ export async function runRegistry(
     return;
   }
   const [action = 'list', name, ...extra] = parsed.positional;
-  const kind = parsed.value('--kind');
-  if (kind !== undefined && kind !== 'ui') throw new Error('Supported registry kind: ui.');
-  if (kind === 'ui') {
-    if (
-      !['list', 'view'].includes(action) ||
-      extra.length ||
-      (action === 'list' && name) ||
-      (action === 'view' && !name)
-    )
-      throw new Error('Use registry list --kind ui or registry view ui/button --kind ui.');
-    const platform = parsed.value('--platform');
-    if (platform !== undefined && !['web', 'ios', 'android'].includes(platform))
-      throw new Error('UI platform must be web, ios or android.');
-    const result = inspectUiCatalog(
-      process.cwd(),
-      {
-        ...(parsed.value('--app') ? { app: parsed.value('--app') } : {}),
-        ...(platform ? { platform: platform as UiPlatform } : {}),
-      },
-      name,
-    );
-    if (!output.quiet || json)
-      console.log(
-        json
-          ? JSON.stringify(result, null, 2)
-          : [
-              `${result.items[0].selector}: candidate-unavailable`,
-              ...(result.resolution.consumer
-                ? [
-                    `Consumer: ${result.resolution.consumer.workspace} (${result.resolution.consumer.profile})`,
-                    `UI package: ${result.resolution.consumer.uiPackage?.root ?? 'not declared'}`,
-                  ]
-                : []),
-              `${result.resolution.state}: ${result.resolution.reason}`,
-            ].join('\n'),
-      );
-    return;
-  }
-  if (parsed.has('--app') || parsed.has('--platform'))
-    throw new Error('--app and --platform require --kind ui.');
   if (action === 'capabilities' && !name && !extra.length) {
     if (output.quiet && !json) return;
     console.log(json ? JSON.stringify(CAPABILITY_CONTRACT, null, 2) : formatCapabilityContract());
@@ -118,13 +76,13 @@ export async function runAdd(args: string[], output: OutputOptions = {}): Promis
   }
   const items = positional;
   if (!items.length)
-    throw new Error('Select bundled parts: anhedral add <items...> [--cwd <directory>].');
+    throw new Error('Select payments: anhedral add stripe revenuecat [--cwd <directory>].');
   for (const item of items) {
-    if ((STANDARD_PRODUCTS as readonly string[]).includes(item)) continue;
-    const correction = suggest(item, STANDARD_PRODUCTS);
+    if (['stripe', 'revenuecat'].includes(item)) continue;
+    const correction = suggest(item, ['stripe', 'revenuecat']);
     throw new CliArgumentError(
       `Unknown stack part.${correction ? ` Did you mean ${correction}?` : ''}`,
-      'Select a project with --cwd <directory> and run anhedral registry list for bundled parts.',
+      'Select a project with --cwd <directory>; optional additions are stripe and revenuecat.',
     );
   }
   printResult(

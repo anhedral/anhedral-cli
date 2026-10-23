@@ -1,3 +1,30 @@
+# Focused core verification — October 23, 2026
+
+The 0.14.0 source intentionally narrows initialization to Expo + Hono + Drizzle/D1 + private R2, supporting Better Auth and styling, with only Stripe and RevenueCat additions. This supersedes the older catalog scope in the historical evidence below. Existing applications/resources were not migrated or deleted. Compiled 0.13 output was preserved locally before rebuilding; output and credentials remain ignored rather than committed.
+
+Validation of this change:
+
+- CLI build, typecheck, formatting/hygiene, release policy and static security passed.
+- Complete CLI unit suite after the streamlining pass: 545 passed, one platform-conditional skip, zero failures (546 tests).
+- Codex plugin check: typecheck/build and 61 tests passed; browser smoke 11/11 passed using installed Chrome.
+- Packed CLI installed/executed successfully; packlist allowlist passed (222 files, approximately 543 KB compressed at this validation).
+- OSV audit passed for all 56 unique locked/catalog dependency versions.
+- Generated all four supported selections in isolated tests; offline init, authored-source preservation, addition rollback/conflicts, private secret exclusion and generator provenance covered.
+- Private-file route tests against real Hono passed: anonymous and cross-user rejection, upload/download/delete, origin protection, actual streamed size enforcement and misleading Content-Length.
+- Installed generated both-payment workspace: lint and typecheck across seven packages, Fallow audit with zero issues, dependency audit under existing reviewed local-patch policy, Hono Worker bundle, Expo web export and gateway bundle passed. Generated pnpm test currently has no default product tests; successful execution alone is not test coverage.
+- Real local workerd: exported Expo routes, gateway service binding, isolated local D1 authentication/session/revocation and native scheme/origin handling passed.
+- Actual generated Hono/Better Auth/Drizzle signup/login/session/revocation passed with in-memory SQLite. Generated Stripe/RevenueCat billing reconciliation tests passed with synthetic vendor responses, including idempotency, webhook replay/order, ownership/CSRF, expiry/revocation, provider union and outage/retry recovery.
+
+The follow-up streamlining pass removed obsolete alternate-stack adapters and unused bootstrap test fixtures, aligned human help/plugin defaults with the supported stack, and removed a retired dependency's secret-scanner exemption. Regression tests cover actual core catalog paths and payment-only suggestions. CLI build/lint/static security, all unit tests, plugin check (61 tests), packed smoke and package allowlist passed again. The final package remains 222 files, approximately 543 KB compressed. README instructions distinguish the source candidate from a published npm release.
+
+Worktree recovery review also recovered a one-line inspector safe-area correction: project details now retain host top padding through the shared CSS variable. Two new browser regressions exercise 24px and 112px insets through project/tab/list navigation. Plugin typecheck/build and all 61 plugin tests passed; browser smoke passed 13/13 using installed Chrome. This simulates the host layout contract and does not claim installed native-host acceptance.
+
+The CLI presentation follow-up restores a connected static default-stack diagram in both themes, with only Stripe and RevenueCat marked optional. The README, stack guide, npm documentation and plugin references carry valid image targets. Only the two PNGs are added to the npm package; editable SVG/layout/logo source remains documentation source. CLI build/lint, documentation/plugin contracts, packed smoke and packlist passed (224 files, approximately 793 KB compressed). The platform landing mirrors the canonical SVGs rather than maintaining a second diagram layout. Artwork does not certify provider activation or deployment.
+
+No cloud provisioning, real payment, configured-database migration, deployment, app-store/device acceptance, npm publication or installed-plugin update occurred. Existing installed runtimes remain separate from this source candidate. Historical provider reports below are dated evidence, not current live verification.
+
+---
+
 # Verification record
 
 Dated records below describe the source and environment exercised at that time. Earlier results are historical evidence, not acceptance of a later release. Current architecture and operating instructions live in the stack standard and software factory.

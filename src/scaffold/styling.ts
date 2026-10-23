@@ -1,7 +1,7 @@
 import type { RecipeContext } from '../registry/types.js';
 import { json, patchPackage, put, readJson } from './files.js';
 
-/** Shared data and a Tailwind v3 preset for Expo/NativeWind and WXT. */
+/** Shared data and a Tailwind v3 preset for Expo/NativeWind. */
 export function scaffoldStyling({ root }: RecipeContext): void {
   put(
     root,

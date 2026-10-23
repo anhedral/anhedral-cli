@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
 import { parseNpmPackJson } from './support/npm-pack.js';
+import { renderStack, stackSize } from '../docs/assets/render-stack.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -22,14 +23,24 @@ const requiredFiles = new Set([
   'dist/index.js',
   'package.json',
   'docs/anhedral-stack.md',
+  'docs/assets/anhedral-stack.png',
+  'docs/assets/anhedral-stack-light.png',
   'docs/stack-standard.md',
   'docs/software-factory.md',
   'docs/verification.md',
 ]);
 const allowedRootFiles = new Set(['LICENSE', 'README.md', 'package.json']);
+const allowedArtwork = new Set([
+  'docs/assets/anhedral-stack.png',
+  'docs/assets/anhedral-stack-light.png',
+]);
 
 function assertPackedMarkdownLinks(sourcePath, markdown, packedFiles) {
-  for (const match of markdown.matchAll(/\]\(([^)]+)\)/g)) {
+  const references = [
+    ...markdown.matchAll(/\]\(([^)]+)\)/g),
+    ...markdown.matchAll(/\b(?:src|srcset)="([^"]+)"/g),
+  ];
+  for (const match of references) {
     const target = match[1].trim().replace(/^<|>$/g, '');
     if (/^(?:https?:|mailto:|plugin:|#)/.test(target)) continue;
     const pathTarget = target.split('#', 1)[0];
@@ -117,6 +128,23 @@ try {
   assert.doesNotMatch(readme, /does not grant permission to install|separate written agreement/i);
   assertPackedMarkdownLinks('README.md', readme, files);
   assertPackedMarkdownLinks(
+    'docs/anhedral-stack.md',
+    readFileSync(path.join(repoRoot, 'docs/anhedral-stack.md'), 'utf8'),
+    files,
+  );
+  for (const light of [false, true]) {
+    const name = `anhedral-stack${light ? '-light' : ''}`;
+    assert.equal(
+      readFileSync(path.join(repoRoot, `docs/assets/${name}.svg`), 'utf8'),
+      renderStack(light),
+      'committed artwork must match the canonical renderer',
+    );
+    const png = readFileSync(path.join(repoRoot, `docs/assets/${name}.png`));
+    assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+    assert.equal(png.readUInt32BE(16), stackSize.width);
+    assert.equal(png.readUInt32BE(20), stackSize.height);
+  }
+  assertPackedMarkdownLinks(
     'docs/stack-standard.md',
     readFileSync(path.join(repoRoot, 'docs/stack-standard.md'), 'utf8'),
     files,
@@ -142,7 +170,11 @@ try {
       'assets/patches/audit-deps.mjs',
     ].includes(file.path);
     const allowed =
-      allowedRootFiles.has(file.path) || allowedDist || allowedDocumentation || allowedPatch;
+      allowedRootFiles.has(file.path) ||
+      allowedDist ||
+      allowedDocumentation ||
+      allowedArtwork.has(file.path) ||
+      allowedPatch;
     assert.ok(allowed, `unexpected published path: ${file.path}`);
     if (!allowedDocumentation)
       assert.doesNotMatch(

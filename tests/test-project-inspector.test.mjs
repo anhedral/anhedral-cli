@@ -27,13 +27,13 @@ function fixture() {
   save('packages/db/package.json', { name: '@app/db' });
   save('packages/types/package.json', { name: '@app/types' });
   const plan = createSetupPlan(
-    parseStandardOptions([root, '--hono', '--neon', '--resend', '--skip-install']),
+    parseStandardOptions([root, '--stripe', '--revenuecat', '--skip-install']),
   );
   writeProjectSection(root, 'setup', plan);
   writeProjectSection(root, 'standard', {
     schemaVersion: 1,
     products: plan.products,
-    hosting: null,
+    hosting: 'cloudflare',
   });
   writeProjectSection(root, 'cloudflare', {
     schemaVersion: 1,
@@ -90,7 +90,8 @@ test('inspection reports selected requirements and dependency kinds without read
     ]);
     assert.ok(
       result.setupProviders.data.some(
-        (provider) => provider.id === 'neon' && provider.managementCredential === 'NEON_API_KEY',
+        (provider) =>
+          provider.id === 'stripe' && provider.managementCredential === 'STRIPE_SECRET_KEY',
       ),
     );
     assert.ok(
@@ -285,79 +286,6 @@ test('partial Cloudflare failure preserves deployment acknowledged for an earlie
     assert.equal(api.latestAttempt.operationState, 'failed');
     assert.equal(web.lastSuccessful, null);
     assert.equal(web.latestAttempt.state, 'failed');
-  } finally {
-    clean();
-  }
-});
-
-test('Basin stream identifier is configured only from the actual stream field', () => {
-  const { root, save, clean } = fixture();
-  try {
-    save('apps/api/wrangler.jsonc', {
-      pipelines: [
-        {
-          binding: 'EVENTS',
-          stream: 'REPLACE_WITH_BASIN_STREAM_ID',
-          pipeline: 'legacy_not_a_stream_identity',
-        },
-      ],
-    });
-    let binding = inspectApplication(root).configuration.data.bindings[0];
-    assert.equal(binding.identifierRequired, true);
-    assert.equal(binding.configured, false);
-    assert.equal(binding.resourceId, null);
-    save('apps/api/wrangler.jsonc', { pipelines: [{ binding: 'EVENTS', stream: 'c'.repeat(32) }] });
-    binding = inspectApplication(root).configuration.data.bindings[0];
-    assert.equal(binding.configured, true);
-    assert.equal(binding.resourceId, 'c'.repeat(32));
-  } finally {
-    clean();
-  }
-});
-
-test('Void inspector resolves recorded binding identities without ignoring authored changes', () => {
-  const { root, save, clean } = fixture();
-  const declaration = {
-    name: 'example-api',
-    d1_databases: [
-      { binding: 'DB', database_name: 'shared-db', database_id: 'REPLACE_WITH_D1_ID' },
-    ],
-    kv_namespaces: [{ binding: 'CACHE', id: 'REPLACE_WITH_KV_ID' }],
-  };
-  const source = {
-    name: 'example-api',
-    d1_databases: [{ binding: 'DB', database_name: 'shared-db' }],
-    kv_namespaces: [{ binding: 'CACHE' }],
-  };
-  const resolved = {
-    ...source,
-    d1_databases: [{ ...source.d1_databases[0], database_id: 'recorded-db' }],
-    kv_namespaces: [{ binding: 'CACHE', id: 'recorded-kv' }],
-  };
-  try {
-    save('apps/api/anhedral.cloudflare.json', declaration);
-    save('apps/api/void.lock.json', { version: 1, source, resolved, text: JSON.stringify(source) });
-    let result = inspectApplication(root);
-    assert.equal(result.configuration.state, 'available');
-    assert.equal(
-      result.configuration.data.bindings.find((binding) => binding.kind === 'D1').resourceId,
-      'recorded-db',
-    );
-    assert.equal(
-      result.configuration.data.bindings.find((binding) => binding.kind === 'KV').resourceId,
-      'recorded-kv',
-    );
-    declaration.d1_databases[0].database_id = 'new-authored-db';
-    save('apps/api/anhedral.cloudflare.json', declaration);
-    result = inspectApplication(root);
-    assert.equal(
-      result.configuration.data.bindings.find((binding) => binding.kind === 'D1').resourceId,
-      'new-authored-db',
-    );
-    save('apps/api/void.lock.json', { version: 999, source, resolved, text: secret });
-    result = inspectApplication(root);
-    assert.equal(result.configuration.state, 'unavailable');
-    assert.ok(!JSON.stringify(result).includes(secret));
   } finally {
     clean();
   }

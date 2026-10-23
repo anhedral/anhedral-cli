@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
-export async function verifyLocalAuth(origin, send = fetch, { voidReadiness = true } = {}) {
+export async function verifyLocalAuth(origin, send = fetch) {
   const base = new URL(origin);
   assert.ok(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Local preview only');
   assert.equal(base.protocol, 'http:');
@@ -19,15 +19,6 @@ export async function verifyLocalAuth(origin, send = fetch, { voidReadiness = tr
       ...(input ? { body: JSON.stringify(input) } : {}),
       signal: AbortSignal.timeout(15000),
     });
-  if (voidReadiness) {
-    const ready = await send(new URL('/__void/ready', base), {
-      signal: AbortSignal.timeout(15000),
-    });
-    assert.equal(ready.status, 200);
-    const readiness = await ready.json();
-    assert.equal(readiness.ready, true);
-    assert.match(readiness.versionId, /^[a-f0-9-]{36}$/i);
-  }
   assert.equal((await request('/api/session')).status, 401);
   const anonymous = await request('/api/auth/get-session');
   assert.equal(anonymous.status, 200);

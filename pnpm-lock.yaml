@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@neondatabase/serverless':
-        specifier: 1.2.0
-        version: 1.2.0
       jsonc-parser:
         specifier: 3.3.1
         version: 3.3.1
@@ -24,6 +21,9 @@ importers:
       '@types/node':
         specifier: 20.19.43
         version: 20.19.43
+      hono:
+        specifier: 4.13.13
+        version: 4.13.13
       prettier:
         specifier: 3.9.10
         version: 3.9.10
@@ -33,12 +33,12 @@ importers:
 
 packages:
 
-  '@neondatabase/serverless@1.2.0':
-    resolution: {integrity: sha512-tnaqgixUengZQNd9ZrS3ytQfamJzLKY8QxgqWQTNHHtB+KrFQWk77JTbbpg4RD+J3qE4eO2lVytvGDX5Kj6FdQ==}
-    engines: {node: '>=19.0.0'}
-
   '@types/node@20.19.43':
     resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
+
+  hono@4.13.13:
+    resolution: {integrity: sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==}
+    engines: {node: '>=16.9.0'}
 
   jsonc-parser@3.3.1:
     resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
@@ -66,11 +66,11 @@ packages:
 
 snapshots:
 
-  '@neondatabase/serverless@1.2.0': {}
-
   '@types/node@20.19.43':
     dependencies:
       undici-types: 6.21.0
+
+  hono@4.13.13: {}
 
   jsonc-parser@3.3.1: {}
 

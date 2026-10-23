@@ -70,13 +70,9 @@ test('name-only D1 matches never establish receipt ownership', () =>
     assert.equal(db.recordedAt, null);
   }));
 
-test('bucket and queue source name references match provider receipts', () =>
+test('bucket source name references match provider receipts', () =>
   fixture((inspection) => {
-    for (const [kind, receiptKind] of [
-      ['R2', 'r2'],
-      ['Queue producer', 'queue'],
-      ['Queue consumer', 'queue'],
-    ] as const) {
+    for (const [kind, receiptKind] of [['R2', 'r2']] as const) {
       binding(inspection, kind, 'service-name');
       inspection.cloudflareResources.data = [
         { kind: receiptKind, name: 'service-name', id: 'provider-id', reused: true, recordedAt },
@@ -105,7 +101,7 @@ test('provider operations stay pending and selected providers remain visible wit
   fixture((inspection) => {
     inspection.setupProviders.data = [
       {
-        id: 'neon',
+        id: 'revenuecat',
         managementCredential: 'NEON_API_KEY',
         ownerSteps: ['Choose a region.'],
         authentication: 'not-checked',
@@ -113,7 +109,7 @@ test('provider operations stay pending and selected providers remain visible wit
         billing: 'unknown',
       },
     ];
-    inspection.integrations.data = [{ provider: 'neon', operations: [] }];
+    inspection.integrations.data = [{ provider: 'revenuecat', operations: [] }];
     assert.equal(serviceInventory(inspection).entries[0].status, 'Declared');
     inspection.integrations.data[0].operations = [
       {
@@ -163,30 +159,25 @@ test('application receipt is recorded while latest failed attempt remains visibl
 
 test('selected stack retains local tooling separately from hosted resources', () =>
   fixture((inspection) => {
-    inspection.selection.data.products = ['vinext', 'styling', 'd1', 'd1'];
+    inspection.selection.data.products = ['expo', 'styling', 'd1', 'd1'];
     const inventory = serviceInventory(inspection);
     assert.equal(inventory.entries.length, 0);
     assert.equal(inventory.capabilities.length, 3);
-    assert.match(
-      inventory.capabilities.find((item) => item.name === 'vinext')!.description,
-      /Vinext/,
-    );
+    assert.match(inventory.capabilities.find((item) => item.name === 'expo')!.description, /Expo/);
   }));
 
 test('large inventories report truncation and keep their output within the schema budget', () =>
   fixture((inspection) => {
-    inspection.integrations.data = ['neon', 'clerk', 'stripe', 'resend', 'sentry'].map(
-      (provider) => ({
-        provider,
-        operations: Array.from({ length: 500 }, (_, index) => ({
-          operation: `operation-${index}`,
-          status: 'complete' as const,
-          resources: {},
-          recovery: 'Recorded.',
-          kind: 'project',
-        })),
-      }),
-    );
+    inspection.integrations.data = ['revenuecat', 'stripe'].map((provider) => ({
+      provider,
+      operations: Array.from({ length: 1200 }, (_, index) => ({
+        operation: `operation-${index}`,
+        status: 'complete' as const,
+        resources: {},
+        recovery: 'Recorded.',
+        kind: 'project',
+      })),
+    }));
     const inventory = serviceInventory(inspection);
     assert.equal(inventory.entries.length, 2000);
     assert.ok(

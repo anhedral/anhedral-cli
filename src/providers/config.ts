@@ -128,22 +128,6 @@ export function providerRequirements(id: IntegrationProvider, config: ProviderSe
     if (!setting(config, 'projectId')) need('name');
   };
   switch (id) {
-    case 'neon':
-      existingOrNew();
-      need('organizationId');
-      need('database');
-      need('role');
-      if (!setting(config, 'projectId')) need('region');
-      break;
-    case 'clerk':
-      need('workspaceId');
-      if (!setting(config, 'applicationId')) need('name');
-      if (!['development', 'production'].includes(setting(config, 'environment')))
-        missing.push('environment');
-      break;
-    case 'resend':
-      need('domain');
-      break;
     case 'stripe':
       need('accountId');
       if (!['test', 'live'].includes(setting(config, 'mode'))) missing.push('mode');
@@ -164,21 +148,6 @@ export function providerRequirements(id: IntegrationProvider, config: ProviderSe
       )
         missing.push('store app identifiers or a connected stripeAccountId');
       break;
-    case 'sentry':
-      need('organization');
-      need('team');
-      need('project');
-      need('platform');
-      break;
-    case 'posthog':
-      existingOrNew();
-      need('organizationId');
-      if (!['us', 'eu'].includes(setting(config, 'region'))) missing.push('region');
-      break;
-    case 'openai':
-      existingOrNew();
-      need('serviceAccountName');
-      break;
   }
   return missing;
 }
@@ -186,9 +155,7 @@ export function providerRequirements(id: IntegrationProvider, config: ProviderSe
 export function selectedIntegrations(root: string): IntegrationProvider[] {
   const setup: unknown = readProjectSection(root, 'setup');
   validateSetupPlan(setup);
-  return INTEGRATION_PROVIDERS.filter(
-    (id) => setup.products.includes(id) || (id === 'openai' && setup.products.includes('ai-sdk')),
-  );
+  return INTEGRATION_PROVIDERS.filter((id) => setup.products.includes(id));
 }
 
 export function providerConfigurationTemplate(
@@ -196,30 +163,15 @@ export function providerConfigurationTemplate(
   name: string,
 ): ProviderConfiguration {
   const templates: ProviderSettingsById = {
-    neon: { name, organizationId: '', region: '', database: 'app', role: 'app_owner' },
-    clerk: { name, workspaceId: '', environment: 'development' },
-    resend: { domain: '' },
     stripe: { accountId: '', mode: 'test' },
     revenuecat: products.includes('expo')
       ? { name, bundleId: '', packageName: '' }
       : { name, stripeAccountId: '' },
-    sentry: {
-      name,
-      organization: '',
-      team: '',
-      project: name,
-      platform:
-        products.includes('next') || products.includes('vinext') ? 'javascript-nextjs' : 'node',
-    },
-    posthog: { name, organizationId: '', region: '' },
-    openai: { name, serviceAccountName: 'anhedral-runtime' },
   };
   return {
     schemaVersion: 1,
     providers: Object.fromEntries(
-      INTEGRATION_PROVIDERS.filter(
-        (id) => products.includes(id) || (id === 'openai' && products.includes('ai-sdk')),
-      ).map((id) => [id, templates[id]]),
+      INTEGRATION_PROVIDERS.filter((id) => products.includes(id)).map((id) => [id, templates[id]]),
     ),
   };
 }

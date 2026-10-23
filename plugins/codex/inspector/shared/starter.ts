@@ -1,5 +1,5 @@
 export const PROJECT_STARTER_PROMPT =
-  'Create a new project using [@Anhedral](plugin://anhedral@anhedral). Start by explaining the stack and asking me what it should be about.';
+  'Create a new project using [@Anhedral](plugin://anhedral@anhedral). Use anhedral init for the Expo + Hono + Drizzle/D1 + private R2 foundation. Ask what I want to build; add Stripe or RevenueCat only if needed.';
 
 export function newProjectDraftMessage() {
   return {

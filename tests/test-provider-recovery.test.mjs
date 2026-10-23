@@ -20,78 +20,6 @@ import { atomicJson } from '../dist/project-state.js';
 import { createSetupPlan } from '../dist/capabilities.js';
 import { parseStandardOptions } from '../dist/standard.js';
 const scenarios = {
-  neon: {
-    descriptor: { key: 'project', route: '/api/v2/projects' },
-    settings: { name: 'example', organizationId: 'org_1', region: 'aws-us-east-1' },
-    id: 'proj_1',
-    responses: {
-      '/api/v2/projects/proj_1': {
-        project: { id: 'proj_1', name: 'example', org_id: 'org_1', region_id: 'aws-us-east-1' },
-      },
-    },
-    receipt: { project: { id: 'proj_1' } },
-  },
-  clerk: {
-    descriptor: { key: 'application', route: '/v1/platform/applications' },
-    settings: { workspaceId: 'workspace_1', name: 'example', environment: 'development' },
-    id: 'app_1',
-    responses: {
-      '/v1/platform/me': { subject: 'workspace_1' },
-      '/v1/platform/applications/app_1': {
-        application_id: 'app_1',
-        name: 'example',
-        instances: [{ environment_type: 'development' }],
-      },
-    },
-    receipt: { application_id: 'app_1' },
-  },
-  resend: {
-    descriptor: { key: 'domain', route: '/domains' },
-    settings: { domain: 'customer.com' },
-    id: 'domain_1',
-    responses: {
-      '/domains/domain_1': { id: 'domain_1', name: 'customer.com', token: 'must-not-return' },
-    },
-    receipt: { id: 'domain_1' },
-  },
-  posthog: {
-    descriptor: { key: 'project', route: '/api/organizations/org_1/projects/' },
-    settings: { organizationId: 'org_1', name: 'example', region: 'eu' },
-    id: '42',
-    responses: {
-      '/api/organizations/org_1/projects/42/': {
-        id: 42,
-        name: 'example',
-        organization: 'org_1',
-        api_token: 'must-not-return',
-      },
-    },
-    receipt: { id: '42' },
-  },
-  openai: {
-    descriptor: { key: 'project', route: '/v1/organization/projects' },
-    settings: { name: 'example' },
-    id: 'proj_1',
-    responses: {
-      '/v1/organization/projects/proj_1': { id: 'proj_1', name: 'example', status: 'active' },
-    },
-    receipt: { id: 'proj_1' },
-  },
-  sentry: {
-    descriptor: { key: 'project', route: '/api/0/teams/org_1/team_1/projects/' },
-    settings: { organization: 'org_1', team: 'team_1', project: 'example', platform: 'node' },
-    id: '12',
-    responses: {
-      '/api/0/projects/org_1/example/': {
-        id: 12,
-        slug: 'example',
-        organization: { slug: 'org_1' },
-        teams: [{ slug: 'team_1' }],
-        platform: 'node',
-      },
-    },
-    receipt: { id: '12' },
-  },
   revenuecat: {
     descriptor: { key: 'ios-app', route: '/v2/projects/proj1/apps' },
     settings: { projectId: 'proj1', bundleId: 'com.customer.app' },
@@ -154,11 +82,7 @@ for (const [provider, scenario] of Object.entries(scenarios)) {
     );
   });
 }
-for (const [provider, key] of [
-  ['openai', 'service-account'],
-  ['resend', 'sending-key'],
-  ['stripe', 'webhook'],
-]) {
+for (const [provider, key] of [['stripe', 'webhook']]) {
   test(`${provider}: resource ID alone cannot recover one-time credentials`, async () => {
     await assert.rejects(
       verifyRecoveredResource(provider, { key, route: '/pending' }, 'id_1', {}, async () => {
@@ -177,17 +101,7 @@ test('status rejects unsupported receipt schemas without rewriting files', () =>
     const file = path.join(root, 'providers.json');
     atomicJson(file, {
       schemaVersion: 1,
-      providers: {
-        resend: {
-          config: digest({}),
-          operations: {
-            [digest('operation')]: {
-              status: 'complete',
-              value: { id: 'key1', token: 'private-token', metadata: 'private-token' },
-            },
-          },
-        },
-      },
+      providers: {},
     });
     const before = readFileSync(file, 'utf8');
     assert.throws(() => readProviderStateStatus(root), /Invalid provider state/);
@@ -200,31 +114,31 @@ test('status rejects unsupported receipt schemas without rewriting files', () =>
 
 async function pendingFixture() {
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-recovery-flow-')));
-  const settings = { domain: 'customer.com' };
+  const settings = { name: 'customer-app' };
   writeProjectSection(
     root,
     'setup',
-    createSetupPlan(parseStandardOptions([root, '--hono', '--resend', '--skip-install'])),
+    createSetupPlan(parseStandardOptions([root, '--revenuecat', '--skip-install'])),
   );
-  writeProjectSection(root, 'providers', { schemaVersion: 1, providers: { resend: settings } });
+  writeProjectSection(root, 'providers', { schemaVersion: 1, providers: { revenuecat: settings } });
   const directory = path.join(root, '.anhedral');
   mkdirSync(directory);
   const state = new ProvisioningState(directory);
-  state.context('resend', settings);
-  const body = { name: settings.domain };
+  state.context('revenuecat', settings);
+  const body = { name: settings.name };
   await assert.rejects(
     state.create(
-      'resend',
-      'domain',
+      'revenuecat',
+      'project',
       async () => {
         throw new Error('unknown outcome');
       },
-      '/domains',
+      '/v2/projects',
       body,
     ),
     /unknown outcome/,
   );
-  const operation = digest({ key: 'domain', route: '/domains', body });
+  const operation = digest({ key: 'project', route: '/v2/projects', body });
   const run = async (_command, args) =>
     args.includes('rev-parse') ? root : args.includes('check-ignore') ? args.at(-1) : '';
   return { root, directory, operation, run, settings, body };
@@ -234,34 +148,34 @@ test('recovery completes a verified pending receipt without replaying remote mut
   try {
     const before = integrationStatus(root);
     assert.equal(before.providers[0].operations[0].status, 'pending');
-    assert.equal(before.providers[0].operations[0].descriptor.key, 'domain');
+    assert.equal(before.providers[0].operations[0].descriptor.key, 'project');
     const calls = [];
     const result = await recoverIntegrationResource(
       root,
-      { provider: 'resend', operation, resourceId: 'domain_1' },
+      { provider: 'revenuecat', operation, resourceId: 'domain_1' },
       run,
       async (url, options) => {
         calls.push(options.method);
-        assert.equal(new URL(url).pathname, '/domains/domain_1');
+        assert.equal(new URL(url).pathname, '/v2/projects/domain_1');
         return new Response(
-          JSON.stringify({ id: 'domain_1', name: 'customer.com', diagnostics: 'must-not-save' }),
+          JSON.stringify({ id: 'domain_1', name: 'customer-app', diagnostics: 'must-not-save' }),
           { headers: { 'Content-Type': 'application/json' } },
         );
       },
-      { RESEND_API_KEY: 'management-key' },
+      { RC_API_KEY: 'management-key' },
     );
     assert.equal(result.status, 'complete');
     assert.deepEqual(calls, ['GET']);
     const state = new ProvisioningState(directory);
-    state.context('resend', settings);
+    state.context('revenuecat', settings);
     assert.deepEqual(
       await state.create(
-        'resend',
-        'domain',
+        'revenuecat',
+        'project',
         async () => {
           throw new Error('must not replay');
         },
-        '/domains',
+        '/v2/projects',
         body,
       ),
       { id: 'domain_1' },
@@ -280,16 +194,16 @@ test('configuration changed during verification keeps operation pending', async 
     await assert.rejects(
       recoverIntegrationResource(
         root,
-        { provider: 'resend', operation, resourceId: 'domain_1' },
+        { provider: 'revenuecat', operation, resourceId: 'domain_1' },
         run,
         async () => {
           writeProjectSection(root, 'providers', {
             schemaVersion: 1,
-            providers: { resend: { domain: 'foreign.com' } },
+            providers: {},
           });
-          return new Response(JSON.stringify({ id: 'domain_1', name: 'customer.com' }));
+          return new Response(JSON.stringify({ id: 'domain_1', name: 'customer-app' }));
         },
-        { RESEND_API_KEY: 'management-key' },
+        { RC_API_KEY: 'management-key' },
       ),
       /changed during recovery/,
     );
@@ -304,26 +218,28 @@ test('pending operations without a trusted descriptor are rejected without repla
     atomicJson(path.join(directory, 'providers.json'), {
       schemaVersion: 2,
       providers: {
-        resend: { config: digest(settings), operations: { [operation]: { status: 'pending' } } },
+        revenuecat: {
+          config: digest(settings),
+          operations: { [operation]: { status: 'pending', value: {} } },
+        },
       },
     });
     assert.throws(() => integrationStatus(root), /Invalid provider state/);
     await assert.rejects(
       recoverIntegrationResource(
         root,
-        { provider: 'resend', operation, resourceId: 'domain_1' },
+        { provider: 'revenuecat', operation, resourceId: 'domain_1' },
         run,
         async () => {
           throw new Error('must not call');
         },
-        { RESEND_API_KEY: 'management-key' },
+        { RC_API_KEY: 'management-key' },
       ),
       /Invalid provider state/,
     );
     assert.equal(
-      JSON.parse(readFileSync(path.join(directory, 'providers.json'))).providers.resend.operations[
-        operation
-      ].status,
+      JSON.parse(readFileSync(path.join(directory, 'providers.json'))).providers.revenuecat
+        .operations[operation].status,
       'pending',
     );
   } finally {

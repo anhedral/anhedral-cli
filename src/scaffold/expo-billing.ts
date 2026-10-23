@@ -7,16 +7,7 @@ import { patchPackage, put } from './files.js';
 
 /** Native store purchases and web Stripe checkout share only server-verified entitlements. */
 export function scaffoldExpoBilling({ root, has }: RecipeContext): void {
-  if (!has('expo')) return;
   const directory = 'apps/mobile';
-  if (!has('better-auth')) {
-    put(
-      root,
-      `${directory}/billing-integration.md`,
-      '# Native billing integration\n\nThe selected Clerk identity needs its native session adapter before using the authenticated billing APIs. Supply verified session headers to createBillingClient from @workspace/contracts. Do not use a client-selected account ID to authorize access.\n',
-    );
-    return;
-  }
   if (has('revenuecat')) {
     writeEnvironmentFile(root, `${directory}/.env.example`, {
       EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: '',

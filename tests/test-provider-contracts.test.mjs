@@ -31,15 +31,8 @@ for (const provider of INTEGRATION_PROVIDERS) {
   });
 }
 for (const [provider, fields] of [
-  ['clerk', { environment: 'preview' }],
   ['stripe', { mode: 'production' }],
-  ['posthog', { region: 'auto' }],
   ['stripe', { webhookEvents: ['event.created', 'event.created'] }],
-  ['neon', { applicationId: 'foreign' }],
-  ['neon', JSON.parse('{"__proto__":"foreign"}')],
-  ['neon', { constructor: 'foreign' }],
-  ['openai', { OPENAI_ADMIN_KEY: 'secret' }],
-  ['resend', { domainId: 'invalid/path' }],
 ]) {
   test(`${provider}: rejects malformed or foreign provider fields`, () => {
     assert.throws(
@@ -53,10 +46,10 @@ test('schema permits unfinished templates, not unsupported providers or fields',
   assert.equal(PROVIDER_CONFIGURATION_SCHEMA.properties.providers.additionalProperties, false);
   validateProviderConfiguration({
     schemaVersion: 1,
-    providers: { clerk: { environment: '' }, posthog: { region: '' } },
+    providers: { stripe: { mode: '' } },
   });
   assert.throws(
-    () => validateProviderConfiguration({ schemaVersion: 1, providers: { neon: {} } }, []),
+    () => validateProviderConfiguration({ schemaVersion: 1, providers: { stripe: {} } }, []),
     /unselected/,
   );
 });

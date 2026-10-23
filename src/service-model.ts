@@ -8,7 +8,7 @@ export const SERVICE_TOOL_ACTIONS = {
 } as const;
 export type ServiceAction = (typeof SERVICE_TOOL_ACTIONS)[keyof typeof SERVICE_TOOL_ACTIONS];
 
-export type ServiceKind = 'worker' | 'd1' | 'kv' | 'r2' | 'queue';
+export type ServiceKind = 'worker' | 'd1' | 'r2';
 export interface ServiceDescriptor {
   key: string;
   kind: ServiceKind;

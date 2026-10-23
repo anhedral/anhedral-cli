@@ -9,9 +9,7 @@ export interface MinimalReceipt {
   project?: { id: string | number };
 }
 const allowedCredentials: Partial<Record<IntegrationProvider, CredentialField>> = {
-  resend: 'token',
   stripe: 'secret',
-  openai: 'api_key',
 };
 function identity(value: unknown): string | number {
   resourceId(value);
@@ -24,10 +22,6 @@ export function splitReceipt(id: IntegrationProvider, value: unknown) {
   const response = object(value);
   const receipt: MinimalReceipt = {};
   if (Object.hasOwn(response, 'id')) receipt.id = identity(response.id);
-  if (id === 'neon' && Object.hasOwn(response, 'project'))
-    receipt.project = { id: identity(object(response.project).id) };
-  if (id === 'clerk' && Object.hasOwn(response, 'application_id'))
-    receipt.application_id = identity(response.application_id);
   if (!Object.keys(receipt).length) throw new Error('Provider returned no creation identity.');
   const credentials: OperationCredentials = {};
   const field = allowedCredentials[id];
@@ -41,11 +35,7 @@ export function splitReceipt(id: IntegrationProvider, value: unknown) {
 export function validReceipt(id: IntegrationProvider, value: unknown): value is MinimalReceipt {
   try {
     const response = object(value);
-    const allowed = [
-      'id',
-      ...(id === 'neon' ? ['project'] : []),
-      ...(id === 'clerk' ? ['application_id'] : []),
-    ];
+    const allowed = ['id'];
     if (Object.keys(response).some((key) => !allowed.includes(key))) return false;
     if (response.project && Object.keys(object(response.project)).some((key) => key !== 'id'))
       return false;

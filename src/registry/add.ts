@@ -1,37 +1,22 @@
-import { scaffoldCloudflareServiceContext } from '../scaffold/cloudflare-services.js';
-import {
-  PROJECT_CONFIG_FILE,
-  readProjectSection,
-  writeProjectSection,
-  hasProjectSection,
-} from '../project-config.js';
-import { scaffoldExpoRuntime } from '../scaffold/expo-runtime.js';
-import { scaffoldWebBackend } from '../scaffold/backend.js';
+import { PROJECT_CONFIG_FILE, readProjectSection, writeProjectSection } from '../project-config.js';
 import { configureDependencyPatches } from '../dependency-patches.js';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
-import { bootstrapWorkspace, assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
+import { assertWorkspaceRuntime } from '../scaffold/bootstrap.js';
 import { registerApplication } from '../project-state.js';
-import { registerVercelApplication } from '../vercel.js';
 import { existsSync, lstatSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { applyEdits, modify, parse } from 'jsonc-parser';
-import { STANDARD_PRODUCTS, getStackDefinition, installStackItem } from '../stack-registry.js';
+import { installStackItem } from '../stack-registry.js';
 import { inspectProject, validateSetupPlan } from '../readiness.js';
 import { GENERATOR_VERSION } from '../version.js';
 import { runStagedTransaction } from '../transaction.js';
 import { inspectWorkspaceGraph } from '../workspace-graph.js';
 import { execFile } from '../util.js';
-import { supportsVoidRuntime, usesVoidSelection } from '../runtime-policy.js';
 import { put } from '../scaffold/files.js';
 import { writeStandardRoot } from '../scaffold/workspace.js';
-import { configureVoidDelivery, refreshVoidEnvironment } from '../scaffold/void.js';
 import { createRecipeContext } from './context.js';
-import {
-  resolveBillingProducts,
-  resolveStackRegistry,
-  resolveStandardProducts,
-} from './resolve.js';
+import { resolveStackRegistry, resolveStandardProducts } from './resolve.js';
 import { sourceFiles, configurationFingerprints } from './receipt.js';
 import type { StandardOptions, StandardProduct, StandardRunner } from './types.js';
 import {
@@ -97,44 +82,10 @@ export async function addStackItems(
   const originalConfiguration = configurationFingerprints(root);
   const selected = new Set<StandardProduct>(plan.products);
   for (const id of request.items) {
-    if (!(STANDARD_PRODUCTS as readonly string[]).includes(id))
-      throw new Error(`Unknown stack product: ${id}.`);
+    if (!['stripe', 'revenuecat'].includes(id)) throw new Error(`Unknown stack product: ${id}.`);
     selected.add(id as StandardProduct);
   }
-  const existingServerFeatures = plan.products.some((id) =>
-    Boolean(getStackDefinition(id).runtime),
-  );
-  if (
-    !existingServerFeatures &&
-    request.items.some((id) => Boolean(getStackDefinition(id).runtime))
-  )
-    selected.add('hono');
-  if (
-    request.items.some(
-      (id) =>
-        ['stripe', 'revenuecat'].includes(id) && !plan.products.includes(id as StandardProduct),
-    )
-  )
-    resolveBillingProducts(selected);
-  if (
-    ['queues', 'basin', 'expo', 'images', 'analytics-engine'].some((id) =>
-      selected.has(id as StandardProduct),
-    ) &&
-    hasProjectSection(root, 'cloudflare') &&
-    readProjectSection(root, 'cloudflare').deliveryEngine === 'void'
-  )
-    throw new Error(
-      'Expo web, Queues, Basin, Images and Analytics Engine require Wrangler delivery. They cannot be added to a Void project.',
-    );
-  resolveStandardProducts(selected, plan.hosting, false, false);
-  const voidSelected = usesVoidSelection([...selected], plan.hosting);
-  if (
-    !request.dryRun &&
-    voidSelected &&
-    run === execFile &&
-    !supportsVoidRuntime(process.versions.node)
-  )
-    throw new Error('Cloudflare workspaces using Void require Node.js 24.21.0 or newer.');
+  resolveStandardProducts(selected, plan.hosting);
   const options: StandardOptions = {
     root,
     name: plan.name ?? path.basename(root),
@@ -145,19 +96,6 @@ export async function addStackItems(
     json: true,
     initializeGit: false,
   };
-  if (
-    plan.products.includes('hono') &&
-    !existsSync(path.join(root, 'packages/contracts/package.json')) &&
-    (request.items.some(
-      (id) => ['vinext', 'next'].includes(id) && !plan.products.some((existing) => existing === id),
-    ) ||
-      (request.items.includes('better-auth') &&
-        !plan.products.includes('better-auth') &&
-        plan.products.some((id) => ['vinext', 'next'].includes(id))))
-  )
-    throw new Error(
-      'This API predates shared contracts. Migrate its contracts and API endpoints explicitly before adding web/auth wiring.',
-    );
   const registry = resolveStackRegistry(options);
   const oldItems = new Map(plan.registry.items.map((item) => [item.name, item]));
   const recipes = registry.items.filter(
@@ -185,25 +123,13 @@ export async function addStackItems(
     items: registry.items
       .filter((item) => !isDeepStrictEqual(oldItems.get(item.name), item))
       .map((item) => item.name),
-    bootstrapRequired:
-      recipes.some((item) => ['vinext', 'next'].includes(item.name)) &&
-      !existsSync(path.join(root, 'apps/web/package.json')),
+    bootstrapRequired: false,
     filesChecked: true,
     targets: recipes.flatMap((item) => item.targets),
     files: commitPaths,
     conflicts,
     ...(request.preview ? { previews: [] as SourcePreview[] } : {}),
   };
-  // The upstream web generator requires network access and executes package scripts.
-  // A preview reports the resolved selection without invoking that generator.
-  if (request.dryRun && result.bootstrapRequired) {
-    result.filesChecked = false;
-    if (request.preview)
-      throw new Error(
-        'Source preview requires a new web bootstrap and cannot run offline. Use add --dry-run for the selection plan.',
-      );
-    return result;
-  }
   await runStagedTransaction(root, {
     dryRun: !!request.dryRun,
     commitPaths,
@@ -212,28 +138,13 @@ export async function addStackItems(
       const context = createRecipeContext(stage, options);
       context.updating = true;
       for (const item of registry.items) Object.assign(context.bindings, item.bindings);
-      if (
-        recipes.some((item) => ['vinext', 'next'].includes(item.name)) &&
-        !existsSync(path.join(stage, 'apps/web/package.json'))
-      )
-        bootstrapWorkspace(stage, options.name, run, true);
-      for (const item of recipes) {
-        if (item.name === 'expo' && plan.products.includes('expo')) {
-          scaffoldExpoRuntime(context);
-        } else await installStackItem(item, context);
-      }
-      // Connect a newly introduced backend without regenerating customer UI.
-      if (!plan.products.includes('hono') && selected.has('hono')) {
-        if (plan.products.includes('expo')) scaffoldExpoRuntime(context);
-        if (plan.products.includes('next') || plan.products.includes('vinext'))
-          scaffoldWebBackend(context);
-      }
+      for (const item of recipes) await installStackItem(item, context);
       // Configuration items affect the existing runtime without regenerating its application source.
       const configurationItems = registry.items.filter(
         (item) => !isDeepStrictEqual(oldItems.get(item.name), item) && item.bindings,
       );
       if (configurationItems.length) {
-        const directory = `apps/${context.runtimeApp}`;
+        const directory = 'apps/api';
         const file = `${directory}/${existsSync(path.join(stage, directory, 'anhedral.cloudflare.json')) ? 'anhedral.cloudflare.json' : 'wrangler.jsonc'}`;
         let content = readFileSync(path.join(stage, file), 'utf8');
         const config = parse(content) as Record<string, unknown>;
@@ -252,14 +163,7 @@ export async function addStackItems(
           }
         put(stage, file, content);
       }
-      scaffoldCloudflareServiceContext(context);
       writeStandardRoot(stage, options, registry, true);
-      if (voidSelected) {
-        configureVoidDelivery(stage);
-        refreshVoidEnvironment(stage);
-      }
-      if (options.products.includes('next') && options.hosting === 'vercel')
-        registerVercelApplication(stage);
       if (
         [...sourceFiles(stage).keys()].some((file) =>
           /^apps\/[^/]+\/(?:wrangler\.jsonc|anhedral\.cloudflare\.json)$/.test(file),

@@ -10,20 +10,13 @@ import { isIP } from 'node:net';
 import { providerConfiguration } from './config.js';
 
 export type RuntimeValues = Record<string, string>;
-function serverRuntimeFile(root: string, runtime: string, hosting: string): string {
+function serverRuntimeFile(_root: string, runtime: string, _hosting: string): string {
   const directory = `apps/${runtime}`;
-  if (runtime === 'web' && hosting === 'vercel') return `${directory}/.env.local`;
-  return `${directory}/${existsSync(path.join(root, directory, 'void.config.ts')) ? '.env' : '.dev.vars'}`;
+  return `${directory}/.dev.vars`;
 }
 export const RUNTIME_KEYS = [
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL',
-  'NEON_REALTIME_SECRET',
-  'DATABASE_URL',
-  'CLERK_SECRET_KEY',
-  'CLERK_PUBLISHABLE_KEY',
-  'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
-  'RESEND_API_KEY',
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
   'BILLING_ORIGIN',
@@ -36,10 +29,6 @@ export const RUNTIME_KEYS = [
   'REVENUECAT_WEBHOOK_SIGNING_SECRET',
   'REVENUECAT_APP_IDS_JSON',
   'REVENUECAT_PROJECT_ID',
-  'SENTRY_DSN',
-  'POSTHOG_API_KEY',
-  'POSTHOG_HOST',
-  'OPENAI_API_KEY',
   'EXPO_PUBLIC_API_URL',
   'EXPO_PUBLIC_REVENUECAT_IOS_API_KEY',
   'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY',
@@ -73,21 +62,10 @@ export function runtimeTargets(root: string, values: RuntimeValues): Record<stri
   );
   if (existsSync(path.join(root, `apps/${runtime}`)))
     targets[serverRuntimeFile(root, runtime, setup.hosting)] = server;
-  if (
-    runtime === 'api' &&
-    existsSync(path.join(root, 'apps/web')) &&
-    values.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-  )
-    targets[serverRuntimeFile(root, 'web', setup.hosting)] = {
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: values.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-      ...(values.CLERK_SECRET_KEY ? { CLERK_SECRET_KEY: values.CLERK_SECRET_KEY } : {}),
-    };
   if (setup.products.includes('expo')) {
     const mobile = Object.fromEntries(
       Object.entries(values).filter(([key]) => key.startsWith('EXPO_PUBLIC_')),
     );
-    if (values.CLERK_PUBLISHABLE_KEY)
-      mobile.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = values.CLERK_PUBLISHABLE_KEY;
     if (Object.keys(mobile).length) targets['apps/mobile/.env.local'] = mobile;
   }
   return targets;
@@ -235,11 +213,7 @@ export async function applicationRuntime(
   const setup: unknown = readProjectSection(root, 'setup');
   validateSetupPlan(setup);
   const betterAuth = setup.products.includes('better-auth');
-  const neonRealtime = setup.products.includes('neon-realtime');
-  const keys = [
-    ...(betterAuth ? ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'] : []),
-    ...(neonRealtime ? ['NEON_REALTIME_SECRET'] : []),
-  ];
+  const keys = [...(betterAuth ? ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'] : [])];
   if (!keys.length) return {};
   const runtime = setup.products.includes('hono') ? 'api' : 'web';
   const relative = serverRuntimeFile(root, runtime, setup.hosting);
@@ -273,7 +247,7 @@ export async function applicationRuntime(
       keys.some((key) => Object.hasOwn(config.vars as object, key))
     )
       throw new Error(
-        `Remove ${neonRealtime ? 'application runtime' : 'Better Auth'} values from tracked Wrangler vars, review and commit that change, then configure the private runtime file before shipping.`,
+        `Remove Better Auth values from tracked Wrangler vars, review and commit that change, then configure the private runtime file before shipping.`,
       );
   }
   const content = readBoundedFile(file, MAX_PROJECT_JSON_BYTES).toString('utf8');
@@ -294,14 +268,6 @@ export async function applicationRuntime(
         'BETTER_AUTH_URL must be an HTTPS public origin without credentials, path, query or fragment.',
       );
     Object.assign(values, { BETTER_AUTH_SECRET: secret, BETTER_AUTH_URL: origin });
-  }
-  if (neonRealtime) {
-    const secret = applicationValue(content, 'NEON_REALTIME_SECRET');
-    if (/change.?me|replace.?me|placeholder|your.?secret|example|generate.?me/i.test(secret))
-      throw new Error(
-        'Configure the nonplaceholder NEON_REALTIME_SECRET from the intended Neon Realtime service.',
-      );
-    values.NEON_REALTIME_SECRET = secret;
   }
   return { [relative]: values };
 }

@@ -28,6 +28,13 @@ writeFileSync(
   new URL('anhedral-stack.md', references),
   readFileSync(new URL('../docs/anhedral-stack.md', import.meta.url)),
 );
+const artwork = new URL('assets/', references);
+mkdirSync(artwork, { recursive: true });
+for (const name of ['anhedral-stack.png', 'anhedral-stack-light.png'])
+  writeFileSync(
+    new URL(name, artwork),
+    readFileSync(new URL(`../docs/assets/${name}`, import.meta.url)),
+  );
 writeFileSync(
   new URL('stack-standard.md', references),
   readFileSync(new URL('../docs/stack-standard.md', import.meta.url)),

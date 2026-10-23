@@ -45,17 +45,26 @@ function runInstalledScaffold(installRoot) {
   const projectRoot = path.join(installRoot, 'packed-project');
   const plan = run(
     binPath,
-    ['init', projectRoot, '--hono', '--neon', '--r2', '--dry-run', '--json'],
+    ['init', projectRoot, '--stripe', '--revenuecat', '--dry-run', '--json'],
     installRoot,
   );
   const resolved = JSON.parse(plan.stdout);
-  assert.deepEqual(resolved.products, ['hono', 'neon', 'r2']);
+  assert.deepEqual(resolved.products, [
+    'better-auth',
+    'd1',
+    'expo',
+    'hono',
+    'r2',
+    'revenuecat',
+    'stripe',
+    'styling',
+  ]);
   assert.ok(resolved.registry.items.some((item) => item.name === 'hono'));
   const catalog = JSON.parse(run(binPath, ['registry', 'list', '--json'], installRoot).stdout);
   assert.ok(catalog.items.some((item) => item.name === 'workspace'));
   assert.equal(
-    JSON.parse(run(binPath, ['registry', 'view', 'neon', '--json'], installRoot).stdout).name,
-    'neon',
+    JSON.parse(run(binPath, ['registry', 'view', 'd1', '--json'], installRoot).stdout).name,
+    'd1',
   );
   assert.equal(existsSync(projectRoot), false);
 }

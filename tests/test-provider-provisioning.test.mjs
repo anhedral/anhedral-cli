@@ -29,56 +29,6 @@ const connection = new URL('postgresql://example.neon.tech/app');
 connection.username = 'app_owner';
 connection.password = secret;
 const scenarios = {
-  neon: {
-    settings: {
-      name: 'example',
-      organizationId: 'org-1',
-      region: 'aws-us-east-1',
-      database: 'app',
-      role: 'app_owner',
-    },
-    routes: {
-      'POST /api/v2/projects': { project: { id: 'project-1' } },
-      'GET /api/v2/projects/project-1': { project: { id: 'project-1', org_id: 'org-1' } },
-      'GET /api/v2/projects/project-1/operations': { operations: [{ status: 'finished' }] },
-      'GET /api/v2/projects/project-1/connection_uri': {
-        uri: connection.href,
-      },
-    },
-    keys: ['DATABASE_URL'],
-    mutations: 1,
-  },
-  clerk: {
-    settings: { name: 'example', workspaceId: 'org-1', environment: 'development' },
-    routes: {
-      'GET /v1/platform/me': { subject: 'org-1' },
-      'POST /v1/platform/applications': { application_id: 'app-1' },
-      'GET /v1/platform/applications/app-1': {
-        application_id: 'app-1',
-        instances: [
-          {
-            instance_id: 'ins-1',
-            environment_type: 'development',
-            secret_key: `sk_test_${secret}`,
-            publishable_key: 'pk_test_public',
-          },
-        ],
-      },
-    },
-    keys: ['CLERK_SECRET_KEY', 'CLERK_PUBLISHABLE_KEY', 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'],
-    mutations: 1,
-  },
-  resend: {
-    settings: { domain: 'mail.example.com' },
-    routes: {
-      'POST /domains': { id: 'domain-1' },
-      'GET /domains/domain-1': { id: 'domain-1', name: 'mail.example.com', status: 'verified' },
-      'POST /api-keys': { id: 'key-1', token: secret },
-      'GET /api-keys': { data: [{ id: 'key-1' }] },
-    },
-    keys: ['RESEND_API_KEY'],
-    mutations: 2,
-  },
   stripe: {
     settings: {
       accountId: 'acct_1',
@@ -133,60 +83,6 @@ const scenarios = {
     ],
     mutations: 3,
   },
-  sentry: {
-    settings: {
-      organization: 'org-1',
-      team: 'team-1',
-      project: 'example',
-      name: 'Example',
-      platform: 'node',
-    },
-    routes: {
-      'GET /api/0/teams/org-1/team-1/projects/': [],
-      'POST /api/0/teams/org-1/team-1/projects/': { id: '1' },
-      'GET /api/0/projects/org-1/example/': {
-        id: '1',
-        organization: { slug: 'org-1' },
-        teams: [{ slug: 'team-1' }],
-        platform: 'node',
-      },
-      'GET /api/0/projects/org-1/example/keys/': [
-        { isActive: true, dsn: { public: ['https://public', 'o1.ingest.sentry.io/1'].join('@') } },
-      ],
-    },
-    keys: ['SENTRY_DSN'],
-    mutations: 1,
-  },
-  posthog: {
-    settings: { name: 'example', organizationId: 'org-1', region: 'eu' },
-    routes: {
-      'POST /api/organizations/org-1/projects/': { id: 1 },
-      'GET /api/organizations/org-1/projects/1/': {
-        id: 1,
-        organization: 'org-1',
-        api_token: 'phc_public',
-      },
-    },
-    keys: ['POSTHOG_API_KEY', 'POSTHOG_HOST'],
-    mutations: 1,
-  },
-  openai: {
-    settings: { name: 'example', serviceAccountName: 'runtime' },
-    routes: {
-      'POST /v1/organization/projects': { id: 'proj_1' },
-      'GET /v1/organization/projects/proj_1': { id: 'proj_1', status: 'active' },
-      'POST /v1/organization/projects/proj_1/service_accounts': {
-        id: 'user_1',
-        api_key: { value: secret },
-      },
-      'GET /v1/organization/projects/proj_1/service_accounts/user_1': {
-        id: 'user_1',
-        name: 'runtime',
-      },
-    },
-    keys: ['OPENAI_API_KEY'],
-    mutations: 2,
-  },
 };
 const credentials = {
   NEON_API_KEY: 'management',
@@ -200,11 +96,7 @@ const credentials = {
 };
 function fixture(provider) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-provider-test-'));
-  const flags = [
-    '--hono',
-    `--${provider}`,
-    ...(provider === 'revenuecat' ? ['--stripe', '--expo'] : []),
-  ];
+  const flags = [`--${provider}`, ...(provider === 'revenuecat' ? ['--stripe'] : [])];
   const setup = createSetupPlan(parseStandardOptions([root, '--skip-install', ...flags]));
   writeProjectSection(root, 'setup', setup);
   const configuration = {
@@ -299,7 +191,7 @@ for (const provider of Object.keys(scenarios)) {
 }
 
 test('preflight rejects credentials in tracked configuration, missing credentials and unselected providers before any mutation', async () => {
-  const root = fixture('neon');
+  const root = fixture('stripe');
   let calls = 0;
   const send = async () => {
     calls++;
@@ -308,16 +200,16 @@ test('preflight rejects credentials in tracked configuration, missing credential
   try {
     await assert.rejects(
       provisionSelectedProviders(root, false, runner(root), send, {}),
-      /NEON_API_KEY/,
+      /STRIPE_SECRET_KEY/,
     );
     writeProjectSection(root, 'providers', {
       schemaVersion: 1,
-      providers: { neon: { ...scenarios.neon.settings, token: secret } },
+      providers: { stripe: { STRIPE_SECRET_KEY: secret } },
     });
     assert.throws(() => planProviderProvisioning(root), /Credentials belong/);
     writeProjectSection(root, 'providers', {
       schemaVersion: 1,
-      providers: { stripe: scenarios.stripe.settings },
+      providers: { revenuecat: scenarios.revenuecat.settings },
     });
     assert.throws(() => planProviderProvisioning(root), /unselected/);
     assert.equal(calls, 0);
@@ -327,81 +219,8 @@ test('preflight rejects credentials in tracked configuration, missing credential
   }
 });
 
-test('unknown creation outcome prevents replay; an explicit permission rejection can be retried after access is fixed', async () => {
-  for (const status of [403, 500]) {
-    const root = fixture('openai');
-    let attempts = 0;
-    const send = async () => {
-      attempts++;
-      return new Response(JSON.stringify({ diagnostic: secret }), { status });
-    };
-    try {
-      await assert.rejects(
-        provisionSelectedProviders(root, false, runner(root), send, credentials),
-        (error) => !error.message.includes(secret) && error.message.includes(`HTTP ${status}`),
-      );
-      await assert.rejects(
-        provisionSelectedProviders(root, false, runner(root), send, credentials),
-        status === 500 ? /unknown outcome/ : /HTTP 403/,
-      );
-      assert.equal(attempts, status === 500 ? 1 : 2);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  }
-});
-
-test('account mismatch, pending Neon operations and unverified Resend DNS remain explicit', async () => {
-  for (const provider of ['clerk', 'neon', 'resend']) {
-    const root = fixture(provider);
-    const calls = [];
-    const override =
-      provider === 'clerk'
-        ? { 'GET /v1/platform/me': { subject: 'wrong-workspace' } }
-        : provider === 'neon'
-          ? { 'GET /api/v2/projects/project-1/operations': { operations: [{ status: 'running' }] } }
-          : {
-              'GET /domains/domain-1': {
-                name: 'mail.example.com',
-                status: 'pending',
-                records: [{ type: 'TXT', name: 'resend._domainkey', value: 'public-dns-value' }],
-              },
-              'POST /domains/domain-1/verify': { id: 'domain-1' },
-            };
-    try {
-      const operation = provisionSelectedProviders(
-        root,
-        false,
-        runner(root),
-        transport(provider, calls, override),
-        credentials,
-      );
-      if (provider === 'clerk') {
-        await assert.rejects(operation, /workspace differs/);
-        assert.equal(
-          calls.some((call) => call.options.method === 'POST'),
-          false,
-        );
-      } else {
-        const response = await operation;
-        assert.equal(response.ready, false);
-        assert.equal(Object.keys(configuredRuntime(root)).length, 0);
-        assert.equal(
-          calls.some(
-            (call) =>
-              call.url.pathname === '/api-keys' || call.url.pathname.endsWith('connection_uri'),
-          ),
-          false,
-        );
-      }
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  }
-});
-
 test('private configuration refuses tracked files, symlinks and conflicting values without overwriting user configuration', async () => {
-  const root = fixture('neon');
+  const root = fixture('stripe');
   const outside = mkdtempSync(path.join(tmpdir(), 'anhedral-provider-outside-'));
   try {
     await assert.rejects(
@@ -409,23 +228,26 @@ test('private configuration refuses tracked files, symlinks and conflicting valu
         root,
         false,
         runner(root, '.anhedral/providers.json'),
-        transport('neon', []),
+        transport('stripe', []),
         credentials,
       ),
       /not be tracked/,
     );
     symlinkSync(outside, path.join(root, '.anhedral'));
     await assert.rejects(
-      provisionSelectedProviders(root, false, runner(root), transport('neon', []), credentials),
+      provisionSelectedProviders(root, false, runner(root), transport('stripe', []), credentials),
       /regular directory/,
     );
     rmSync(path.join(root, '.anhedral'));
     mkdirSync(path.join(root, '.anhedral'));
-    writeFileSync(path.join(root, 'apps/api/.dev.vars'), 'DATABASE_URL="user-owned"\n');
-    await assert.rejects(configureRuntime(root, { DATABASE_URL: secret }, runner(root)), /differs/);
+    writeFileSync(path.join(root, 'apps/api/.dev.vars'), 'STRIPE_SECRET_KEY="user-owned"\n');
+    await assert.rejects(
+      configureRuntime(root, { STRIPE_SECRET_KEY: secret }, runner(root)),
+      /differs/,
+    );
     assert.equal(
       readFileSync(path.join(root, 'apps/api/.dev.vars'), 'utf8'),
-      'DATABASE_URL="user-owned"\n',
+      'STRIPE_SECRET_KEY="user-owned"\n',
     );
     assert.equal(existsSync(path.join(root, 'packages/db/.env')), false);
   } finally {
@@ -436,7 +258,7 @@ test('private configuration refuses tracked files, symlinks and conflicting valu
 
 test('provider API bounds response sizes and rejects redirect paths without exposing credentials', async () => {
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     credentials,
     async () => new Response(JSON.stringify({ text: 'x'.repeat(2 * 1024 * 1024) })),
@@ -445,93 +267,13 @@ test('provider API bounds response sizes and rejects redirect paths without expo
   await assert.rejects(api('/api/v2/projects'), /oversized JSON/);
 });
 
-test('auth checks administration credentials and the selected PostHog region without provisioning', async () => {
-  for (const provider of ['clerk', 'openai', 'posthog']) {
-    const root = fixture(provider);
-    const urls = [];
-    try {
-      const result = await authenticateProviders(
-        root,
-        { provider, status: true },
-        runner(root),
-        async (url) => {
-          urls.push(url);
-          return new Response('{}');
-        },
-        undefined,
-        credentials,
-      );
-      assert.equal(result.authenticated, true);
-      assert.equal(result.provisioningReady, false);
-      assert.equal(urls.length, 1);
-      assert.match(
-        urls[0],
-        provider === 'clerk'
-          ? /platform\/me/
-          : provider === 'openai'
-            ? /organization\/projects/
-            : /eu\.posthog\.com/,
-      );
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  }
-});
-
 test('init templates enumerate only the chosen integrations and contain no credentials', () => {
-  const template = providerConfigurationTemplate(['hono', 'neon', 'ai-sdk'], 'example');
-  assert.deepEqual(Object.keys(template.providers), ['neon', 'openai']);
+  const template = providerConfigurationTemplate(['stripe', 'revenuecat'], 'example');
+  assert.deepEqual(Object.keys(template.providers), ['stripe', 'revenuecat']);
   assert.doesNotMatch(JSON.stringify(template), /API_KEY|SECRET|management/);
-  assert.equal(template.providers.neon.organizationId, '');
 });
 
 const invalidResources = [
-  [
-    'neon',
-    'GET /api/v2/projects/project-1',
-    { project: { id: 'project-1', org_id: 'foreign' } },
-    /organization/,
-  ],
-  [
-    'neon',
-    'GET /api/v2/projects/project-1/connection_uri',
-    { uri: 'postgresql://owner:secret@foreign.example.com/app' },
-    /unexpected database connection/,
-  ],
-  [
-    'clerk',
-    'GET /v1/platform/applications/app-1',
-    { application_id: 'foreign', instances: [] },
-    /application/,
-  ],
-  [
-    'clerk',
-    'GET /v1/platform/applications/app-1',
-    { application_id: 'app-1', instances: [] },
-    /exactly one/,
-  ],
-  [
-    'clerk',
-    'GET /v1/platform/applications/app-1',
-    {
-      application_id: 'app-1',
-      instances: [
-        {
-          instance_id: 'ins-1',
-          environment_type: 'development',
-          secret_key: 'sk_live_secret',
-          publishable_key: 'pk_live_public',
-        },
-      ],
-    },
-    /selected environment/,
-  ],
-  [
-    'resend',
-    'GET /domains/domain-1',
-    { id: 'domain-1', name: 'foreign.example', status: 'verified' },
-    /domain/,
-  ],
   ['stripe', 'GET /v1/account', { id: 'acct_foreign' }, /account/],
   [
     'stripe',
@@ -560,30 +302,6 @@ const invalidResources = [
   ['revenuecat', 'GET /v2/projects/proj1', { id: 'foreign' }, /project/],
   ['revenuecat', 'GET /v2/projects/proj1/apps/app1', { type: 'play_store' }, /platform/],
   ['revenuecat', 'GET /v2/projects/proj1/apps/app1/public_api_keys', { items: [] }, /exactly one/],
-  [
-    'sentry',
-    'GET /api/0/projects/org-1/example/',
-    { id: '1', organization: { slug: 'foreign' }, teams: [{ slug: 'team-1' }], platform: 'node' },
-    /organization/,
-  ],
-  [
-    'posthog',
-    'GET /api/organizations/org-1/projects/1/',
-    { id: 1, organization: 'foreign', api_token: 'phc_public' },
-    /organization/,
-  ],
-  [
-    'openai',
-    'GET /v1/organization/projects/proj_1',
-    { id: 'proj_1', status: 'archived' },
-    /not active/,
-  ],
-  [
-    'openai',
-    'GET /v1/organization/projects/proj_1/service_accounts/user_1',
-    { id: 'user_1', name: 'foreign' },
-    /name/,
-  ],
 ];
 for (const [provider, route, response, expected] of invalidResources) {
   test(`${provider}: rejects mismatched or unusable resource at ${route}: ${JSON.stringify(response)}`, async () => {
@@ -610,13 +328,13 @@ for (const [provider, route, response, expected] of invalidResources) {
 
 for (const values of [
   { UNKNOWN_SECRET: secret },
-  { DATABASE_URL: '' },
-  { DATABASE_URL: 'line\nbreak' },
-  { DATABASE_URL: '\0' },
-  { DATABASE_URL: 'x'.repeat(16385) },
+  { STRIPE_SECRET_KEY: '' },
+  { STRIPE_SECRET_KEY: 'line\nbreak' },
+  { STRIPE_SECRET_KEY: '\0' },
+  { STRIPE_SECRET_KEY: 'x'.repeat(16385) },
 ]) {
   test(`runtime rejects invalid values before any file write: ${Object.keys(values)}/${String(Object.values(values)[0]).length}`, async () => {
-    const root = fixture('neon');
+    const root = fixture('stripe');
     try {
       await assert.rejects(
         configureRuntime(root, values, runner(root)),
@@ -631,14 +349,14 @@ for (const values of [
 }
 
 test('runtime detects duplicate keys and refuses tracked environment destinations before writing', async () => {
-  const root = fixture('neon');
+  const root = fixture('stripe');
   try {
     writeFileSync(
       path.join(root, 'apps/api/.dev.vars'),
-      'DATABASE_URL="same"\nexport DATABASE_URL="same"\n',
+      'STRIPE_SECRET_KEY="same"\nexport STRIPE_SECRET_KEY="same"\n',
     );
     await assert.rejects(
-      configureRuntime(root, { DATABASE_URL: 'same' }, runner(root)),
+      configureRuntime(root, { STRIPE_SECRET_KEY: 'same' }, runner(root)),
       /Duplicate/,
     );
     rmSync(path.join(root, 'apps/api/.dev.vars'));
@@ -646,7 +364,10 @@ test('runtime detects duplicate keys and refuses tracked environment destination
       args.includes('ls-files') && args.at(-1) === 'apps/api/.dev.vars'
         ? 'apps/api/.dev.vars'
         : runner(root)(command, args);
-    await assert.rejects(configureRuntime(root, { DATABASE_URL: secret }, run), /not be tracked/);
+    await assert.rejects(
+      configureRuntime(root, { STRIPE_SECRET_KEY: secret }, run),
+      /not be tracked/,
+    );
     assert.equal(existsSync(path.join(root, 'apps/api/.dev.vars')), false);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -658,14 +379,9 @@ for (const configuration of [
   { schemaVersion: 2, providers: {} },
   { schemaVersion: 1, providers: [] },
   { schemaVersion: 1, providers: {}, secret: 'private' },
-  { schemaVersion: 1, providers: { neon: null } },
-  { schemaVersion: 1, providers: { neon: { NEON_API_KEY: 'private' } } },
-  { schemaVersion: 1, providers: { neon: { organizationId: '../foreign' } } },
-  { schemaVersion: 1, providers: { neon: { name: 'invalid\nname' } } },
-  { schemaVersion: 1, providers: { neon: { name: ['unexpected'] } } },
 ]) {
   test(`provider configuration fails closed: ${JSON.stringify(configuration)}`, () => {
-    const root = fixture('neon');
+    const root = fixture('stripe');
     try {
       writeFileSync(
         path.join(root, 'anhedral.json'),

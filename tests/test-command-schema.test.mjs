@@ -8,7 +8,7 @@ import {
   inlineArguments,
   validateCommand,
 } from '../dist/cli-arguments.js';
-import { COMMAND_HELP, commandHelp } from '../dist/registry/usage.js';
+import { COMMAND_HELP, STANDARD_USAGE, commandHelp } from '../dist/registry/usage.js';
 
 const invalid = (command, args, pattern) =>
   assert.throws(
@@ -68,8 +68,8 @@ test('boolean flags reject inline values without disclosing their content', () =
 });
 
 test('optional previews, repeatable members and product switches remain supported', () => {
-  assert.doesNotThrow(() => validateCommand('add', ['resend', '--diff', '--skip-install']));
-  assert.doesNotThrow(() => validateCommand('add', ['resend', '--view', 'apps/api/index.ts']));
+  assert.doesNotThrow(() => validateCommand('add', ['stripe', '--diff', '--skip-install']));
+  assert.doesNotThrow(() => validateCommand('add', ['stripe', '--view', 'apps/api/index.ts']));
   assert.doesNotThrow(() =>
     validateCommand('connect', [
       '--allow-email',
@@ -79,12 +79,12 @@ test('optional previews, repeatable members and product switches remain supporte
     ]),
   );
   assert.doesNotThrow(() =>
-    validateCommand('init', ['destination', '--expo', '--neon', '--dry-run']),
+    validateCommand('init', ['destination', '--stripe', '--revenuecat', '--dry-run']),
   );
-  assert.doesNotThrow(() => validateCommand('init', ['--hosting=cloudflare', '--hono']));
+  invalid('init', ['--hosting=cloudflare'], /Unknown init option/);
   invalid('ship', ['--dryrun'], /Did you mean --dry-run/);
   invalid('auth', ['--platform', 'android'], /Unknown auth option/);
-  invalid('auth', ['--provider', 'neon', '--provider=clerk'], /once/);
+  invalid('auth', ['--provider', 'stripe', '--provider=revenuecat'], /once/);
 });
 
 test('global aliases and inline cwd normalize independently of command position', () => {
@@ -126,7 +126,20 @@ test('command option collection follows schema arity, aliases and repeatable ord
   const values = parsed.values('--allow-email');
   values.length = 0;
   assert.equal(parsed.values('--allow-email').length, 2);
-  assert.equal(commandArguments('add', ['resend', '--diff']).has('--diff'), true);
+  assert.equal(commandArguments('add', ['stripe', '--diff']).has('--diff'), true);
   assert.throws(() => commandArguments('ship', ['--provider']), /Supply a value/);
   assert.throws(() => commandArguments('ship', ['--provider', 'one', '--provider', 'two']), /once/);
+});
+
+test('addition and service help describe only the maintained stack', () => {
+  assert.match(commandHelp('add'), /Stripe or RevenueCat/);
+  assert.doesNotMatch(commandHelp('add'), /new web bootstrap|cannot be previewed offline/);
+  assert.match(commandHelp('services'), /D1 databases/);
+  assert.doesNotMatch(commandHelp('services'), /KV/);
+});
+
+test('top-level help describes the core and payment additions without retired selectors', () => {
+  assert.match(STANDARD_USAGE, /Expo \+ Hono \+ Drizzle\/D1 \+ private R2/);
+  assert.match(STANDARD_USAGE, /--stripe --revenuecat/);
+  assert.doesNotMatch(STANDARD_USAGE, /minimal Expo|--preset|full-product/);
 });
