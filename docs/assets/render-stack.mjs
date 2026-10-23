@@ -38,8 +38,8 @@ export function renderStack(light = false) {
     out.push(
       `<rect x="${cx - size / 2}" y="${cy - size / 2}" width="${size}" height="${size}" rx="20" fill="${surface}" stroke="${border}" stroke-width="1.5"/><path d="M${cx - 14} ${cy}h28M${cx} ${cy - 14}v28" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`,
     );
-    text(cx, cy + size / 2 + 29, 'Additional', 26);
-    text(cx, cy + size / 2 + 57, examples, 18, muted);
+    text(cx, cy + size / 2 + 33, 'Additional', 26);
+    text(cx, cy + size / 2 + 61, examples, 18, muted);
   };
   const connect = (x1, y1, x2, y2, dotted = false) => {
     const middle = (x1 + x2) / 2;
@@ -49,22 +49,22 @@ export function renderStack(light = false) {
   };
   text(96, 99, 'Anhedral', 42, ink, 'start');
   text(1824, 95, 'DEFAULT APPLICATION STACK', 16, muted, 'end');
-  text(384, 218, 'WEB & NATIVE CLIENTS', 16, muted);
-  text(384, 245, 'App Router · OpenNext', 18, muted);
-  text(960, 218, 'HONO API', 16, muted);
-  text(1536, 218, 'DATA & FILES', 16, muted);
-  for (const y of [300, 420, 540]) connect(424, y, 900, 475);
-  connect(424, 660, 900, 475, true);
+  text(384, 190, 'WEB & NATIVE CLIENTS', 16, muted);
+  text(384, 217, 'App Router · OpenNext', 18, muted);
+  text(960, 190, 'BACKEND API', 16, muted);
+  text(1536, 190, 'DATABASE AND STORAGE', 16, muted);
+  for (const y of [300, 430, 560]) connect(424, y, 900, 475);
+  connect(424, 690, 900, 475, true);
   for (const y of [360, 600]) connect(1020, 475, 1484, y);
   // Payment reconciliation belongs to Hono; a dashed connection marks optional scope.
   out.push(
-    `<path d="M1020 510C1170 570 1170 650 1170 780" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
+    `<path d="M1020 510C1170 570 1170 650 1170 830" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
     `<path d="M960 415C960 300 1070 285 1126 285" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
   );
-  tile(384, 300, 'nextjs.org', 'Next.js web', 80, 29);
-  tile(384, 420, 'apple.com', 'Expo iOS', 80, 29);
-  tile(384, 540, 'android.com', 'Expo Android', 80, 29);
-  additional(384, 660, 80, 'Desktop · Browser Extension · AR/XR · etc.');
+  tile(384, 300, 'nextjs.org', 'Next.js web', 80, 33);
+  tile(384, 430, 'apple.com', 'Expo iOS', 80, 33);
+  tile(384, 560, 'android.com', 'Expo Android', 80, 33);
+  additional(384, 690, 80, 'Desktop · Browser Extension · AR/XR · etc.');
   additional(1170, 285, 88, 'AI · Realtime · etc.');
   tile(960, 475, 'hono.dev', 'Hono', 120);
   text(960, 605, 'Cloudflare Workers', 22, muted);
@@ -74,23 +74,23 @@ export function renderStack(light = false) {
   tile(1536, 600, 'cloudflare.com', 'Private R2');
   text(1536, 726, 'Owner-authorized files', 20, muted);
 
-  out.push(`<rect x="96" y="780" width="540" height="240" rx="18" fill="${surface}"/>`);
-  text(126, 823, 'INCLUDED SUPPORT', 14, muted, 'start');
-  text(126, 877, 'Better Auth · shared contracts', 24, ink, 'start');
-  text(126, 920, 'Web shadcn · native Anhedral port', 24, ink, 'start');
-  text(126, 963, 'TypeScript · pnpm · Turborepo', 22, muted, 'start');
-  out.push(`<rect x="690" y="780" width="1134" height="240" rx="18" fill="${surface}"/>`);
-  text(720, 823, 'OPTIONAL PAYMENTS', 14, muted, 'start');
+  out.push(`<rect x="96" y="830" width="540" height="220" rx="18" fill="${surface}"/>`);
+  text(126, 873, 'INCLUDED SUPPORT', 14, muted, 'start');
+  text(126, 927, 'Better Auth · shared contracts', 24, ink, 'start');
+  text(126, 970, 'Web shadcn · native Anhedral port', 24, ink, 'start');
+  text(126, 1013, 'TypeScript · pnpm · Turborepo', 22, muted, 'start');
+  out.push(`<rect x="690" y="830" width="1134" height="220" rx="18" fill="${surface}"/>`);
+  text(720, 873, 'OPTIONAL PAYMENTS', 14, muted, 'start');
   for (const [x, domain, name, purpose] of [
     [740, 'stripe.com', 'Stripe', 'Web checkout'],
     [1300, 'revenuecat.com', 'RevenueCat', 'Native purchases'],
   ]) {
-    out.push(`<rect x="${x}" y="860" width="72" height="72" rx="16" fill="white"/>`);
-    icon(domain, x + 10, 870, 52);
-    text(x + 102, 888, name, 30, ink, 'start');
-    text(x + 102, 923, purpose, 22, muted, 'start');
+    out.push(`<rect x="${x}" y="910" width="72" height="72" rx="16" fill="white"/>`);
+    icon(domain, x + 10, 920, 52);
+    text(x + 102, 938, name, 30, ink, 'start');
+    text(x + 102, 973, purpose, 22, muted, 'start');
   }
-  text(1257, 984, 'Shared entitlements enforced by Hono', 20, muted);
+  text(1257, 1020, 'Shared entitlements enforced by Hono', 20, muted);
   return out.concat('</svg>').join('\n') + '\n';
 }
 
