@@ -1,5 +1,4 @@
 import { writeProjectSection } from './project-config.js';
-import { usesVoidSelection } from './runtime-policy.js';
 import { configureDependencyPatches } from './dependency-patches.js';
 import { randomUUID } from 'node:crypto';
 import { registerGeneratedProject } from './catalog-registration.js';
@@ -8,8 +7,6 @@ import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, rmdirSync 
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { execFile } from './util.js';
-import { supportsVoidRuntime } from './void.js';
-import { registerVercelApplication } from './vercel.js';
 import { registerApplication } from './delivery.js';
 import { runStagedTransaction } from './transaction.js';
 import { createSetupPlan } from './capabilities.js';
@@ -40,11 +37,6 @@ export async function scaffoldStandardProject(
   }
   assertBootstrapPlatform(run);
   assertWorkspaceRuntime(run);
-  const voidWorkspace = usesVoidSelection(options.products, options.hosting);
-  if (voidWorkspace && run === execFile && !supportsVoidRuntime(process.versions.node))
-    throw new Error(
-      'New Cloudflare workspaces use Void and require Node.js 24.21.0 or newer. Planning remains available on older CLI-supported versions.',
-    );
   const root = options.root;
   const previousQuiet = process.env.ANHEDRAL_QUIET;
   if (options.json) process.env.ANHEDRAL_QUIET = '1';
@@ -70,7 +62,7 @@ export async function scaffoldStandardProject(
         if (entries.length) throw new Error('Destination changed before generation.');
       },
       build: async (stageRoot) => {
-        printProgress('Creating the shadcn/Turborepo workspace…', display);
+        printProgress('Creating the Expo/Hono workspace…', display);
         bootstrapWorkspace(stageRoot, options.name, run);
         printProgress('Composing the selected stack…', display);
         await composeStack(stageRoot, options, plan.registry);
@@ -78,8 +70,6 @@ export async function scaffoldStandardProject(
           schemaVersion: 1,
           id: randomUUID(),
         });
-        if (options.products.includes('next') && options.hosting === 'vercel')
-          registerVercelApplication(stageRoot);
         if (
           readdirSync(path.join(stageRoot, 'apps')).some(
             (app) =>
@@ -88,10 +78,12 @@ export async function scaffoldStandardProject(
           )
         )
           registerApplication(stageRoot);
-        printProgress('Resolving pinned dependencies…', display);
-        run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
-        if (configureDependencyPatches(stageRoot))
+        if (!options.skipInstall) {
+          printProgress('Resolving pinned dependencies…', display);
           run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
+          if (configureDependencyPatches(stageRoot))
+            run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
+        }
         recordScaffoldFiles(stageRoot);
         commitPaths.push(...readdirSync(stageRoot).filter((name) => name !== 'node_modules'));
       },

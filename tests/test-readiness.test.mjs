@@ -9,7 +9,7 @@ import { inspectProject, validateSetupPlan } from '../dist/readiness.js';
 const root = mkdtempSync(path.join(tmpdir(), 'anhedral-readiness-'));
 const write = (file, value) =>
   writeFileSync(path.join(root, file), typeof value === 'string' ? value : JSON.stringify(value));
-const options = parseStandardOptions([root, '--vinext']);
+const options = parseStandardOptions([root]);
 const plan = createSetupPlan(options);
 try {
   assert.equal(inspectProject(root).localReady, false);
@@ -69,21 +69,21 @@ try {
     false,
   );
   writeProjectSection(root, 'registry', receipt);
-  rmSync(path.join(root, 'packages/ui'), { recursive: true });
+  rmSync(path.join(root, 'packages/db'), { recursive: true });
   assert.equal(
     inspectProject(root).checks.find((check) => check.id === 'stack-registry').ok,
     false,
   );
-  mkdirSync(path.join(root, 'packages/ui'));
-  write('packages/ui/package.json', {
-    name: '@workspace/ui',
+  mkdirSync(path.join(root, 'packages/db'));
+  write('packages/db/package.json', {
+    name: '@workspace/db',
     dependencies: { '@workspace/missing': 'workspace:*' },
   });
   assert.equal(
     inspectProject(root).checks.find((check) => check.id === 'workspace-graph').ok,
     false,
   );
-  write('packages/ui/package.json', { name: '@workspace/ui' });
+  write('packages/db/package.json', { name: '@workspace/db' });
   assert.equal(inspectProject(root).localReady, true);
   writeProjectSection(root, 'setup', { ...plan, cliVersion: '0.0.1' });
   assert.equal(inspectProject(root).localReady, false);

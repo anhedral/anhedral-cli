@@ -10,11 +10,8 @@ import { verifyLocalAuth } from './support/verify-local-auth.mjs';
 
 assert.ok(process.argv[2], 'Specify a built generated D1/Better Auth API workspace');
 const root = path.resolve(process.argv[2]);
-const output = path.join(root, 'apps/api/dist/ssr');
-const config = JSON.parse(readFileSync(path.join(output, 'wrangler.json'), 'utf8'));
-assert.equal(typeof config.main, 'string');
-const entry = path.resolve(output, config.main);
-assert.ok(entry.startsWith(output + path.sep), 'Compiled Worker stays in build output');
+const entry = path.join(root, 'apps/api/dist/index.js');
+assert.ok(existsSync(entry), 'Build the API first');
 const worker = (await import(pathToFileURL(entry))).default;
 const db = new DatabaseSync(':memory:');
 try {
@@ -48,7 +45,6 @@ try {
     DB: { prepare },
     BETTER_AUTH_SECRET: randomBytes(32).toString('hex'),
     BETTER_AUTH_URL: 'http://127.0.0.1:8787',
-    __VOID_VERSION_METADATA: { id: '00000000-0000-4000-8000-000000000001' },
   };
   const send = (url, options) => worker.fetch(new Request(url, options), env, {});
   const response = await send(new URL('/health', env.BETTER_AUTH_URL));
@@ -58,24 +54,7 @@ try {
   assert.equal(openapi.status, 200);
   assert.ok((await openapi.json()).paths['/health']);
   await verifyLocalAuth(env.BETTER_AUTH_URL, send);
-  let accounts = 1;
-  const proxyPath = path.join(root, 'apps/web/lib/api-proxy.ts');
-  if (existsSync(proxyPath)) {
-    const { createApiProxy } = await import(pathToFileURL(proxyPath));
-    env.BETTER_AUTH_URL = 'http://localhost:3000';
-    const proxy = createApiProxy(
-      (request) => worker.fetch(request, env, {}),
-      'https://api.internal',
-    );
-    await verifyLocalAuth(env.BETTER_AUTH_URL, (url, options) => {
-      const request = new Request(url, options);
-      // Readiness is an API runtime endpoint, outside the web /api/* proxy.
-      return new URL(url).pathname === '/__void/ready'
-        ? worker.fetch(request, env, {})
-        : proxy(request);
-    });
-    accounts++;
-  }
+  const accounts = 1;
   assert.equal(db.prepare('select count(*) as count from user').get().count, accounts);
   // Signup creates a separate session. Logout revokes only the later login cookie.
   assert.equal(db.prepare('select count(*) as count from session').get().count, accounts);

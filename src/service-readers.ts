@@ -9,9 +9,7 @@ export const serviceEndpoint = (service: ServiceDescriptor) => {
   const id = encodeURIComponent(service.kind === 'r2' ? (service.name ?? service.id) : service.id);
   return {
     d1: `/d1/database/${id}`,
-    kv: `/storage/kv/namespaces/${id}`,
     r2: `/r2/buckets/${id}`,
-    queue: `/queues/${id}`,
     worker: `/workers/scripts/${id}/settings`,
   }[service.kind];
 };
@@ -27,14 +25,7 @@ export async function observeService(
   const fetchedAt = new Date().toISOString();
   try {
     const value = record((await request('GET', serviceEndpoint(service))).result);
-    const id =
-      service.kind === 'd1'
-        ? value.uuid
-        : service.kind === 'kv'
-          ? value.id
-          : service.kind === 'queue'
-            ? value.queue_id
-            : undefined;
+    const id = service.kind === 'd1' ? value.uuid : undefined;
     if (service.kind !== 'worker' && service.kind !== 'r2' && id !== service.id)
       throw new Error('Provider resource identity differs from the source.');
     const name = value.name ?? value.title ?? value.queue_name;
@@ -134,29 +125,6 @@ export async function browseServiceData(
     throw new Error('Choose a bounded data page.');
   if (cursor !== undefined && (cursor.length > 4096 || /[\x00-\x1f\x7f]/.test(cursor)))
     throw new Error('Choose a bounded metadata cursor.');
-  if (service.kind === 'kv') {
-    if (offset !== 0 || table !== 'keys')
-      throw new Error('KV metadata uses cursors; key values are not read.');
-    const query = new URLSearchParams({ limit: String(limit), ...(cursor ? { cursor } : {}) });
-    const response = await request('GET', `${serviceEndpoint(service)}/keys?${query}`);
-    if (!Array.isArray(response.result) || response.result.length > limit)
-      throw new Error('Unsupported KV metadata.');
-    return {
-      fetchedAt: new Date().toISOString(),
-      columns: ['Key', 'Expiration'],
-      rows: response.result.map((item) => {
-        const key = record(item);
-        return [
-          typeof key.name === 'string' ? key.name.slice(0, 256) : null,
-          typeof key.expiration === 'number' ? key.expiration : null,
-        ];
-      }),
-      offset,
-      hasMore: Boolean(response.result_info?.cursor),
-      ...(response.result_info?.cursor ? { nextCursor: response.result_info.cursor } : {}),
-      masked: true,
-    };
-  }
   if (cursor !== undefined) throw new Error('Database pages use offsets, not metadata cursors.');
   if (
     service.kind !== 'd1' ||

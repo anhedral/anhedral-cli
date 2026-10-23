@@ -116,7 +116,7 @@ export async function verifyUniversalDevelopment(root, { browser = false } = {})
       ).status,
       401,
     );
-    await verifyLocalAuth(origin, fetch, { voidReadiness: false });
+    await verifyLocalAuth(origin, fetch);
     const nativeSignup = await fetch(origin + '/api/auth/sign-up/email', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'expo-origin': nativeOrigin },

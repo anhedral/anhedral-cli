@@ -58,7 +58,7 @@ for (const route of [
 ]) {
   test(`provider API rejects unsafe route ${JSON.stringify(route)}`, async () => {
     let calls = 0;
-    const api = providerApi('neon', {}, { NEON_API_KEY: 'private-token' }, async () => {
+    const api = providerApi('revenuecat', {}, { RC_API_KEY: 'private-token' }, async () => {
       calls++;
     });
     await assert.rejects(api(route), /Invalid provider API path|origin changed/);
@@ -68,9 +68,9 @@ for (const route of [
 for (const status of [400, 401, 403, 404, 408, 409, 429, 500, 503]) {
   test(`HTTP ${status} classifies safe retry without leaking diagnostics`, async () => {
     const api = providerApi(
-      'neon',
+      'revenuecat',
       {},
-      { NEON_API_KEY: 'private-token' },
+      { RC_API_KEY: 'private-token' },
       async () => new Response('private-token and remote details', { status }),
     );
     await assert.rejects(api('/api/v2/projects'), (error) => {
@@ -84,16 +84,16 @@ for (const status of [400, 401, 403, 404, 408, 409, 429, 500, 503]) {
 for (const payload of ['', '{broken', 'x'.repeat(2 * 1024 * 1024 + 1)]) {
   test(`provider response rejects ${payload.length} bytes of invalid JSON`, async () => {
     const api = providerApi(
-      'neon',
+      'revenuecat',
       {},
-      { NEON_API_KEY: 'private-token' },
+      { RC_API_KEY: 'private-token' },
       async () => new Response(payload),
     );
     await assert.rejects(api('/api/v2/projects'), /invalid or oversized JSON/);
   });
 }
 test('network failures sanitize diagnostics and Stripe encodes arrays with an idempotency key', async () => {
-  const failed = providerApi('neon', {}, { NEON_API_KEY: 'private-token' }, async () => {
+  const failed = providerApi('revenuecat', {}, { RC_API_KEY: 'private-token' }, async () => {
     throw new Error('private-token');
   });
   await assert.rejects(failed('/projects'), (error) => !error.message.includes('private-token'));
@@ -125,9 +125,9 @@ test('network failures sanitize diagnostics and Stripe encodes arrays with an id
 
 for (const providers of [
   [],
-  { neon: null },
-  { neon: { config: 'hash', operations: [] } },
-  { neon: { config: 'hash', operations: { op: { status: 'other' } } } },
+  { revenuecat: null },
+  { revenuecat: { config: 'hash', operations: [] } },
+  { revenuecat: { config: 'hash', operations: { op: { status: 'other' } } } },
   { unknown: { config: 'hash', operations: {} } },
 ]) {
   test(`journal rejects malformed provider state ${JSON.stringify(providers)}`, () => {
@@ -149,21 +149,24 @@ test('journal persists results across process instances and refuses changed conf
   try {
     const settings = { name: 'example' };
     const state = new ProvisioningState(directory);
-    state.context('neon', settings);
+    state.context('revenuecat', settings);
     let calls = 0;
     const api = async () => {
       calls++;
-      return { project: { id: 'proj_1' } };
+      return { id: 'proj_1' };
     };
-    await state.create('neon', 'project', api, '/projects', settings);
+    await state.create('revenuecat', 'project', api, '/projects', settings);
     const restored = new ProvisioningState(directory);
-    restored.context('neon', settings);
-    assert.deepEqual(await restored.create('neon', 'project', api, '/projects', settings), {
-      project: { id: 'proj_1' },
+    restored.context('revenuecat', settings);
+    assert.deepEqual(await restored.create('revenuecat', 'project', api, '/projects', settings), {
+      id: 'proj_1',
     });
     assert.equal(calls, 1);
     const before = readFileSync(path.join(directory, 'providers.json'), 'utf8');
-    assert.throws(() => restored.context('neon', { name: 'changed' }), /configuration changed/);
+    assert.throws(
+      () => restored.context('revenuecat', { name: 'changed' }),
+      /configuration changed/,
+    );
     assert.equal(readFileSync(path.join(directory, 'providers.json'), 'utf8'), before);
   } finally {
     rmSync(directory, { recursive: true, force: true });
@@ -188,7 +191,7 @@ for (const operation of [
         path.join(directory, 'providers.json'),
         JSON.stringify({
           schemaVersion: 2,
-          providers: { neon: { config: hash, operations: { [hash]: operation } } },
+          providers: { revenuecat: { config: hash, operations: { [hash]: operation } } },
         }),
         { mode: 0o600 },
       );
@@ -204,10 +207,10 @@ for (const rejected of [true, false]) {
     try {
       const state = new ProvisioningState(directory);
       const settings = { name: 'example' };
-      state.context('neon', settings);
+      state.context('revenuecat', settings);
       await assert.rejects(
         state.create(
-          'neon',
+          'revenuecat',
           'project',
           async () => {
             throw new ProviderRequestError('HTTP failure', rejected);
@@ -218,10 +221,10 @@ for (const rejected of [true, false]) {
         /HTTP failure/,
       );
       const restored = new ProvisioningState(directory);
-      restored.context('neon', settings);
+      restored.context('revenuecat', settings);
       let calls = 0;
       const retry = restored.create(
-        'neon',
+        'revenuecat',
         'project',
         async () => {
           calls++;
@@ -240,14 +243,8 @@ for (const rejected of [true, false]) {
 }
 
 const providerOrigins = {
-  neon: ['NEON_API_KEY', 'https://console.neon.tech'],
-  clerk: ['CLERK_PLATFORM_API_KEY', 'https://api.clerk.com'],
-  resend: ['RESEND_API_KEY', 'https://api.resend.com'],
   stripe: ['STRIPE_SECRET_KEY', 'https://api.stripe.com'],
   revenuecat: ['RC_API_KEY', 'https://api.revenuecat.com'],
-  sentry: ['SENTRY_AUTH_TOKEN', 'https://sentry.io'],
-  posthog: ['POSTHOG_PERSONAL_API_KEY', 'https://us.posthog.com'],
-  openai: ['OPENAI_ADMIN_KEY', 'https://api.openai.com'],
 };
 for (const [provider, [credential, origin]] of Object.entries(providerOrigins)) {
   test(`${provider}: uses the fixed management origin and requires its own credential`, async () => {

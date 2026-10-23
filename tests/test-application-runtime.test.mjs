@@ -17,11 +17,13 @@ import { createSetupPlan } from '../dist/capabilities.js';
 import { parseStandardOptions } from '../dist/standard.js';
 import { applicationRuntime, runtimeTargets } from '../dist/providers/runtime.js';
 const secret = randomBytes(32).toString('hex');
-function fixture(flags = ['--vinext', '--better-auth']) {
+function fixture(flags = []) {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-app-runtime-'));
-  const options = parseStandardOptions([root, '--skip-install', ...flags]);
-  // Retain legacy web-owned credential coverage as well as current explicit API cases.
-  if (!flags.includes('--hono')) options.products = options.products.filter((id) => id !== 'hono');
+  const options = parseStandardOptions([
+    root,
+    '--skip-install',
+    ...flags.filter((flag) => ['--stripe', '--revenuecat'].includes(flag)),
+  ]);
   writeProjectSection(root, 'setup', createSetupPlan(options));
   mkdirSync(path.join(root, 'apps/web'), { recursive: true });
   mkdirSync(path.join(root, 'apps/api'), { recursive: true });
@@ -30,68 +32,11 @@ function fixture(flags = ['--vinext', '--better-auth']) {
 const run = async (_command, args) => (args.includes('check-ignore') ? args.at(-1) : '');
 function write(
   root,
-  relative = 'apps/web/.dev.vars',
+  relative = 'apps/api/.dev.vars',
   entries = `BETTER_AUTH_SECRET="${secret}"\nBETTER_AUTH_URL="https://app.customer.com"\n`,
 ) {
   writeFileSync(path.join(root, relative), entries, { mode: 0o600 });
 }
-test('Void runtime uses the app .env while legacy and native consumers retain their own conventions', async () => {
-  const root = fixture(['--vinext', '--hono', '--better-auth']);
-  try {
-    writeFileSync(path.join(root, 'apps/api/void.config.ts'), 'export default {};\n');
-    write(root, 'apps/api/.env');
-    const values = await applicationRuntime(root, run);
-    assert.deepEqual(Object.keys(values), ['apps/api/.env']);
-    assert.equal(values['apps/api/.env'].BETTER_AUTH_SECRET, secret);
-    const targets = runtimeTargets(root, { OPENAI_API_KEY: 'runtime-key' });
-    assert.equal(targets['apps/api/.env'].OPENAI_API_KEY, 'runtime-key');
-    assert.equal(targets['apps/api/.dev.vars'], undefined);
-    assert.equal(targets['apps/web/.env'], undefined);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-for (const [flags, relative] of [
-  [['--vinext', '--better-auth'], 'apps/web/.dev.vars'],
-  [['--next', '--hosting=vercel', '--better-auth', '--neon'], 'apps/web/.env.local'],
-  [['--next', '--hono', '--better-auth'], 'apps/api/.dev.vars'],
-]) {
-  test(`application auth targets only ${relative}`, async () => {
-    const root = fixture(flags);
-    try {
-      write(
-        root,
-        relative,
-        `export BETTER_AUTH_SECRET='${secret}'\nBETTER_AUTH_URL=https://app.customer.com # production\nUNRELATED_SECRET=not-deployed\n`,
-      );
-      const before = readFileSync(path.join(root, relative), 'utf8');
-      const values = await applicationRuntime(root, run);
-      assert.deepEqual(values, {
-        [relative]: { BETTER_AUTH_SECRET: secret, BETTER_AUTH_URL: 'https://app.customer.com' },
-      });
-      assert.equal(readFileSync(path.join(root, relative), 'utf8'), before);
-      assert.equal(JSON.stringify(values).includes('not-deployed'), false);
-      const provider = runtimeTargets(root, { OPENAI_API_KEY: 'provider-runtime-key' });
-      assert.equal(provider[relative].OPENAI_API_KEY, 'provider-runtime-key');
-      assert.equal(values[relative].OPENAI_API_KEY, undefined);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-}
-test('unselected application auth performs no private file or git reads', async () => {
-  const root = fixture(['--vinext']);
-  try {
-    assert.deepEqual(
-      await applicationRuntime(root, async () => {
-        throw new Error('unexpected git');
-      }),
-      {},
-    );
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
 for (const entries of [
   `BETTER_AUTH_SECRET=short\nBETTER_AUTH_URL=https://app.customer.com\n`,
   `BETTER_AUTH_SECRET=${'change-me-'.repeat(8)}\nBETTER_AUTH_URL=https://app.customer.com\n`,
@@ -126,13 +71,13 @@ for (const state of ['missing', 'tracked', 'not-ignored', 'symlink']) {
     try {
       if (state !== 'missing') write(root);
       if (state === 'symlink') {
-        rmSync(path.join(root, 'apps/web/.dev.vars'));
+        rmSync(path.join(root, 'apps/api/.dev.vars'));
         writeFileSync(path.join(root, 'outside-env'), `BETTER_AUTH_SECRET=${secret}`);
-        symlinkSync(path.join(root, 'outside-env'), path.join(root, 'apps/web/.dev.vars'));
+        symlinkSync(path.join(root, 'outside-env'), path.join(root, 'apps/api/.dev.vars'));
       }
       const runner =
         state === 'tracked'
-          ? async () => 'apps/web/.dev.vars'
+          ? async () => 'apps/api/.dev.vars'
           : state === 'not-ignored'
             ? async () => ''
             : run;
@@ -148,7 +93,7 @@ test('legacy tracked Wrangler auth vars are blocked before deployment configurat
   try {
     write(root);
     writeFileSync(
-      path.join(root, 'apps/web/wrangler.jsonc'),
+      path.join(root, 'apps/api/wrangler.jsonc'),
       JSON.stringify({ vars: { BETTER_AUTH_URL: 'http://localhost:3000' } }),
     );
     await assert.rejects(
@@ -160,40 +105,12 @@ test('legacy tracked Wrangler auth vars are blocked before deployment configurat
   }
 });
 
-test('mixed Clerk distributes its server key to web middleware without exposing other API secrets or mobile server keys', () => {
-  const root = fixture(['--next', '--hono', '--clerk', '--neon', '--expo']);
-  try {
-    const values = {
-      CLERK_SECRET_KEY: 'clerk-server-runtime',
-      CLERK_PUBLISHABLE_KEY: 'pk_test_public',
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_public',
-      DATABASE_URL: 'database-server-runtime',
-      OPENAI_API_KEY: 'ai-server-runtime',
-    };
-    const targets = runtimeTargets(root, values);
-    assert.deepEqual(targets['apps/web/.env.local'], {
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_public',
-      CLERK_SECRET_KEY: 'clerk-server-runtime',
-    });
-    assert.equal(targets['apps/api/.dev.vars'].DATABASE_URL, values.DATABASE_URL);
-    assert.deepEqual(targets['apps/mobile/.env.local'], {
-      EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_public',
-    });
-    assert.equal(
-      JSON.stringify(targets['apps/mobile/.env.local']).includes('server-runtime'),
-      false,
-    );
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
 test('broad private runtime permissions stop before git checks and leave file unchanged', async () => {
   if (process.platform === 'win32') return;
   const root = fixture();
   try {
     write(root);
-    const file = path.join(root, 'apps/web/.dev.vars');
+    const file = path.join(root, 'apps/api/.dev.vars');
     chmodSync(file, 0o644);
     const before = readFileSync(file, 'utf8');
     let gitCalls = 0;
@@ -214,11 +131,7 @@ test('broad private runtime permissions stop before git checks and leave file un
 test('new defaults send auth credentials only to the API', () => {
   const root = fixture();
   try {
-    writeProjectSection(
-      root,
-      'setup',
-      createSetupPlan(parseStandardOptions([root, '--better-auth'])),
-    );
+    writeProjectSection(root, 'setup', createSetupPlan(parseStandardOptions([root])));
     assert.deepEqual(runtimeTargets(root, { BETTER_AUTH_SECRET: secret }), {
       'apps/api/.dev.vars': { BETTER_AUTH_SECRET: secret },
     });

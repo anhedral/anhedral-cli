@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { providerApi, ProviderRequestError } from '../dist/providers/api.js';
-const environment = { NEON_API_KEY: 'private-management-token' };
+const environment = { RC_API_KEY: 'private-management-token' };
 const immediate = { delay: async () => {} };
 for (const status of [429, 502, 503, 504]) {
   test(`GET retries HTTP ${status} then returns the verified response`, async () => {
@@ -9,7 +9,7 @@ for (const status of [429, 502, 503, 504]) {
     let canceled = 0;
     const delays = [];
     const api = providerApi(
-      'neon',
+      'revenuecat',
       {},
       environment,
       async (_url, options) => {
@@ -42,7 +42,7 @@ for (const status of [400, 401, 403, 404, 408, 409, 500]) {
   test(`GET does not retry HTTP ${status}`, async () => {
     let attempts = 0;
     const api = providerApi(
-      'neon',
+      'revenuecat',
       {},
       environment,
       async () => {
@@ -65,12 +65,12 @@ test('GET exhausts bounded attempts without exposing transport errors', async ()
   let attempts = 0;
   const delays = [];
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async () => {
       attempts++;
-      throw new Error(environment.NEON_API_KEY);
+      throw new Error(environment.RC_API_KEY);
     },
     {
       delay: async (milliseconds) => {
@@ -81,7 +81,7 @@ test('GET exhausts bounded attempts without exposing transport errors', async ()
   await assert.rejects(
     api('/projects'),
     (error) =>
-      /did not complete/.test(error.message) && !error.message.includes(environment.NEON_API_KEY),
+      /did not complete/.test(error.message) && !error.message.includes(environment.RC_API_KEY),
   );
   assert.equal(attempts, 3);
   assert.deepEqual(delays, [100, 200]);
@@ -91,7 +91,7 @@ for (const method of ['POST', 'PATCH']) {
     test(`${method} never replays HTTP ${status}, even with idempotency support`, async () => {
       let attempts = 0;
       const api = providerApi(
-        'neon',
+        'revenuecat',
         {},
         environment,
         async () => {
@@ -110,7 +110,7 @@ for (const method of ['POST', 'PATCH']) {
   test(`${method} never retries unknown transport outcomes`, async () => {
     let attempts = 0;
     const api = providerApi(
-      'neon',
+      'revenuecat',
       {},
       environment,
       async () => {
@@ -127,7 +127,7 @@ test('bounded Retry-After is respected and excessive provider waits are not shor
   const delays = [];
   let attempts = 0;
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async () => {
@@ -146,7 +146,7 @@ test('bounded Retry-After is respected and excessive provider waits are not shor
   assert.deepEqual(delays, [1000]);
   attempts = 0;
   const excessive = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async () => {
@@ -172,7 +172,7 @@ test('Retry-After HTTP dates and invalid values stay bounded', async () => {
     const delays = [];
     let attempts = 0;
     const api = providerApi(
-      'neon',
+      'revenuecat',
       {},
       environment,
       async () => {
@@ -203,7 +203,7 @@ test('invalid and oversized successful JSON responses are not retried', async ()
   for (const body of ['{invalid', 'x'.repeat(2 * 1024 * 1024 + 1)]) {
     let attempts = 0;
     const api = providerApi(
-      'neon',
+      'revenuecat',
       {},
       environment,
       async () => {
@@ -218,14 +218,14 @@ test('invalid and oversized successful JSON responses are not retried', async ()
 });
 test('error body cancellation failures never replace sanitized provider errors', async () => {
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async () =>
       new Response(
         new ReadableStream({
           cancel() {
-            return Promise.reject(new Error(environment.NEON_API_KEY));
+            return Promise.reject(new Error(environment.RC_API_KEY));
           },
         }),
         { status: 403 },
@@ -237,14 +237,14 @@ test('error body cancellation failures never replace sanitized provider errors',
     (error) =>
       error instanceof ProviderRequestError &&
       error.rejected &&
-      !error.message.includes(environment.NEON_API_KEY),
+      !error.message.includes(environment.RC_API_KEY),
   );
 });
 test('GET response-body stalls are bounded and canceled', async () => {
   let attempts = 0;
   let canceled = 0;
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async () => {
@@ -277,7 +277,7 @@ test('POST transport stalls have one bounded attempt and an aborted signal', asy
   let attempts = 0;
   let signal;
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async (_url, options) => {
@@ -294,7 +294,7 @@ test('POST transport stalls have one bounded attempt and an aborted signal', asy
 test('a stalled injected delay cannot exceed the overall deadline', async () => {
   let attempts = 0;
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async () => {
@@ -310,10 +310,10 @@ for (const token of ['bad\0token', ' spaced', 'bad\ttoken', 'bad\ntoken', 'nonas
   test('unsafe credential bytes are rejected before network', () =>
     assert.throws(
       () =>
-        providerApi('neon', {}, { NEON_API_KEY: token }, async () => {
+        providerApi('revenuecat', {}, { RC_API_KEY: token }, async () => {
           throw new Error('must not call');
         }),
-      /supply NEON_API_KEY/,
+      /supply RC_API_KEY/,
     ));
 }
 for (const options of [
@@ -328,7 +328,7 @@ for (const options of [
 ]) {
   test('retry options cannot remove bounds', () =>
     assert.throws(
-      () => providerApi('neon', {}, environment, async () => {}, options),
+      () => providerApi('revenuecat', {}, environment, async () => {}, options),
       /bounded provider retry policy/,
     ));
 }
@@ -336,7 +336,7 @@ for (const options of [
 test('GET can recover from one transport interruption without changing the request', async () => {
   const calls = [];
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async (url, options) => {
@@ -352,7 +352,7 @@ test('GET can recover from one transport interruption without changing the reque
 test('GET retries a broken response transport but never leaks stream diagnostics', async () => {
   let attempts = 0;
   const api = providerApi(
-    'neon',
+    'revenuecat',
     {},
     environment,
     async () => {
@@ -361,7 +361,7 @@ test('GET retries a broken response transport but never leaks stream diagnostics
         return new Response(
           new ReadableStream({
             start(controller) {
-              controller.error(new Error(environment.NEON_API_KEY));
+              controller.error(new Error(environment.RC_API_KEY));
             },
           }),
         );

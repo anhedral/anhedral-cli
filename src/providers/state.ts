@@ -346,14 +346,7 @@ export class ProvisioningState {
       throw error;
     }
     const { receipt, credentials } = splitReceipt(id, value);
-    const expected =
-      id === 'resend' && key === 'sending-key'
-        ? 'token'
-        : id === 'stripe' && key === 'webhook'
-          ? 'secret'
-          : id === 'openai' && key === 'service-account'
-            ? 'api_key'
-            : undefined;
+    const expected = id === 'stripe' && key === 'webhook' ? 'secret' : undefined;
     if (expected && !credentials[expected])
       throw new Error(
         'Provider omitted the one-time creation credential. Inspect the pending operation before retrying.',

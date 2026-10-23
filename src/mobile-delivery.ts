@@ -192,6 +192,12 @@ function mobileEnvironment(): NodeJS.ProcessEnv {
   // Expo keeps its own login credential; server/provider keys never reach native builds.
   for (const key of [...Object.values(CREDENTIALS), ...RUNTIME_KEYS])
     if (!key.startsWith('EXPO_PUBLIC_')) delete environment[key];
+  for (const name of Object.keys(environment))
+    if (
+      !name.startsWith('EXPO_PUBLIC_') &&
+      /SECRET|PASSWORD|ADMIN_KEY|API_KEY|DATABASE_URL|AUTHORIZATION/.test(name)
+    )
+      delete environment[name];
   return environment;
 }
 

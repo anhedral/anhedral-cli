@@ -36,17 +36,12 @@ test('provider doctor separates local prerequisites from production acceptance a
 test('unconfigured providers are blocked without automatically signing in or connecting', async () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-provider-readiness-'));
   try {
-    writeProjectSection(root, 'vercel', {
-      projectId: null,
-      teamId: null,
-      audience: 'unconfigured',
-    });
     writeProjectSection(root, 'cloudflare', { accountId: null, audience: 'unconfigured' });
     const calls = [];
     const report = await inspectProviderReadiness(root, runner(calls));
     assert.deepEqual(
       report.providers.map((provider) => provider.connection),
-      ['blocked', 'blocked'],
+      ['blocked'],
     );
     assert.equal(
       report.providers.every((provider) => provider.deployment === 'unverified'),

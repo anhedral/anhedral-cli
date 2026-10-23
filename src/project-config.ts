@@ -12,7 +12,6 @@ export const PROJECT_CONFIG_SECTIONS = [
   'setup',
   'providers',
   'cloudflare',
-  'vercel',
   'registry',
 ] as const;
 export type ProjectSection = (typeof PROJECT_CONFIG_SECTIONS)[number];

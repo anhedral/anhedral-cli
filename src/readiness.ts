@@ -85,12 +85,7 @@ export function inspectProject(root: string) {
       'selection',
       standard.schemaVersion === 1 &&
         JSON.stringify(standard.products) === JSON.stringify(plan.products) &&
-        standard.hosting ===
-          (plan.products.includes('next') ||
-          plan.products.includes('vinext') ||
-          plan.products.includes('expo')
-            ? plan.hosting
-            : null),
+        standard.hosting === plan.hosting,
       'Setup plan matches project selection',
     );
   } catch {
@@ -115,7 +110,7 @@ export function validateSetupPlan(plan: unknown): asserts plan is {
   cliVersion: string;
   registryVersion: 1;
   products: StandardProduct[];
-  hosting: 'cloudflare' | 'vercel';
+  hosting: 'cloudflare';
   name?: string;
   registry: ResolvedStackRegistry;
 } {
@@ -137,8 +132,7 @@ export function validateSetupPlan(plan: unknown): asserts plan is {
     !value.products.every((id) => STANDARD_PRODUCTS.includes(id))
   )
     throw new Error('Unknown setup capabilities.');
-  if (value.hosting !== 'cloudflare' && value.hosting !== 'vercel')
-    throw new Error('Invalid hosting.');
+  if (value.hosting !== 'cloudflare') throw new Error('Invalid hosting.');
   validateRequirements(value.setup, value.products);
   const selected = new Set<StandardProduct>(value.products);
   resolveStandardProducts(selected, value.hosting, false, false);

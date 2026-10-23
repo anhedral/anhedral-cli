@@ -4,10 +4,7 @@ import type { ServiceDescriptor, ServiceKind } from './service-model.js';
 import type { ProjectInspection } from './inspector-model.js';
 const kinds: Record<string, ServiceKind> = {
   D1: 'd1',
-  KV: 'kv',
   R2: 'r2',
-  'Queue producer': 'queue',
-  'Queue consumer': 'queue',
 };
 
 export function unboundResourceSelectors(inspection: ProjectInspection): string[] {
@@ -18,7 +15,7 @@ export function unboundResourceSelectors(inspection: ProjectInspection): string[
           (binding) =>
             kinds[binding.kind] === resource.kind &&
             (binding.resourceId === resource.id ||
-              (['r2', 'queue'].includes(resource.kind) && binding.resourceId === resource.name)),
+              (resource.kind === 'r2' && binding.resourceId === resource.name)),
         ),
     )
     .map((resource) => `receipt:${resource.kind}:${resource.id}`);
@@ -58,19 +55,12 @@ export function resolveService(root: string, key: string): ServiceDescriptor {
   );
   const kind = binding ? kinds[binding.kind] : (record?.kind as ServiceKind);
   const id = binding?.resourceId ?? record?.id;
-  if (
-    !kind ||
-    !['d1', 'kv', 'r2', 'queue'].includes(kind) ||
-    !id ||
-    !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,254}$/.test(id)
-  )
+  if (!kind || !['d1', 'r2'].includes(kind) || !id || !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,254}$/.test(id))
     throw new Error('This service has no supported provider resource identity.');
   const receipt =
     record ??
     inspection.cloudflareResources.data.find(
-      (item) =>
-        item.kind === kind &&
-        (item.id === id || (['r2', 'queue'].includes(kind) && item.name === id)),
+      (item) => item.kind === kind && (item.id === id || (kind === 'r2' && item.name === id)),
     );
   const references = inspection.configuration.data.bindings.filter(
     (item) =>
@@ -99,7 +89,7 @@ export function serviceCapabilities(kind: ServiceKind) {
   return {
     status: true,
     metrics: kind === 'd1' || kind === 'worker',
-    data: kind === 'd1' || kind === 'kv' || kind === 'r2',
-    delete: kind === 'd1' || kind === 'kv',
+    data: kind === 'd1' || kind === 'r2',
+    delete: kind === 'd1',
   };
 }

@@ -49,7 +49,7 @@ test('global cwd, JSON and quiet flags compose without modifying the filesystem 
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-cli-global-'));
   try {
     const before = readdirSync(root);
-    const human = run(process.cwd(), '-c', root, 'init', 'planned', '--hono', '--dry-run');
+    const human = run(process.cwd(), '-c', root, 'init', 'planned', '--dry-run');
     assert.equal(human.status, 0, human.stderr);
     assert.match(human.stdout, /Stack preview|Stack: hono/);
     assert.equal(human.stderr, '');
@@ -61,13 +61,13 @@ test('global cwd, JSON and quiet flags compose without modifying the filesystem 
       'planned',
       '--cwd',
       root,
-      '--hono',
+
       '--dry-run',
     );
     assert.equal(machine.status, 0, machine.stderr);
     assert.equal(JSON.parse(machine.stdout).root, path.join(realpathSync(root), 'planned'));
     assert.equal(machine.stderr, '');
-    const quiet = run(root, 'init', 'planned', '--hono', '--dry-run', '-q');
+    const quiet = run(root, 'init', 'planned', '--dry-run', '-q');
     assert.equal(quiet.stdout, '');
     assert.equal(quiet.status, 0);
     const diagnosis = run(root, 'doctor');

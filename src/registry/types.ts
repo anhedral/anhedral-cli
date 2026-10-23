@@ -2,7 +2,7 @@ import type { StandardProduct } from '../stack-registry.js';
 import type { Json } from '../scaffold/files.js';
 
 export type { StandardProduct } from '../stack-registry.js';
-export type Hosting = 'cloudflare' | 'vercel';
+export type Hosting = 'cloudflare';
 export interface StandardOptions {
   root: string;
   name: string;
@@ -31,7 +31,7 @@ export interface RecipeContext {
   updating?: boolean;
   root: string;
   options: StandardOptions;
-  runtimeApp: 'api' | 'web';
+  runtimeApp: 'api';
   bindings: Json;
   has: (product: string) => boolean;
 }

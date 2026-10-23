@@ -37,11 +37,14 @@ test('provider capability scope is sourced from the shared provider definitions'
   }
 });
 test('distribution and plugin limitations cannot be mistaken for verified delivery', () => {
-  for (const id of ['electron', 'wxt']) {
-    const product = CAPABILITY_CONTRACT.products.find((product) => product.id === id);
-    assert.equal(product.delivery.support, 'scaffold-only');
-    assert.match(product.delivery.scope, /distribution is unavailable/);
-  }
+  assert.deepEqual(
+    CAPABILITY_CONTRACT.hosts.map((host) => host.id),
+    ['cloudflare'],
+  );
+  assert.deepEqual(
+    CAPABILITY_CONTRACT.providers.map((provider) => provider.id),
+    ['stripe', 'revenuecat'],
+  );
   const expo = CAPABILITY_CONTRACT.products.find((product) => product.id === 'expo');
   assert.match(expo.delivery.scope, /artifact link/);
   assert.ok(expo.limits.some((limit) => limit.includes('No store submission')));
@@ -58,28 +61,6 @@ test('distribution and plugin limitations cannot be mistaken for verified delive
   assert.match(formatCapabilityContract(), /Resource status does not certify application health/);
   assert.equal(CAPABILITY_CONTRACT.liveAcceptance, 'unverified');
   assert.ok(CAPABILITY_CONTRACT.hosts.every((host) => host.liveAcceptance === 'unverified'));
-});
-test('Cloudflare provisioning scope distinguishes resources from deployment bindings', () => {
-  for (const id of [
-    'd1',
-    'r2',
-    'kv',
-    'queues',
-    'basin',
-    'realtime',
-    'cron',
-    'workflows',
-    'workers-ai',
-  ]) {
-    const capability = CAPABILITY_CONTRACT.products.find((product) => product.id === id);
-    assert.equal(capability.provisioning.support, 'implemented');
-    assert.equal(capability.provisioning.evidence, 'local-contract');
-  }
-  assert.ok(
-    CAPABILITY_CONTRACT.products
-      .find((product) => product.id === 'basin')
-      .limits.some((limit) => limit.includes('sinks are outside')),
-  );
 });
 test('capability command is offline metadata with consistent human, JSON, quiet, and help output', async () => {
   const logs = [];
@@ -113,24 +94,4 @@ test('capability inspection never includes environment credential values', () =>
     if (previous === undefined) delete process.env.OPENAI_ADMIN_KEY;
     else process.env.OPENAI_ADMIN_KEY = previous;
   }
-});
-
-test('Neon Realtime advertises manual beta setup separately from Durable Object provisioning', () => {
-  const capability = CAPABILITY_CONTRACT.products.find((product) => product.id === 'neon-realtime');
-  assert.ok(capability);
-  assert.equal(capability.scaffold.support, 'implemented');
-  assert.equal(capability.provisioning.support, 'scaffold-only');
-  assert.equal(capability.provisioning.evidence, 'unverified');
-  assert.match(capability.provisioning.scope, /Manually enable Realtime/);
-  assert.match(capability.provisioning.scope, /allowed origins/);
-  assert.match(capability.provisioning.scope, /no automatic Realtime provisioning/);
-  const limits = capability.limits.join(' ');
-  assert.match(limits, /beta.*does not support RLS/);
-  assert.match(limits, /NEON_REALTIME_SECRET server-only/);
-  assert.match(limits, /no arbitrary SQL endpoint/);
-  assert.match(limits, /live behavior remains unverified/);
-  assert.equal(
-    CAPABILITY_CONTRACT.products.find((product) => product.id === 'realtime').provisioning.support,
-    'implemented',
-  );
 });

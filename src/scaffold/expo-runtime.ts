@@ -8,7 +8,7 @@ import { json, patchPackage, put, workerConfig } from './files.js';
 export function scaffoldExpoRuntime({ root, options, has }: RecipeContext): void {
   const directory = 'apps/mobile';
   const api = has('hono');
-  const webPort = has('vinext') || has('next') ? 3001 : 3000;
+  const webPort = 3000;
   json(root, `${directory}/wrangler.jsonc`, {
     ...workerConfig(resourceName(options.name, 'mobile')),
     main: 'worker/index.ts',
@@ -61,7 +61,7 @@ ${
     ? `// Browser-supplied edge identity headers never cross the API boundary.
 function forwardedHeaders(request: Request): Headers {
   const headers = new Headers();
-  for (const name of ['accept', 'content-type', 'cookie', 'origin', 'authorization', 'sec-fetch-site', 'expo-origin', 'idempotency-key']) {
+  for (const name of ['accept', 'content-type', 'content-length', 'cookie', 'origin', 'authorization', 'sec-fetch-site', 'expo-origin', 'idempotency-key']) {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }

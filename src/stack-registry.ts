@@ -1,31 +1,11 @@
-import {
-  scaffoldCloudflareTransport,
-  scaffoldAnalyticsEngine,
-  scaffoldImages,
-  scaffoldRealtimeKit,
-  scaffoldVideo,
-} from './scaffold/cloudflare-services.js';
-import { usesVoidSelection } from './runtime-policy.js';
 import { scaffoldStyling } from './scaffold/styling.js';
 import { resourceName } from './render.js';
-import { STACK_DEPENDENCIES } from './dependencies.js';
 import { dependencyOrder } from './dependency-order.js';
 import { GENERATOR_VERSION } from './version.js';
-import { scaffoldWeb } from './scaffold/web.js';
 import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
-import { scaffoldStream } from './scaffold/stream.js';
-import { scaffoldNeonRealtime } from './scaffold/neon-realtime.js';
-import { scaffoldBetterAuth, scaffoldClerk } from './scaffold/auth.js';
-import {
-  scaffoldRealtime,
-  scaffoldQueues,
-  scaffoldCron,
-  scaffoldWorkflows,
-} from './scaffold/services.js';
+import { scaffoldBetterAuth } from './scaffold/auth.js';
 import { scaffoldExpo } from './platforms/mobile.js';
-import { scaffoldElectron } from './platforms/desktop.js';
-import { scaffoldWxt } from './platforms/extension.js';
 import {
   scaffoldPrivateFiles,
   scaffoldStripe,
@@ -52,12 +32,7 @@ function requirements(
 }
 
 function billingDependencies({ has }: RecipeContext): string[] {
-  return [
-    'hono',
-    has('neon') ? 'neon' : 'd1',
-    has('clerk') ? 'clerk' : 'better-auth',
-    ...(has('expo') ? ['expo'] : []),
-  ];
+  return ['hono', 'd1', 'better-auth', ...(has('expo') ? ['expo'] : [])];
 }
 
 const BILLING_ENVIRONMENT_KEYS = [
@@ -73,10 +48,6 @@ function packageSource(
   dependencies: Record<string, string>,
 ): PackageRecipe {
   return { name, source, dependencies };
-}
-function runtimeConfiguration({ runtimeApp, options }: RecipeContext): string {
-  const legacy = !usesVoidSelection(options.products, options.hosting);
-  return `apps/${runtimeApp}/${legacy ? 'wrangler.jsonc' : 'anhedral.cloudflare.json'}`;
 }
 type ItemConfiguration = Pick<ItemDefinition, 'type' | 'description' | 'targets'> &
   Partial<Omit<ItemDefinition, 'name' | 'version' | 'type' | 'description' | 'targets'>>;
@@ -101,38 +72,6 @@ function defineItems<T extends Record<string, ItemConfiguration>>(
 
 /** Every product owns its source recipe, setup requirements and composition policy here. */
 const PRODUCT_ITEMS = defineItems({
-  vinext: {
-    type: 'application',
-    description: 'Vinext web application on Cloudflare Workers',
-    targets: ['apps/web'],
-    selection: { conflicts: ['next'] },
-    registryDependencies: ['ui'],
-    setup: requirements(
-      'Web application on Cloudflare',
-      ['Browser control', 'Wrangler'],
-      [],
-      [],
-      ['Vinext React application and Cloudflare Worker'],
-      ['Web flows, accessibility, production Worker build and deployed preview'],
-    ),
-    install: scaffoldWeb,
-  },
-  next: {
-    type: 'application',
-    description: 'Next.js web application on Vercel or OpenNext on Workers',
-    targets: ['apps/web'],
-    selection: { conflicts: ['vinext'] },
-    registryDependencies: ['ui'],
-    setup: requirements(
-      'Web application',
-      ['Browser control'],
-      [],
-      [],
-      ['Next.js app; configure the selected hosting provider'],
-      ['Web flows, accessibility, production hosting build and deployed preview'],
-    ),
-    install: scaffoldWeb,
-  },
   expo: {
     type: 'application',
     description: 'Universal Expo web, iOS and Android client with a Cloudflare asset/API gateway',
@@ -154,36 +93,6 @@ const PRODUCT_ITEMS = defineItems({
     environment: [],
     resolveEnvironment: ({ has }) => (has('hono') ? ['EXPO_PUBLIC_API_URL'] : []),
   },
-  electron: {
-    type: 'application',
-    description: 'Electron desktop application with its own web UI',
-    targets: ['apps/desktop'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Desktop application',
-      ['Electron tooling', 'Platform packaging tools'],
-      ['Signing/notarization account for the target platform'],
-      ['Signing credentials; notarization credentials when required'],
-      ['Electron app; packaging and distribution configuration'],
-      ['Packaged desktop app, permissions, update/recovery behavior'],
-    ),
-    install: scaffoldElectron,
-  },
-  wxt: {
-    type: 'application',
-    description: 'WXT browser side-panel extension',
-    targets: ['apps/extension'],
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'styling'],
-    setup: requirements(
-      'Chrome side-panel extension',
-      ['Chrome', 'WXT'],
-      ['Extension store publisher access for distribution'],
-      ['Store publishing credentials when required'],
-      ['Extension app; minimal browser permissions and store package'],
-      ['Installed side panel, background/content messaging and permission behavior'],
-    ),
-    install: scaffoldWxt,
-  },
   hono: {
     type: 'application',
     description: 'Shared Hono OpenAPI Worker',
@@ -199,58 +108,11 @@ const PRODUCT_ITEMS = defineItems({
     ),
     install: scaffoldApi,
   },
-  neon: {
-    type: 'package',
-    description: 'Reusable server database package with Neon HTTP, Drizzle and explicit migrations',
-    targets: ['packages/db'],
-    selection: { conflicts: ['d1'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'PostgreSQL persistence through direct Neon HTTP and Drizzle',
-      ['Neon integration or API'],
-      ['Client-owned Neon project/branch access'],
-      [
-        'Server-side DATABASE_URL; direct DATABASE_URL_UNPOOLED for migrations; separate environment roles',
-      ],
-      ['Neon project/branches, database roles and reviewed migrations'],
-      ['Migration, runtime connectivity and authorization; HTTP has no interactive transactions'],
-    ),
-    install: scaffoldDatabase,
-    environment: ['DATABASE_URL', 'DATABASE_URL_UNPOOLED'],
-    runtime: 'server',
-    resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
-  },
-  'neon-realtime': {
-    type: 'integration',
-    description:
-      'Neon live SQL with server-sealed Drizzle queries and a browser-safe subscription client (beta)',
-    targets: ['packages/neon-realtime'],
-    selection: { requiresAny: ['neon'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'neon'],
-    fallbackDependency: 'neon',
-    runtime: 'server',
-    environment: ['NEON_REALTIME_SECRET', 'NEON_REALTIME_URL'],
-    setup: requirements(
-      'Live PostgreSQL query results on the selected Neon branch',
-      ['Neon Console or Neon CLI', 'Browser control'],
-      ['Client-owned Neon project and branch with Realtime beta availability'],
-      ['Server-only NEON_REALTIME_SECRET; public NEON_REALTIME_URL; existing server DATABASE_URL'],
-      [
-        'Manually enable Realtime and logical replication on the selected branch; configure allowed browser origins',
-        'Tables with stable replica identity; authorized deterministic SELECT queries sealed on the server',
-      ],
-      [
-        'Authorized row isolation, access revocation, capability renewal, disconnect/reconnect and subscription cleanup',
-        'Beta has no RLS or performance guarantees; database compute and egress remain billable',
-      ],
-    ),
-    install: scaffoldNeonRealtime,
-  },
   d1: {
     type: 'package',
     description: 'Reusable Drizzle D1 database package and explicit migration tooling',
     targets: ['packages/db'],
-    selection: { conflicts: ['neon'] },
+    selection: {},
     registryDependencies: ['workspace', 'typescript', 'eslint'],
     setup: requirements(
       'SQLite-compatible hosted persistence',
@@ -272,87 +134,28 @@ const PRODUCT_ITEMS = defineItems({
       ],
     }),
     runtime: 'worker',
+    resolveDependencies: () => ['hono'],
     resolveTargets: ({ runtimeApp }) => ['packages/db', `apps/${runtimeApp}`],
-  },
-  'local-data': {
-    type: 'package',
-    description: 'Interface for platform-specific local persistence adapters',
-    targets: ['packages/local-data'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Device-local SQLite and files',
-      ['Selected platform database/filesystem tooling'],
-      [],
-      [],
-      ['Integration boundary; implement platform adapters and explicit synchronization if needed'],
-      ['Persistence, offline writes and recovery on the selected device'],
-    ),
-    package: packageSource(
-      'local-data',
-      `// Device-local SQLite and filesystem need platform-specific adapters.
-export interface LocalDataStore {
-  read(key: string): Promise<string | null>;
-  write(key: string, value: string): Promise<void>;
-}
-`,
-      {},
-    ),
-  },
-  clerk: {
-    type: 'integration',
-    description: 'Managed identity starter and runtime integration',
-    targets: ['apps/web', 'packages/auth'],
-    selection: { conflicts: ['better-auth'], requiresAny: ['vinext', 'next', 'hono'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Managed identity',
-      ['Clerk integration or dashboard'],
-      ['Client-owned Clerk project access'],
-      ['Clerk publishable key; server secret key; webhook secret when used'],
-      ['Identity project, allowed URLs, SDK setup and protected routes'],
-      ['Sign-in/out, session expiry, resource authorization and selected native client flows'],
-    ),
-    install: scaffoldClerk,
-    environment: [
-      'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
-      'EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY',
-      'CLERK_PUBLISHABLE_KEY',
-      'CLERK_SECRET_KEY',
-    ],
-    resolveEnvironment: ({ has }) => [
-      'CLERK_SECRET_KEY',
-      ...(has('vinext') || has('next') ? ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'] : []),
-      ...(has('hono') ? ['CLERK_PUBLISHABLE_KEY'] : []),
-    ],
-    runtime: 'server',
-    resolveDependencies: ({ has }) => ['vinext', 'next', 'hono'].filter((id) => has(id)),
-    resolveTargets: ({ has }) => [
-      ...(has('vinext') || has('next') ? ['apps/web'] : []),
-      ...(has('hono') ? ['packages/auth'] : []),
-    ],
   },
   'better-auth': {
     type: 'integration',
     description: 'Database-backed identity schema and runtime routes',
     targets: ['packages/auth', 'packages/db', 'apps/web', 'apps/api'],
-    selection: { conflicts: ['clerk'], requiresAny: ['neon', 'd1'] },
+    selection: { requiresAll: ['d1', 'hono', 'expo'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
     setup: requirements(
       'Application-managed identity',
       ['Selected database tooling'],
       ['Selected database migration/runtime access'],
       ['BETTER_AUTH_SECRET; BETTER_AUTH_URL'],
-      ['Selected Neon or D1 database, auth schema, trusted origins and application routes'],
+      ['D1 database, auth schema, trusted origins and application routes'],
       ['Sign-in/out, session expiry, sign-up policy and resource authorization'],
     ),
     install: scaffoldBetterAuth,
     fallbackDependency: 'd1',
     environment: ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'],
     runtime: 'server',
-    resolveDependencies: ({ has }) => [
-      has('neon') ? 'neon' : 'd1',
-      ...(has('expo') ? ['expo'] : []),
-    ],
+    resolveDependencies: ({ has }) => ['d1', ...(has('expo') ? ['expo'] : [])],
     resolveTargets: ({ runtimeApp, has }) => [
       'packages/auth',
       'packages/db',
@@ -362,7 +165,7 @@ export interface LocalDataStore {
   },
   r2: {
     type: 'integration',
-    description: 'Private file binding and authorization guidance',
+    description: 'Private authenticated file upload, download and deletion',
     targets: ['apps/web', 'apps/api'],
     registryDependencies: ['workspace', 'typescript', 'eslint'],
     setup: requirements(
@@ -380,288 +183,14 @@ export interface LocalDataStore {
       r2_buckets: [{ binding: 'FILES', bucket_name: resourceName(options.name, 'private-files') }],
     }),
     runtime: 'worker',
-    resolveTargets: ({ runtimeApp }) => [`apps/${runtimeApp}/private-files.md`],
-  },
-  kv: {
-    type: 'integration',
-    description: 'Eventually consistent cache binding',
-    targets: ['apps/web', 'apps/api'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Eventually consistent cache/configuration',
-      ['Wrangler'],
-      ['Cloudflare KV namespace access'],
-      [],
-      ['KV namespace and CONFIG binding'],
-      ['TTL and propagation behavior; never use KV as transactional authority'],
-    ),
-    configure: () => ({ kv_namespaces: [{ binding: 'CONFIG', id: 'REPLACE_WITH_KV_ID' }] }),
-    installer: 'configuration',
-    runtime: 'worker',
-    resolveTargets: (context) => [runtimeConfiguration(context)],
-  },
-  realtime: {
-    type: 'service',
-    description: 'Durable Object room Worker with authorization boundary',
-    targets: ['apps/realtime'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Rooms and collaboration',
-      ['Wrangler', 'Browser control'],
-      ['Cloudflare Durable Objects deployment access'],
-      [],
-      ['Realtime Worker, Durable Object namespace/migration and WebSocket authorization'],
-      ['Authorized room isolation, disconnect/reconnect and deployed WebSockets'],
-    ),
-    install: scaffoldRealtime,
-  },
-  stream: {
-    type: 'integration',
-    description: 'Cloudflare Stream one-to-many live video with WHIP ingest and WHEP playback (GA)',
-    targets: ['packages/stream'],
-    runtime: 'server',
-    environment: ['STREAM_ACCOUNT_ID', 'STREAM_API_TOKEN'],
-    setup: requirements(
-      'Ultra-low latency one-to-many live video',
-      ['Cloudflare Stream API or dashboard', 'Browser control'],
-      ['Client-owned Cloudflare account with Stream enabled; usage-based delivery billing'],
-      [
-        'Server-only STREAM_ACCOUNT_ID and account-scoped STREAM_API_TOKEN with Stream Write permission',
-      ],
-      [
-        'Manual Stream activation and live input setup; server management factory with secret WHIP and WHEP endpoints',
-      ],
-      [
-        'Creator/input ownership, viewer authorization and signed playback when private, browser media/ICE, reconnect and session cleanup; live behavior unverified',
-      ],
-    ),
-    install: scaffoldStream,
-  },
-  queues: {
-    type: 'service',
-    description: 'Queue producer binding, consumer and dead-letter handling',
-    targets: ['apps/jobs', 'apps/web', 'apps/api'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Deferred jobs',
-      ['Wrangler'],
-      ['Cloudflare Queues configuration access'],
-      [],
-      ['Queue, producer/consumer bindings and failure handling'],
-      ['Retries, idempotency, concurrency and dead-letter recovery'],
-    ),
-    install: scaffoldQueues,
-    configure: ({ options }) => ({
-      queues: { producers: [{ binding: 'JOBS', queue: resourceName(options.name, 'jobs') }] },
-    }),
-    runtime: 'optional-worker',
-    resolveTargets: (context) => [
-      'apps/jobs',
-      ...(context.has('hono') || context.has('vinext') || context.has('next')
-        ? [runtimeConfiguration(context)]
-        : []),
-    ],
-  },
-  cron: {
-    type: 'service',
-    description: 'Scheduled Worker',
-    targets: ['apps/scheduled'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Scheduled work',
-      ['Wrangler'],
-      ['Cloudflare Worker deployment access'],
-      [],
-      ['Scheduled Worker and environment-specific Cron Triggers'],
-      ['Schedule, idempotency, failure visibility and overlapping runs'],
-    ),
-    install: scaffoldCron,
-  },
-  workflows: {
-    type: 'service',
-    description: 'Durable multi-step Worker',
-    targets: ['apps/workflows'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Durable multi-step processing',
-      ['Wrangler'],
-      ['Cloudflare Workflows deployment access'],
-      [],
-      ['Workflow Worker/binding and resumable steps'],
-      ['Retry/resume, idempotency, cancellation and failure recovery'],
-    ),
-    install: scaffoldWorkflows,
-  },
-  'analytics-engine': {
-    selection: { requiresAll: ['hono'] },
-    type: 'integration',
-    description: 'Workers Analytics Engine dataset binding and server event helper',
-    targets: ['packages/analytics-engine'],
-    runtime: 'worker',
-    install: scaffoldAnalyticsEngine,
-    configure: ({ options }) => ({
-      analytics_engine_datasets: [
-        { binding: 'EVENTS', dataset: resourceName(options.name, 'events').replaceAll('-', '_') },
-      ],
-    }),
-    setup: requirements(
-      'Custom server-side analytics',
-      ['Wrangler'],
-      ['Cloudflare Analytics Engine access'],
-      [],
-      ['EVENTS dataset binding; define event semantics and privacy policy'],
-      [
-        'Dataset ingestion, sampled query semantics and privacy filtering; not transactional billing state',
-      ],
-    ),
-  },
-  images: {
-    selection: { requiresAll: ['hono'] },
-    type: 'integration',
-    description: 'Cloudflare Images binding and private image transform helper',
-    targets: ['packages/images'],
-    runtime: 'worker',
-    install: scaffoldImages,
-    configure: () => ({ images: { binding: 'IMAGES' } }),
-    setup: requirements(
-      'Image optimization',
-      ['Wrangler'],
-      ['Cloudflare Images account eligibility'],
-      [],
-      ['IMAGES binding; authorize source objects and define transform/usage limits'],
-      ['Real transforms, source ownership and cache isolation'],
-    ),
-  },
-  realtimekit: {
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'cloudflare-api'],
-    selection: { requiresAll: ['hono'] },
-    type: 'integration',
-    description: 'Cloudflare RealtimeKit server meeting and participant-token helpers',
-    targets: ['packages/realtimekit'],
-    runtime: 'worker',
-    install: scaffoldRealtimeKit,
-    environment: ['REALTIMEKIT_ACCOUNT_ID', 'REALTIMEKIT_APP_ID', 'REALTIMEKIT_API_TOKEN'],
-    setup: requirements(
-      'Audio/video conferencing',
-      ['Cloudflare RealtimeKit API or dashboard'],
-      ['Cloudflare RealtimeKit app and scoped Realtime permissions'],
-      ['Server-only account/app ID and API token'],
-      [
-        'Manual app activation and presets; implement authorized token routes and platform client SDK',
-      ],
-      ['Meeting isolation, permissions, reconnect and actual device media/teardown'],
-    ),
-  },
-  video: {
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'cloudflare-api'],
-    selection: { requiresAll: ['hono'] },
-    type: 'integration',
-    description: 'Cloudflare Stream private on-demand direct video upload helper',
-    targets: ['packages/video'],
-    runtime: 'worker',
-    install: scaffoldVideo,
-    environment: ['STREAM_ACCOUNT_ID', 'STREAM_API_TOKEN'],
-    setup: requirements(
-      'Uploaded video processing and delivery',
-      ['Cloudflare Stream API or dashboard'],
-      ['Cloudflare Stream activation and scoped Stream Write access'],
-      ['Server-only Stream account ID and API token'],
-      [
-        'Authorized one-time upload issuance; implement processing checks, signed playback and retention',
-      ],
-      ['Creator ownership, upload/processing limits and private playback on selected devices'],
-    ),
-  },
-  openai: {
-    type: 'package',
-    runtime: 'server',
-    description: 'Server-side OpenAI SDK factory',
-    targets: ['packages/ai'],
-    selection: { conflicts: ['ai-sdk'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Direct OpenAI integration',
-      ['OpenAI integration or API'],
-      ['Client-owned OpenAI project and model access'],
-      ['OPENAI_API_KEY'],
-      ['Server SDK factory; implement application behavior and spending limits'],
-      ['Selected model, failure handling, private inputs and cost controls'],
-    ),
-    package: packageSource(
-      'ai',
-      "import OpenAI from 'openai';\nexport function createAI(apiKey: string) { return new OpenAI({ apiKey }); }\n",
-      { openai: STACK_DEPENDENCIES['openai'] },
-    ),
-    environment: ['OPENAI_API_KEY'],
-  },
-  'ai-sdk': {
-    type: 'package',
-    runtime: 'server',
-    description: 'Server-side AI SDK and provider exports',
-    targets: ['packages/ai'],
-    selection: { conflicts: ['openai'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Streaming AI and provider abstraction',
-      ['Selected AI provider integration or API'],
-      ['Selected provider project/model access'],
-      ['OPENAI_API_KEY for the generated default; selected provider credentials otherwise'],
-      ['Server SDK factory; implement streaming, tools and application behavior'],
-      ['Streaming, tool authorization, interruption and spending limits'],
-    ),
-    package: packageSource(
-      'ai',
-      "export { generateText, streamText } from 'ai';\nexport { createOpenAI } from '@ai-sdk/openai';\n",
-      { ai: STACK_DEPENDENCIES['ai'], '@ai-sdk/openai': STACK_DEPENDENCIES['@ai-sdk/openai'] },
-    ),
-    environment: ['OPENAI_API_KEY'],
-  },
-  'workers-ai': {
-    type: 'integration',
-    description: 'Workers AI runtime binding',
-    targets: ['apps/web', 'apps/api'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Cloudflare-hosted inference',
-      ['Wrangler'],
-      ['Cloudflare Workers AI model access'],
-      [],
-      ['AI binding and selected model invocation'],
-      ['Supported model behavior, authorization and usage limits'],
-    ),
-    configure: () => ({ ai: { binding: 'AI' } }),
-    installer: 'configuration',
-    runtime: 'worker',
-    resolveTargets: (context) => [runtimeConfiguration(context)],
-  },
-  resend: {
-    type: 'package',
-    runtime: 'server',
-    description: 'Server-side email SDK factory',
-    targets: ['packages/email'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Outbound application email',
-      ['Resend integration or API'],
-      ['Client-owned Resend project; sending-domain DNS access'],
-      ['RESEND_API_KEY; webhook secret when used'],
-      ['Verified sending domain, sender and server integration'],
-      [
-        'Delivery, suppression/bounce handling and webhook verification; inbound routing is separate',
-      ],
-    ),
-    package: packageSource(
-      'email',
-      "import { Resend } from 'resend';\nexport function createEmail(apiKey: string) { return new Resend(apiKey); }\n",
-      { resend: STACK_DEPENDENCIES['resend'] },
-    ),
-    environment: ['RESEND_API_KEY'],
+    resolveDependencies: () => ['better-auth', 'hono'],
+    resolveTargets: () => ['apps/api/src/private-files.ts'],
   },
   stripe: {
     type: 'integration',
     description: 'Authenticated Stripe checkout, portal and server entitlement projection',
     targets: ['packages/billing', 'packages/contracts', 'apps/api'],
-    selection: { requiresAll: ['hono'], requiresAny: ['better-auth', 'clerk'] },
+    selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
     resolveDependencies: billingDependencies,
     resolveTargets: ({ has }) => [
@@ -685,7 +214,7 @@ export interface LocalDataStore {
     type: 'integration',
     description: 'Native purchases, restore and server-enforced cross-store entitlements',
     targets: ['packages/billing', 'packages/contracts', 'apps/api'],
-    selection: { requiresAll: ['hono'], requiresAny: ['better-auth', 'clerk'] },
+    selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
     registryDependencies: ['workspace', 'typescript', 'eslint'],
     resolveDependencies: billingDependencies,
     resolveTargets: ({ has }) => [
@@ -716,84 +245,6 @@ export interface LocalDataStore {
       'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY',
     ],
   },
-  sentry: {
-    type: 'package',
-    description: 'Platform-specific monitoring integration boundary',
-    targets: ['packages/observability'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Additional runtime/crash diagnostics',
-      ['Sentry integration or API'],
-      ['Client-owned Sentry project access'],
-      ['SENTRY_DSN; source-map upload token when required'],
-      ['Integration boundary; install/init runtime SDKs and configure private source-map uploads'],
-      ['Captured runtime errors, source maps, privacy filtering and alert delivery'],
-    ),
-    package: packageSource(
-      'observability',
-      "// Initialize the platform-specific Sentry SDK in each application's runtime entrypoint.\nexport const redactFields = ['authorization', 'cookie', 'password', 'token'];\n",
-      {},
-    ),
-    environment: ['SENTRY_DSN'],
-  },
-  basin: {
-    type: 'package',
-    description: 'Cloudflare analytical stream binding and event helper',
-    targets: ['packages/analytics', 'packages/basin'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Cloudflare analytical events',
-      ['Wrangler', 'Cloudflare integration or API'],
-      [
-        'Cloudflare analytics/Pipelines access; plan supporting selected services; Pipelines Setup grant for managed R2 sink setup',
-      ],
-      [],
-      [
-        'Basin dataset/stream, ANALYTICS binding, optional private R2 sink and authorized sink writes',
-      ],
-      ['Private ingestion, event delivery, query results and archive retrieval when selected'],
-    ),
-    package: packageSource(
-      'analytics',
-      `export interface EventStream { send(events: Record<string, unknown>[]): Promise<void> }
-export async function recordEvents(stream: EventStream, events: Record<string, unknown>[]) {
-  await stream.send(events);
-}
-`,
-      {},
-    ),
-    resolvePackage: ({ has }, recipe) => ({
-      ...recipe,
-      name: has('posthog') ? 'basin' : 'analytics',
-    }),
-    resolveDependencies: ({ has }) => (has('posthog') ? ['posthog'] : []),
-    resolveTargets: ({ has }) => [has('posthog') ? 'packages/basin' : 'packages/analytics'],
-    configure: () => ({
-      pipelines: [{ binding: 'ANALYTICS', stream: 'REPLACE_WITH_BASIN_STREAM_ID' }],
-    }),
-    runtime: 'worker',
-  },
-  posthog: {
-    type: 'package',
-    runtime: 'server',
-    description: 'Server-side product analytics factory',
-    targets: ['packages/analytics'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    setup: requirements(
-      'Specialized product analytics',
-      ['PostHog integration or API'],
-      ['Client-owned PostHog project access'],
-      ['POSTHOG_API_KEY; POSTHOG_HOST; separate privileged key if needed'],
-      ['Analytics client factory; implement consent, event schema and privacy filtering'],
-      ['Event receipt, consent behavior and redaction of private data'],
-    ),
-    package: packageSource(
-      'analytics',
-      "import { PostHog } from 'posthog-node';\nexport function createAnalytics(apiKey: string, host: string) { return new PostHog(apiKey, { host }); }\n",
-      { 'posthog-node': STACK_DEPENDENCIES['posthog-node'] },
-    ),
-    environment: ['POSTHOG_API_KEY', 'POSTHOG_HOST'],
-  },
   styling: {
     type: 'package',
     description: 'Shared platform-independent styling tokens',
@@ -805,7 +256,7 @@ export async function recordEvents(stream: EventStream, events: Record<string, u
       [],
       [],
       [
-        'Shared light/dark tokens and Tailwind v3 preset for Expo/WXT; adapt platform typography and components',
+        'Shared light/dark tokens and Tailwind v3 preset for Expo; adapt platform typography and components',
       ],
       ['Consistency across selected interfaces; preserve platform-specific components'],
     ),
@@ -848,20 +299,6 @@ const FOUNDATION_ITEMS = defineItems({
     description: 'Shared ESLint configuration',
     targets: ['packages/eslint-config'],
     registryDependencies: ['workspace'],
-  },
-  'cloudflare-api': {
-    type: 'foundation',
-    installer: 'recipe',
-    description: 'Shared server-only Cloudflare media management transport',
-    targets: ['packages/cloudflare-api'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
-    install: scaffoldCloudflareTransport,
-  },
-  ui: {
-    type: 'foundation',
-    description: 'Shared shadcn/ui, React, Tailwind and Lucide foundation for web apps',
-    targets: ['packages/ui'],
-    registryDependencies: ['workspace', 'typescript', 'eslint'],
   },
 });
 function freeze<T>(value: T): T {

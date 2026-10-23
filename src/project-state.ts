@@ -1,5 +1,4 @@
 import { hasProjectSection, readProjectSection, writeProjectSection } from './project-config.js';
-import { isDeepStrictEqual } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import {
@@ -37,7 +36,7 @@ export interface ApplicationProject {
   name: string;
   ownership: 'customer';
   provider: 'cloudflare';
-  deliveryEngine: 'void' | 'wrangler';
+  deliveryEngine: 'wrangler';
   accountId: string | null;
   audience: 'unconfigured' | 'public' | 'private';
   access?: { emails: string[] };
@@ -67,97 +66,11 @@ export function configurationFile(directory: string): string {
   const canonical = path.join(directory, 'anhedral.cloudflare.json');
   return existsSync(canonical) ? canonical : path.join(directory, 'wrangler.jsonc');
 }
-export function usesVoid(project: ApplicationProject): boolean {
-  return project.deliveryEngine === 'void';
-}
-function mergeVoidConfig(previous: unknown, resolved: unknown, authored: unknown): unknown {
-  if (isDeepStrictEqual(previous, authored)) return resolved;
-  if (Array.isArray(previous) && Array.isArray(resolved) && Array.isArray(authored)) {
-    const identity = (value: unknown) => {
-      if (value && typeof value === 'object')
-        for (const key of ['binding', 'name', 'tag', 'class_name', 'pattern', 'route']) {
-          const item = (value as Record<string, unknown>)[key];
-          if (typeof item === 'string') return `${key}:${item}`;
-        }
-      return JSON.stringify(value);
-    };
-    return [
-      ...authored.map((item) => {
-        const before = previous.find((entry) => identity(entry) === identity(item));
-        const after = resolved.find((entry) => identity(entry) === identity(item));
-        return before !== undefined && after !== undefined
-          ? mergeVoidConfig(before, after, item)
-          : item;
-      }),
-      ...resolved.filter(
-        (item) =>
-          !previous.some((entry) => identity(entry) === identity(item)) &&
-          !authored.some((entry) => identity(entry) === identity(item)),
-      ),
-    ];
-  }
-  const object = (value: unknown): value is Record<string, unknown> =>
-    !!value && typeof value === 'object' && !Array.isArray(value);
-  if (object(previous) && object(resolved) && object(authored)) {
-    const result: Record<string, unknown> = {};
-    for (const key of new Set([
-      ...Object.keys(previous),
-      ...Object.keys(resolved),
-      ...Object.keys(authored),
-    ])) {
-      if (key in authored)
-        Object.defineProperty(result, key, {
-          value: mergeVoidConfig(previous[key], resolved[key], authored[key]),
-          enumerable: true,
-        });
-      else if (!(key in previous) && key in resolved)
-        Object.defineProperty(result, key, { value: resolved[key], enumerable: true });
-    }
-    return result;
-  }
-  return authored;
-}
-export function resolveVoidCloudflareConfig(
-  authored: Record<string, unknown>,
-  lock: Record<string, unknown>,
-): Record<string, unknown> {
-  const value = structuredClone(authored);
-  if (
-    lock.version !== 1 ||
-    !lock.source ||
-    typeof lock.source !== 'object' ||
-    Array.isArray(lock.source) ||
-    !lock.resolved ||
-    typeof lock.resolved !== 'object' ||
-    Array.isArray(lock.resolved) ||
-    typeof lock.text !== 'string'
-  )
-    throw new Error('Invalid pinned Void resource lock.');
-  // The generated Void configuration omits resource-ID scaffolding placeholders.
-  // Match that authored input when applying Void's resolved resource identities.
-  for (const [field, key] of [
-    ['d1_databases', 'database_id'],
-    ['kv_namespaces', 'id'],
-    ['pipelines', 'stream'],
-  ] as const) {
-    if (Array.isArray(value[field]))
-      for (const entry of value[field]) {
-        if (entry && typeof entry[key] === 'string' && entry[key].startsWith('REPLACE_WITH_'))
-          delete entry[key];
-      }
-  }
-  return mergeVoidConfig(lock.source, lock.resolved, value) as Record<string, unknown>;
-}
 export function readConfig(directory: string): Record<string, unknown> {
   const errors: ParseError[] = [];
   const value = parse(readFileSync(configurationFile(directory), 'utf8'), errors);
   if (errors.length || !value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('Invalid Wrangler JSONC configuration.');
-  const lockFile = path.join(directory, 'void.lock.json');
-  if (existsSync(path.join(directory, 'anhedral.cloudflare.json')) && existsSync(lockFile)) {
-    const lock = JSON.parse(readFileSync(lockFile, 'utf8'));
-    return resolveVoidCloudflareConfig(value, lock);
-  }
   return value;
 }
 export function targetDirectory(root: string, target: DeploymentTarget): string {
@@ -187,11 +100,7 @@ export function registerApplication(root: string, extendTargets = false): Applic
       const rank = (id: string) => (id === 'web' ? 2 : id === 'mobile' ? 1 : 0);
       return rank(a.id) - rank(b.id) || a.id.localeCompare(b.id);
     });
-  const selectedEngine: ApplicationProject['deliveryEngine'] =
-    targets.length &&
-    targets.every((target) => existsSync(path.join(root, target.directory, 'void.config.ts')))
-      ? 'void'
-      : 'wrangler';
+  const selectedEngine = 'wrangler' as const;
   if (existing) {
     if (
       existing.targets.some(
@@ -245,7 +154,7 @@ export function readApplication(root: string): ApplicationProject {
     !/^[a-f0-9-]{36}$/i.test(project.id) ||
     project.ownership !== 'customer' ||
     project.provider !== 'cloudflare' ||
-    !['void', 'wrangler'].includes(project.deliveryEngine) ||
+    project.deliveryEngine !== 'wrangler' ||
     !(project.accountId === null || accountPattern.test(project.accountId)) ||
     !['unconfigured', 'public', 'private'].includes(project.audience) ||
     !Array.isArray(project.targets)

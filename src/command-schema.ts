@@ -1,5 +1,3 @@
-import { STANDARD_PRODUCTS } from './stack-registry.js';
-
 /** Machine-readable option semantics; help is presentation, never parser input. */
 export interface CommandOption {
   flag: string;
@@ -131,45 +129,23 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     ],
     examples: [
       'integrations status --json',
-      'integrations recover --provider neon --operation recorded-hash --resource existing-id',
+      'integrations recover --provider revenuecat --operation recorded-hash --resource existing-id',
     ],
     note: 'Status is read-only. Recovery verifies provider identity before updating a local receipt. Unsupported receipt schemas are rejected. Recovery cannot reconstruct missing one-time credentials.',
   },
   init: {
-    description: 'Scaffold a project from the bundled stack registry.',
-    usage: 'init [directory] [products...] [options]',
+    description: 'Create Expo + Hono + Drizzle/D1 + private R2.',
+    usage: 'init [directory] [options]',
     options: [
-      ...STANDARD_PRODUCTS.map((name): CommandOption => ({
-        flag: `--${name}`,
-        description: `Include ${name}.`,
-        hidden: true,
-      })),
-      {
-        flag: '--preset',
-        description: 'Start minimal or select the complete compatible product stack.',
-        value: 'minimal|full-product',
-        arity: 'required',
-      },
-      {
-        flag: '--hosting',
-        description: 'Select web hosting.',
-        value: 'cloudflare|vercel',
-        arity: 'required',
-      },
-      {
-        flag: '--skip-install',
-        description: 'Skip the final install (bootstrap still needs network).',
-      },
-      { flag: '--git', description: 'Initialize a project repository or skip it.' },
-      { flag: '--no-git', description: 'Initialize a project repository or skip it.' },
-      { flag: '--dry-run', description: 'Preview the selected stack without writes or network.' },
+      { flag: '--stripe', description: 'Add Stripe web billing.' },
+      { flag: '--revenuecat', description: 'Add RevenueCat native purchases.' },
+      { flag: '--skip-install', description: 'Skip dependency installation.' },
+      { flag: '--git', description: 'Initialize a project repository.' },
+      { flag: '--no-git', description: 'Skip Git initialization.' },
+      { flag: '--dry-run', description: 'Preview without writes or network.' },
     ],
-    examples: [
-      'init client-app',
-      'init product --preset full-product --dry-run',
-      'init product --next --hono --neon --clerk --dry-run',
-    ],
-    note: `Default: minimal Expo web/iOS/Android app on Cloudflare; no API, auth, database or paid integrations. Add capabilities with resolved dependencies, or use --preset full-product.\nProducts: ${STANDARD_PRODUCTS.join(', ')}\nOnly bundled options are supported. --all is intentionally unsupported.`,
+    examples: ['init client-app', 'init client-app --stripe --revenuecat --dry-run'],
+    note: 'The complete core foundation is always included. Stripe and RevenueCat are the only optional additions. Generation does not provision cloud resources.',
   },
   auth: {
     description: 'Check or guide authentication for the selected providers.',
@@ -184,7 +160,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       { flag: '--status', description: 'Check existing access without opening login.' },
       { flag: '--non-interactive', description: 'Never open an interactive login.' },
     ],
-    examples: ['auth', 'auth --status --json', 'auth --provider neon'],
+    examples: ['auth', 'auth --status --json', 'auth --provider revenuecat'],
     note: 'Management keys come from the environment. Login does not establish all write permissions or complete provider setup. Complete provider settings in anhedral.json (providers) before shipping.',
   },
   ship: {
@@ -194,8 +170,8 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       { flag: '--dry-run', description: 'Preview provisioning and deployment without mutations.' },
       {
         flag: '--provider',
-        description: 'Select hosting in a mixed project.',
-        value: 'cloudflare|vercel',
+        description: 'Select Cloudflare hosting.',
+        value: 'cloudflare',
         arity: 'required',
       },
       {
@@ -234,44 +210,17 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       { flag: '--skip-install', description: 'Skip the final dependency install.' },
     ],
     examples: [
-      'add resend',
-      '--cwd client-app add resend --dry-run',
-      'add resend --diff --cwd client-app',
+      'add stripe',
+      '--cwd client-app add stripe --dry-run',
+      'add stripe --diff --cwd client-app',
     ],
     note: 'Source previews are local and bounded. A new web bootstrap cannot be previewed offline; the plan reports that limitation. Edited-source conflicts require review; there is no force overwrite.',
   },
   registry: {
-    description: 'Inspect the bundled stack catalog and setup requirements.',
-    usage: 'registry list | view <item> | capabilities [options]',
-    options: [
-      {
-        flag: '--kind',
-        value: 'ui',
-        arity: 'required',
-        description: 'Inspect the candidate UI catalog without writes.',
-      },
-      {
-        flag: '--app',
-        value: 'workspace',
-        arity: 'required',
-        description: 'Select an explicit UI consumer workspace.',
-      },
-      {
-        flag: '--platform',
-        value: 'web|ios|android',
-        arity: 'required',
-        description: 'Select the UI runtime platform.',
-      },
-    ],
-    examples: [
-      'registry list',
-      'registry view neon',
-      'registry capabilities',
-      'registry capabilities --json',
-      'registry list --kind ui --json',
-      'registry view ui/button --kind ui --app apps/mobile --platform web --json',
-    ],
-    note: 'UI inspection is offline and read-only. Candidate source and installation remain unavailable; identified consumers do not establish foundation or runtime acceptance.',
+    description: 'Inspect the core stack and payment additions.',
+    usage: 'registry list | view <item> | capabilities',
+    options: [],
+    examples: ['registry list', 'registry view stripe', 'registry capabilities --json'],
   },
   doctor: {
     description: 'Check project provenance and local readiness without writes.',
@@ -288,7 +237,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       {
         flag: '--provider',
         description: 'Select the hosting provider.',
-        value: 'cloudflare|vercel',
+        value: 'cloudflare',
         arity: 'required',
       },
       {
@@ -310,21 +259,8 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
         arity: 'required',
         repeatable: true,
       },
-      { flag: '--scope', description: 'Select the Vercel team.', value: 'team', arity: 'required' },
-      {
-        flag: '--use',
-        description: 'Declare Vercel usage.',
-        value: 'personal|commercial',
-        arity: 'required',
-      },
-      { flag: '--create', description: 'Create the selected Vercel project.' },
-      { flag: '--git', description: 'Connect the verified GitHub repository.' },
     ],
-    examples: [
-      'connect --provider cloudflare --audience public',
-      'connect --scope customer --audience private --use commercial --create',
-    ],
-    note: 'Vercel Hobby is personal/non-commercial. Commercial applications need an eligible existing plan; no paid plan is activated automatically.',
+    examples: ['connect --provider cloudflare --audience public'],
   },
   repository: {
     description: 'Connect or create the application owner’s GitHub repository.',
@@ -349,12 +285,12 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   },
   register: {
     description: 'Record application identity and delivery targets.',
-    usage: 'register [directory] [--provider cloudflare|vercel]',
+    usage: 'register [directory] [--provider cloudflare]',
     options: [
       {
         flag: '--provider',
         description: 'Select the provider.',
-        value: 'cloudflare|vercel',
+        value: 'cloudflare',
         arity: 'required',
       },
     ],
@@ -366,7 +302,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     options: [
       {
         flag: '--provider',
-        description: 'Select Cloudflare in a mixed project.',
+        description: 'Select Cloudflare hosting.',
         value: 'cloudflare',
         arity: 'required',
       },
@@ -382,7 +318,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       {
         flag: '--provider',
         description: 'Select hosting.',
-        value: 'cloudflare|vercel',
+        value: 'cloudflare',
         arity: 'required',
       },
       { flag: '--refresh', description: 'Refresh provider evidence.' },
@@ -396,7 +332,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       {
         flag: '--provider',
         description: 'Select hosting.',
-        value: 'cloudflare|vercel',
+        value: 'cloudflare',
         arity: 'required',
       },
       { flag: '--local', description: 'Use local evidence without provider refresh.' },
@@ -411,22 +347,12 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       {
         flag: '--provider',
         description: 'Select hosting.',
-        value: 'cloudflare|vercel',
+        value: 'cloudflare',
         arity: 'required',
       },
       { flag: '--refresh', description: 'Refresh provider evidence.' },
     ],
     examples: ['verify'],
-  },
-  adopt: {
-    description: 'Record a verified existing Vercel Git deployment.',
-    usage: 'adopt [directory] [--provider vercel]',
-    options: [
-      { flag: '--provider', description: 'Select Vercel.', value: 'vercel', arity: 'required' },
-      { flag: '--refresh', description: 'Refresh provider evidence.' },
-    ],
-    examples: ['adopt --provider vercel'],
-    note: 'Does not push or deploy.',
   },
   recover: {
     description: 'Recover verified hosting state or a proven interrupted local lock.',
@@ -440,7 +366,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       {
         flag: '--provider',
         description: 'Select hosting.',
-        value: 'cloudflare|vercel',
+        value: 'cloudflare',
         arity: 'required',
       },
       { flag: '--refresh', description: 'Refresh provider evidence.' },
@@ -455,7 +381,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       {
         flag: '--provider',
         description: 'Select hosting.',
-        value: 'cloudflare|vercel',
+        value: 'cloudflare',
         arity: 'required',
       },
       {

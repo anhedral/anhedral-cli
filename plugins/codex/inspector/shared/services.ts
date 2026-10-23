@@ -33,10 +33,6 @@ export interface ServiceInventory {
 const resourceKinds: Record<string, string> = {
   D1: 'd1',
   R2: 'r2',
-  KV: 'kv',
-  'Queue producer': 'queue',
-  'Queue consumer': 'queue',
-  'Basin stream': 'stream',
 };
 /** Project-scoped inventory of validated evidence, never inferred live state. */
 export function serviceInventory(inspection: ProjectInspection): ServiceInventory {
@@ -88,8 +84,7 @@ export function serviceInventory(inspection: ProjectInspection): ServiceInventor
             (receipt) =>
               receipt.kind.toLowerCase() === resourceKinds[binding.kind] &&
               (receipt.id === binding.resourceId ||
-                (['R2', 'Queue producer', 'Queue consumer'].includes(binding.kind) &&
-                  receipt.name === binding.resourceId)),
+                (binding.kind === 'R2' && receipt.name === binding.resourceId)),
           );
     const receipt = index < 0 ? undefined : receipts[index];
     if (index >= 0) matched.add(index);
@@ -169,7 +164,6 @@ export function serviceInventory(inspection: ProjectInspection): ServiceInventor
   for (const provider of inspection.setupProviders.data) {
     if (
       provider.id === 'cloudflare' ||
-      provider.id === 'vercel' ||
       provider.id === 'expo' ||
       recordedProviders.has(provider.id)
     )

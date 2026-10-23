@@ -1,4 +1,3 @@
-import { hasProjectSection } from './project-config.js';
 import { realpathSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -7,7 +6,6 @@ import { defaultRunner, type DeliveryRunner } from './project-state.js';
 import { withLifecycleOperation, type LifecycleSession } from './lifecycle.js';
 import { planDelivery, shipApplication } from './delivery.js';
 import { planProvisioning, provisionApplication } from './provision.js';
-import { syncVoidSecrets, voidServerSecrets } from './void-execution.js';
 import type { CloudflareRequest } from './cloudflare.js';
 import { planProviderProvisioning, provisionSelectedProviders } from './providers/provision.js';
 import {
@@ -17,8 +15,6 @@ import {
   RUNTIME_KEYS,
 } from './providers/runtime.js';
 import { CREDENTIALS } from './providers/api.js';
-import { readApplication } from './project-state.js';
-import { planVercelDelivery, configureVercelEnvironment, shipVercelApplication } from './vercel.js';
 
 /** Provisioning can change tracked binding IDs; never silently commit that change. */
 async function executeCloudflareApplication(
@@ -29,7 +25,6 @@ async function executeCloudflareApplication(
   send: typeof fetch = fetch,
   providerEnvironment: NodeJS.ProcessEnv = process.env,
   session?: LifecycleSession,
-  options: { voidLogsDirectory?: string } = {},
 ): Promise<
   | Awaited<ReturnType<typeof shipApplication>>
   | (ReturnType<typeof planDelivery> & {
@@ -115,34 +110,6 @@ async function executeCloudflareApplication(
       environments[`${relative}/.env.local`];
     const environment = runtimeEnvironment(env, values);
     if (
-      deployment.project.deliveryEngine === 'void' &&
-      command === 'pnpm' &&
-      args.join(' ') === 'exec void deploy --platform cloudflare'
-    ) {
-      if (values && Object.keys(values).length)
-        await syncVoidSecrets(cwd, voidServerSecrets(values), run, environment, async () => {
-          const dirty = await run('git', ['status', '--porcelain'], root, environment);
-          const changed = dirty
-            .split('\n')
-            .filter((line) => line.trim())
-            .some(
-              (line) =>
-                !(
-                  [' M', '??'].includes(line.slice(0, 2)) &&
-                  deployment.project.targets.some(
-                    (target) => line.slice(3) === `${target.directory}/void.lock.json`,
-                  )
-                ),
-            );
-          if (
-            changed ||
-            (await run('git', ['rev-parse', 'HEAD'], root, environment)).trim() !== commit
-          )
-            throw new Error('Source changed before Void secret upload; deployment was stopped.');
-        });
-      return run(command, args, cwd, environment);
-    }
-    if (
       command !== 'pnpm' ||
       args.join(' ') !== 'run deploy' ||
       !values ||
@@ -157,62 +124,7 @@ async function executeCloudflareApplication(
       rmSync(file, { force: true });
     }
   };
-  return phase(session, 'deployment', () => shipApplication(root, buildRunner, request, options));
-}
-
-async function executeVercelApplication(
-  root: string,
-  dryRun = false,
-  run: DeliveryRunner = defaultRunner,
-  send: typeof fetch = fetch,
-  providerEnvironment: NodeJS.ProcessEnv = process.env,
-  session?: LifecycleSession,
-) {
-  const deployment = planVercelDelivery(root);
-  const integrations = planProviderProvisioning(root);
-  if (dryRun) return { ...deployment, integrations, mutation: false };
-  if (
-    !deployment.project.projectId ||
-    !deployment.project.teamId ||
-    deployment.project.audience === 'unconfigured'
-  )
-    throw new Error('Connect the intended Vercel account, plan and audience before shipping.');
-  const env = runtimeEnvironment(providerEnvironment);
-  const providerRun: DeliveryRunner = (command, args, cwd, env, input) =>
-    run(command, args, cwd, runtimeEnvironment(env), input);
-  if (
-    realpathSync((await run('git', ['rev-parse', '--show-toplevel'], root, env)).trim()) !==
-      realpathSync(root) ||
-    (await run('git', ['status', '--porcelain'], root, env)).trim()
-  )
-    throw new Error('Shipping requires a clean application repository before provisioning.');
-  const commit = (await run('git', ['rev-parse', 'HEAD'], root, env)).trim();
-  const application = await phase(session, 'application-runtime', () =>
-    applicationRuntime(root, providerRun),
-  );
-  await phase(session, 'checks', () => run('pnpm', ['run', 'check'], root, env));
-  if (
-    (await run('git', ['status', '--porcelain'], root, env)).trim() ||
-    (await run('git', ['rev-parse', 'HEAD'], root, env)).trim() !== commit
-  )
-    throw new Error('Source changed during checks; provisioning was not started.');
-  const configured = await phase(session, 'integrations', () =>
-    provisionSelectedProviders(root, false, providerRun, send, providerEnvironment),
-  );
-  if (!configured.ready)
-    return { state: 'provider-configuration-required', deployed: false, integrations: configured };
-  const runtime = configuredRuntime(root);
-  if (
-    (await run('git', ['status', '--porcelain'], root, env)).trim() ||
-    (await run('git', ['rev-parse', 'HEAD'], root, env)).trim() !== commit
-  )
-    throw new Error('Source changed during provider configuration; deployment was not started.');
-  const environments = mergeRuntimeTargets(runtimeTargets(root, runtime), application);
-  const values = environments['apps/web/.env.local'] ?? {};
-  await phase(session, 'runtime', () => configureVercelEnvironment(root, values, providerRun));
-  const buildRunner: DeliveryRunner = (command, args, cwd, env) =>
-    run(command, args, cwd, runtimeEnvironment(env, values));
-  return phase(session, 'deployment', () => shipVercelApplication(root, buildRunner));
+  return phase(session, 'deployment', () => shipApplication(root, buildRunner, request));
 }
 
 function phase<T>(
@@ -230,7 +142,6 @@ export async function shipCloudflareApplication(
   request?: CloudflareRequest,
   send: typeof fetch = fetch,
   providerEnvironment: NodeJS.ProcessEnv = process.env,
-  options: { voidLogsDirectory?: string } = {},
 ) {
   if (dryRun)
     return executeCloudflareApplication(
@@ -241,32 +152,9 @@ export async function shipCloudflareApplication(
       send,
       providerEnvironment,
       undefined,
-      options,
     );
   return withLifecycleOperation(root, 'cloudflare', run, (session) =>
-    executeCloudflareApplication(
-      root,
-      false,
-      run,
-      request,
-      send,
-      providerEnvironment,
-      session,
-      options,
-    ),
-  );
-}
-
-export async function shipSelectedVercelApplication(
-  root: string,
-  dryRun = false,
-  run: DeliveryRunner = defaultRunner,
-  send: typeof fetch = fetch,
-  providerEnvironment: NodeJS.ProcessEnv = process.env,
-) {
-  if (dryRun) return executeVercelApplication(root, true, run, send, providerEnvironment);
-  return withLifecycleOperation(root, 'vercel', run, (session) =>
-    executeVercelApplication(root, false, run, send, providerEnvironment, session),
+    executeCloudflareApplication(root, false, run, request, send, providerEnvironment, session),
   );
 }
 
@@ -278,6 +166,12 @@ function runtimeEnvironment(
   for (const name of Object.values(CREDENTIALS)) delete environment[name];
   for (const name of RUNTIME_KEYS)
     if (!name.startsWith('NEXT_PUBLIC_') && !name.startsWith('EXPO_PUBLIC_'))
+      delete environment[name];
+  for (const name of Object.keys(environment))
+    if (
+      !name.startsWith('EXPO_PUBLIC_') &&
+      /SECRET|PASSWORD|ADMIN_KEY|API_KEY|DATABASE_URL|AUTHORIZATION/.test(name)
+    )
       delete environment[name];
   return { ...environment, ...values };
 }
@@ -292,109 +186,4 @@ function mergeRuntimeTargets(
   return targets;
 }
 
-/** Each mixed target keeps its own release receipt; this is not a provider transaction. */
-export async function shipSelectedStack(
-  root: string,
-  dryRun = false,
-  run: DeliveryRunner = defaultRunner,
-  request?: CloudflareRequest,
-  send: typeof fetch = fetch,
-  providerEnvironment: NodeJS.ProcessEnv = process.env,
-) {
-  root = realpathSync(root);
-  const mixed =
-    hasProjectSection(root, 'vercel') &&
-    hasProjectSection(root, 'cloudflare') &&
-    readApplication(root).targets.length > 0;
-  if (!mixed)
-    return hasProjectSection(root, 'vercel')
-      ? shipSelectedVercelApplication(root, dryRun, run, send, providerEnvironment)
-      : shipCloudflareApplication(root, dryRun, run, request, send, providerEnvironment);
-  const cloudflare = planDelivery(root, true);
-  const vercel = planVercelDelivery(root);
-  if (dryRun)
-    return {
-      mutation: false,
-      dependencies: [
-        { target: 'cloudflare', after: [] },
-        { target: 'vercel', after: ['cloudflare'] },
-      ],
-      targets: [
-        { provider: 'cloudflare', ...cloudflare },
-        { provider: 'vercel', ...vercel },
-      ],
-      integrations: planProviderProvisioning(root),
-    };
-  if (
-    !cloudflare.project.accountId ||
-    cloudflare.project.audience === 'unconfigured' ||
-    !vercel.project.projectId ||
-    !vercel.project.teamId ||
-    vercel.project.audience === 'unconfigured'
-  )
-    throw new Error('Connect both intended hosting accounts and audiences before mixed delivery.');
-  return withLifecycleOperation(root, 'mixed', run, async (session) => {
-    const scoped = (prefix: string): LifecycleSession => ({
-      phase: (name, action) => session.phase(`${prefix}-${name}`, action),
-    });
-    const services = await executeCloudflareApplication(
-      root,
-      false,
-      run,
-      request,
-      send,
-      providerEnvironment,
-      scoped('cloudflare'),
-    );
-    if (
-      'state' in services &&
-      services.state !== undefined &&
-      ['configuration-required', 'provider-configuration-required'].includes(services.state)
-    )
-      return {
-        state: services.state,
-        deployed: false,
-        targets: [{ provider: 'cloudflare', result: services }],
-        nextAction:
-          'Resolve Cloudflare setup and review source changes, then repeat ship. Vercel was not deployed.',
-      };
-    try {
-      const web = await executeVercelApplication(
-        root,
-        false,
-        run,
-        send,
-        providerEnvironment,
-        scoped('vercel'),
-      );
-      const blocked = 'state' in web && web.state === 'provider-configuration-required';
-      return {
-        state: blocked ? 'partial' : 'deployed',
-        deployed: !blocked,
-        targets: [
-          { provider: 'cloudflare', result: services },
-          { provider: 'vercel', result: web },
-        ],
-        productVerification: 'required',
-        ...(blocked
-          ? {
-              nextAction:
-                'Cloudflare completed. Resolve Vercel prerequisites and repeat ship; no resource or data rollback was attempted.',
-            }
-          : {}),
-      };
-    } catch {
-      return {
-        state: 'partial',
-        deployed: false,
-        targets: [
-          { provider: 'cloudflare', result: services },
-          { provider: 'vercel', state: 'failed' },
-        ],
-        productVerification: 'required',
-        nextAction:
-          'Cloudflare completed; Vercel stopped. Inspect hosting status and the failed operation phase, then repeat the deployment plan. No resource or data rollback was attempted.',
-      };
-    }
-  });
-}
+export const shipSelectedStack = shipCloudflareApplication;

@@ -11,25 +11,15 @@ export function ServiceControls({
   call: (tool: ServiceTool, args: Omit<ServiceArguments, 'id'>) => Promise<ServiceResponse>;
 }) {
   const integration =
-    entry.group === 'Integrations' &&
-    ['neon', 'clerk', 'resend', 'stripe', 'revenuecat', 'sentry', 'posthog', 'openai'].includes(
-      entry.provider,
-    );
-  const neon = integration && entry.provider === 'neon';
+    entry.group === 'Integrations' && ['stripe', 'revenuecat'].includes(entry.provider);
   const supported =
     integration ||
-    entry.provider === 'vercel' ||
     (entry.provider === 'cloudflare' &&
-      (entry.group === 'Applications' ||
-        ['D1', 'KV', 'R2', 'Queue producer', 'Queue consumer', 'd1', 'kv', 'r2', 'queue'].includes(
-          entry.kind,
-        )));
+      (entry.group === 'Applications' || ['D1', 'R2', 'd1', 'r2'].includes(entry.kind)));
   const database = ['D1', 'd1'].includes(entry.kind);
   const r2 = ['R2', 'r2'].includes(entry.kind);
-  const kv = ['KV', 'kv'].includes(entry.kind);
-  const metricsSupported =
-    database || entry.group === 'Applications' || (integration && entry.provider === 'posthog');
-  const daily = database || entry.provider === 'vercel';
+  const metricsSupported = database || entry.group === 'Applications';
+  const daily = database;
   const [now, setNow] = useState(Date.now());
   const [operation, setOperation] = useState<ServiceTool | null>(null);
   const [busy, setBusy] = useState(false);
@@ -100,7 +90,7 @@ export function ServiceControls({
             Load analytics
           </Button>
         )}
-        {(database || kv || neon || r2) && (
+        {(database || r2) && (
           <Button
             size="sm"
             color="secondary"
@@ -189,7 +179,7 @@ export function ServiceControls({
       )}
       {result.tables && (
         <section className="service-result">
-          <h4>{database || neon ? 'Database tables' : r2 ? 'Object metadata' : 'Key metadata'}</h4>
+          <h4>{database ? 'Database tables' : r2 ? 'Object metadata' : 'Key metadata'}</h4>
           {result.tables.length ? (
             <div className="service-buttons">
               <select
@@ -244,7 +234,7 @@ export function ServiceControls({
                 </table>
               </div>
               {!result.data.rows.length && <p>This table is empty.</p>}
-              {(r2 || kv) && result.data.hasMore && (
+              {r2 && result.data.hasMore && (
                 <Button
                   size="sm"
                   color="secondary"
@@ -257,7 +247,7 @@ export function ServiceControls({
                   {r2 ? 'Next objects' : 'Next keys'}
                 </Button>
               )}
-              {(database || neon) && (
+              {database && (
                 <div className="service-buttons">
                   <Button
                     size="sm"
@@ -290,7 +280,7 @@ export function ServiceControls({
           )}
         </section>
       )}
-      {(database || kv) &&
+      {database &&
         entry.ownership === 'created' &&
         !['Deleted', 'Deletion pending', 'Deletion uncertain'].includes(entry.status) && (
           <div className="service-delete">

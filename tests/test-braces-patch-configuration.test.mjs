@@ -17,7 +17,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.js';
 import { addStackItems } from '../dist/registry/add.js';
-import { sourceFiles } from '../dist/registry/receipt.js';
+import { sourceFiles, recordScaffoldFiles } from '../dist/registry/receipt.js';
 import { bootstrap } from './support/workspace-bootstrap.mjs';
 import { configureDependencyPatches, writeDependencyAudit } from '../dist/dependency-patches.js';
 
@@ -261,7 +261,7 @@ test('init resolves again with the exact patch before frozen install and fingerp
     const events = [];
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions([root, '--hono', '--no-git', '--json']),
+        parseStandardOptions([root, '--no-git', '--json']),
         resolutionRunner(events),
       ),
     );
@@ -282,7 +282,7 @@ test('init fingerprints both reviewed dependency patch assets before frozen inst
     const events = [];
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions([root, '--hono', '--no-git', '--json']),
+        parseStandardOptions([root, '--no-git', '--json']),
         resolutionRunner(
           events,
           () => true,
@@ -315,10 +315,12 @@ test('add previews never resolve or write a patch; actual add resolves again and
     const run = resolutionRunner(events, () => introduceBraces);
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions([root, '--hono', '--skip-install', '--no-git', '--json']),
+        parseStandardOptions([root, '--skip-install', '--no-git', '--json']),
         run,
       ),
     );
+    writeFileSync(path.join(root, 'pnpm-lock.yaml'), 'lockfileVersion: \"9.0\"\n');
+    recordScaffoldFiles(root);
     assert.equal(existsSync(path.join(root, patch)), false);
     assert.deepEqual(
       readFileSync(path.join(root, 'scripts/audit-deps.mjs')),
@@ -331,11 +333,11 @@ test('add previews never resolve or write a patch; actual add resolves again and
     events.length = 0;
     introduceBraces = true;
     const before = sourceFiles(root);
-    await addStackItems(root, { items: ['resend'], dryRun: true, skipInstall: true }, run);
+    await addStackItems(root, { items: ['stripe'], dryRun: true, skipInstall: true }, run);
     assert.deepEqual(events, []);
     assert.deepEqual(sourceFiles(root), before);
     assert.equal(existsSync(path.join(root, patch)), false);
-    await addStackItems(root, { items: ['resend'] }, run);
+    await addStackItems(root, { items: ['stripe'] }, run);
     assert.deepEqual(
       events.map((event) => event.phase),
       ['initial-resolution', 'patch-resolution', 'frozen-install'],
@@ -479,15 +481,17 @@ test('add refuses edited generated audit scripts before committing unrelated cha
     const run = resolutionRunner([], () => false);
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions([root, '--hono', '--skip-install', '--no-git', '--json']),
+        parseStandardOptions([root, '--skip-install', '--no-git', '--json']),
         run,
       ),
     );
+    writeFileSync(path.join(root, 'pnpm-lock.yaml'), 'lockfileVersion: \"9.0\"\n');
+    recordScaffoldFiles(root);
     const script = path.join(root, 'scripts/audit-deps.mjs');
     writeFileSync(script, '// edited customer policy\n');
     const before = sourceFiles(root);
     await assert.rejects(
-      addStackItems(root, { items: ['resend'], skipInstall: true }, run),
+      addStackItems(root, { items: ['stripe'], skipInstall: true }, run),
       /conflicts.*scripts\/audit-deps\.mjs/,
     );
     assert.deepEqual(sourceFiles(root), before);

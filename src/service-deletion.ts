@@ -48,7 +48,7 @@ async function assertDeletionScope(
   request: CloudflareRequest,
 ) {
   if (
-    !['d1', 'kv'].includes(service.kind) ||
+    service.kind !== 'd1' ||
     service.ownership !== 'created' ||
     !service.name ||
     service.applications.length > 1
