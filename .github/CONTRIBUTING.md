@@ -6,7 +6,10 @@ Use the issue forms, search existing reports, and include the CLI version and a 
 
 For a pull request, fork the repository, branch from `staging`, and target `staging`. Run `pnpm install --frozen-lockfile`, `pnpm build`, focused `node --test tests/<affected>.test.mjs` checks and `pnpm lint`; describe the behavior and results. Include meaningful regression tests for code fixes. Keep unrelated formatting out of the diff. Full release checks belong at promotion, not every local edit.
 
-`rswearin` owns review and merge decisions. Required CI and CodeQL checks must pass; dependency updates are reviewed rather than automatically merged. Releases use verified artifacts and npm trusted publishing. Release credentials are never available to contribution workflows.
+Anhedral (`@anhedral`) is the primary maintainer account.
+Anhedral, Ryan (`@rswearin`) and Paul (`@PaulManes`) may review and merge changes.
+Review is shared among these maintainers; no rule requires Ryan's personal approval.
+Required CI and CodeQL checks must pass; dependency updates are reviewed rather than automatically merged. Releases use verified artifacts and npm trusted publishing. Release credentials are never available to contribution workflows.
 
 Contributions are licensed under this repository's Apache-2.0 license. Contributors must have the right to submit their work. Participate respectfully and follow the [code of conduct](CODE_OF_CONDUCT.md). Maintenance is provided as capacity permits; an issue or pull request does not guarantee acceptance or a response deadline.
 
@@ -52,4 +55,4 @@ Use a separate version-preparation PR into staging for each targeted release. Ke
 
 Merge staging → main with a merge commit. Explicitly run CI on main to build the candidate. Review its CLI/plugin SHA-512 integrities and dispatch **Release Reviewed Candidate** against the exact current main SHA. Existing exact-artifact verification, protected npm environment, portability, trusted publishing, provenance and immutable tags remain required. Main merges never automatically publish npm. Confirm npm version/integrity and GitHub release assets after publication.
 
-Main and staging must require `CI gate`, prevent force pushes/deletion, and require resolved conversations. Preserve main's existing maintainer/code-owner review and CodeQL requirements. Enable merge commits alongside squash; do not enable automatic deletion of long-lived staging. New contribution PRs target staging; review and retarget existing PRs individually so unrelated or obsolete work is not silently included.
+Main and staging must require `CI gate`, prevent force pushes/deletion, and require resolved conversations. Preserve main's CodeQL requirements and the shared maintainer review process; do not add a separate `rswearin review` rule. `CODEOWNERS` lists all three maintainers for review routing. Enable merge commits alongside squash; do not enable automatic deletion of long-lived staging. New contribution PRs target staging; review and retarget existing PRs individually so unrelated or obsolete work is not silently included.
