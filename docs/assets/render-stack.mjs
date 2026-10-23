@@ -17,7 +17,7 @@ export function renderStack(light = false) {
     muted = light ? '#646c77' : '#9198a1',
     wire = light ? '#c6cbd2' : '#59636e';
   const out = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc"><title id="title">Anhedral default application stack</title><desc id="desc">Next.js App Router web through Cloudflare OpenNext and Expo iOS/Android connect to a Hono API on Cloudflare Workers. Drizzle with D1 and private R2 are included. Better Auth, shared design tokens, separate web/native UI and workspace tools support the foundation. Stripe and RevenueCat are the only optional additions, with entitlements enforced by Hono.</desc><rect width="1920" height="1080" fill="${bg}"/>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc"><title id="title">Anhedral default application stack</title><desc id="desc">Next.js App Router web through Cloudflare OpenNext and Expo iOS/Android connect to a Hono API on Cloudflare Workers. Drizzle with D1 and private R2 are included. Better Auth, shared design tokens, separate web/native UI and workspace tools support the foundation. Stripe and RevenueCat provide optional payments, with entitlements enforced by Hono. Dotted branches show extension points for additional clients such as desktop, browser extensions and AR/XR, and integrations such as AI and realtime.</desc><rect width="1920" height="1080" fill="${bg}"/>`,
   ];
   const text = (x, y, value, size = 24, color = ink, anchor = 'middle') =>
     out.push(
@@ -27,17 +27,24 @@ export function renderStack(light = false) {
     if (!logos[domain]) throw Error(`Missing ${domain}`);
     out.push(`<image href="${logos[domain]}" x="${x}" y="${y}" width="${size}" height="${size}"/>`);
   };
-  const tile = (cx, cy, domain, label, size = 104) => {
+  const tile = (cx, cy, domain, label, size = 104, labelGap = 37) => {
     out.push(
       `<rect x="${cx - size / 2}" y="${cy - size / 2}" width="${size}" height="${size}" rx="24" fill="${surface}" stroke="${border}" stroke-width="1.5"/><rect x="${cx - 28}" y="${cy - 28}" width="56" height="56" rx="12" fill="white"/>`,
     );
     icon(domain, cx - 23, cy - 23, 46);
-    text(cx, cy + size / 2 + 37, label, 26);
+    text(cx, cy + size / 2 + labelGap, label, 26);
   };
-  const connect = (x1, y1, x2, y2) => {
+  const additional = (cx, cy, size, examples) => {
+    out.push(
+      `<rect x="${cx - size / 2}" y="${cy - size / 2}" width="${size}" height="${size}" rx="20" fill="${surface}" stroke="${border}" stroke-width="1.5"/><path d="M${cx - 14} ${cy}h28M${cx} ${cy - 14}v28" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`,
+    );
+    text(cx, cy + size / 2 + 29, 'Additional', 26);
+    text(cx, cy + size / 2 + 57, examples, 18, muted);
+  };
+  const connect = (x1, y1, x2, y2, dotted = false) => {
     const middle = (x1 + x2) / 2;
     out.push(
-      `<path d="M${x1} ${y1}C${middle} ${y1} ${middle} ${y2} ${x2} ${y2}" fill="none" stroke="${wire}" stroke-width="2.5" stroke-linecap="round"/>`,
+      `<path d="M${x1} ${y1}C${middle} ${y1} ${middle} ${y2} ${x2} ${y2}" fill="none" stroke="${wire}" stroke-width="2.5"${dotted ? ' stroke-dasharray="7 9"' : ''} stroke-linecap="round"/>`,
     );
   };
   text(96, 99, 'Anhedral', 42, ink, 'start');
@@ -46,15 +53,19 @@ export function renderStack(light = false) {
   text(384, 245, 'App Router · OpenNext', 18, muted);
   text(960, 218, 'HONO API', 16, muted);
   text(1536, 218, 'DATA & FILES', 16, muted);
-  for (const y of [320, 475, 630]) connect(436, y, 900, 475);
+  for (const y of [300, 420, 540]) connect(424, y, 900, 475);
+  connect(424, 660, 900, 475, true);
   for (const y of [360, 600]) connect(1020, 475, 1484, y);
   // Payment reconciliation belongs to Hono; a dashed connection marks optional scope.
   out.push(
     `<path d="M1020 510C1170 570 1170 650 1170 780" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
+    `<path d="M960 415C960 300 1070 285 1126 285" fill="none" stroke="${wire}" stroke-width="2.5" stroke-dasharray="7 9" stroke-linecap="round"/>`,
   );
-  tile(384, 320, 'nextjs.org', 'Next.js web');
-  tile(384, 475, 'apple.com', 'Expo iOS');
-  tile(384, 630, 'android.com', 'Expo Android');
+  tile(384, 300, 'nextjs.org', 'Next.js web', 80, 29);
+  tile(384, 420, 'apple.com', 'Expo iOS', 80, 29);
+  tile(384, 540, 'android.com', 'Expo Android', 80, 29);
+  additional(384, 660, 80, 'Desktop · Browser Extension · AR/XR · etc.');
+  additional(1170, 285, 88, 'AI · Realtime · etc.');
   tile(960, 475, 'hono.dev', 'Hono', 120);
   text(960, 605, 'Cloudflare Workers', 22, muted);
   text(960, 638, 'Authorization & shared contracts', 20, muted);
