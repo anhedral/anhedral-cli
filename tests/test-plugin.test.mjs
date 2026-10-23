@@ -82,7 +82,7 @@ for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
       readFileSync(
         path.join(root, 'plugins/codex/distribution/assets/anhedral-mark-dark.svg'),
         'utf8',
-      ).replace(/fill="white"/g, field.endsWith('Dark') ? 'fill="white"' : 'fill="black"'),
+      ).replace(/fill="#ffffff"/g, field.endsWith('Dark') ? 'fill="#ffffff"' : 'fill="#17191d"'),
     ),
   );
 }
