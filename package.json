@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
-  "version": "0.14.0",
-  "description": "Create an Expo + Hono + Drizzle/D1 + private R2 application. Add Stripe and RevenueCat when needed.",
+  "version": "0.15.0",
+  "description": "Create a Next.js web + native Expo + Hono + Drizzle/D1 + private R2 application. Add Stripe and RevenueCat when needed.",
   "type": "module",
   "exports": {
     ".": {
@@ -28,7 +28,8 @@
     "docs/verification.md",
     "docs/anhedral-stack.md",
     "docs/assets/anhedral-stack.png",
-    "docs/assets/anhedral-stack-light.png"
+    "docs/assets/anhedral-stack-light.png",
+    "assets/ui"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -75,8 +76,8 @@
     "test:unit": "node scripts/prepare-test-runtime.mjs && node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
     "test:integration": "pnpm build && node tests/test-generated-apps.mjs",
     "test:live:delivery": "pnpm build && node tests/test-live-delivery.mjs",
-    "format": "prettier --write src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\"",
-    "format:check": "prettier --check src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\"",
+    "format": "prettier --write src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\" assets/ui",
+    "format:check": "prettier --check src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\" assets/ui",
     "plugin:build": "pnpm --dir plugins/codex/inspector build",
     "plugin:check": "pnpm --dir plugins/codex/inspector check",
     "plugin:preview": "pnpm --dir plugins/codex/inspector start",
@@ -95,7 +96,9 @@
     "drizzle",
     "stripe",
     "revenuecat",
-    "turborepo"
+    "turborepo",
+    "nextjs",
+    "opennext"
   ],
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.34.5",

@@ -9,6 +9,7 @@ import { createResolutionContext } from './context.js';
 import type { Hosting, StandardOptions, StandardProduct, StackRegistryItem } from './types.js';
 
 export const CORE_PRODUCTS: readonly StandardProduct[] = [
+  'next',
   'expo',
   'hono',
   'd1',

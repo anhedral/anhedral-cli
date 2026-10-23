@@ -3,6 +3,7 @@ import path from 'node:path';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { scaffoldBillingContracts } from './billing-contracts.js';
+import { scaffoldWebBilling } from './web-billing.js';
 import { scaffoldExpoBilling } from './expo-billing.js';
 import { scaffoldBillingSchema } from './billing-schema.js';
 import { BILLING_CONFIG } from './billing-config.js';
@@ -199,6 +200,7 @@ export function scaffoldBilling(context: RecipeContext): void {
       : {}),
   });
   scaffoldExpoBilling(context);
+  scaffoldWebBilling(context);
   put(root, 'packages/billing/README.md', BILLING_README);
 }
 

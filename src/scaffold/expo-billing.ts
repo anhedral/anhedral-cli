@@ -8,6 +8,11 @@ import { patchPackage, put } from './files.js';
 /** Native store purchases and web Stripe checkout share only server-verified entitlements. */
 export function scaffoldExpoBilling({ root, has }: RecipeContext): void {
   const directory = 'apps/mobile';
+  put(
+    root,
+    `${directory}/lib/billing-types.ts`,
+    'export interface StoreOffer { id: string; label: string; price: string }\n',
+  );
   if (has('revenuecat')) {
     writeEnvironmentFile(root, `${directory}/.env.example`, {
       EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: '',
@@ -20,9 +25,7 @@ export function scaffoldExpoBilling({ root, has }: RecipeContext): void {
   put(
     root,
     `${directory}/lib/billing-api.ts`,
-    `import { createBillingClient } from '@workspace/contracts';
-export const billingApi = createBillingClient();
-`,
+    `export { billingApi } from './billing-api.native';\n`,
   );
   put(
     root,
@@ -50,21 +53,8 @@ export const billingApi = {
   put(
     root,
     `${directory}/lib/billing-platform.ts`,
-    `export interface StoreOffer { id: string; label: string; price: string }
-export const billingPlatform = 'web';
-export async function connectStore(_userId: string): Promise<void> {}
-export async function disconnectStore(): Promise<void> {}
-export async function storeOffers(): Promise<StoreOffer[]> { return []; }
-export async function purchaseStoreOffer(_id: string): Promise<void> { throw new Error('Native store purchases require a device build.'); }
-export async function restoreStorePurchases(): Promise<void> { throw new Error('Restore purchases in the native app.'); }
-export async function manageStorePurchases(): Promise<void> { throw new Error('Native store management requires a device build.'); }
-export function checkoutKey(): string { return crypto.randomUUID(); }
-export async function openBillingURL(value: string): Promise<void> {
-  const url = new URL(value);
-  if (url.protocol !== 'https:') throw new Error('Billing navigation requires HTTPS.');
-  if (!['checkout.stripe.com', 'billing.stripe.com'].includes(url.hostname)) throw new Error('Unrecognized Stripe destination.');
-  globalThis.location.assign(url.href);
-}
+    `export type { StoreOffer } from './billing-types';
+export * from './billing-platform.native';
 `,
   );
   if (has('revenuecat'))
@@ -73,16 +63,13 @@ export async function openBillingURL(value: string): Promise<void> {
     put(
       root,
       `${directory}/lib/billing-platform.native.ts`,
-      `export type { StoreOffer } from './billing-platform';
-export const billingPlatform = 'native';
+      `export type { StoreOffer } from './billing-types';
 export async function connectStore(_userId: string): Promise<void> {}
 export async function disconnectStore(): Promise<void> {}
-export async function storeOffers(): Promise<import('./billing-platform').StoreOffer[]> { return []; }
+export async function storeOffers(): Promise<import('./billing-types').StoreOffer[]> { return []; }
 export async function purchaseStoreOffer(_id: string): Promise<void> { throw new Error('RevenueCat is not selected.'); }
 export async function restoreStorePurchases(): Promise<void> { throw new Error('RevenueCat is not selected.'); }
 export async function manageStorePurchases(): Promise<void> { throw new Error('RevenueCat is not selected.'); }
-export function checkoutKey(): string { throw new Error('Stripe checkout is web-only.'); }
-export async function openBillingURL(_url: string): Promise<void> { throw new Error('Stripe checkout is web-only.'); }
 `,
     );
   put(root, `${directory}/app/billing.tsx`, billingScreenSource());
@@ -109,8 +96,7 @@ export async function openBillingURL(_url: string): Promise<void> { throw new Er
 function nativeStoreSource(): string {
   return `import Purchases from 'react-native-purchases';
 import { Linking, Platform } from 'react-native';
-import type { StoreOffer } from './billing-platform';
-export const billingPlatform = 'native';
+import type { StoreOffer } from './billing-types';
 let generation = 0;
 let account: string | null = null;
 let queue: Promise<void> = Promise.resolve();
@@ -208,21 +194,20 @@ export async function manageStorePurchases(): Promise<void> {
     await Linking.openURL(url.href);
   });
 }
-export function checkoutKey(): string { throw new Error('Stripe checkout is web-only.'); }
-export async function openBillingURL(_url: string): Promise<void> { throw new Error('Stripe checkout is web-only.'); }
 `;
 }
 
 function billingScreenSource(): string {
   return `import { useCallback, useEffect, useRef, useState } from 'react';
 import { Redirect } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Screen, Text } from '@workspace/native-ui';
 import type { BillingIdentity, BillingEntitlements } from '@workspace/contracts';
 import { AuthConfiguration } from '@/components/auth-configuration';
 import { Button } from '@/components/ui/button';
 import { getAuthClient } from '@/lib/auth-client';
 import { billingApi } from '@/lib/billing-api';
-import { billingPlatform, checkoutKey, connectStore, disconnectStore, manageStorePurchases, openBillingURL, purchaseStoreOffer, restoreStorePurchases, storeOffers, type StoreOffer } from '@/lib/billing-platform';
+import { connectStore, disconnectStore, manageStorePurchases, purchaseStoreOffer, restoreStorePurchases, storeOffers, type StoreOffer } from '@/lib/billing-platform';
 
 export default function BillingRoute() { return <AuthConfiguration><Billing /></AuthConfiguration>; }
 type Data = { identity: BillingIdentity; state: BillingEntitlements; offers: StoreOffer[] };
@@ -254,7 +239,6 @@ function Billing() {
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState(false);
   const [reload, setReload] = useState(0);
-  const attempts = useRef<Record<string, string>>({});
   const generation = useRef(0);
   const invalidate = useCallback(() => { ++generation.current; void disconnectStore(); }, []);
   useEffect(() => {
@@ -276,40 +260,31 @@ function Billing() {
     } catch (error) { updateCurrent(token, () => setMessage(billingError(error))); }
     finally { updateCurrent(token, () => setPending(false)); }
   }
-  async function checkout(plan: string) {
-    const key = attempts.current[plan] ??= checkoutKey();
-    const result = await billingApi.checkout(plan, key);
-    await openBillingURL(result.url);
-  }
   if (isPending) return <Text>Restoring session…</Text>;
   if (!session) return <Redirect href="/sign-in" />;
-  return <SessionBilling userId={session.user.id} data={data} message={message} pending={pending} run={run} checkout={checkout} retry={() => setReload((value) => value + 1)} />;
+  return <SessionBilling userId={session.user.id} data={data} message={message} pending={pending} run={run} retry={() => setReload((value) => value + 1)} />;
 }
-function SessionBilling({ userId, data, message, pending, run, checkout, retry }: Actions & { userId: string; data: Data | null; message: string; checkout: (plan: string) => Promise<void>; retry: () => void }) {
+function SessionBilling({ userId, data, message, pending, run, retry }: Actions & { userId: string; data: Data | null; message: string; retry: () => void }) {
   if (data?.identity.appUserId !== userId) return <View style={{ padding: 24, gap: 12 }}><Text>{message || 'Loading subscriptions…'}</Text><Button onPress={retry}>Retry subscriptions</Button></View>;
-  return <BillingContent data={data} message={message} pending={pending} run={run} checkout={checkout} />;
+  return <BillingContent data={data} message={message} pending={pending} run={run} />;
 }
 function Entitlements({ state }: { state: BillingEntitlements }) {
   return <View><Text accessibilityRole="header">Last server-verified access</Text>{state.entitlements.map((item) => <Text key={item.key}>{item.key}: {item.active ? 'Active' : 'Inactive'}</Text>)}<Text>Checked: {state.checkedAt}</Text></View>;
 }
 type Actions = { pending: boolean; run: (action: () => Promise<void>) => Promise<void> };
-function WebPlans({ data, pending, run, checkout }: Actions & { data: Data; checkout: (plan: string) => Promise<void> }) {
-  if (!data.identity.providers.stripe) return <Text>Web checkout is not configured for this product.</Text>;
-  return <View style={{ gap: 12 }}>{data.identity.plans.map((plan) => <Button key={plan.id} disabled={pending} onPress={() => void run(() => checkout(plan.id))}>{plan.label}</Button>)}<Button disabled={pending} onPress={() => void run(async () => openBillingURL((await billingApi.portal()).url))}>Manage web subscription</Button></View>;
-}
 function NativePlans({ data, pending, run }: Actions & { data: Data }) {
   if (!data.identity.providers.revenuecat) return <Text>Native store purchases are not selected.</Text>;
   return <View style={{ gap: 12 }}>{data.offers.map((offer) => <Button key={offer.id} disabled={pending} onPress={() => void run(() => purchaseStoreOffer(offer.id))}>{offer.label + ' — ' + offer.price}</Button>)}<Button disabled={pending} onPress={() => void run(restoreStorePurchases)}>Restore purchases</Button><Button disabled={pending} onPress={() => void run(manageStorePurchases)}>Manage store subscription</Button></View>;
 }
-function BillingContent({ data, message, pending, run, checkout }: Actions & { data: Data; message: string; checkout: (plan: string) => Promise<void> }) {
-  return <ScrollView contentContainerStyle={{ padding: 24, gap: 16 }}>
+function BillingContent({ data, message, pending, run }: Actions & { data: Data; message: string }) {
+  return <Screen>
     <Text accessibilityRole="header">Subscriptions</Text>
     <Entitlements state={data.state} />
-    {billingPlatform === 'web' ? <WebPlans data={data} pending={pending} run={run} checkout={checkout} /> : <NativePlans data={data} pending={pending} run={run} />}
+    <NativePlans data={data} pending={pending} run={run} />
     <Button disabled={pending} onPress={() => void run(async () => undefined)}>Refresh server access</Button>
     <Text accessibilityLiveRegion="polite">{message}</Text>
     <Text>Purchases grant access only after server verification. Store account transfers follow the configured provider policy.</Text>
-  </ScrollView>;
+  </Screen>;
 }
 `;
 }

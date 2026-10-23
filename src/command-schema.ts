@@ -134,7 +134,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Status is read-only. Recovery verifies provider identity before updating a local receipt. Unsupported receipt schemas are rejected. Recovery cannot reconstruct missing one-time credentials.',
   },
   init: {
-    description: 'Create Expo + Hono + Drizzle/D1 + private R2.',
+    description: 'Create Next.js web + native Expo + Hono + Drizzle/D1 + private R2.',
     usage: 'init [directory] [options]',
     options: [
       { flag: '--stripe', description: 'Add Stripe web billing.' },

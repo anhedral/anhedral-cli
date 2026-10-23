@@ -8,19 +8,20 @@ import {
   parseStandardOptions,
   resolveStackRegistry,
 } from '../dist/index.js';
-test('the catalog contains only six core components and two payment additions', () => {
+test('the catalog contains only seven core components and two payment additions', () => {
   assert.deepEqual([...STANDARD_PRODUCTS].sort(), [
     'better-auth',
     'd1',
     'expo',
     'hono',
+    'next',
     'r2',
     'revenuecat',
     'stripe',
     'styling',
   ]);
   for (const name of STANDARD_PRODUCTS) assert.ok(getStackItem(name).targets.length);
-  for (const id of ['neon', 'clerk', 'next', 'resend', 'realtime', '__proto__'])
+  for (const id of ['neon', 'clerk', 'resend', 'realtime', '__proto__'])
     assert.throws(() => getStackItem(id), /Unknown/);
   assert.equal(new Set(STACK_REGISTRY.items.map((i) => i.name)).size, STACK_REGISTRY.items.length);
 });

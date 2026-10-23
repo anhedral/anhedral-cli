@@ -1,12 +1,29 @@
 {
   "schemaVersion": 1,
-  "cliVersion": "0.14.0",
+  "cliVersion": "0.15.0",
   "capabilities": {
-    "expo": {
-      "purpose": "Universal web, iOS and Android application",
+    "next": {
+      "purpose": "Server-rendered web application",
       "tools": [
         "Browser control",
         "Wrangler"
+      ],
+      "access": [
+        "Cloudflare Workers deployment access"
+      ],
+      "credentials": [],
+      "resources": [
+        "Next.js Worker, assets and scoped ANHEDRAL_API binding"
+      ],
+      "verify": [
+        "Request-rendered HTML, RSC, cookies and authenticated API routes"
+      ],
+      "selection": {}
+    },
+    "expo": {
+      "purpose": "Native iOS and Android application",
+      "tools": [
+        "Simulator or device"
       ],
       "access": [
         "For requested native distribution only: client-owned Apple/Google developer accounts"
@@ -15,10 +32,10 @@
         "For requested native builds only: platform signing credentials and EAS access when used"
       ],
       "resources": [
-        "Expo universal client, Cloudflare web assets/API gateway; native adapters, signing and store configuration"
+        "Expo native client; signing and store configuration"
       ],
       "verify": [
-        "Static web export/runtime; requested native delivery additionally needs simulator/device and signed-build acceptance"
+        "Simulator/device and signed-build acceptance"
       ],
       "selection": {}
     },
@@ -155,7 +172,7 @@
       "access": [],
       "credentials": [],
       "resources": [
-        "Shared light/dark tokens and Tailwind v3 preset for Expo; adapt platform typography and components"
+        "Shared light/dark tokens, web CSS and Anhedral native shadcn port"
       ],
       "verify": [
         "Consistency across selected interfaces; preserve platform-specific components"

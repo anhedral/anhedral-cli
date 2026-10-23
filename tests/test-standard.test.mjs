@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
 import { readProjectSection } from '../dist/project-config.js';
-const core = ['better-auth', 'd1', 'expo', 'hono', 'r2', 'styling'];
+const core = ['better-auth', 'd1', 'expo', 'hono', 'next', 'r2', 'styling'];
 const read = (root, file) => readFileSync(path.join(root, file), 'utf8');
 const noCommands = (command, args) => {
   throw Error(`Source-only generation must be offline: ${command} ${args.join(' ')}`);
@@ -26,7 +26,7 @@ for (const additions of [[], ['stripe'], ['revenuecat'], ['stripe', 'revenuecat'
       assert.deepEqual(options.products, [...core, ...additions].sort());
       await scaffoldStandardProject(options, noCommands, { quiet: true });
       assert.deepEqual(readProjectSection(root, 'setup').products, options.products);
-      assert.deepEqual(readdirSync(path.join(root, 'apps')).sort(), ['api', 'mobile']);
+      assert.deepEqual(readdirSync(path.join(root, 'apps')).sort(), ['api', 'mobile', 'web']);
       for (const file of [
         'apps/api/src/index.ts',
         'apps/api/src/private-files.ts',

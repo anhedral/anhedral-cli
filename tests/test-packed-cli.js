@@ -19,6 +19,7 @@ function run(command, args, cwd) {
     env: {
       ...process.env,
       npm_config_cache: npmCache,
+      ANHEDRAL_PLUGIN_DATA: path.join(npmCache, 'plugin-data'),
     },
   });
   const stdout = String(result.stdout ?? '');
@@ -54,6 +55,7 @@ function runInstalledScaffold(installRoot) {
     'd1',
     'expo',
     'hono',
+    'next',
     'r2',
     'revenuecat',
     'stripe',
@@ -67,6 +69,34 @@ function runInstalledScaffold(installRoot) {
     'd1',
   );
   assert.equal(existsSync(projectRoot), false);
+  // Exercise the installed package's real staged resolution, patch policy and frozen install.
+  // Source-only scaffolding cannot certify that its shipped native assets or pins install.
+  const created = JSON.parse(
+    run(
+      binPath,
+      ['init', projectRoot, '--stripe', '--revenuecat', '--no-git', '--json'],
+      installRoot,
+    ).stdout,
+  );
+  assert.equal(created.generated, true);
+  assert.ok(existsSync(path.join(projectRoot, 'pnpm-lock.yaml')));
+  assert.ok(existsSync(path.join(projectRoot, 'apps/web/node_modules/next/package.json')));
+  assert.ok(existsSync(path.join(projectRoot, 'packages/native-ui/src/native/dialog.tsx')));
+  const policy = readFileSync(path.join(projectRoot, 'pnpm-workspace.yaml'), 'utf8');
+  assert.match(policy, /node-forge@1\.4\.0/);
+  assert.match(policy, /@node-minify\/core>glob.*10\.5\.0/);
+  const inspection = JSON.parse(
+    run(binPath, ['doctor', projectRoot, '--json'], installRoot).stdout,
+  );
+  assert.equal(inspection.localReady, true);
+  assert.equal(inspection.productionReady, false);
+  const delivery = JSON.parse(
+    run(binPath, ['ship', projectRoot, '--dry-run', '--json'], installRoot).stdout,
+  );
+  assert.deepEqual(
+    delivery.deployments.map((target) => target.directory),
+    ['apps/api', 'apps/web'],
+  );
 }
 
 function resolveProvidedTarball(argument) {

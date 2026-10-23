@@ -9,10 +9,6 @@ export const NATIVE_ESLINT_VERSION = '10.0.3';
 
 export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
   dependencies: {
-    // renovate: datasource=npm depName=@rn-primitives/portal
-    '@rn-primitives/portal': '1.5.2',
-    // renovate: datasource=npm depName=clsx
-    clsx: '2.1.1',
     // renovate: datasource=npm depName=expo
     expo: '57.0.8',
     // renovate: datasource=npm depName=expo-dev-client
@@ -25,8 +21,6 @@ export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
     'expo-status-bar': '57.0.1',
     // renovate: datasource=npm depName=react
     react: '19.2.3',
-    // renovate: datasource=npm depName=react-dom
-    'react-dom': '19.2.3',
     // renovate: datasource=npm depName=react-native
     'react-native': '0.86.0',
     // renovate: datasource=npm depName=react-native-reanimated
@@ -37,12 +31,6 @@ export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
     'react-native-screens': '4.26.2',
     // renovate: datasource=npm depName=react-native-worklets
     'react-native-worklets': '0.10.0',
-    // renovate: datasource=npm depName=react-native-web
-    'react-native-web': '0.21.2',
-    // renovate: datasource=npm depName=tailwind-merge
-    'tailwind-merge': '3.5.0',
-    // renovate: datasource=npm depName=tailwindcss-animate
-    'tailwindcss-animate': '1.0.7',
   },
   devDependencies: {
     // renovate: datasource=npm depName=@babel/core
@@ -55,23 +43,67 @@ export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
     '@react-native/metro-config': '0.86.0',
     // renovate: datasource=npm depName=@types/react
     '@types/react': '19.2.10',
-    // renovate: datasource=npm depName=@types/react-dom
-    '@types/react-dom': '19.2.3',
     // renovate: datasource=npm depName=typescript
     typescript: '6.0.3',
   },
 };
 
-export const MOBILE_NATIVEWIND_DEPENDENCIES: DependencyGroup = {
+export const WEB_DEPENDENCIES: DependencyGroup = {
   dependencies: {
-    // renovate: datasource=npm depName=nativewind
-    nativewind: '4.2.6',
-    // renovate: datasource=npm depName=react-native-css-interop
-    'react-native-css-interop': '0.2.6',
+    // renovate: datasource=npm depName=next
+    next: '16.4.2',
+    // renovate: datasource=npm depName=react
+    react: '19.2.3',
+    // renovate: datasource=npm depName=react-dom
+    'react-dom': '19.2.3',
+    // renovate: datasource=npm depName=better-auth
+    'better-auth': '1.7.7',
+    // renovate: datasource=npm depName=server-only
+    'server-only': '0.0.1',
+    // renovate: datasource=npm depName=@base-ui/react
+    '@base-ui/react': '1.9.0',
+    // renovate: datasource=npm depName=class-variance-authority
+    'class-variance-authority': '0.7.1',
+    // renovate: datasource=npm depName=clsx
+    clsx: '2.1.1',
+    // renovate: datasource=npm depName=tailwind-merge
+    'tailwind-merge': '3.5.0',
+    // renovate: datasource=npm depName=@opennextjs/cloudflare
+    '@opennextjs/cloudflare': '1.20.12',
+  },
+  devDependencies: {
     // renovate: datasource=npm depName=tailwindcss
-    tailwindcss: '3.4.19',
+    tailwindcss: '4.3.3',
+    // renovate: datasource=npm depName=@tailwindcss/postcss
+    '@tailwindcss/postcss': '4.3.3',
+    // renovate: datasource=npm depName=eslint-config-next
+    'eslint-config-next': '16.4.2',
+    // renovate: datasource=npm depName=eslint
+    eslint: '9.39.5',
+    // renovate: datasource=npm depName=typescript
+    typescript: '5.9.3',
+    // renovate: datasource=npm depName=@types/node
+    '@types/node': '22.20.5',
+    // renovate: datasource=npm depName=@types/react
+    '@types/react': '19.2.10',
+    // renovate: datasource=npm depName=@types/react-dom
+    '@types/react-dom': '19.2.3',
+    // renovate: datasource=npm depName=wrangler
+    wrangler: '4.151.0',
   },
 };
+
+export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
+  dependencies: {
+    // renovate: datasource=npm depName=@react-native-async-storage/async-storage
+    '@react-native-async-storage/async-storage': '2.2.0',
+    // renovate: datasource=npm depName=expo-system-ui
+    'expo-system-ui': '57.0.3',
+  },
+};
+
+// renovate: datasource=npm depName=glob
+export const OPENNEXT_GLOB_VERSION = '10.5.0';
 
 export const WORKSPACE_NODE_ENGINE = '^22.13.0 || >=24.0.0';
 
@@ -104,7 +136,7 @@ export const STACK_DEPENDENCIES = {
   // renovate: datasource=npm depName=drizzle-orm
   'drizzle-orm': '0.45.4',
   // renovate: datasource=npm depName=wrangler
-  wrangler: '4.149.0',
+  wrangler: '4.151.0',
   // renovate: datasource=npm depName=typescript
   typescript: '5.9.3',
   // renovate: datasource=npm depName=@types/node
