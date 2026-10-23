@@ -317,9 +317,12 @@ function upstreamRequest(request: Request, target: URL): Request {
   if (!['GET', 'HEAD'].includes(request.method)) { settings.body = request.body; settings.duplex = 'half'; }
   return new Request(target, settings);
 }
-function privateResponse(response: Response): Response {
+function privateResponse(response: Response, development: boolean): Response {
   const headers = new Headers(response.headers);
   for (const name of ['connection', 'transfer-encoding', 'access-control-allow-origin', 'access-control-allow-credentials']) headers.delete(name);
+  // Node fetch already decoded the local HTTP response. Next must frame/compress
+  // those decoded bytes itself; the sidecar's wire headers no longer describe them.
+  if (development) { headers.delete('content-encoding'); headers.delete('content-length'); }
   headers.set('cache-control', 'private, no-store');
   return new Response(response.body, { status: response.status, headers });
 }
@@ -327,7 +330,7 @@ export async function proxyApi(request: Request, options: Options): Promise<Resp
   try {
     const upstream = upstreamRequest(request, apiTarget(request, backendOrigin(options)));
     const response = options.development ? await (options.send ?? fetch)(upstream) : await options.binding!.fetch(upstream);
-    return privateResponse(response);
+    return privateResponse(response, options.development);
   } catch { return Response.json({ error: 'API unavailable' }, { status: 503, headers: { 'cache-control': 'private, no-store' } }); }
 }
 `;

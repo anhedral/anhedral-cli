@@ -12,6 +12,26 @@ mirrored by the Platform landing. This is documentation/artwork verification;
 it does not establish generated-app, installed-plugin, native-device, provider,
 hosted-image or production acceptance. Record runtime evidence separately.
 
+## Next development proxy response framing — October 23, 2026
+
+The Platform Linux image proof reproduced a failed `/api/health` response through
+actual Next dev: Node fetch decoded the Hono sidecar's gzip body, but the generated
+proxy retained its compressed `Content-Encoding` and `Content-Length`. The next
+HTTP client attempted to decode the already-decoded response and failed.
+
+The development HTTP proxy now removes those stale wire headers before Next
+frames the response. The production service-binding path retains its existing
+response handling. A real loopback HTTP server supplies a gzip response in the
+regression test; all five Next web tests pass. `pnpm build` and `pnpm lint` also
+pass, including typecheck, formatting, source hygiene and release-policy checks.
+This evidence does not establish a deployed Platform runtime; its image and live
+initialization are verified separately in the Platform repository.
+
+The full `pnpm release:check` passed: 550 unit tests passed with one existing
+skip, frozen patch installation checks passed, and packed CLI smoke and packlist
+checks passed. Linux Next dev returned `200 {"ok":true}` through `/api/health`
+and `200 null` through `/api/auth/get-session` after applying the generated fix.
+
 ## CLI 0.15 generated runtime acceptance — October 23, 2026
 
 The implementation agent recorded the following local evidence for the unpublished

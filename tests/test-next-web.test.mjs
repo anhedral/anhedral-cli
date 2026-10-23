@@ -4,6 +4,8 @@ import ts from 'typescript';
 import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { createServer } from 'node:http';
+import { gzipSync } from 'node:zlib';
 import { WEB_API_PROXY } from '../dist/platforms/web.js';
 import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
 const javascript = ts.transpileModule(WEB_API_PROXY, {
@@ -114,6 +116,33 @@ test('Next development proxy supports explicit loopback sidecar and production p
     },
   });
   assert.deepEqual(await response.json(), { ok: true });
+});
+
+test('Next development proxy removes stale wire headers after Node fetch decompresses the sidecar response', async () => {
+  const compressed = gzipSync(JSON.stringify({ ok: true }));
+  const server = createServer((_request, response) => {
+    response.writeHead(200, {
+      'content-type': 'application/json',
+      'content-encoding': 'gzip',
+      'content-length': String(compressed.length),
+    });
+    response.end(compressed);
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await proxyApi(new Request('http://localhost:3000/api/health'), {
+      development: true,
+      devOrigin: `http://127.0.0.1:${server.address().port}`,
+    });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('content-encoding'), null);
+    assert.equal(response.headers.get('content-length'), null);
+    assert.deepEqual(await response.json(), { ok: true });
+    assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  } finally {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  }
 });
 
 test('default workspace separates full Next web, native owned UI and privileged Hono runtime', async () => {
