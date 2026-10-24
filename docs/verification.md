@@ -904,3 +904,20 @@ mutation or payment operation was performed during this verification.
 Documentation correction validation: CLI build, documentation/plugin contract
 checks (two passing test entries) and `git diff --check` passed in an isolated
 checkout. No runtime behavior changed.
+
+
+## 2026-10-24 — Addition post-commit installation recovery
+
+Focused addition regressions now inject a failure in the final frozen install,
+after the actual staged source transaction commits. They verify PostCommitError,
+retained billing source/receipts, removal of stale dependency links, released
+transaction lock, preservation of authored/private files and a successful
+idempotent retry that still invokes the installer. A second regression rejects
+an installer that mutates the reviewed lockfile after source commit.
+
+The dependency runner is injected: these checks exercise the real addition and
+transaction paths, not a real pnpm dependency installation or application runtime.
+No generator behavior change was required. Build and lint (typecheck, formatting,
+source hygiene and release policy) passed; the focused addition, transaction
+rollback and CLI-output run passed all 36 test entries. `git diff --check` passed.
+No provider, publication, deployment, database or payment operation occurred.
