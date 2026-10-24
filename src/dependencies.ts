@@ -150,7 +150,9 @@ export const STACK_DEPENDENCIES = {
   // renovate: datasource=npm depName=@hono/zod-openapi
   '@hono/zod-openapi': '1.6.3',
   // renovate: datasource=npm depName=fallow
-  fallow: '3.33.1',
+  fallow: '3.34.0',
+  // renovate: datasource=npm depName=undici
+  undici: '7.30.1',
   // renovate: datasource=npm depName=react-native-purchases
   'react-native-purchases': '10.14.0',
   // renovate: datasource=npm depName=stripe

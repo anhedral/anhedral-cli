@@ -143,7 +143,14 @@ const PRODUCT_ITEMS = defineItems({
   'better-auth': {
     type: 'integration',
     description: 'Database-backed identity schema and runtime routes',
-    targets: ['packages/auth', 'packages/db', 'apps/api', 'apps/mobile', 'apps/web'],
+    targets: [
+      'packages/auth',
+      'packages/managed-email',
+      'packages/db',
+      'apps/api',
+      'apps/mobile',
+      'apps/web',
+    ],
     selection: { requiresAll: ['d1', 'hono', 'expo'] },
     registryDependencies: ['workspace', 'typescript', 'eslint', 'd1', 'expo', 'next'],
     setup: requirements(

@@ -222,6 +222,7 @@
       "description": "Database-backed identity schema and runtime routes",
       "targets": [
         "packages/auth",
+        "packages/managed-email",
         "packages/db",
         "apps/api",
         "apps/mobile",

@@ -37,10 +37,20 @@ for (const profile of selected) {
         'Native modules must not enter a browser bundle: ' + file,
       );
     }
+    execFile(
+      process.execPath,
+      [path.resolve(import.meta.dirname, 'test-generated-expo-schema.mjs'), root],
+      temporary,
+    );
     await verifyUniversalDevelopment(root);
     execFile(
       process.execPath,
       [path.resolve(import.meta.dirname, 'test-generated-auth.mjs'), root],
+      temporary,
+    );
+    execFile(
+      process.execPath,
+      [path.resolve(import.meta.dirname, 'test-generated-managed-email.mjs'), root],
       temporary,
     );
     if (profile === 'billing')

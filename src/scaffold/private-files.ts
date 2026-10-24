@@ -6,7 +6,7 @@ import { createDatabase } from '@workspace/db';
 const MAX_FILE_BYTES = 1024 * 1024;
 type Identity = (request: Request, env: Env) => Promise<string | null>;
 async function authenticate(request: Request, env: Env): Promise<string | null> {
-  const session = await createAuth(createDatabase(env.DB), env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).api.getSession({ headers: request.headers });
+  const session = await createAuth(createDatabase(env.DB), env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL, env).api.getSession({ headers: request.headers });
   return session?.user.id ?? null;
 }
 async function readFileBody(request: Request): Promise<Uint8Array | null> {

@@ -17,7 +17,7 @@ import { json, patchPackage, put, readJson, sharedPackage } from './files.js';
 function applicationBilling(context: RecipeContext): string {
   const { has } = context;
   const database = 'env.DB';
-  const authenticate = `const session = await createAuth(createDatabase(env.DB), env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL).api.getSession({ headers: request.headers });
+  const authenticate = `const session = await createAuth(createDatabase(env.DB), env.BETTER_AUTH_SECRET, env.BETTER_AUTH_URL, env).api.getSession({ headers: request.headers });
   if (!session) throw new BillingError(401, 'Sign in to access billing.');
   return session.user.id;`;
   return `import { Hono, type Context } from 'hono';
