@@ -13,20 +13,44 @@ export const PRIVATE_SERVICE_TOOLS: readonly ServiceTool[] = [
 ];
 export const serviceArgumentsSchema = z
   .object({
-    id: z.string().uuid(),
-    key: z.string().min(1).max(1024),
-    hours: z.union([z.literal(1), z.literal(24), z.literal(168)]).optional(),
+    id: z.string().uuid().describe('Registered catalog project ID.'),
+    key: z
+      .string()
+      .min(1)
+      .max(1024)
+      .describe('Exact service entry ID returned by get_project_services.'),
+    hours: z
+      .union([z.literal(1), z.literal(24), z.literal(168)])
+      .optional()
+      .describe('Analytics window; D1 requires 24 or 168 hours in complete UTC days.'),
     table: z
       .string()
       .regex(/^[a-zA-Z_][a-zA-Z0-9_]{0,127}$/)
-      .optional(),
-    cursor: z.string().max(4096).optional(),
-    offset: z.number().int().min(0).max(10000).optional(),
+      .optional()
+      .describe('Table or metadata view returned by list_service_tables; app-only.'),
+    cursor: z
+      .string()
+      .max(4096)
+      .optional()
+      .describe('Opaque nextCursor from the prior KV/R2 page; app-only.'),
+    offset: z
+      .number()
+      .int()
+      .min(0)
+      .max(10000)
+      .optional()
+      .describe('Database page offset; use returned offset plus page size.'),
     token: z
       .string()
       .regex(/^[a-zA-Z0-9_-]{43}$/)
-      .optional(),
-    typedName: z.string().min(1).max(256).optional(),
+      .optional()
+      .describe('Fresh single-use token from the reviewed deletion plan; app-only.'),
+    typedName: z
+      .string()
+      .min(1)
+      .max(256)
+      .optional()
+      .describe('Exact resource name entered by the user for deletion confirmation; app-only.'),
   })
   .strict();
 export type ServiceArguments = z.infer<typeof serviceArgumentsSchema>;

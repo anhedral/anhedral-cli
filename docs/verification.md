@@ -921,3 +921,25 @@ No generator behavior change was required. Build and lint (typecheck, formatting
 source hygiene and release policy) passed; the focused addition, transaction
 rollback and CLI-output run passed all 36 test entries. `git diff --check` passed.
 No provider, publication, deployment, database or payment operation occurred.
+
+
+## 2026-10-24 — Recovered embedded inspector contracts
+
+Compared the preserved user-work snapshot at `4a48ca3` with the current CLI.
+Its embedded-host fixture and browser regressions had not landed. Recovered them
+against the current synthetic core-stack fixture, retaining its lockfile evidence
+and supported init options. The installed MCP Apps SDK now exercises project
+context updates, advertised desktop unsent drafts for both active/new targets,
+unsupported/web-host fallback, failed-composer fallback and actual safe-area layout.
+The production preview CSP remains unchanged; embedding is test-fixture-only.
+Recovered service-argument descriptions now explain catalog/service identities,
+D1's complete-UTC-day analytics windows, pagination and app-only deletion inputs;
+obsolete Vercel guidance was removed.
+
+CLI build, root lint/static security, plugin check (61 tests) and the browser suite
+(17 tests, including four recovered host tests) passed. Browser execution used
+installed Google Chrome via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH because the pinned
+Playwright browser binary is absent. An initial fixture port attempted obsolete
+init flags; it was corrected to preserve the current fixture before acceptance.
+This is synthetic browser/SDK evidence, not live Codex-host or provider acceptance.
+No installed-plugin update, publication, deployment or provider operation occurred.
