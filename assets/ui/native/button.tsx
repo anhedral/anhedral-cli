@@ -20,6 +20,7 @@ export function Button({
   style,
   disabled,
   accessibilityState,
+  accessibilityRole = 'button',
   ...props
 }: ButtonProps) {
   const { colors } = useTheme();
@@ -46,7 +47,7 @@ export function Button({
   return (
     <Pressable
       {...props}
-      accessibilityRole="button"
+      accessibilityRole={accessibilityRole}
       accessibilityState={{ ...accessibilityState, disabled: !!disabled }}
       disabled={disabled}
       style={(state) => [

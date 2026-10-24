@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "Anhedral Native UI",
+    "slug": "native-ui-showcase",
+    "scheme": "native-ui-showcase",
+    "version": "1.0.0",
+    "userInterfaceStyle": "automatic",
+    "ios": { "bundleIdentifier": "dev.anhedral.nativeuishowcase" },
+    "android": { "package": "dev.anhedral.nativeuishowcase" }
+  }
+}

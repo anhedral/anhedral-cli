@@ -82,7 +82,7 @@ export function buildPluginArchive(root) {
     ...['init', 'dev', 'design', 'auth', 'billing', 'hosting'].map(
       (name) => `skills/anhedral-${name}/SKILL.md`,
     ),
-    ...['stack-standard.md', 'software-factory.md', 'verification.md'].map(
+    ...['stack-standard.md', 'software-factory.md', 'verification.md', 'native-ui.md'].map(
       (name) => `references/${name}`,
     ),
     'runtime/build.json',

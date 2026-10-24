@@ -29,7 +29,8 @@
     "docs/anhedral-stack.md",
     "docs/assets/anhedral-stack.png",
     "docs/assets/anhedral-stack-light.png",
-    "assets/ui"
+    "assets/ui",
+    "docs/native-ui.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -82,7 +83,10 @@
     "plugin:check": "pnpm --dir plugins/codex/inspector check",
     "plugin:preview": "pnpm --dir plugins/codex/inspector start",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
-    "test:billing": "node tests/test-generated-apps.mjs billing"
+    "test:billing": "node tests/test-generated-apps.mjs billing",
+    "test:native-ui": "pnpm build && pnpm --dir tests/native-ui typecheck && pnpm --dir tests/native-ui test",
+    "native-ui:docs": "node scripts/native-ui-catalog.mjs --write",
+    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream"
   },
   "keywords": [
     "cli",

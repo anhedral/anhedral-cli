@@ -18,6 +18,8 @@ One command creates one stack:
 - **Private R2** for authenticated, owner-scoped files.
 - Supporting Better Auth sessions, shared public contracts and design tokens.
 
+The Expo component inventory, native API differences, tests and device acceptance checklist are maintained in [Native UI](docs/native-ui.md). Canonical source lives in `assets/ui/native/` and is copied into generated `packages/native-ui`.
+
 The only optional additions are **Stripe** for web billing and **RevenueCat** for native purchases. They can be selected independently or together. Provider accounts, activation, product configuration and acceptance remain explicit work.
 
 <picture>

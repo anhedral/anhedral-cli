@@ -189,11 +189,7 @@ test('default workspace separates full Next web, native owned UI and privileged 
     assert.match(read('apps/web/app/sign-in/page.tsx'), /<Label>Email<Input/);
     assert.match(read('apps/web/UPSTREAM.json'), /shadcn/);
     assert.match(read('packages/native-ui/src/native/button.tsx'), /Pressable/);
-    const dialog = read('packages/native-ui/src/native/dialog.tsx');
-    assert.match(dialog, /<Button ref=\{trigger\}/);
-    assert.match(dialog, /Platform.OS === 'ios'/);
-    assert.match(dialog, /requestAnimationFrame\(\(\) => focus\(trigger\)\)/);
-    assert.doesNotMatch(dialog, /<View ref=\{trigger\} accessible/);
+    // Native dialog behavior is exercised by the real generated-source native suite.
     assert.match(read('packages/native-ui/src/theme.tsx'), /@workspace\/styling/);
     const worker = JSON.parse(read('apps/web/wrangler.jsonc'));
     assert.equal(worker.main, '.open-next/worker.js');

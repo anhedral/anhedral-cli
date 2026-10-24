@@ -10,3 +10,5 @@ Use DOM shadcn components in apps/web and the Anhedral-maintained native shadcn 
 Build real loading, empty, error and success states. Keep API and provider implementation details out of user flows unless they inform a meaningful decision. Do not introduce alternative frontend frameworks or UI runtimes. Existing non-generated applications keep their own architecture.
 
 Verify web interaction and the target device separately; web build success does not prove native accessibility or behavior. Auth/private-file screens and optional Stripe/RevenueCat flows must reflect server results rather than optimistic entitlement claims.
+
+The maintained [native component checklist](../../references/native-ui.md) defines the reviewed catalog and native API differences. Generated `packages/native-ui/README.md` and `NATIVE_COMPONENTS.json` pin the source delivered to the application. Use native `style`, `onPress` and typed callbacks rather than DOM/Recharts APIs; test changed interactions on each target device.

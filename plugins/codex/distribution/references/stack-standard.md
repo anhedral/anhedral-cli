@@ -70,3 +70,7 @@ policy for an existing deployment. Initialization does not provision email or se
 messages. Test with an isolated sink; a receipt proves acceptance, not inbox delivery.
 Existing hosted execution images remain pinned until a separate verified image
 release; publishing the CLI does not replace them or rewrite saved apps.
+
+## Native component maintenance
+
+The CLI owns all 66 reviewed shadcn catalog adaptations in `assets/ui/native/`, copied into generated `packages/native-ui`. See [Native UI](native-ui.md) for the pinned baseline, per-component parity checklist, supported native APIs, automated tests and outstanding device acceptance. Application edits remain application-owned; CLI updates never overwrite them.

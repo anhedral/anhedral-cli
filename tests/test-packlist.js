@@ -10,6 +10,14 @@ import { renderStack, stackSize } from '../docs/assets/render-stack.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
+const nativeRegistry = JSON.parse(
+  readFileSync(path.join(repoRoot, 'assets/ui/native/registry.json'), 'utf8'),
+);
+const nativeFiles = [
+  ...nativeRegistry.components.map((item) => item.file),
+  ...nativeRegistry.supportFiles,
+  'registry.json',
+].map((file) => 'assets/ui/native/' + file);
 const requiredFiles = new Set([
   'LICENSE',
   'README.md',
@@ -18,6 +26,8 @@ const requiredFiles = new Set([
   'assets/patches/node-forge@1.4.0.patch',
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
+  ...nativeFiles,
+  'docs/native-ui.md',
   'assets/ui/native/button.tsx',
   'assets/ui/web/input.tsx',
   'assets/ui/web/label.tsx',
@@ -163,12 +173,14 @@ try {
 
   for (const file of packed.files) {
     const allowedNativeUI =
-      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|native\/(?:button|card|dialog|input|label|layout|text|theme-switcher)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json)$/.test(
+      nativeFiles.includes(file.path) ||
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
       file.path === 'docs/anhedral-stack.md' ||
+      file.path === 'docs/native-ui.md' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
       file.path === 'docs/verification.md';

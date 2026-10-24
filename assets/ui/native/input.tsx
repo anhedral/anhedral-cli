@@ -1,6 +1,7 @@
 import { TextInput, type TextInputProps } from 'react-native';
+import type { Ref } from 'react';
 import { useTheme } from '../theme';
-export type InputProps = TextInputProps & { invalid?: boolean };
+export type InputProps = TextInputProps & { invalid?: boolean; ref?: Ref<TextInput> };
 export function Input({ style, invalid, ...props }: InputProps) {
   const { colors } = useTheme();
   return (
