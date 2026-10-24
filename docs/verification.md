@@ -863,3 +863,15 @@ Publication and provider state are verified separately after promotion.
 Final React review gives web/native reset forms a token/error-derived route key,
 so following a new recovery link resets prior completion, input and error state.
 Only the used token/error fields cross the Next server/client boundary.
+
+
+## 2026-10-23 — Immutable release smoke prerequisite
+
+The first 0.15.0 publication attempt (run 40056207567, source 4557627f) stopped
+before npm publishing. Hash and secret checks passed; exact-artifact smoke failed
+while spawning pnpm for the installed CLI's normal initialization. Main candidate
+CI had pnpm setup, but the isolated release verification and exact-artifact jobs
+provisioned only Node. Add the same pinned pnpm action/version to those jobs, with
+run_install disabled. Keep normal init, artifact integrity, npm environment/OIDC
+and exact-artifact checks intact. A workflow regression covers all three smoke
+locations. A fresh main candidate must be reviewed again after this correction.
