@@ -245,6 +245,86 @@ export function validateCoverage(
     }
   }
 }
+/** Public exports and variants are tracked even while a full item remains pending. */
+export function nativeApiReport(inventory, nativeRegistry) {
+  const names = [
+    ...new Set(
+      Object.values(inventory.registries).flatMap((registry) =>
+        registry.items.filter((item) => item.type === 'registry:ui').map((item) => item.name),
+      ),
+    ),
+  ].sort();
+  return Object.fromEntries(
+    names.map((name) => {
+      const origins = new Set();
+      for (const registry of Object.values(inventory.registries)) {
+        const item = registry.items.find(
+          (item) => item.type === 'registry:ui' && item.name === name,
+        );
+        for (const file of item?.files ?? []) origins.add(file.source);
+      }
+      const values = [
+        ...new Set(
+          [...origins].flatMap((source) => inventory.sources[source].exports?.values ?? []),
+        ),
+      ].sort();
+      const types = [
+        ...new Set(
+          [...origins].flatMap((source) => inventory.sources[source].exports?.types ?? []),
+        ),
+      ].sort();
+      const variants = {};
+      for (const source of origins)
+        for (const [key, options] of Object.entries(inventory.sources[source].variants)) {
+          variants[key] ??= [];
+          variants[key] = [...new Set([...variants[key], ...options])].sort();
+        }
+      const native = [
+        ...(nativeRegistry.components.find((item) => item.id === name)?.exports ??
+          nativeRegistry.supportModules?.find((item) => item.file === name)?.exports ??
+          []),
+      ];
+      if (name === 'sonner' && native.includes('SonnerToaster')) native.push('Toaster');
+      return [
+        name,
+        {
+          upstreamValues: values,
+          upstreamTypes: types,
+          upstreamVariants: variants,
+          nativeValues: native.sort(),
+          missingValues: values.filter((value) => !native.includes(value)),
+          reviewedInputs: reviewedInputs(inventory, 'registry:ui/' + name),
+        },
+      ];
+    }),
+  );
+}
+export function incompleteNativeItems(inventory, coverage) {
+  const keys = [
+    ...new Set(
+      Object.values(inventory.registries).flatMap((registry) =>
+        registry.items.map((item) => item.type + '/' + item.name),
+      ),
+    ),
+  ].sort();
+  return keys.filter((key) => !['ported', 'web-specific'].includes(coverage.items[key]?.status));
+}
+export function validateApiPolicy(report, policy) {
+  for (const [key, entry] of Object.entries(policy.exports)) {
+    const [component, name] = key.split('/');
+    if (
+      !report[component]?.upstreamValues.includes(name) ||
+      entry.classification !== 'web-specific-export' ||
+      !entry.reason?.trim()
+    )
+      throw Error('Unknown or invalid browser-export policy: ' + key);
+    for (const file of [...(entry.nativeFiles ?? []), ...(entry.tests ?? [])])
+      if (file.split('/').includes('..') || !existsSync(path.join(root, file)))
+        throw Error('Missing native alternative evidence: ' + file);
+    if (!entry.nativeFiles?.length || !entry.tests?.length)
+      throw Error('Browser export requires a native alternative and tests: ' + key);
+  }
+}
 export function registryChecklist(inventory, coverage) {
   validateCoverage(inventory, coverage);
   const styles = Object.keys(inventory.registries).sort();
@@ -258,9 +338,22 @@ export function registryChecklist(inventory, coverage) {
   const rows = [...groups.values()].sort((a, b) =>
     (a.type + '/' + a.name).localeCompare(b.type + '/' + b.name),
   );
-  let text = `# Official shadcn registry → Expo\n\nPinned source: [shadcn-ui/ui at ${inventory.source.commit}](https://github.com/shadcn-ui/ui/tree/${inventory.source.commit}/apps/v4/registry). Published metadata retrieved ${inventory.retrieved}; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.\n\n**${styles.length} registries, ${Object.values(inventory.registries).reduce((n, r) => n + r.items.length, 0)} style/item entries, ${rows.length} distinct type/name pairs, ${Object.keys(inventory.sources).length} referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.\n\n## Maintenance model\n\nKeep a complete, pinned upstream source mirror and published metadata snapshot for review. Maintain the Expo source as a separate native overlay. Preserve upstream web implementations and CLI behavior rather than manually editing every web copy or forking CLI internals. Anhedral CLI can supply both outputs while the upstream mirror stays outside its shipped starter payload. No new remote fork is implied by taking a local snapshot.\n\nFor each upstream update, compare item/file hashes, public APIs, discovered variants, examples and dependencies. Refresh the web baseline from upstream; invalidate any native coverage whose reviewed inputs changed. Port and test the native changes before marking them complete. A successful upstream merge is not evidence that a new feature works on Expo. Device acceptance remains separately recorded.\n\nRefresh a clean upstream checkout with \`node scripts/shadcn-registry.mjs --snapshot /absolute/path/to/shadcn-ui\`, regenerate with \`pnpm native-ui:registry:docs\`, and compare a retained previous snapshot with \`pnpm native-ui:registry -- --diff /absolute/path/to/previous-inventory.json.gz\`. Normal checks are offline. Reviewed native coverage includes source, style and transitive registry dependency fingerprints, so changed inputs cannot retain a ported status silently.\n\n## Registry coverage\n\n| Registry | Published items | Metadata SHA-256 |\n| --- | ---: | --- |\n`;
+  let text = `# Official shadcn registry → Expo\n\nPinned source: [shadcn-ui/ui at ${inventory.source.commit}](https://github.com/shadcn-ui/ui/tree/${inventory.source.commit}/apps/v4/registry). Published metadata retrieved ${inventory.retrieved}; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.\n\n**${styles.length} registries, ${Object.values(inventory.registries).reduce((n, r) => n + r.items.length, 0)} style/item entries, ${rows.length} distinct type/name pairs, ${Object.keys(inventory.sources).length} referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.\n\n## Maintenance model\n\nKeep a complete, pinned upstream source mirror and published metadata snapshot for review. Maintain the Expo source as a separate native overlay. Preserve upstream web implementations and CLI behavior rather than manually editing every web copy or forking CLI internals. Anhedral CLI can supply both outputs while the upstream mirror stays outside its shipped starter payload. The complete upstream fork is [anhedral/shadcn-ui](https://github.com/anhedral/shadcn-ui), with upstream branches and tags preserved. The reviewed source pin and web CLI version are recorded in assets/ui/UPSTREAM-LOCK.json.\n\nFor each upstream update, compare item/file hashes, public APIs, discovered variants, examples and dependencies. Refresh the web baseline from upstream; invalidate any native coverage whose reviewed inputs changed. Port and test the native changes before marking them complete. A successful upstream merge is not evidence that a new feature works on Expo. Device acceptance remains separately recorded.\n\nRefresh a clean upstream checkout with \`node scripts/shadcn-registry.mjs --snapshot /absolute/path/to/shadcn-ui\`, regenerate with \`pnpm native-ui:registry:docs\`, and compare a retained previous snapshot with \`pnpm native-ui:registry -- --diff /absolute/path/to/previous-inventory.json.gz\`. Normal checks are offline. Reviewed native coverage includes source, style and transitive registry dependency fingerprints, so changed inputs cannot retain a ported status silently.\n\n## Registry coverage\n\n| Registry | Published items | Metadata SHA-256 |\n| --- | ---: | --- |\n`;
   for (const style of styles)
     text += `| ${style} | ${inventory.registries[style].items.length} | \`${inventory.registries[style].sha256}\` |\n`;
+  const api = nativeApiReport(
+    inventory,
+    JSON.parse(read(path.join(root, 'assets/ui/native/registry.json'))),
+  );
+  const policy = JSON.parse(read(path.join(destination, 'api-policy.json')));
+  validateApiPolicy(api, policy);
+  text +=
+    '\n## Public API review\n\nThis is export tracking, not proof of complete behavior or visual parity. Native item status remains separate. Browser-only exports have explicit native alternatives in the reviewed policy. All source variant declarations remain in the API ledger.\n\n| Component | Upstream value exports | Native exports present | Browser-specific exports | Unimplemented exports |\n| --- | ---: | ---: | --- | --- |\n';
+  for (const [name, entry] of Object.entries(api)) {
+    const web = entry.missingValues.filter((value) => policy.exports[name + '/' + value]);
+    const missing = entry.missingValues.filter((value) => !policy.exports[name + '/' + value]);
+    text += `| ${name} | ${entry.upstreamValues.length} | ${entry.upstreamValues.length - entry.missingValues.length} | ${web.join(', ') || 'none'} | ${missing.join(', ') || 'none'} |\n`;
+  }
   text +=
     '\n## Item checklist\n\nEvery row applies to all listed registries. The machine inventory retains each separate style/item, dependency, file, source hash, discovered variant, function/example and browser API. “Pending” means not yet completed; it is never an implicit web-only exemption.\n\n| Item | Type | Registries | Expo status | Evidence / web-specific adaptation |\n| --- | --- | --- | --- | --- |\n';
   for (const item of rows) {
@@ -413,6 +506,35 @@ async function snapshot(source, cache) {
   );
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  if (process.argv.includes('--complete')) {
+    const inventory = loadOfficialRegistry(),
+      coverage = JSON.parse(read(path.join(destination, 'coverage.json')));
+    validateCoverage(inventory, coverage);
+    const pending = incompleteNativeItems(inventory, coverage);
+    console.log(
+      JSON.stringify(
+        { complete: pending.length === 0, pendingCount: pending.length, pending },
+        null,
+        2,
+      ),
+    );
+    process.exit(pending.length ? 1 : 0);
+  }
+  if (process.argv.includes('--api')) {
+    const report = nativeApiReport(
+      loadOfficialRegistry(),
+      JSON.parse(read(path.join(root, 'assets/ui/native/registry.json'))),
+    );
+    const target = path.join(destination, 'native-api.json');
+    if (process.argv.includes('--write'))
+      writeFileSync(target, JSON.stringify(report, null, 2) + '\n');
+    else {
+      if (process.argv.includes('--report')) console.log(JSON.stringify(report, null, 2));
+      if (JSON.stringify(JSON.parse(read(target))) !== JSON.stringify(report))
+        throw Error('Native API/variant parity ledger is stale; review upstream changes.');
+    }
+    process.exit(0);
+  }
   const diffIndex = process.argv.indexOf('--diff');
   if (diffIndex >= 0) {
     if (!process.argv[diffIndex + 1])

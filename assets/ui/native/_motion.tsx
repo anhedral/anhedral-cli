@@ -375,7 +375,7 @@ type CarouselState = {
   scroll: React.RefObject<ScrollView | null>;
 };
 const CarouselContext = createContext<CarouselState | null>(null);
-function useCarousel() {
+export function useCarousel() {
   const value = useContext(CarouselContext);
   if (!value) throw Error('Carousel parts require Carousel.');
   return value;

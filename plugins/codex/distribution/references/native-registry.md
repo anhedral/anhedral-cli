@@ -6,7 +6,7 @@ Pinned source: [shadcn-ui/ui at 617134d5810bba521803b3ed787190bacbb80b35](https:
 
 ## Maintenance model
 
-Keep a complete, pinned upstream source mirror and published metadata snapshot for review. Maintain the Expo source as a separate native overlay. Preserve upstream web implementations and CLI behavior rather than manually editing every web copy or forking CLI internals. Anhedral CLI can supply both outputs while the upstream mirror stays outside its shipped starter payload. No new remote fork is implied by taking a local snapshot.
+Keep a complete, pinned upstream source mirror and published metadata snapshot for review. Maintain the Expo source as a separate native overlay. Preserve upstream web implementations and CLI behavior rather than manually editing every web copy or forking CLI internals. Anhedral CLI can supply both outputs while the upstream mirror stays outside its shipped starter payload. The complete upstream fork is [anhedral/shadcn-ui](https://github.com/anhedral/shadcn-ui), with upstream branches and tags preserved. The reviewed source pin and web CLI version are recorded in assets/ui/UPSTREAM-LOCK.json.
 
 For each upstream update, compare item/file hashes, public APIs, discovered variants, examples and dependencies. Refresh the web baseline from upstream; invalidate any native coverage whose reviewed inputs changed. Port and test the native changes before marking them complete. A successful upstream merge is not evidence that a new feature works on Expo. Device acceptance remains separately recorded.
 
@@ -43,6 +43,78 @@ Refresh a clean upstream checkout with `node scripts/shadcn-registry.mjs --snaps
 | radix-rhea | 219 | `d1bdea6d6aa601f5eaa6f3fd91c4096811099cbf38a2c3f70cefd0ef5548a4f8` |
 | radix-sera | 219 | `e327c2fef03354dc9d4e911f3577d0f2088601ddba03b98464be8ada4f4b7285` |
 | radix-vega | 219 | `fdde2bee0e099cc823e2f2029df515048fc14d3a4f4a437ed6a0795d53486b9e` |
+
+## Public API review
+
+This is export tracking, not proof of complete behavior or visual parity. Native item status remains separate. Browser-only exports have explicit native alternatives in the reviewed policy. All source variant declarations remain in the API ledger.
+
+| Component | Upstream value exports | Native exports present | Browser-specific exports | Unimplemented exports |
+| --- | ---: | ---: | --- | --- |
+| accordion | 4 | 4 | none | none |
+| alert | 4 | 4 | none | none |
+| alert-dialog | 12 | 10 | AlertDialogOverlay, AlertDialogPortal | none |
+| aspect-ratio | 1 | 1 | none | none |
+| attachment | 9 | 9 | none | none |
+| avatar | 6 | 6 | none | none |
+| badge | 2 | 1 | badgeVariants | none |
+| breadcrumb | 7 | 7 | none | none |
+| bubble | 4 | 4 | none | none |
+| button | 3 | 2 | buttonVariants | none |
+| button-group | 4 | 3 | buttonGroupVariants | none |
+| calendar | 3 | 3 | none | none |
+| card | 7 | 7 | none | none |
+| carousel | 6 | 6 | none | none |
+| chart | 6 | 5 | ChartStyle | none |
+| checkbox | 1 | 1 | none | none |
+| code-block | 8 | 8 | none | none |
+| collapsible | 3 | 3 | none | none |
+| combobox | 17 | 17 | none | none |
+| command | 9 | 9 | none | none |
+| context-menu | 15 | 14 | ContextMenuPortal | none |
+| dialog | 10 | 8 | DialogOverlay, DialogPortal | none |
+| direction | 4 | 4 | none | none |
+| drawer | 11 | 8 | DrawerOverlay, DrawerPortal, DrawerSwipeHandle | none |
+| dropdown-menu | 15 | 15 | none | none |
+| empty | 6 | 6 | none | none |
+| field | 10 | 10 | none | none |
+| form | 8 | 8 | none | none |
+| hover-card | 3 | 3 | none | none |
+| input | 1 | 1 | none | none |
+| input-group | 6 | 6 | none | none |
+| input-otp | 4 | 4 | none | none |
+| item | 10 | 10 | none | none |
+| kbd | 2 | 2 | none | none |
+| label | 1 | 1 | none | none |
+| marker | 4 | 3 | markerVariants | none |
+| menubar | 16 | 15 | MenubarPortal | none |
+| message | 6 | 6 | none | none |
+| message-scroller | 9 | 9 | none | none |
+| native-select | 3 | 3 | none | none |
+| navigation-menu | 10 | 8 | NavigationMenuPositioner, navigationMenuTriggerStyle | none |
+| pagination | 7 | 7 | none | none |
+| popover | 7 | 7 | none | none |
+| progress | 5 | 5 | none | none |
+| questionnaire | 15 | 15 | none | none |
+| radio-group | 2 | 2 | none | none |
+| resizable | 3 | 3 | none | none |
+| scroll-area | 2 | 2 | none | none |
+| select | 14 | 12 | SelectScrollDownButton, SelectScrollUpButton | none |
+| separator | 1 | 1 | none | none |
+| sheet | 10 | 8 | SheetOverlay, SheetPortal | none |
+| sidebar | 24 | 24 | none | none |
+| skeleton | 1 | 1 | none | none |
+| slider | 1 | 1 | none | none |
+| sonner | 1 | 1 | none | none |
+| spinner | 1 | 1 | none | none |
+| switch | 1 | 1 | none | none |
+| table | 8 | 8 | none | none |
+| tabs | 5 | 4 | tabsListVariants | none |
+| textarea | 1 | 1 | none | none |
+| toast | 15 | 9 | none | ToastContent, ToastPortal, createToastManager, reducer, toast, useToastManager |
+| toggle | 2 | 1 | toggleVariants | none |
+| toggle-group | 2 | 2 | none | none |
+| tooltip | 4 | 4 | none | none |
+| trace | 8 | 8 | none | none |
 
 ## Item checklist
 

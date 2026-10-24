@@ -23,6 +23,8 @@ const SelectContext = createContext<{
   set: (value: string) => void;
   labels: Map<string, string>;
   disabled: boolean;
+  query: string;
+  setQuery: (query: string) => void;
 } | null>(null);
 function textOf(node: ReactNode): string {
   return Children.toArray(node)
@@ -51,6 +53,7 @@ export function Select({
   onValueChange,
   disabled = false,
   children,
+  onOpenChange,
   ...overlay
 }: OverlayProps & {
   value?: string;
@@ -59,11 +62,20 @@ export function Select({
   disabled?: boolean;
 }) {
   const [selected, set] = useControllable(value, defaultValue, onValueChange);
+  const [query, setQuery] = useState('');
   return (
     <SelectContext.Provider
-      value={{ value: selected, set, labels: itemLabels(children), disabled }}
+      value={{ value: selected, set, labels: itemLabels(children), disabled, query, setQuery }}
     >
-      <OverlayRoot {...overlay}>{children}</OverlayRoot>
+      <OverlayRoot
+        {...overlay}
+        onOpenChange={(open) => {
+          if (!open) setQuery('');
+          onOpenChange?.(open);
+        }}
+      >
+        {children}
+      </OverlayRoot>
     </SelectContext.Provider>
   );
 }
@@ -107,6 +119,11 @@ export function SelectContent({ children, ...props }: React.ComponentProps<typeo
 export function SelectItem({ value, children, ...props }: ButtonProps & { value: string }) {
   const selection = useSelect();
   const overlay = useOverlay();
+  if (
+    selection.query &&
+    !textOf(children).toLocaleLowerCase().includes(selection.query.toLocaleLowerCase())
+  )
+    return null;
   return (
     <Button
       variant="ghost"
@@ -364,3 +381,34 @@ export const NavigationMenuLink = (props: ButtonProps) => (
 );
 export const NavigationMenuViewport = Box;
 export const NavigationMenuIndicator = () => <LabelText accessibilityElementsHidden>▾</LabelText>;
+
+export const SelectPopover = SelectContent;
+export const SelectList = Box;
+export function SelectInput({ onChangeText, ...props }: TextInputProps) {
+  const state = useSelect();
+  return (
+    <Input
+      accessibilityLabel="Search options"
+      {...props}
+      editable={props.editable !== false && !state.disabled}
+      value={state.query}
+      onChangeText={(query) => {
+        onChangeText?.(query);
+        state.setQuery(query);
+      }}
+    />
+  );
+}
+export function SelectEmpty({
+  children = 'No options found',
+  ...props
+}: React.ComponentProps<typeof Muted>) {
+  const state = useSelect();
+  return [...state.labels.values()].some((label) =>
+    label.toLocaleLowerCase().includes(state.query.toLocaleLowerCase()),
+  ) ? null : (
+    <Muted accessibilityLiveRegion="polite" {...props}>
+      {children}
+    </Muted>
+  );
+}

@@ -188,6 +188,12 @@ test('default workspace separates full Next web, native owned UI and privileged 
     assert.doesNotMatch(read('apps/web/components/ui/input.tsx'), /focus-visible:(?:ring|border)/);
     assert.match(read('apps/web/app/sign-in/page.tsx'), /<Label>Email<Input/);
     assert.match(read('apps/web/UPSTREAM.json'), /shadcn/);
+    const sourceLock = JSON.parse(readFileSync('assets/ui/UPSTREAM-LOCK.json', 'utf8'));
+    assert.deepEqual(JSON.parse(read('apps/web/UPSTREAM-LOCK.json')), sourceLock);
+    assert.deepEqual(JSON.parse(read('packages/native-ui/UPSTREAM-LOCK.json')), sourceLock);
+    assert.equal(web.devDependencies.shadcn, sourceLock.web.cliVersion);
+    assert.equal(web.scripts['ui:add'], 'shadcn add');
+    assert.equal(web.scripts['ui:view'], 'shadcn view');
     assert.match(read('packages/native-ui/src/native/button.tsx'), /Pressable/);
     // Native dialog behavior is exercised by the real generated-source native suite.
     assert.match(read('packages/native-ui/src/theme.tsx'), /@workspace\/styling/);

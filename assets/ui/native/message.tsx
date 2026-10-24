@@ -1,5 +1,6 @@
 export {
   Message,
+  MessageGroup,
   MessageContent,
   MessageHeader,
   MessageFooter,

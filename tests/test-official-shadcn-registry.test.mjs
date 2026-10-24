@@ -9,6 +9,9 @@ import {
   registryChecklist,
   sha256,
   diffOfficialRegistry,
+  nativeApiReport,
+  validateApiPolicy,
+  incompleteNativeItems,
 } from '../scripts/shadcn-registry.mjs';
 const inventory = loadOfficialRegistry();
 const coverage = JSON.parse(readFileSync('assets/ui/official/coverage.json'));
@@ -150,4 +153,57 @@ test('sync diff propagates upstream file, style and dependency changes to native
   });
   assert.deepEqual(diffOfficialRegistry(before, additions).added, ['base-nova/new']);
   assert.deepEqual(diffOfficialRegistry(additions, before).removed, ['base-nova/new']);
+});
+
+test('the upstream fork, reviewed source pin and web CLI version have one provenance lock', () => {
+  const lock = JSON.parse(readFileSync('assets/ui/UPSTREAM-LOCK.json'));
+  assert.equal(lock.upstream.repository, inventory.source.repository);
+  assert.equal(lock.reviewedCommit, inventory.source.commit);
+  assert.equal(lock.mirror.repository, 'https://github.com/anhedral/shadcn-ui');
+  assert.equal(lock.web.defaultStyle, 'base-nova');
+  assert.match(
+    readFileSync('src/dependencies.ts', 'utf8'),
+    new RegExp("shadcn: '" + lock.web.cliVersion.replaceAll('.', '\\.') + "'"),
+  );
+});
+test('API ledger records every source variant and invalidates even pending native items after upstream changes', () => {
+  const native = JSON.parse(readFileSync('assets/ui/native/registry.json'));
+  const report = nativeApiReport(inventory, native);
+  assert.deepEqual(JSON.parse(readFileSync('assets/ui/official/native-api.json')), report);
+  assert.equal(Object.keys(report).length, 65);
+  assert.ok(report.button.upstreamVariants.size.includes('icon-xs'));
+  const changed = structuredClone(inventory);
+  const item = changed.registries['base-nova'].items.find((item) => item.name === 'button');
+  changed.sources[item.files[0].source].exports.values.push('NewButtonPart');
+  changed.sources[item.files[0].source].variants.size.push('upstream-size');
+  const updated = nativeApiReport(changed, native);
+  assert.ok(updated.button.missingValues.includes('NewButtonPart'));
+  assert.ok(updated.button.upstreamVariants.size.includes('upstream-size'));
+  assert.notDeepEqual(updated, report);
+});
+test('browser-only API classifications require a real upstream export and native alternative evidence', () => {
+  const report = nativeApiReport(
+    inventory,
+    JSON.parse(readFileSync('assets/ui/native/registry.json')),
+  );
+  const policy = JSON.parse(readFileSync('assets/ui/official/api-policy.json'));
+  assert.doesNotThrow(() => validateApiPolicy(report, policy));
+  const invented = structuredClone(policy);
+  invented.exports['button/invented'] = policy.exports['button/buttonVariants'];
+  assert.throws(() => validateApiPolicy(report, invented), /Unknown or invalid/);
+  const missing = structuredClone(policy);
+  missing.exports['button/buttonVariants'].tests = [];
+  assert.throws(() => validateApiPolicy(report, missing), /requires a native alternative/);
+  const unsafe = structuredClone(policy);
+  unsafe.exports['button/buttonVariants'].nativeFiles = ['../outside'];
+  assert.throws(() => validateApiPolicy(report, unsafe), /Missing native alternative evidence/);
+});
+test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
+  const pending = incompleteNativeItems(inventory, coverage);
+  assert.equal(pending.length, 615);
+  assert.ok(pending.includes('registry:block/dashboard-01'));
+  assert.ok(pending.includes('registry:ui/button'));
+  assert.ok(pending.includes('registry:font/font-inter'));
+  assert.ok(!pending.includes('registry:hook/use-mobile'));
+  assert.equal(incompleteNativeItems(inventory, { items: {} }).length, 616);
 });

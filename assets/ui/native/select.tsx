@@ -1,5 +1,9 @@
 export {
   Select,
+  SelectPopover,
+  SelectList,
+  SelectInput,
+  SelectEmpty,
   SelectTrigger,
   SelectValue,
   SelectContent,

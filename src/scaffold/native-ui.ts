@@ -21,7 +21,6 @@ export function scaffoldNativeUI(root: string): void {
     'layout',
     'text',
     'theme-switcher',
-    ...(registry.supportModules ?? []).map((item) => item.file),
   ];
   const nativeFiles = [...registry.components.map((item) => item.file), ...registry.supportFiles];
   for (const file of [
@@ -29,6 +28,7 @@ export function scaffoldNativeUI(root: string): void {
     'theme-storage.ts',
     'LICENSE.shadcn',
     'UPSTREAM.json',
+    'UPSTREAM-LOCK.json',
     ...nativeFiles.map((name) => `native/${name}`),
   ]) {
     const source = readFileSync(
@@ -60,7 +60,10 @@ export function scaffoldNativeUI(root: string): void {
     root,
     'packages/native-ui/src/index.ts',
     `export * from './theme';\n` +
-      components.map((name) => `export * from './native/${name}';\n`).join(''),
+      components.map((name) => `export * from './native/${name}';\n`).join('') +
+      (registry.supportModules ?? [])
+        .map((item) => `export { ${item.exports.join(', ')} } from './native/${item.file}';\n`)
+        .join(''),
   );
   json(root, 'packages/native-ui/package.json', {
     name: '@workspace/native-ui',

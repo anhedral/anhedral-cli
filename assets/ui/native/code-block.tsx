@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+} from 'react';
 import { ScrollView, View, Text, type ViewProps } from 'react-native';
 import { Box, LabelText, Muted, row, monospace } from './_core';
 import { Button, type ButtonProps } from './button';
@@ -42,25 +50,57 @@ export function tokenizeCode(code: string, language = 'typescript'): CodeToken[]
   if (position < code.length) tokens.push({ text: code.slice(position), kind: 'plain' });
   return tokens;
 }
-const CodeContext = createContext({ code: '', language: 'typescript' });
+const CodeContext = createContext<{ code: string; language: string; size: 'default' | 'sm' }>({
+  code: '',
+  language: 'typescript',
+  size: 'default',
+});
 export function CodeBlock({
-  code,
+  code = '',
   language = 'typescript',
+  size = 'default',
+  variant = 'default',
   children,
   style,
   ...props
-}: ViewProps & { code: string; language?: string; children?: ReactNode }) {
+}: ViewProps & {
+  code?: string;
+  language?: string;
+  size?: 'default' | 'sm';
+  variant?: 'default' | 'destructive';
+  children?: ReactNode;
+}) {
+  const { colors } = useTheme();
   return (
-    <CodeContext.Provider value={{ code, language }}>
-      <Box {...props} style={style}>
+    <CodeContext.Provider value={{ code, language, size }}>
+      <Box
+        {...props}
+        style={[
+          {
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: variant === 'destructive' ? colors.destructive : colors.border,
+            backgroundColor: colors.muted,
+          },
+          style,
+        ]}
+      >
         {children ?? <CodeBlockContent />}
       </Box>
     </CodeContext.Provider>
   );
 }
-export function CodeBlockContent({ style, ...props }: ViewProps) {
-  const { code, language } = useContext(CodeContext);
+export function CodeBlockContent({
+  style,
+  children,
+  wrap = false,
+  lineNumbers = false,
+  startLine = 1,
+  ...props
+}: ViewProps & { wrap?: boolean; lineNumbers?: boolean; startLine?: number }) {
+  const { code, language, size } = useContext(CodeContext);
   const { colors } = useTheme();
+  const source = typeof children === 'string' ? children : code;
   const palette = {
     plain: colors.foreground,
     keyword: colors.primary,
@@ -70,33 +110,122 @@ export function CodeBlockContent({ style, ...props }: ViewProps) {
     added: colors['chart-2'] ?? colors.primary,
     removed: colors.destructive,
   };
+  const start = Number.isFinite(startLine) ? Math.trunc(startLine) : 1;
+  const tokens = (value: string) =>
+    tokenizeCode(value, language).map((token, index) => (
+      <Text
+        key={index}
+        style={{ color: palette[token.kind], fontWeight: token.kind === 'keyword' ? '600' : '400' }}
+      >
+        {token.text}
+      </Text>
+    ));
+  const customLines = Children.toArray(children).some(
+    (child) => isValidElement(child) && child.type === CodeBlockLine,
+  );
   return (
-    <ScrollView horizontal>
+    <ScrollView horizontal={!wrap} contentContainerStyle={wrap ? { flexGrow: 1 } : undefined}>
       <View
         {...props}
-        style={[{ padding: 12, backgroundColor: colors.muted, borderRadius: 8 }, style]}
+        style={[
+          { padding: size === 'sm' ? 8 : 12, backgroundColor: colors.muted, borderRadius: 8 },
+          style,
+        ]}
       >
-        <Text
-          selectable
-          accessibilityLabel={code}
-          style={{ fontFamily: monospace, fontSize: 13, lineHeight: 20 }}
-        >
-          {tokenizeCode(code, language).map((token, index) => (
-            <Text
-              key={index}
-              style={{
-                color: palette[token.kind],
-                fontWeight: token.kind === 'keyword' ? '600' : '400',
-              }}
-            >
-              {token.text}
-            </Text>
-          ))}
-        </Text>
+        {lineNumbers && (children === undefined || typeof children === 'string') ? (
+          source
+            .replace(/\n$/, '')
+            .split('\n')
+            .map((line, index) => (
+              <CodeBlockLine key={index} lineNumber={start + index}>
+                {tokens(line)}
+              </CodeBlockLine>
+            ))
+        ) : customLines ? (
+          Children.map(children, (child, index) =>
+            isValidElement<{ lineNumber?: number }>(child) && child.type === CodeBlockLine
+              ? cloneElement(child, { lineNumber: lineNumbers ? start + index : undefined })
+              : child,
+          )
+        ) : (
+          <Text
+            selectable
+            accessibilityLabel={source || undefined}
+            style={{ fontFamily: monospace, fontSize: size === 'sm' ? 12 : 13, lineHeight: 20 }}
+          >
+            {children === undefined || typeof children === 'string' ? tokens(source) : children}
+          </Text>
+        )}
       </View>
     </ScrollView>
   );
 }
+export function CodeBlockLine({
+  variant = 'default',
+  lineNumber,
+  children,
+  style,
+  ...props
+}: ViewProps & { variant?: 'default' | 'added' | 'removed' | 'highlighted'; lineNumber?: number }) {
+  const { colors } = useTheme();
+  const empty =
+    children === undefined ||
+    children === null ||
+    children === '' ||
+    (Array.isArray(children) && children.length === 0);
+  return (
+    <Box
+      {...props}
+      style={[
+        {
+          flexDirection: 'row',
+          gap: 12,
+          minHeight: 20,
+          backgroundColor:
+            variant === 'removed'
+              ? colors.destructive
+              : variant === 'added'
+                ? colors.secondary
+                : variant === 'highlighted'
+                  ? colors.accent
+                  : 'transparent',
+        },
+        style,
+      ]}
+    >
+      {lineNumber !== undefined && (
+        <Muted
+          accessible={false}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={{ fontFamily: monospace, minWidth: 28, textAlign: 'right' }}
+        >
+          {lineNumber}
+        </Muted>
+      )}
+      <Text
+        selectable
+        style={{
+          fontFamily: monospace,
+          fontSize: 13,
+          lineHeight: 20,
+          color:
+            variant === 'removed'
+              ? (colors['destructive-foreground'] ?? colors['primary-foreground'])
+              : colors.foreground,
+        }}
+      >
+        {empty ? '\n' : children}
+      </Text>
+    </Box>
+  );
+}
+export const CodeBlockActions = ({ style, ...props }: ViewProps) => (
+  <Box {...props} style={row([{ marginStart: 'auto' }, style])} />
+);
+export const CodeBlockFooter = ({ style, ...props }: ViewProps) => (
+  <Box {...props} style={row(style)} />
+);
 export const CodeBlockHeader = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={row(style)} />
 );
@@ -105,10 +234,13 @@ export const CodeBlockLanguage = () => <Muted>{useContext(CodeContext).language}
 export function CodeBlockCopyButton({
   children = 'Copy code',
   onCopy,
+  value,
+  onPress,
   ...props
 }: Omit<ButtonProps, 'children'> & {
   children?: ReactNode;
   onCopy?: (code: string) => void | Promise<void>;
+  value?: string;
 }) {
   const { code } = useContext(CodeContext);
   const [status, setStatus] = useState<'idle' | 'pending' | 'copied' | 'error'>('idle');
@@ -118,10 +250,14 @@ export function CodeBlockCopyButton({
         accessibilityLabel="Copy code"
         {...props}
         disabled={props.disabled || status === 'pending'}
-        onPress={async () => {
+        onPress={async (event) => {
+          onPress?.(event);
+          if (event.isDefaultPrevented()) return;
           setStatus('pending');
           try {
-            await (onCopy ? onCopy(code) : (await import('expo-clipboard')).setStringAsync(code));
+            await (onCopy
+              ? onCopy(value ?? code)
+              : (await import('expo-clipboard')).setStringAsync(value ?? code));
             setStatus('copied');
           } catch {
             setStatus('error');

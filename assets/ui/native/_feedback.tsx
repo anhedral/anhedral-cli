@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { ScrollView, View, AccessibilityInfo, type ViewProps } from 'react-native';
 import { Box, LabelText, Muted, Surface, row } from './_core';
 import { Button, type ButtonProps } from './button';
-import { OverlayRoot, OverlayTrigger, OverlayContent } from './_overlay';
+import { Input } from './input';
+import { Skeleton } from './_display';
+import { OverlayRoot, OverlayContent, useOverlay } from './_overlay';
 export type ToastMessage = {
   id?: string;
   title: string;
@@ -132,17 +134,76 @@ export function useSidebar() {
   if (!state) throw Error('Sidebar requires SidebarProvider.');
   return { ...state, toggleSidebar: () => state.setOpen(!state.open) };
 }
-export const Sidebar = (props: React.ComponentProps<typeof OverlayContent>) => (
-  <OverlayContent {...props} side="left" />
-);
-export const SidebarTrigger = ({
-  children = 'Menu',
+export const Sidebar = ({
+  side = 'left',
   ...props
-}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) => (
-  <OverlayTrigger accessibilityLabel="Toggle sidebar" {...props}>
-    {children}
-  </OverlayTrigger>
-);
+}: React.ComponentProps<typeof OverlayContent>) => <OverlayContent {...props} side={side} />;
+export function SidebarTrigger({
+  children = 'Menu',
+  onPress,
+  ...props
+}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) {
+  const state = useSidebar(),
+    overlay = useOverlay();
+  return (
+    <Button
+      accessibilityLabel="Toggle sidebar"
+      {...props}
+      ref={overlay.trigger}
+      accessibilityState={{ expanded: state.open }}
+      onPress={(event) => {
+        onPress?.(event);
+        if (!event.isDefaultPrevented()) state.toggleSidebar();
+      }}
+    >
+      {children}
+    </Button>
+  );
+}
+export const SidebarInput = Input;
+export function SidebarRail({
+  children,
+  onPress,
+  ...props
+}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) {
+  const state = useSidebar();
+  return (
+    <Button
+      variant="ghost"
+      accessibilityLabel={state.open ? 'Collapse sidebar' : 'Expand sidebar'}
+      {...props}
+      onPress={(event) => {
+        onPress?.(event);
+        if (!event.isDefaultPrevented()) state.toggleSidebar();
+      }}
+    >
+      {children ?? (state.open ? '‹' : '›')}
+    </Button>
+  );
+}
+export const SidebarGroupAction = Button;
+export function SidebarMenuSkeleton({
+  showIcon = false,
+  style,
+  ...props
+}: ViewProps & { showIcon?: boolean }) {
+  return (
+    <Box {...props} accessible accessibilityLabel="Loading navigation" style={row(style)}>
+      {showIcon && (
+        <Skeleton
+          accessible={false}
+          accessibilityElementsHidden
+          style={{ width: 24, height: 24 }}
+        />
+      )}
+      <Skeleton
+        accessible={false}
+        accessibilityElementsHidden
+        style={{ width: '70%', height: 20 }}
+      />
+    </Box>
+  );
+}
 export const SidebarInset = Box;
 export const SidebarHeader = Box;
 export const SidebarFooter = Box;
@@ -165,78 +226,3 @@ export const SidebarSeparator = () => <View style={{ height: 8 }} />;
 export const SidebarMenuSub = Box;
 export const SidebarMenuSubItem = Box;
 export const SidebarMenuSubButton = SidebarMenuButton;
-const ScrollerContext = createContext<{
-  bottom: boolean;
-  setBottom: (value: boolean) => void;
-  scroll: React.RefObject<ScrollView | null>;
-} | null>(null);
-export function MessageScroller(props: ViewProps) {
-  const [bottom, setBottom] = useState(true);
-  const scroll = useRef<ScrollView>(null);
-  return (
-    <ScrollerContext.Provider value={{ bottom, setBottom, scroll }}>
-      <Box {...props} />
-    </ScrollerContext.Provider>
-  );
-}
-export function MessageScrollerContent({
-  onScroll,
-  onContentSizeChange,
-  children,
-  ...props
-}: React.ComponentProps<typeof ScrollView>) {
-  const state = useContext(ScrollerContext);
-  if (!state) throw Error('MessageScrollerContent requires MessageScroller.');
-  const frame = useRef<number | undefined>(undefined);
-  useEffect(
-    () => () => {
-      if (frame.current !== undefined) cancelAnimationFrame(frame.current);
-    },
-    [],
-  );
-  return (
-    <ScrollView
-      {...props}
-      ref={state.scroll}
-      scrollEventThrottle={16}
-      onScroll={(event) => {
-        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-        state.setBottom(contentOffset.y + layoutMeasurement.height >= contentSize.height - 40);
-        onScroll?.(event);
-      }}
-      onContentSizeChange={(width, height) => {
-        if (state.bottom) {
-          if (frame.current !== undefined) cancelAnimationFrame(frame.current);
-          frame.current = requestAnimationFrame(() =>
-            state.scroll.current?.scrollToEnd({ animated: false }),
-          );
-        }
-        onContentSizeChange?.(width, height);
-      }}
-    >
-      {children}
-    </ScrollView>
-  );
-}
-export function MessageScrollerScrollButton({
-  children = 'Latest messages',
-  ...props
-}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) {
-  const state = useContext(ScrollerContext);
-  if (!state || state.bottom) return null;
-  return (
-    <Button
-      accessibilityLabel="Scroll to latest messages"
-      {...props}
-      onPress={() => {
-        state.scroll.current?.scrollToEnd({ animated: false });
-        state.setBottom(true);
-      }}
-    >
-      {children}
-    </Button>
-  );
-}
-export const MessageScrollerFooter = ({ style, ...props }: ViewProps) => (
-  <Box {...props} style={row(style)} />
-);

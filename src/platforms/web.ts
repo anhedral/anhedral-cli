@@ -22,6 +22,8 @@ export function scaffoldWeb({ root, options }: RecipeContext): void {
       start: 'next start --hostname 0.0.0.0 --port 3000',
       typecheck: 'next typegen && tsc --noEmit',
       lint: 'eslint . --max-warnings 0',
+      'ui:add': 'shadcn add',
+      'ui:view': 'shadcn view',
     },
     dependencies: {
       ...WEB_DEPENDENCIES.dependencies,
@@ -139,7 +141,7 @@ export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
         'utf8',
       ),
     );
-  for (const file of ['LICENSE.shadcn', 'UPSTREAM.json'])
+  for (const file of ['LICENSE.shadcn', 'UPSTREAM.json', 'UPSTREAM-LOCK.json'])
     put(
       root,
       `${app}/${file}`,

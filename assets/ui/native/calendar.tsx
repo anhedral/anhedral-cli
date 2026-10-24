@@ -168,3 +168,42 @@ export function Calendar(props: CalendarProps) {
     </Box>
   );
 }
+
+export function RangeCalendar(
+  props: Omit<CalendarProps, 'mode' | 'selected' | 'onSelect'> & {
+    selected?: DateRange;
+    onSelect?: (value: DateRange) => void;
+  },
+) {
+  return <Calendar {...props} mode="range" />;
+}
+export function CalendarDayButton({
+  day,
+  modifiers,
+  children,
+  ...props
+}: Omit<React.ComponentProps<typeof Button>, 'children'> & {
+  day: Date | { date: Date };
+  modifiers?: { selected?: boolean; disabled?: boolean; today?: boolean };
+  children?: React.ReactNode;
+}) {
+  const date = day instanceof Date ? day : day.date;
+  return (
+    <Button
+      size="icon"
+      variant={modifiers?.selected ? 'secondary' : 'ghost'}
+      {...props}
+      disabled={props.disabled || modifiers?.disabled}
+      accessibilityLabel={
+        props.accessibilityLabel ??
+        date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+      }
+      accessibilityState={{
+        selected: !!modifiers?.selected,
+        disabled: !!(props.disabled || modifiers?.disabled),
+      }}
+    >
+      {children ?? date.getDate()}
+    </Button>
+  );
+}

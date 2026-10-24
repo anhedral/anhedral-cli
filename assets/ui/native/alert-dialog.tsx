@@ -1,5 +1,6 @@
 export {
   AlertDialog,
+  AlertDialogMedia,
   AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogTitle,

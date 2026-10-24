@@ -72,6 +72,8 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
     '@opennextjs/cloudflare': '1.20.12',
   },
   devDependencies: {
+    // renovate: datasource=npm depName=shadcn
+    shadcn: '4.22.1',
     // renovate: datasource=npm depName=tailwindcss
     tailwindcss: '4.3.3',
     // renovate: datasource=npm depName=@tailwindcss/postcss

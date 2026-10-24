@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   View,
   Image,
@@ -34,6 +34,9 @@ export const AlertTitle = ({ style, ...props }: TextProps) => (
   <LabelText accessibilityRole="header" {...props} style={[{ fontWeight: '600' }, style]} />
 );
 export const AlertDescription = Muted;
+export const AlertAction = ({ style, ...props }: ViewProps) => (
+  <Box {...props} style={[{ position: 'absolute', right: 12, top: 12 }, style]} />
+);
 export function AspectRatio({ ratio = 1, style, ...props }: ViewProps & { ratio?: number }) {
   return (
     <View
@@ -50,9 +53,11 @@ export function Badge({
   children,
   style,
   ...props
-}: ViewProps & { variant?: 'default' | 'secondary' | 'destructive' | 'outline' }) {
+}: ViewProps & {
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
+}) {
   const { colors } = useTheme();
-  const filled = variant !== 'outline';
+  const filled = ['default', 'secondary', 'destructive'].includes(variant);
   const backgroundColor =
     variant === 'destructive'
       ? colors.destructive
@@ -69,7 +74,11 @@ export function Badge({
           paddingVertical: 2,
           borderRadius: 12,
           borderWidth: 1,
-          borderColor: filled ? backgroundColor : colors.border,
+          borderColor: filled
+            ? backgroundColor
+            : variant === 'outline'
+              ? colors.border
+              : 'transparent',
           backgroundColor: filled ? backgroundColor : colors.background,
         },
         style,
@@ -256,36 +265,6 @@ export const TypographyBlockquote = ({ style, ...props }: TextProps) => {
 };
 export const TypographyInlineCode = Kbd;
 export const TypographyList = Box;
-export function Progress({
-  value = 0,
-  max = 100,
-  style,
-  ...props
-}: ViewProps & { value?: number; max?: number }) {
-  const { colors } = useTheme();
-  const maximum = Number.isFinite(max) && max > 0 ? max : 100;
-  const current = Math.min(maximum, Math.max(0, Number.isFinite(value) ? value : 0));
-  return (
-    <View
-      accessible
-      accessibilityRole="progressbar"
-      accessibilityValue={{ min: 0, max: maximum, now: current }}
-      {...props}
-      style={[
-        { height: 8, backgroundColor: colors.secondary, borderRadius: 4, overflow: 'hidden' },
-        style,
-      ]}
-    >
-      <View
-        style={{
-          height: '100%',
-          width: `${(100 * current) / maximum}%`,
-          backgroundColor: colors.primary,
-        }}
-      />
-    </View>
-  );
-}
 export function Spinner({
   size = 'small',
   ...props
@@ -359,40 +338,21 @@ export const BreadcrumbPage = ({ style, ...props }: TextProps) => (
 );
 export const BreadcrumbSeparator = () => <Muted accessibilityElementsHidden>›</Muted>;
 export const BreadcrumbEllipsis = () => <Muted accessibilityLabel="More breadcrumb items">…</Muted>;
-export const Bubble = ({
-  side = 'start',
-  style,
-  ...props
-}: ViewProps & { side?: 'start' | 'end' }) => {
-  const { colors } = useTheme();
-  return (
-    <Surface
-      {...props}
-      style={[
-        {
-          alignSelf: side === 'end' ? 'flex-end' : 'flex-start',
-          backgroundColor: side === 'end' ? colors.secondary : colors.muted,
-          maxWidth: '90%',
-        },
-        style,
-      ]}
-    />
-  );
-};
-export const BubbleContent = Box;
-export const BubbleActions = ItemActions;
-export const BubbleHeader = Box;
-export const BubbleFooter = Box;
 export const Marker = ({ style, ...props }: ViewProps) => <Box {...props} style={row(style)} />;
 export const MarkerContent = Muted;
 export const MarkerIcon = Box;
 export const Message = ({
   from = 'assistant',
+  align,
   style,
   ...props
-}: ViewProps & { from?: 'user' | 'assistant' | 'system' }) => (
-  <Box {...props} style={[{ alignItems: from === 'user' ? 'flex-end' : 'stretch' }, style]} />
+}: ViewProps & { from?: 'user' | 'assistant' | 'system'; align?: 'start' | 'end' }) => (
+  <Box
+    {...props}
+    style={[{ alignItems: align === 'end' || from === 'user' ? 'flex-end' : 'stretch' }, style]}
+  />
 );
+export const MessageGroup = Box;
 export const MessageContent = Box;
 export const MessageHeader = ItemActions;
 export const MessageFooter = ItemActions;
@@ -400,54 +360,3 @@ export const MessageActions = ItemActions;
 export const MessageAction = Button;
 export const MessageAvatar = Avatar;
 export const MessageTimestamp = Muted;
-export function Attachment({
-  name,
-  uri,
-  progress,
-  onRemove,
-  onOpen,
-  children,
-}: {
-  name: string;
-  uri?: string;
-  progress?: number;
-  onRemove?: () => void;
-  onOpen?: () => void;
-  children?: ReactNode;
-}) {
-  return (
-    <Surface>
-      {uri && (
-        <Image
-          source={{ uri }}
-          accessibilityLabel={name}
-          style={{ width: 80, height: 80, borderRadius: 6 }}
-        />
-      )}
-      <Button
-        variant="ghost"
-        onPress={onOpen}
-        disabled={!onOpen}
-        accessibilityLabel={`Open ${name}`}
-      >
-        {name}
-      </Button>
-      {progress !== undefined && (
-        <Progress value={progress} accessibilityLabel={`Uploading ${name}`} />
-      )}
-      {children}
-      {onRemove && (
-        <Button variant="ghost" onPress={onRemove} accessibilityLabel={`Remove ${name}`}>
-          Remove
-        </Button>
-      )}
-    </Surface>
-  );
-}
-export const AttachmentGroup = ItemActions;
-export const AttachmentPreview = ({ style, ...props }: ImageProps) => (
-  <Image {...props} style={[{ width: 80, height: 80 }, style]} />
-);
-export const AttachmentName = LabelText;
-export const AttachmentMetadata = Muted;
-export const AttachmentActions = ItemActions;

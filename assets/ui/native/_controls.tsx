@@ -95,6 +95,7 @@ export function Switch({
 export function Toggle({
   pressed,
   defaultPressed = false,
+  variant = 'default',
   onPressedChange,
   disabled,
   ...props
@@ -108,7 +109,7 @@ export function Toggle({
     <Button
       {...props}
       disabled={disabled}
-      variant={value ? 'secondary' : 'ghost'}
+      variant={value ? 'secondary' : variant === 'outline' ? 'outline' : 'ghost'}
       accessibilityState={{ selected: value, disabled: !!disabled }}
       onPress={() => set(!value)}
     />

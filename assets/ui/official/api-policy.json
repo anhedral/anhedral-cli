@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "exports": {
+    "alert-dialog/AlertDialogOverlay": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "alert-dialog/AlertDialogPortal": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "badge/badgeVariants": {
+      "classification": "web-specific-export",
+      "reason": "Returns browser CSS class names. Native components use typed variant/orientation/size props and StyleSheet values; this classification does not establish native variant coverage.",
+      "nativeFiles": ["assets/ui/native/badge.tsx"],
+      "tests": ["tests/native-ui/catalog.test.tsx"]
+    },
+    "button-group/buttonGroupVariants": {
+      "classification": "web-specific-export",
+      "reason": "Returns browser CSS class names. Native components use typed variant/orientation/size props and StyleSheet values; this classification does not establish native variant coverage.",
+      "nativeFiles": ["assets/ui/native/button-group.tsx"],
+      "tests": ["tests/native-ui/catalog.test.tsx"]
+    },
+    "button/buttonVariants": {
+      "classification": "web-specific-export",
+      "reason": "Returns browser CSS class names. Native components use typed variant/orientation/size props and StyleSheet values; this classification does not establish native variant coverage.",
+      "nativeFiles": ["assets/ui/native/button.tsx"],
+      "tests": ["tests/native-ui/catalog.test.tsx"]
+    },
+    "chart/ChartStyle": {
+      "classification": "web-specific-export",
+      "reason": "Injects CSS custom properties into a browser style element. Native SVG receives native theme colors directly; full chart-config and series parity remains pending.",
+      "nativeFiles": ["assets/ui/native/chart.tsx"],
+      "tests": ["tests/native-ui/content.test.tsx"]
+    },
+    "context-menu/ContextMenuPortal": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "dialog/DialogOverlay": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "dialog/DialogPortal": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "drawer/DrawerOverlay": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "drawer/DrawerPortal": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "drawer/DrawerSwipeHandle": {
+      "classification": "web-specific-export",
+      "reason": "DrawerContent includes the native drag handle and accessible dismissal action; a separate browser swipe-target element is not required.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/presentation.test.tsx"]
+    },
+    "marker/markerVariants": {
+      "classification": "web-specific-export",
+      "reason": "Returns browser CSS class names. Native components use typed variant/orientation/size props and StyleSheet values; this classification does not establish native variant coverage.",
+      "nativeFiles": ["assets/ui/native/marker.tsx"],
+      "tests": ["tests/native-ui/catalog.test.tsx"]
+    },
+    "menubar/MenubarPortal": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "navigation-menu/NavigationMenuPositioner": {
+      "classification": "web-specific-export",
+      "reason": "Browser anchor positioning is replaced by the native Modal navigation surface.",
+      "nativeFiles": ["assets/ui/native/_selection.tsx"],
+      "tests": ["tests/native-ui/selection.test.tsx"]
+    },
+    "navigation-menu/navigationMenuTriggerStyle": {
+      "classification": "web-specific-export",
+      "reason": "Returns browser CSS class names. Native components use typed variant/orientation/size props and StyleSheet values; this classification does not establish native variant coverage.",
+      "nativeFiles": ["assets/ui/native/navigation-menu.tsx"],
+      "tests": ["tests/native-ui/catalog.test.tsx"]
+    },
+    "select/SelectScrollDownButton": {
+      "classification": "web-specific-export",
+      "reason": "Native SelectContent uses platform ScrollView scrolling and accessible scroll gestures rather than browser hover-to-scroll buttons.",
+      "nativeFiles": ["assets/ui/native/_selection.tsx"],
+      "tests": ["tests/native-ui/selection.test.tsx"]
+    },
+    "select/SelectScrollUpButton": {
+      "classification": "web-specific-export",
+      "reason": "Native SelectContent uses platform ScrollView scrolling and accessible scroll gestures rather than browser hover-to-scroll buttons.",
+      "nativeFiles": ["assets/ui/native/_selection.tsx"],
+      "tests": ["tests/native-ui/selection.test.tsx"]
+    },
+    "sheet/SheetOverlay": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "sheet/SheetPortal": {
+      "classification": "web-specific-export",
+      "reason": "Native Modal content owns its platform window and backdrop. DOM portal containers and separate overlay host elements are not installed on Expo.",
+      "nativeFiles": ["assets/ui/native/_overlay.tsx"],
+      "tests": ["tests/native-ui/overlays.test.tsx"]
+    },
+    "tabs/tabsListVariants": {
+      "classification": "web-specific-export",
+      "reason": "Returns browser CSS class names. Native components use typed variant/orientation/size props and StyleSheet values; this classification does not establish native variant coverage.",
+      "nativeFiles": ["assets/ui/native/tabs.tsx"],
+      "tests": ["tests/native-ui/catalog.test.tsx"]
+    },
+    "toggle/toggleVariants": {
+      "classification": "web-specific-export",
+      "reason": "Returns browser CSS class names. Native components use typed variant/orientation/size props and StyleSheet values; this classification does not establish native variant coverage.",
+      "nativeFiles": ["assets/ui/native/toggle.tsx"],
+      "tests": ["tests/native-ui/catalog.test.tsx"]
+    }
+  }
+}

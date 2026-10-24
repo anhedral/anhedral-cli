@@ -1,17 +1,21 @@
-import { Pressable, Text, StyleSheet, type View, type PressableProps } from 'react-native';
-import { Children, type ReactNode, type Ref } from 'react';
+import { Pressable, Text, StyleSheet, Linking, type View, type PressableProps } from 'react-native';
+import { Children, useState, type ReactNode, type Ref } from 'react';
 import { useTheme } from '../theme';
 export type ButtonProps = Omit<PressableProps, 'children'> & {
   children: ReactNode;
   ref?: Ref<View>;
   variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'destructive' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
 };
 const sizes = {
   default: { minHeight: 44 },
-  sm: { minHeight: 44 },
+  xs: { minHeight: 44, paddingHorizontal: 8, paddingVertical: 4 },
+  sm: { minHeight: 44, paddingHorizontal: 10, paddingVertical: 6 },
   lg: { minHeight: 48 },
-  icon: { minHeight: 44, minWidth: 44 },
+  icon: { minHeight: 44, minWidth: 44, paddingHorizontal: 10 },
+  'icon-xs': { minHeight: 44, minWidth: 44, paddingHorizontal: 6 },
+  'icon-sm': { minHeight: 44, minWidth: 44, paddingHorizontal: 8 },
+  'icon-lg': { minHeight: 48, minWidth: 48, paddingHorizontal: 12 },
 };
 export function Button({
   children,
@@ -61,7 +65,17 @@ export function Button({
     >
       {Children.map(children, (child) =>
         typeof child === 'string' || typeof child === 'number' ? (
-          <Text style={[styles.label, { color: foregrounds[variant] }]}>{child}</Text>
+          <Text
+            style={[
+              styles.label,
+              {
+                color: foregrounds[variant],
+                fontSize: size === 'xs' ? 12 : size === 'lg' ? 16 : 14,
+              },
+            ]}
+          >
+            {child}
+          </Text>
         ) : (
           child
         ),
@@ -84,3 +98,52 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.75 },
 });
+
+/** Application routes use onNavigate; external links use the native OS URL bridge. */
+export function LinkButton({
+  href,
+  onNavigate,
+  onError,
+  onPress,
+  children,
+  ...props
+}: ButtonProps & {
+  href: string;
+  onNavigate?: (href: string) => void | Promise<void>;
+  onError?: (error: unknown) => void;
+}) {
+  const [failed, setFailed] = useState(false);
+  const { colors } = useTheme();
+  return (
+    <>
+      <Button
+        {...props}
+        accessibilityRole="link"
+        onPress={async (event) => {
+          onPress?.(event);
+          if (event.isDefaultPrevented()) return;
+          setFailed(false);
+          try {
+            if (onNavigate) await onNavigate(href);
+            else {
+              const parsed = new URL(href);
+              if (!['http:', 'https:', 'mailto:', 'tel:', 'sms:'].includes(parsed.protocol))
+                throw Error('A native navigation handler is required.');
+              await Linking.openURL(href);
+            }
+          } catch (error) {
+            setFailed(true);
+            onError?.(error);
+          }
+        }}
+      >
+        {children}
+      </Button>
+      {failed && (
+        <Text accessibilityRole="alert" style={{ color: colors.destructive }}>
+          Unable to open link.
+        </Text>
+      )}
+    </>
+  );
+}

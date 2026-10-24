@@ -400,3 +400,25 @@ export const MenubarShortcut = Muted;
 export const MenubarSub = OverlayRoot;
 export const MenubarSubTrigger = OverlayTrigger;
 export const MenubarSubContent = DropdownMenuContent;
+
+/** Native Modal content owns its platform window; no browser portal container is needed. */
+export const DropdownMenuPortal = ({ children }: { children?: ReactNode }) => <>{children}</>;
+export const AlertDialogMedia = ({ style, ...props }: ViewProps) => {
+  const { colors } = useTheme();
+  return (
+    <Box
+      {...props}
+      style={[
+        {
+          width: 48,
+          height: 48,
+          borderRadius: 8,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.muted,
+        },
+        style,
+      ]}
+    />
+  );
+};

@@ -35,6 +35,7 @@ const requiredFiles = new Set([
   'assets/ui/theme.tsx',
   'assets/ui/LICENSE.shadcn',
   'assets/ui/UPSTREAM.json',
+  'assets/ui/UPSTREAM-LOCK.json',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -179,7 +180,7 @@ try {
   for (const file of packed.files) {
     const allowedNativeUI =
       nativeFiles.includes(file.path) ||
-      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json)$/.test(
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json|UPSTREAM-LOCK\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);

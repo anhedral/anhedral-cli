@@ -22,7 +22,7 @@
     {
       "id": "alert",
       "file": "alert.tsx",
-      "exports": ["Alert", "AlertTitle", "AlertDescription"],
+      "exports": ["Alert", "AlertTitle", "AlertDescription", "AlertAction"],
       "suite": "presentation",
       "upstream": "https://ui.shadcn.com/docs/components/alert",
       "adaptation": "Native React Native primitives and shared semantic tokens; no DOM runtime.",
@@ -43,7 +43,8 @@
         "AlertDialogHeader",
         "AlertDialogFooter",
         "AlertDialogAction",
-        "AlertDialogCancel"
+        "AlertDialogCancel",
+        "AlertDialogMedia"
       ],
       "suite": "overlays",
       "upstream": "https://ui.shadcn.com/docs/components/alert-dialog",
@@ -74,7 +75,13 @@
         "AttachmentPreview",
         "AttachmentName",
         "AttachmentMetadata",
-        "AttachmentActions"
+        "AttachmentActions",
+        "AttachmentAction",
+        "AttachmentTrigger",
+        "AttachmentContent",
+        "AttachmentDescription",
+        "AttachmentMedia",
+        "AttachmentTitle"
       ],
       "suite": "presentation",
       "upstream": "https://ui.shadcn.com/docs/components/attachment",
@@ -138,7 +145,15 @@
     {
       "id": "bubble",
       "file": "bubble.tsx",
-      "exports": ["Bubble", "BubbleContent", "BubbleActions", "BubbleHeader", "BubbleFooter"],
+      "exports": [
+        "Bubble",
+        "BubbleContent",
+        "BubbleActions",
+        "BubbleHeader",
+        "BubbleFooter",
+        "BubbleGroup",
+        "BubbleReactions"
+      ],
       "suite": "presentation",
       "upstream": "https://ui.shadcn.com/docs/components/bubble",
       "adaptation": "Native React Native primitives and shared semantic tokens; no DOM runtime.",
@@ -150,7 +165,7 @@
     {
       "id": "button",
       "file": "button.tsx",
-      "exports": ["Button"],
+      "exports": ["Button", "LinkButton"],
       "suite": "controls",
       "upstream": "https://ui.shadcn.com/docs/components/button",
       "adaptation": "Native React Native primitives and shared semantic tokens; no DOM runtime.",
@@ -174,7 +189,7 @@
     {
       "id": "calendar",
       "file": "calendar.tsx",
-      "exports": ["Calendar"],
+      "exports": ["Calendar", "RangeCalendar", "CalendarDayButton"],
       "suite": "calendar",
       "upstream": "https://ui.shadcn.com/docs/components/calendar",
       "adaptation": "Locale-aware native day grid; single/multiple/range selection and disabled dates.",
@@ -211,7 +226,8 @@
         "CarouselContent",
         "CarouselItem",
         "CarouselPrevious",
-        "CarouselNext"
+        "CarouselNext",
+        "useCarousel"
       ],
       "suite": "motion",
       "upstream": "https://ui.shadcn.com/docs/components/carousel",
@@ -261,7 +277,10 @@
         "CodeBlockHeader",
         "CodeBlockTitle",
         "CodeBlockLanguage",
-        "CodeBlockCopyButton"
+        "CodeBlockCopyButton",
+        "CodeBlockLine",
+        "CodeBlockActions",
+        "CodeBlockFooter"
       ],
       "suite": "content",
       "upstream": "https://ui.shadcn.com/docs/components/code-block",
@@ -286,7 +305,25 @@
     {
       "id": "combobox",
       "file": "combobox.tsx",
-      "exports": ["Combobox"],
+      "exports": [
+        "Combobox",
+        "ComboboxTrigger",
+        "ComboboxValue",
+        "ComboboxInput",
+        "ComboboxContent",
+        "ComboboxList",
+        "ComboboxCollection",
+        "ComboboxItem",
+        "ComboboxEmpty",
+        "ComboboxGroup",
+        "ComboboxLabel",
+        "ComboboxSeparator",
+        "ComboboxChips",
+        "ComboboxChipList",
+        "ComboboxChipsInput",
+        "ComboboxChip",
+        "useComboboxAnchor"
+      ],
       "suite": "selection",
       "upstream": "https://ui.shadcn.com/docs/components/combobox",
       "adaptation": "Native React Native primitives and shared semantic tokens; no DOM runtime.",
@@ -392,7 +429,7 @@
     {
       "id": "direction",
       "file": "direction.tsx",
-      "exports": ["DirectionProvider", "useDirection"],
+      "exports": ["DirectionProvider", "useDirection", "I18nProvider", "useLocale"],
       "suite": "motion",
       "upstream": "https://ui.shadcn.com/docs/components/direction",
       "adaptation": "Context and native layout direction; slider adjusts its gesture direction in RTL.",
@@ -439,7 +476,8 @@
         "DropdownMenuShortcut",
         "DropdownMenuSub",
         "DropdownMenuSubTrigger",
-        "DropdownMenuSubContent"
+        "DropdownMenuSubContent",
+        "DropdownMenuPortal"
       ],
       "suite": "overlays",
       "upstream": "https://ui.shadcn.com/docs/components/dropdown-menu",
@@ -645,7 +683,8 @@
         "MessageActions",
         "MessageAction",
         "MessageAvatar",
-        "MessageTimestamp"
+        "MessageTimestamp",
+        "MessageGroup"
       ],
       "suite": "presentation",
       "upstream": "https://ui.shadcn.com/docs/components/message",
@@ -662,7 +701,14 @@
         "MessageScroller",
         "MessageScrollerContent",
         "MessageScrollerScrollButton",
-        "MessageScrollerFooter"
+        "MessageScrollerFooter",
+        "MessageScrollerProvider",
+        "MessageScrollerViewport",
+        "MessageScrollerItem",
+        "MessageScrollerButton",
+        "useMessageScroller",
+        "useMessageScrollerScrollable",
+        "useMessageScrollerVisibility"
       ],
       "suite": "data-feedback",
       "upstream": "https://ui.shadcn.com/docs/components/message-scroller",
@@ -728,7 +774,16 @@
     {
       "id": "popover",
       "file": "popover.tsx",
-      "exports": ["Popover", "PopoverTrigger", "PopoverContent", "PopoverClose", "PopoverAnchor"],
+      "exports": [
+        "Popover",
+        "PopoverTrigger",
+        "PopoverContent",
+        "PopoverClose",
+        "PopoverAnchor",
+        "PopoverHeader",
+        "PopoverTitle",
+        "PopoverDescription"
+      ],
       "suite": "overlays",
       "upstream": "https://ui.shadcn.com/docs/components/popover",
       "adaptation": "Native React Native primitives and shared semantic tokens; no DOM runtime.",
@@ -740,7 +795,13 @@
     {
       "id": "progress",
       "file": "progress.tsx",
-      "exports": ["Progress"],
+      "exports": [
+        "Progress",
+        "ProgressTrack",
+        "ProgressIndicator",
+        "ProgressLabel",
+        "ProgressValue"
+      ],
       "suite": "presentation",
       "upstream": "https://ui.shadcn.com/docs/components/progress",
       "adaptation": "Native React Native primitives and shared semantic tokens; no DOM runtime.",
@@ -752,7 +813,26 @@
     {
       "id": "questionnaire",
       "file": "questionnaire.tsx",
-      "exports": ["Questionnaire"],
+      "exports": [
+        "Questionnaire",
+        "QuestionnaireItem",
+        "QuestionnaireTitle",
+        "QuestionnaireDescription",
+        "QuestionnaireChoices",
+        "QuestionnaireChoice",
+        "QuestionnaireChoiceInput",
+        "QuestionnaireChoiceLabel",
+        "QuestionnaireChoiceShortcut",
+        "QuestionnaireChoiceDescription",
+        "QuestionnaireProgress",
+        "QuestionnaireError",
+        "QuestionnaireInput",
+        "QuestionnaireActions",
+        "QuestionnairePrevious",
+        "QuestionnaireNext",
+        "QuestionnaireSkip",
+        "QuestionnaireSubmit"
+      ],
       "suite": "content",
       "upstream": "https://ui.shadcn.com/docs/components/questionnaire",
       "adaptation": "Native single/multiple/text steps with required-answer validation, back/skip and one completion per submission.",
@@ -809,7 +889,11 @@
         "SelectGroup",
         "SelectLabel",
         "SelectItemText",
-        "SelectSeparator"
+        "SelectSeparator",
+        "SelectPopover",
+        "SelectList",
+        "SelectInput",
+        "SelectEmpty"
       ],
       "suite": "selection",
       "upstream": "https://ui.shadcn.com/docs/components/select",
@@ -875,7 +959,11 @@
         "SidebarSeparator",
         "SidebarMenuSub",
         "SidebarMenuSubItem",
-        "SidebarMenuSubButton"
+        "SidebarMenuSubButton",
+        "SidebarRail",
+        "SidebarInput",
+        "SidebarGroupAction",
+        "SidebarMenuSkeleton"
       ],
       "suite": "data-feedback",
       "upstream": "https://ui.shadcn.com/docs/components/sidebar",
@@ -1049,7 +1137,11 @@
         "TraceIcon",
         "TraceHeader",
         "TraceCode",
-        "TraceStatus"
+        "TraceStatus",
+        "TraceLine",
+        "TraceCollapsible",
+        "TraceCollapsibleTrigger",
+        "TraceCollapsibleContent"
       ],
       "suite": "content",
       "upstream": "https://ui.shadcn.com/docs/components/trace",
@@ -1095,10 +1187,12 @@
     "_legacy-dialog.tsx",
     "_motion.tsx",
     "_overlay.tsx",
+    "_scroller-store.tsx",
     "_selection.tsx",
     "form.tsx",
     "highlighter.tsx",
     "layout.tsx",
+    "sonner.tsx",
     "text.tsx",
     "theme-switcher.tsx",
     "use-highlighted-code.tsx",
@@ -1129,6 +1223,10 @@
         "FormMessage",
         "useFormField"
       ]
+    },
+    {
+      "file": "sonner",
+      "exports": ["toast", "SonnerToaster", "useSonner"]
     }
   ]
 }

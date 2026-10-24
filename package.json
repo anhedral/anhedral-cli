@@ -90,7 +90,10 @@
     "native-ui:docs": "node scripts/native-ui-catalog.mjs --write",
     "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream",
     "native-ui:registry": "node scripts/shadcn-registry.mjs",
-    "native-ui:registry:docs": "node scripts/shadcn-registry.mjs --write"
+    "native-ui:registry:docs": "node scripts/shadcn-registry.mjs --write",
+    "native-ui:api": "node scripts/shadcn-registry.mjs --api",
+    "native-ui:api:write": "node scripts/shadcn-registry.mjs --api --write",
+    "native-ui:parity": "node scripts/shadcn-registry.mjs --complete"
   },
   "keywords": [
     "cli",

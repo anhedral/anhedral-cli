@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/shadcn-ui/ui",
+    "branch": "main"
+  },
+  "mirror": {
+    "repository": "https://github.com/anhedral/shadcn-ui",
+    "branch": "main",
+    "policy": "Preserve complete upstream source and history; native implementations are owned by anhedral-cli."
+  },
+  "reviewedCommit": "617134d5810bba521803b3ed787190bacbb80b35",
+  "web": {
+    "cliVersion": "4.22.1",
+    "registry": "https://ui.shadcn.com/r/styles/{style}/{name}.json",
+    "defaultStyle": "base-nova"
+  },
+  "native": {
+    "source": "native/",
+    "componentInventory": "native/registry.json",
+    "parityEvidence": "official/coverage.json"
+  },
+  "verified": "2026-10-24"
+}
