@@ -52,3 +52,21 @@ Cloudflare Workers host the OpenNext web application and Hono API. The web Worke
 ## Version compatibility
 
 Version 0.15 replaces Expo web with full Next.js App Router through OpenNext and keeps Expo for iOS/Android only. The former broad catalog remains retired. Core records are always present; only Stripe and RevenueCat can be selected as additions. Registry inspection may show supporting records; it does not make those records independently selectable additions. Legacy application source and provider resources are never deleted or migrated by this change. Preserve old CLI pins for old projects and retain dated verification as historical evidence.
+
+## Managed authentication email
+
+New apps include a server-only `packages/managed-email` adapter and web/native
+verification and password-reset screens. Anhedral operations may provision the API
+Worker's `ANHEDRAL_EMAIL` service binding, `ANHEDRAL_EMAIL_SCOPE` UUID and secret
+`ANHEDRAL_EMAIL_CAPABILITY`; provider keys and sender configuration stay in the
+broker. Its scope must match the app's public Better Auth origin and exact native
+scheme. Do not expose these values through Next public variables or Expo config.
+
+No broker configuration preserves standalone sign-in behavior. Partial setup fails
+closed. Complete setup requires verified email and enables reset delivery with
+session revocation. Do not remove broker configuration to bypass verification;
+existing unverified sessions need an explicit revocation plan when enabling the
+policy for an existing deployment. Initialization does not provision email or send
+messages. Test with an isolated sink; a receipt proves acceptance, not inbox delivery.
+Existing hosted execution images remain pinned until a separate verified image
+release; publishing the CLI does not replace them or rewrite saved apps.

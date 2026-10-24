@@ -48,6 +48,11 @@ for (const profile of selected) {
       [path.resolve(import.meta.dirname, 'test-generated-auth.mjs'), root],
       temporary,
     );
+    execFile(
+      process.execPath,
+      [path.resolve(import.meta.dirname, 'test-generated-managed-email.mjs'), root],
+      temporary,
+    );
     if (profile === 'billing')
       execFile(
         process.execPath,

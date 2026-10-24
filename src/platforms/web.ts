@@ -339,24 +339,43 @@ export async function proxyApi(request: Request, options: Options): Promise<Resp
 }
 `;
 const WEB_SIGN_IN = `'use client';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+function verificationPending(create: boolean, signedIn: boolean): boolean { return create && !signedIn; }
+async function requestVerification(email: string) {
+  const result = await authClient.sendVerificationEmail({ email, callbackURL: '/sign-in' });
+  if (result.error) throw Error('Verification unavailable');
+}
 async function authenticate(data: FormData, create: boolean) {
   const email = String(data.get('email')); const password = String(data.get('password')); const name = String(data.get('name'));
-  const result = create ? await authClient.signUp.email({ email, password, name }) : await authClient.signIn.email({ email, password });
+  const result = create ? await authClient.signUp.email({ email, password, name, callbackURL: '/sign-in' }) : await authClient.signIn.email({ email, password });
   if (result.error) throw Error('Sign in failed.');
+  return Boolean(result.data?.token);
 }
 export default function SignIn() {
+  const form = useRef<HTMLFormElement>(null);
   const router = useRouter(); const [create, setCreate] = useState(false); const [pending, setPending] = useState(false); const [error, setError] = useState('');
   async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (pending) return; setPending(true); setError('');
     const data = new FormData(event.currentTarget);
-    try { await authenticate(data, create); router.replace('/account'); router.refresh(); } catch { setError('Unable to sign in. Check your details and retry.'); } finally { setPending(false); }
+    try { const signedIn = await authenticate(data, create); if (verificationPending(create, signedIn)) { form.current?.reset(); setCreate(false); setError('Check your email to verify your account, then sign in.'); return; } router.replace('/account'); router.refresh(); } catch { setError('Unable to sign in. Check your details and retry.'); } finally { setPending(false); }
+  }
+  async function resend() {
+    const input = form.current?.querySelector<HTMLInputElement>('[name="email"]');
+    if (pending || !input?.reportValidity()) return;
+    const email = input.value;
+    setPending(true); setError('');
+    try {
+      await requestVerification(email);
+      setError('If verification is needed, check your email for the link.');
+    } catch { setError('Unable to request verification. Please retry.'); }
+    finally { setPending(false); }
   }
   const labels = create ? { title: 'Create account', password: 'new-password', toggle: 'Use an existing account' } : { title: 'Sign in', password: 'current-password', toggle: 'Create an account' };
-  return <section className="stack"><h1>{labels.title}</h1><form onSubmit={submit}>{create && <Label>Name<Input name="name" required autoComplete="name" /></Label>}<Label>Email<Input name="email" type="email" required autoComplete="email" /></Label><Label>Password<Input name="password" type="password" minLength={8} required autoComplete={labels.password} /></Label><Button type="submit" disabled={pending}>{pending ? 'Working…' : labels.title}</Button></form><p role="status">{error}</p><Button type="button" onClick={() => setCreate(!create)}>{labels.toggle}</Button></section>;
+  return <section className="stack"><h1>{labels.title}</h1><form ref={form} onSubmit={submit}>{create && <Label>Name<Input name="name" required autoComplete="name" /></Label>}<Label>Email<Input name="email" type="email" required autoComplete="email" /></Label><Label>Password<Input name="password" type="password" minLength={8} required autoComplete={labels.password} /></Label><Button type="submit" disabled={pending}>{pending ? 'Working…' : labels.title}</Button><p role="status">{error}</p><Link href="/reset-password">Forgot your password?</Link><Button type="button" disabled={pending} onClick={() => void resend()}>Resend verification email</Button><Button type="button" disabled={pending} onClick={() => setCreate(!create)}>{labels.toggle}</Button></form></section>;
 }
 `;
