@@ -26,10 +26,12 @@ The only optional additions are **Stripe** for web billing and **RevenueCat** fo
   <img alt="Next.js web and Expo iOS/Android connect to Hono, Drizzle/D1 and private R2. Stripe and RevenueCat are optional payment additions." src="docs/assets/anhedral-stack-light.png" width="1200">
 </picture>
 
-CLI 0.15 is a source preview and is not yet published to npm. Build this repository
-with `pnpm install --frozen-lockfile && pnpm build`, then use its local CLI.
-For the examples below, replace `anhedral` with `node /path/to/anhedral-cli/dist/bin.js`
-until the matching version is published.
+CLI 0.15.0 is published on npm. Install the exact release with
+`npm install --global anhedral@0.15.0`, then use the commands below.
+For source development, run `pnpm install --frozen-lockfile && pnpm build` and
+replace `anhedral` with `node /path/to/anhedral-cli/dist/bin.js`.
+Keep existing applications on their recorded CLI version; publication does not
+upgrade an installed plugin or a Platform runtime image.
 
 ```sh
 node /path/to/anhedral-cli/dist/bin.js init my-app
