@@ -95,7 +95,8 @@ export function AuthConfiguration({ children }: { children: React.ReactNode }) {
     root,
     `${directory}/app/sign-in.tsx`,
     `import { useState } from 'react';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { Screen, Text, Input as TextInput } from '@workspace/native-ui';
 import { Button } from '@/components/ui/button';
 import { AuthConfiguration } from '@/components/auth-configuration';
@@ -104,6 +105,7 @@ import { sessionApi } from '@/lib/session-api';
 
 export default function SignInRoute() { return <AuthConfiguration><SignIn /></AuthConfiguration>; }
 
+function verificationPending(create: boolean, signedIn: boolean): boolean { return create && !signedIn; }
 function modeLabel(create: boolean): string { return create ? 'Create account' : 'Sign in'; }
 function submitLabel(pending: boolean, create: boolean): string { return pending ? 'Working…' : modeLabel(create); }
 function switchLabel(create: boolean): string { return create ? 'Use an existing account' : 'Create an account'; }
@@ -112,8 +114,9 @@ function authenticationError(error: unknown): string {
 }
 async function authenticate(values: { create: boolean; name: string; email: string; password: string }) {
   const auth = getAuthClient();
-  const result = values.create ? await auth.signUp.email(values) : await auth.signIn.email(values);
-  if (result.error) throw new Error(result.error.message ?? 'Authentication failed.');
+  const result = values.create ? await auth.signUp.email({ ...values, callbackURL: Linking.createURL('sign-in') }) : await auth.signIn.email(values);
+  if (result.error) throw new Error('Sign in failed. Verify your email or check your details.');
+  return Boolean(result.data?.token);
 }
 
 function SignIn() {
@@ -125,14 +128,25 @@ function SignIn() {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   async function submit() {
+    if (pending) return;
     setPending(true); setMessage('');
     try {
-      await authenticate({ create, name, email, password });
+      const signedIn = await authenticate({ create, name, email, password });
+      if (verificationPending(create, signedIn)) { setPassword(''); setMessage('Check your email to verify your account, then sign in.'); setCreate(false); return; }
       await sessionApi.session();
       await refetch();
       setPassword('');
       router.replace('/account');
     } catch (error) { setMessage(authenticationError(error)); }
+    finally { setPending(false); }
+  }
+  async function resend() {
+    if (pending) return; setPending(true); setMessage('');
+    try {
+      const result = await getAuthClient().sendVerificationEmail({ email, callbackURL: Linking.createURL('sign-in') });
+      if (result.error) throw Error('Verification unavailable');
+      setMessage('If verification is needed, check your email for the link.');
+    } catch { setMessage('Unable to request verification. Please retry.'); }
     finally { setPending(false); }
   }
   return <Screen>
@@ -142,6 +156,8 @@ function SignIn() {
     <TextInput accessibilityLabel="Password" placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete={create ? 'new-password' : 'current-password'} />
     <Button disabled={pending} onPress={() => void submit()}>{submitLabel(pending, create)}</Button>
     <Text accessibilityLiveRegion="polite">{message}</Text>
+    <Link href="/reset-password">Forgot your password?</Link>
+    <Button disabled={pending || !email} onPress={() => void resend()}>Resend verification email</Button>
     <Button disabled={pending} onPress={() => { setCreate(!create); setMessage(''); }}>{switchLabel(create)}</Button>
   </Screen>;
 }

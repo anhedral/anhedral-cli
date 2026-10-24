@@ -764,3 +764,41 @@ all existing security gates enabled. No provider resources or databases changed.
 CLI build, lint/typecheck/format/hygiene/release policy, focused dependency/Next
 contracts (11 tests) and refreshed OSV audit (61 locked/catalog versions) passed.
 Publication of the integrated candidate remains separate.
+
+
+## 2026-10-23 — Managed authentication email recovery
+
+Recover the scoped email adapter and verification/password-reset flows from the
+preserved `4a48ca3` snapshot against the current Next web/native-only Expo stack.
+Use an optional, fully validated API binding/scope/capability; empty standalone
+setup retains current sessions, partial setup fails closed, and configured setup
+requires verification with reset session revocation. All generated session
+consumers pass the same server environment, including private files and billing.
+The adapter uses deterministic send identities and bounded requests; broker error
+bodies and credential/token-bearing transport errors never reach clients.
+
+Next and native signup wait for verification rather than trying to open Account
+without a session. Resend and reset flows use exact same-origin/native callbacks.
+The framework-independent reset transport is shared through contracts; each
+platform owns its controls. Nova Input/Label integrate with the reviewed form PR.
+
+Validation: focused generator/broker/Next tests (8), complete CLI unit suite
+(553 passed, one optional skip), unchanged CLI release gate including OSV, patch
+regressions, packed CLI and packlist passed before the final Nova merge. The
+installed generated core fixture passed full checks including Fallow, dependency
+audit, types, lint, OpenNext/API builds; iOS/Android Hermes exports passed.
+Compiled Worker plus real Better Auth/Drizzle/in-memory SQLite proved signup,
+verification, denied unverified login, reset, single-use/expired tokens, session
+revocation, incorrect password, unknown-user privacy, foreign callback denial and
+exact native return scheme. Default unconfigured auth acceptance also passed.
+Browser testing verified the signup prompt, verification link, authenticated
+Account and sign-out with the isolated sink. No real email or configured database
+was used. Physical-device, inbox delivery and hosted-image activation are separate.
+
+Initial checks retained failures for synthetic email strings in the security
+scanner, screen/adapter complexity and cross-platform duplication; fixture
+addresses were assembled and shared reset transport extracted without relaxing
+checks. Fresh advisory refresh required separately reviewed Fallow, Expo-Zod and
+Miniflare-Undici fixes. A local UI HTTP harness initially wrote cookie headers
+after committing response headers; fixing that fixture restored sign-in. The
+product's compiled-Worker authentication tests already passed independently.
