@@ -94,7 +94,12 @@ process.exitCode = result.status ?? 1;
   setPnpmPolicy(root, {
     ...(!updating ? { packages: ['apps/*', 'packages/*'] } : {}),
     // OpenNext's node-minify dependency pins the vulnerable glob CLI.
-    overrides: { '@node-minify/core>glob': OPENNEXT_GLOB_VERSION },
+    overrides: {
+      '@node-minify/core>glob': OPENNEXT_GLOB_VERSION,
+      // Expo CLI's two schema consumers use APIs supported by the patched Zod release.
+      '@expo/cli>zod': STACK_DEPENDENCIES.zod,
+      'miniflare>undici': STACK_DEPENDENCIES.undici,
+    },
     sharedWorkspaceLockfile: true,
     allowBuilds: undefined,
     onlyBuiltDependencies: ['esbuild', 'sharp', 'unrs-resolver', 'workerd'],

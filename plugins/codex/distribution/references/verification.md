@@ -781,3 +781,24 @@ CLI build/lint/typecheck/format/hygiene and five Next contract tests passed.
 The integrated generated web fixture passed Next route/type generation and lint
 with these recovered controls. Browser interaction and final integrated release
 checks are recorded with the managed-email recovery.
+
+## 2026-10-23 — Expo CLI validation dependency recovery
+
+A fresh installed core fixture failed the unchanged dependency audit on
+GHSA-mrhx-c7xc-m3w5: Expo CLI 57.0.32 pulls Zod 3.25.76 although application
+contracts already use patched Zod 4.6.6. Add a narrow @expo/cli>zod override to
+the existing catalog pin. Expo SDK stays at 57. Audit admission remains enabled.
+The actual CLI plugin/MCP schemas and native exports are tested before promotion;
+this does not claim upstream Expo has migrated its declared range.
+
+The next audit also identified GHSA-xjj6-f33q-929c in Miniflare's Undici
+7.29.1. A same-major, consumer-scoped miniflare>undici 7.30.1 override uses
+the upstream patched version and also removes the related moderate Undici
+findings. No high/critical advisory is waived. Existing exact reviewed
+node-forge/braces patches remain unchanged.
+
+The installed generated core fixture passed the unchanged high/critical audit
+gate with only the existing exact verified node-forge patch acceptance. Both
+Hermes native exports passed. The actual Expo plugin and MCP schemas passed
+positive/negative parsing against scoped Zod 4.6.6; CLI build/lint and 11 focused
+contract tests passed, and OSV passed for 62 locked/catalog versions.

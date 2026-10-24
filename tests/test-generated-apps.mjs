@@ -37,6 +37,11 @@ for (const profile of selected) {
         'Native modules must not enter a browser bundle: ' + file,
       );
     }
+    execFile(
+      process.execPath,
+      [path.resolve(import.meta.dirname, 'test-generated-expo-schema.mjs'), root],
+      temporary,
+    );
     await verifyUniversalDevelopment(root);
     execFile(
       process.execPath,
