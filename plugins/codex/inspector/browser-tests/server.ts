@@ -8,6 +8,8 @@ import { createPreviewServer } from '../server/preview.ts';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { createServer } from 'node:http';
+import { build } from 'esbuild';
 const root = mkdtempSync(path.join(tmpdir(), 'anhedral-dashboard-browser-'));
 const store = new ProjectStore(path.join(root, 'catalog'));
 for (const name of ['atlas', 'empty-app']) {
@@ -100,11 +102,37 @@ const services = new ProjectServices(
     return { result: { uuid: 'database-id', name: 'atlas-data' } };
   },
 );
-const server = createPreviewServer(
+const preview = createPreviewServer(
   store,
   readFileSync(new URL('../dist/dashboard.html', import.meta.url), 'utf8'),
   services,
 );
+const hostBundle = await build({
+  entryPoints: [new URL('./host.ts', import.meta.url).pathname],
+  bundle: true,
+  write: false,
+  format: 'esm',
+  platform: 'browser',
+});
+const server = createServer((request, response) => {
+  if (request.url?.split('?')[0] === '/host-fixture') {
+    response
+      .writeHead(200, { 'Content-Type': 'text/html' })
+      .end(
+        '<!doctype html><title>Test host</title><script type="module" src="/host-fixture.js"></script>',
+      );
+  } else if (request.url === '/host-fixture.js') {
+    response
+      .writeHead(200, { 'Content-Type': 'text/javascript' })
+      .end(hostBundle.outputFiles[0].text);
+  } else if (request.url === '/host-app') {
+    // Only the synthetic host fixture embeds this build. Production preview's
+    // frame-ancestors 'none' policy remains exercised by the preview tests.
+    response
+      .writeHead(200, { 'Content-Type': 'text/html' })
+      .end(readFileSync(new URL('../dist/dashboard.html', import.meta.url), 'utf8'));
+  } else preview.emit('request', request, response);
+});
 server.listen(4326, '127.0.0.1');
 const close = () => {
   server.closeAllConnections();
