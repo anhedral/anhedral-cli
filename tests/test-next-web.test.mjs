@@ -161,6 +161,8 @@ test('default workspace separates full Next web, native owned UI and privileged 
     const native = JSON.parse(read('apps/mobile/package.json'));
     assert.equal(JSON.parse(read('apps/web/components.json')).style, 'base-nova');
     assert.match(read('pnpm-workspace.yaml'), /@node-minify\/core>glob.*10\.5\.0/);
+    assert.match(read('pnpm-workspace.yaml'), /@expo\/cli>zod.*4\.6\.6/);
+    assert.match(read('pnpm-workspace.yaml'), /miniflare>undici.*7\.30\.1/);
     assert.equal(web.dependencies.next, '16.4.2');
     assert.equal(web.dependencies['@opennextjs/cloudflare'], '1.20.12');
     assert.equal(web.devDependencies.wrangler, '4.151.0');
