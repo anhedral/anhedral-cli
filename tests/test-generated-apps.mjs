@@ -6,6 +6,7 @@ import path from 'node:path';
 import { STACK_PROFILES } from './support/stack-profiles.mjs';
 import { execFile } from '../dist/util.js';
 import { inspectProject } from '../dist/readiness.js';
+import { verifyTypecheckCache } from './support/typecheck-cache.mjs';
 import { verifyUniversalDevelopment } from './support/universal-dev-smoke.mjs';
 const selected = process.argv[2] ? [process.argv[2]] : Object.keys(STACK_PROFILES);
 const cli = path.resolve(import.meta.dirname, '../dist/bin.js');
@@ -25,6 +26,7 @@ for (const profile of selected) {
     assert.equal(inspectProject(root).localReady, true);
     execFile('pnpm', ['db:generate'], root);
     execFile('pnpm', ['check'], root);
+    verifyTypecheckCache(root);
     assert.ok(existsSync(path.join(root, 'apps/api/dist/index.js')));
     assert.ok(existsSync(path.join(root, 'apps/web/.open-next/worker.js')));
     const assets = path.join(root, 'apps/web/.open-next/assets');

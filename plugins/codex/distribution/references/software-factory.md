@@ -21,7 +21,7 @@ Run generated `pnpm dev` for Next.js web and Hono. Start Expo Metro separately f
 
 Build complete vertical slices with persistent data, validation, owner authorization, error/loading states and meaningful tests. Verify session isolation and denied private-file access. Apply migrations explicitly to isolated local fixtures. Builds and tests must never migrate a configured remote database.
 
-Run `pnpm check`, `anhedral doctor --json` and `anhedral inspect --json`. Local inspection reports declared configuration and recorded evidence, not live provider health. Compile/export success is not device or production acceptance.
+Run `pnpm check`, `anhedral doctor --json` and `anhedral inspect --json`. Local inspection reports declared configuration and recorded evidence, not live provider health. Compile/export success is not device or production acceptance. Generated typecheck tasks cache Worker binding declarations, Next environment declarations and route types; generated next-env.d.ts stays ignored. The integration runner deletes those files and verifies real cache hits restore their exact bytes. For an installed isolated fixture, run `node tests/test-generated-typecheck-cache.mjs /absolute/path/to/fixture` from the CLI repository. Existing applications must explicitly adopt the typecheck outputs and ignore change; upgrading the CLI does not rewrite their configuration.
 
 ## Add payments
 
