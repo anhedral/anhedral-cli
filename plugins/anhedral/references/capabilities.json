@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "cliVersion": "0.15.0",
+  "capabilities": {
+    "next": {
+      "purpose": "Server-rendered web application",
+      "tools": [
+        "Browser control",
+        "Wrangler"
+      ],
+      "access": [
+        "Cloudflare Workers deployment access"
+      ],
+      "credentials": [],
+      "resources": [
+        "Next.js Worker, assets and scoped ANHEDRAL_API binding"
+      ],
+      "verify": [
+        "Request-rendered HTML, RSC, cookies and authenticated API routes"
+      ],
+      "selection": {}
+    },
+    "expo": {
+      "purpose": "Native iOS and Android application",
+      "tools": [
+        "Simulator or device"
+      ],
+      "access": [
+        "For requested native distribution only: client-owned Apple/Google developer accounts"
+      ],
+      "credentials": [
+        "For requested native builds only: platform signing credentials and EAS access when used"
+      ],
+      "resources": [
+        "Expo native client; signing and store configuration"
+      ],
+      "verify": [
+        "Simulator/device and signed-build acceptance"
+      ],
+      "selection": {}
+    },
+    "hono": {
+      "purpose": "Shared OpenAPI backend",
+      "tools": [
+        "Wrangler"
+      ],
+      "access": [
+        "Cloudflare Workers deployment access"
+      ],
+      "credentials": [],
+      "resources": [
+        "API Worker; application routes and authorization"
+      ],
+      "verify": [
+        "Contract validation, unauthenticated rejection and resource ownership"
+      ],
+      "selection": {}
+    },
+    "d1": {
+      "purpose": "SQLite-compatible hosted persistence",
+      "tools": [
+        "Wrangler"
+      ],
+      "access": [
+        "Cloudflare D1 access"
+      ],
+      "credentials": [],
+      "resources": [
+        "D1 database, DB binding and reviewed migrations"
+      ],
+      "verify": [
+        "Migration, constraints, transactional behavior and runtime queries"
+      ],
+      "selection": {}
+    },
+    "better-auth": {
+      "purpose": "Application-managed identity",
+      "tools": [
+        "Selected database tooling"
+      ],
+      "access": [
+        "Selected database migration/runtime access"
+      ],
+      "credentials": [
+        "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
+      ],
+      "resources": [
+        "D1 database, auth schema, trusted origins and application routes"
+      ],
+      "verify": [
+        "Sign-in/out, session expiry, sign-up policy and resource authorization"
+      ],
+      "selection": {
+        "requiresAll": [
+          "d1",
+          "hono",
+          "expo"
+        ]
+      }
+    },
+    "r2": {
+      "purpose": "Private remote files",
+      "tools": [
+        "Wrangler"
+      ],
+      "access": [
+        "Cloudflare R2 bucket/binding access"
+      ],
+      "credentials": [],
+      "resources": [
+        "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+      ],
+      "verify": [
+        "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+      ],
+      "selection": {}
+    },
+    "stripe": {
+      "purpose": "Web payments and subscriptions",
+      "tools": [
+        "Stripe integration or CLI"
+      ],
+      "access": [
+        "Client-owned Stripe account; test/live access as required"
+      ],
+      "credentials": [
+        "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
+      ],
+      "resources": [
+        "Products/prices, signed webhooks and entitlement implementation"
+      ],
+      "verify": [
+        "Test purchase/cancellation, webhook replay and transactional idempotency"
+      ],
+      "selection": {
+        "requiresAll": [
+          "hono",
+          "better-auth",
+          "d1"
+        ]
+      }
+    },
+    "revenuecat": {
+      "purpose": "Cross-store subscription entitlements; Stripe is optional",
+      "tools": [
+        "RevenueCat integration or API",
+        "Selected mobile store tooling"
+      ],
+      "access": [
+        "RevenueCat project; App Store/Play Store product access"
+      ],
+      "credentials": [
+        "Platform public SDK keys; server API/webhook credentials as required"
+      ],
+      "resources": [
+        "Native purchase SDK and authenticated entitlement APIs; configure offerings/store products before acceptance"
+      ],
+      "verify": [
+        "Sandbox purchase/restore, verified webhooks and entitlement reconciliation"
+      ],
+      "selection": {
+        "requiresAll": [
+          "hono",
+          "better-auth",
+          "d1"
+        ]
+      }
+    },
+    "styling": {
+      "purpose": "Shared styling definitions",
+      "tools": [],
+      "access": [],
+      "credentials": [],
+      "resources": [
+        "Shared light/dark tokens, web CSS and Anhedral native shadcn port"
+      ],
+      "verify": [
+        "Consistency across selected interfaces; preserve platform-specific components"
+      ],
+      "selection": {}
+    }
+  }
+}

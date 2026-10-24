@@ -1,0 +1,9 @@
+{
+  "version": "0.15.0",
+  "sourceDigest": "c51b5118d69fc48b7adccc0978539032c1650ba2aaaa63db224c8384d893a647",
+  "files": {
+    "server.mjs": "a7b09d57c27bde031a82db00a424bca281a66467a920d4f57efcc0392231f5c3",
+    "dashboard.html": "4e5de174d99c20eec053dc5c3f8c78f468a59342437c7a557647a2f31987152e",
+    "THIRD_PARTY_NOTICES.txt": "cdd8363108a012df758ea3b093bb66e0ab2cd28c1220066e61c0644a71d21e1c"
+  }
+}
