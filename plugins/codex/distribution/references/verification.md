@@ -877,6 +877,35 @@ and exact-artifact checks intact. A workflow regression covers all three smoke
 locations. A fresh main candidate must be reviewed again after this correction.
 
 
+## 2026-10-24 — Published 0.15.0 artifact identity
+
+Read-only release verification resolved tag `v0.15.0` to source
+`2c06f4eb528da0ba404212298fc57e1a2287f22e`. The npm registry serves 0.15.0;
+its tarball and the GitHub release tarball both match the release metadata:
+
+- CLI SHA-512: `sha512-1D2XHnw4QSDYXfNigt7YBdv5N8Y8ANOpaoSb38xlqEvv1uq7VHFurx+lAsX0IpB4Jf2R5PISitx2Fs6cDyJ4KQ==`.
+- Plugin SHA-512: `sha512-G3/obSaCpHv+AvitX/Xtb34ChmsBc+7NrV7WHDDNEyqZkOin6CH4MSDgqu4lJnCdUn6dxCN06mFckBadwqlwgg==`.
+
+The downloaded plugin ZIP matches both release metadata and plugin metadata.
+The npm and GitHub package checks hashed the actual bytes in memory; the tag
+was checked against the remote repository. This establishes published artifact
+agreement, not independent provenance-signature verification or a rebuilt source
+comparison. Release assets and metadata are available at
+[the 0.15.0 release](https://github.com/anhedral/anhedral-cli/releases/tag/v0.15.0);
+[registry metadata](https://registry.npmjs.org/anhedral/0.15.0) records the npm integrity.
+
+This supersedes unpublished-preview wording, not the dated runtime evidence
+above. Publication does not update existing applications, installed plugins or
+Platform images. Platform's separately recorded Next generator at `2280c3b` has
+a different integrity and must retain its own acceptance evidence until an
+explicit artifact adoption is verified. No publication, deployment, provider
+mutation or payment operation was performed during this verification.
+
+Documentation correction validation: CLI build, documentation/plugin contract
+checks (two passing test entries) and `git diff --check` passed in an isolated
+checkout. No runtime behavior changed.
+
+
 ## 2026-10-24 — Addition post-commit installation recovery
 
 Focused addition regressions now inject a failure in the final frozen install,
