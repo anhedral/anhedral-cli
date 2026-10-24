@@ -16,7 +16,7 @@ export function scaffoldPasswordReset(root: string): void {
     `import { PasswordReset } from '@/components/password-reset';
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  return <PasswordReset token={typeof params.token === 'string' ? params.token : undefined} invalid={Boolean(params.error)} />;
+  return <PasswordReset key={JSON.stringify([params.token, params.error])} token={typeof params.token === 'string' ? params.token : undefined} invalid={Boolean(params.error)} />;
 }
 `,
   );
@@ -68,7 +68,10 @@ function disabled(pending: boolean, token: string | undefined, password: string,
 function ResetFields({ token, password, setPassword, email, setEmail }: { token?: string; password: string; setPassword: (value: string) => void; email: string; setEmail: (value: string) => void }) {
   return token ? <Input accessibilityLabel="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" /> : <Input accessibilityLabel="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />;
 }
-export default function ResetPasswordRoute() { return <AuthConfiguration><ResetPassword /></AuthConfiguration>; }
+export default function ResetPasswordRoute() {
+  const params = useLocalSearchParams<{ token?: string; error?: string }>();
+  return <AuthConfiguration><ResetPassword key={JSON.stringify([params.token, params.error])} /></AuthConfiguration>;
+}
 function ResetPassword() {
   const params = useLocalSearchParams<{ token?: string; error?: string }>();
   const token = typeof params.token === 'string' ? params.token : undefined;

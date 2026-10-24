@@ -859,3 +859,7 @@ check (26 tasks) and serial root build (five tasks) passed again at Platform
 source 822825e9; later observed staging changes did not touch those safeguards.
 No Comms source, retained recovery snapshot or stash was changed by this work.
 Publication and provider state are verified separately after promotion.
+
+Final React review gives web/native reset forms a token/error-derived route key,
+so following a new recovery link resets prior completion, input and error state.
+Only the used token/error fields cross the Next server/client boundary.
