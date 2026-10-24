@@ -130,11 +130,15 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
 `,
   );
-  put(
-    root,
-    `${app}/components/ui/button.tsx`,
-    readFileSync(fileURLToPath(new URL('../../assets/ui/web/button.tsx', import.meta.url)), 'utf8'),
-  );
+  for (const component of ['button', 'input', 'label'])
+    put(
+      root,
+      `${app}/components/ui/${component}.tsx`,
+      readFileSync(
+        fileURLToPath(new URL(`../../assets/ui/web/${component}.tsx`, import.meta.url)),
+        'utf8',
+      ),
+    );
   for (const file of ['LICENSE.shadcn', 'UPSTREAM.json'])
     put(
       root,
@@ -340,6 +344,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 function verificationPending(create: boolean, signedIn: boolean): boolean { return create && !signedIn; }
 async function requestVerification(email: string) {
   const result = await authClient.sendVerificationEmail({ email, callbackURL: '/sign-in' });
@@ -370,6 +376,6 @@ export default function SignIn() {
     finally { setPending(false); }
   }
   const labels = create ? { title: 'Create account', password: 'new-password', toggle: 'Use an existing account' } : { title: 'Sign in', password: 'current-password', toggle: 'Create an account' };
-  return <section className="stack"><h1>{labels.title}</h1><form ref={form} onSubmit={submit}>{create && <label>Name<input name="name" required autoComplete="name" /></label>}<label>Email<input name="email" type="email" required autoComplete="email" /></label><label>Password<input name="password" type="password" minLength={8} required autoComplete={labels.password} /></label><Button type="submit" disabled={pending}>{pending ? 'Working…' : labels.title}</Button><p role="status">{error}</p><Link href="/reset-password">Forgot your password?</Link><Button type="button" disabled={pending} onClick={() => void resend()}>Resend verification email</Button><Button type="button" disabled={pending} onClick={() => setCreate(!create)}>{labels.toggle}</Button></form></section>;
+  return <section className="stack"><h1>{labels.title}</h1><form ref={form} onSubmit={submit}>{create && <Label>Name<Input name="name" required autoComplete="name" /></Label>}<Label>Email<Input name="email" type="email" required autoComplete="email" /></Label><Label>Password<Input name="password" type="password" minLength={8} required autoComplete={labels.password} /></Label><Button type="submit" disabled={pending}>{pending ? 'Working…' : labels.title}</Button><p role="status">{error}</p><Link href="/reset-password">Forgot your password?</Link><Button type="button" disabled={pending} onClick={() => void resend()}>Resend verification email</Button><Button type="button" disabled={pending} onClick={() => setCreate(!create)}>{labels.toggle}</Button></form></section>;
 }
 `;
