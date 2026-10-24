@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtempSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import {
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+  mkdirSync,
+  realpathSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -10,6 +18,7 @@ import {
   readProjectSection,
   writeProjectSection,
 } from '../dist/index.js';
+import { PostCommitError } from '../dist/transaction.js';
 import { sourceFiles, recordScaffoldFiles } from '../dist/registry/receipt.js';
 async function fixture(run) {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-payment-add-'));
@@ -115,4 +124,69 @@ test('failed dependency resolution rolls back the addition', () =>
     );
     assert.deepEqual(sourceFiles(root), before);
     assert.ok(!readProjectSection(root, 'setup').products.includes('stripe'));
+  }));
+
+test('failed final installation retains the addition and permits a clean retry', () =>
+  fixture(async (root) => {
+    const authored = path.join(root, 'customer-note.txt');
+    const secret = path.join(root, 'apps/api/.dev.vars');
+    writeFileSync(authored, 'Keep authored source.\n');
+    writeFileSync(secret, 'PRIVATE_TEST_VALUE=keep-private\n');
+    const modules = path.join(root, 'node_modules');
+    mkdirSync(modules);
+    writeFileSync(path.join(modules, 'stale-link'), 'old dependency layout');
+    const calls = [];
+    const install = (command, args, cwd) => {
+      calls.push([...args]);
+      if (args.includes('--lockfile-only')) return runner(command, args, cwd);
+      assert.equal(command, 'pnpm');
+      assert.deepEqual(args, ['install', '--frozen-lockfile']);
+      assert.equal(cwd, realpathSync(root));
+      assert.equal(existsSync(modules), false, 'stale links must be removed before install');
+      throw Error('isolated final install failure');
+    };
+    await assert.rejects(addStackItems(root, { items: ['stripe'] }, install), (error) => {
+      assert.ok(error instanceof PostCommitError);
+      assert.match(error.message, /generated files were kept/);
+      assert.match(error.message, /isolated final install failure/);
+      assert.ok(error.committedPaths.includes('anhedral.json'));
+      return true;
+    });
+    assert.ok(calls.some((args) => args.includes('--lockfile-only')));
+    assert.ok(readProjectSection(root, 'setup').products.includes('stripe'));
+    assert.ok(existsSync(path.join(root, 'packages/billing/src/index.ts')));
+    assert.equal(existsSync(path.join(root, '.anhedral.lock')), false);
+    const committed = sourceFiles(root);
+    let installed = false;
+    await addStackItems(root, { items: ['stripe'] }, (command, args, cwd) => {
+      if (args.includes('--lockfile-only')) return runner(command, args, cwd);
+      assert.deepEqual(args, ['install', '--frozen-lockfile']);
+      assert.equal(cwd, realpathSync(root));
+      mkdirSync(modules);
+      writeFileSync(path.join(modules, 'recovered-link'), 'recovered dependency layout');
+      installed = true;
+    });
+    assert.equal(installed, true, 'idempotent retry must still reinstall dependencies');
+    assert.deepEqual(sourceFiles(root), committed);
+    assert.equal(readFileSync(authored, 'utf8'), 'Keep authored source.\n');
+    assert.equal(readFileSync(secret, 'utf8'), 'PRIVATE_TEST_VALUE=keep-private\n');
+    assert.equal(existsSync(path.join(root, '.anhedral.lock')), false);
+  }));
+
+test('final installation rejects a changed reviewed lockfile after source commit', () =>
+  fixture(async (root) => {
+    await assert.rejects(
+      addStackItems(root, { items: ['stripe'] }, (command, args, cwd) => {
+        if (args.includes('--lockfile-only')) return runner(command, args, cwd);
+        assert.deepEqual(args, ['install', '--frozen-lockfile']);
+        writeFileSync(path.join(cwd, 'pnpm-lock.yaml'), 'unexpected installer mutation\n');
+      }),
+      (error) => {
+        assert.ok(error instanceof PostCommitError);
+        assert.match(error.message, /Frozen dependency installation changed the reviewed lockfile/);
+        return true;
+      },
+    );
+    assert.ok(readProjectSection(root, 'setup').products.includes('stripe'));
+    assert.equal(existsSync(path.join(root, '.anhedral.lock')), false);
   }));
