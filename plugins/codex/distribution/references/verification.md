@@ -966,3 +966,39 @@ CLI build/lint/static security, the unit suite (556 pass, one existing skip), pl
 check (61 pass), packed CLI smoke and packlist policy (249 files) also passed.
 This does not update existing customer projects or establish device, store or live
 provider acceptance. No remote migration, deployment, payment or publication ran.
+
+
+## 2026-10-24 — Preserved-work disposition and service-tool guidance
+
+Compared all preserved snapshots against the maintained CLI, its registered
+commands/plugin tools, emitted source, packaging and tests. Patch IDs alone were
+insufficient because the repository squashes topic PRs. Exact Git tree comparison
+established the following dispositions:
+
+| Preserved source | Disposition |
+| --- | --- |
+| Maintainer-policy `f7e51c8` | Exactly the tree of merged PR #24 (`723a213`): architecture, lifecycle, security/toolchain and review work landed historically. PR #46 later retired the old control-panel/alternative-stack layout. The still-useful cache regression was adapted for the current API/Next stack. |
+| Former local staging `91ec88f` | Exactly the tree of merged PR #37 (`fc721c9`). Maintenance guidance, CI scope, Windows PATH ordering, release-artifact/profile fixes, README and artwork changes were already incorporated. Current command resolution, CI scope and preview discovery retain their relevant fixes. |
+| Older control-panel variant `d7ac371` | Its 28 changed paths belong to the retired apps/control-panel/plugin layout and an independent anhedral.progress.json report/discovery store. Current project inspection/lifecycle, provider records, delivery evidence, catalog and transaction locks own those concerns. Do not restore a parallel writable evidence store or unsupported capabilities. Original variant remains archived. |
+| User-work snapshot `4a48ca3` | Reviewed all 114 changed paths. Recovered embedded-host browser coverage, service-argument descriptions and per-operation service-tool descriptions. Nova auth controls/packaging (#60/#62), managed auth email (#61), security pins (#58/#59), approved branding (#47), contract checks (#44), UI inspection/substitution (#41/#43) and owned Next/native components (#49) already landed in focused form. |
+| User-work UI/generator alternatives | Generic ui/expo-ui packages, native web adapters, duplicate token JSON, unused component inventory, selectable provider/preset recipes and mobile-web bootstrap variants are superseded by separate DOM/native UI, shared tokens, offline core bootstrap and mandatory Next/Expo/Hono/D1/R2. Preserve originals in the archive; no current runtime consumer requires restoring them. |
+| Attached completed worktree branches | Addition recovery, dependency fixes, Nova packlist and product positioning have exactly the trees of merged PRs #67, #59, #62 and #56 respectively. Retiring their refs does not require removing their worktree files. |
+| Existing user-work stash | Shared tracked paths match the recovery snapshot, and all 39 untracked stash files are byte-identical to files in that snapshot. Keep the stash unchanged and independently backed up. |
+
+The recovered service-tool descriptions distinguish existence from application
+health, explain catalog/service identities, supported Worker/D1 analytics windows,
+offset/cursor paging, app-only private data, and reviewed single-use deletion
+plans. Obsolete Vercel wording was removed. Input validation, visibility,
+permissions, confirmation requirements and provider behavior are unchanged. Plugin
+check passed all 61 tests after the description recovery. No additional tests were
+added merely to compare documentation strings.
+
+Before branch retirement, retain verified self-contained Git bundles containing
+all original refs (including stash), original ref/object inventories and checksums.
+The detailed path inventory covers the 142 changed paths in the two independent
+snapshots. The approved disposition is to retire accounted-for recovery and
+completed-topic refs after the focused patches merge to staging, keeping old
+worktrees detached at their original commits so source and ignored material remain
+intact. Keep main/staging unchanged on the remote except for reviewed staging PRs.
+The old implementations remain recoverable; this is not proof of current device,
+store, live-provider or payment acceptance. No publication or deployment occurred.
