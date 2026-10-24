@@ -95,6 +95,10 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
 
 export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
   dependencies: {
+    // renovate: datasource=npm depName=shiki
+    shiki: '3.23.0',
+    // renovate: datasource=npm depName=react-hook-form
+    'react-hook-form': '7.62.0',
     // renovate: datasource=npm depName=react-native-svg
     'react-native-svg': '15.15.4',
     // renovate: datasource=npm depName=expo-clipboard

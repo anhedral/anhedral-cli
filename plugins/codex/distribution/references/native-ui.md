@@ -1,6 +1,6 @@
 # Native shadcn components for Expo
 
-Anhedral CLI maintains React Native semantic adaptations for the **66 entries** in the [shadcn Components catalog](https://ui.shadcn.com/docs/components), reviewed 2026-10-24. This is the native component baseline; upstream's separate AI Elements, form-library integrations and ecosystem registry packages have independent scopes. New upstream components require a new review rather than inheriting a complete status automatically.
+Anhedral CLI maintains React Native semantic adaptations for the **66 entries** in the [shadcn Components catalog](https://ui.shadcn.com/docs/components), reviewed 2026-10-24. This tracks starter component adaptations, not complete API/variant coverage of the official CLI registry. See the [full official registry checklist](native-registry.md) for that larger scope. This is the native component baseline; upstream's separate AI Elements, form-library integrations and ecosystem registry packages have independent scopes. New upstream components require a new review rather than inheriting a complete status automatically.
 
 ## Source and ownership
 

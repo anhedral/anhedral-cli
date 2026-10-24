@@ -28,6 +28,7 @@ const requiredFiles = new Set([
   'assets/patches/audit-deps.mjs',
   ...nativeFiles,
   'docs/native-ui.md',
+  'docs/native-registry.md',
   'assets/ui/native/button.tsx',
   'assets/ui/web/input.tsx',
   'assets/ui/web/label.tsx',
@@ -111,6 +112,10 @@ try {
   const [packed] = parseNpmPackJson(String(result.stdout ?? ''));
   assert.ok(packed, 'npm pack should describe one package');
   const files = packed.files.map((file) => file.path);
+  assert.ok(
+    !files.some((file) => file.startsWith('assets/ui/official/')),
+    'The full upstream review mirror stays outside the shipped starter artifact',
+  );
 
   assert.equal(new Set(files).size, files.length, 'packlist should not contain duplicate paths');
   for (const file of files) {
@@ -181,6 +186,7 @@ try {
     const allowedDocumentation =
       file.path === 'docs/anhedral-stack.md' ||
       file.path === 'docs/native-ui.md' ||
+      file.path === 'docs/native-registry.md' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
       file.path === 'docs/verification.md';

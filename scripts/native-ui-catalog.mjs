@@ -5,7 +5,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 export function nativeChecklist(registry) {
   const intro = `# Native shadcn components for Expo
 
-Anhedral CLI maintains React Native semantic adaptations for the **${registry.baseline.count} entries** in the [shadcn Components catalog](${registry.baseline.source}), reviewed ${registry.baseline.retrieved}. This is the native component baseline; upstream's separate AI Elements, form-library integrations and ecosystem registry packages have independent scopes. New upstream components require a new review rather than inheriting a complete status automatically.
+Anhedral CLI maintains React Native semantic adaptations for the **${registry.baseline.count} entries** in the [shadcn Components catalog](${registry.baseline.source}), reviewed ${registry.baseline.retrieved}. This tracks starter component adaptations, not complete API/variant coverage of the official CLI registry. See the [full official registry checklist](native-registry.md) for that larger scope. This is the native component baseline; upstream's separate AI Elements, form-library integrations and ecosystem registry packages have independent scopes. New upstream components require a new review rather than inheriting a complete status automatically.
 
 ## Source and ownership
 

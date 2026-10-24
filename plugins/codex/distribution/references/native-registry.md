@@ -1,0 +1,695 @@
+# Official shadcn registry → Expo
+
+Pinned source: [shadcn-ui/ui at 617134d5810bba521803b3ed787190bacbb80b35](https://github.com/shadcn-ui/ui/tree/617134d5810bba521803b3ed787190bacbb80b35/apps/v4/registry). Published metadata retrieved 2026-10-24; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.
+
+**27 registries, 6437 style/item entries, 616 distinct type/name pairs, 2069 referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.
+
+## Maintenance model
+
+Keep a complete, pinned upstream source mirror and published metadata snapshot for review. Maintain the Expo source as a separate native overlay. Preserve upstream web implementations and CLI behavior rather than manually editing every web copy or forking CLI internals. Anhedral CLI can supply both outputs while the upstream mirror stays outside its shipped starter payload. No new remote fork is implied by taking a local snapshot.
+
+For each upstream update, compare item/file hashes, public APIs, discovered variants, examples and dependencies. Refresh the web baseline from upstream; invalidate any native coverage whose reviewed inputs changed. Port and test the native changes before marking them complete. A successful upstream merge is not evidence that a new feature works on Expo. Device acceptance remains separately recorded.
+
+Refresh a clean upstream checkout with `node scripts/shadcn-registry.mjs --snapshot /absolute/path/to/shadcn-ui`, regenerate with `pnpm native-ui:registry:docs`, and compare a retained previous snapshot with `pnpm native-ui:registry -- --diff /absolute/path/to/previous-inventory.json.gz`. Normal checks are offline. Reviewed native coverage includes source, style and transitive registry dependency fingerprints, so changed inputs cannot retain a ported status silently.
+
+## Registry coverage
+
+| Registry | Published items | Metadata SHA-256 |
+| --- | ---: | --- |
+| aria-luma | 215 | `aba69189d7c8edcd92c867842f2d7ae38c4c773ce33a16069c79030d99ff34c7` |
+| aria-lyra | 215 | `0c445ec4fd86602cbd0f94b3d788c999d8275af871646388d2d9399f62b25654` |
+| aria-maia | 215 | `99af8556c7ebabc43a82359b6b48b1d9aed9c95b01a1f75671957fc99b7f03be` |
+| aria-mira | 215 | `ed23d37e9f961bba534b24b2d0e031c96ef5fd0a146051a2dac24354462cc0cb` |
+| aria-nova | 215 | `63bd4bb241826dac27f77d0ada6e1b9002ecb6748853669e1cb8c3de6a71cbc2` |
+| aria-rhea | 215 | `23c1ab88c10217bc1e52f91cc182a214f395da6efca84554e83463b8644f8feb` |
+| aria-sera | 215 | `9490248105e5a2b1a8f6207c0c5a0c652a1a71b863a7f4b548e0e1742d563722` |
+| aria-vega | 215 | `edd5ba91ce9082e193d98dcdb339a06724692a667e3027d1a20b50c2b627bfcf` |
+| base-luma | 221 | `8a9e6876ef6a4135fb28c0fe8cb449afcff421e44e23b8431a5deb5a7549f884` |
+| base-lyra | 221 | `04a51f231f74fd32fcf90af6b296c3e197e199356f16d0e9ce8a6d1b965ed96c` |
+| base-maia | 221 | `dcc41f42853a8e9dd77e71455f9eeaaa3a9ee9de6ce11ab53418fa20bcc355b0` |
+| base-mira | 221 | `1777ec74e929f887d06ffa8cda6ecb7833db6d38a767247469b8f78a203eff2d` |
+| base-nova | 221 | `795beb172183ae853619b3583b09a14ad04e2e2f53840955785a5c7124db8283` |
+| base-rhea | 221 | `284dfa59baa06c953f3bd86b0134690cfdf1481806c9d04f8d25c8fe6099c3cb` |
+| base-sera | 221 | `fafb4c646544854a137691cdc8b9520a0d265fc0284c654e41215e6b8e9f45ad` |
+| base-vega | 221 | `daa1879b48fa4c2d058b57b355efbd4d854148cac65933a4a2de805f17a54b9b` |
+| default | 363 | `71bb3ae5c702b175aac0cfb2e4039b2619c58e83fc82c392e98625db3e18b9f0` |
+| new-york | 363 | `0f4a9e8ca9860de566fd7dd809561356c90481b2a5aa9e8ce40c988160f0722e` |
+| new-york-v4 | 471 | `27939f9c273c8fc5565dfce7cca0e1559886c1ae32c1c836c9e17333597bb66f` |
+| radix-luma | 219 | `f6b33850d80c76bf06778f278e347e716ea06db6e47a243f3f0a1a306f215f0b` |
+| radix-lyra | 219 | `84e226c2f91c88ed64c5dcf4b3d8420bea8149e4ec1223f2dd8063c9f9fe7d4c` |
+| radix-maia | 219 | `f2baa1327b89cd1b17d92b9959064a0ca5802e5956b6d2904aabda5ddb1b0af8` |
+| radix-mira | 219 | `5847fdf2cd9f420e6ff7ef155c3f763354b574a27114e01f940de79f111ef97d` |
+| radix-nova | 219 | `c41b81c2a0a1de3f46ff3e4a8d57b2e67c9cc0497ced39ac7e4c239ce13d3ff9` |
+| radix-rhea | 219 | `d1bdea6d6aa601f5eaa6f3fd91c4096811099cbf38a2c3f70cefd0ef5548a4f8` |
+| radix-sera | 219 | `e327c2fef03354dc9d4e911f3577d0f2088601ddba03b98464be8ada4f4b7285` |
+| radix-vega | 219 | `fdde2bee0e099cc823e2f2029df515048fc14d3a4f4a437ed6a0795d53486b9e` |
+
+## Item checklist
+
+Every row applies to all listed registries. The machine inventory retains each separate style/item, dependency, file, source hash, discovered variant, function/example and browser API. “Pending” means not yet completed; it is never an implicit web-only exemption.
+
+| Item | Type | Registries | Expo status | Evidence / web-specific adaptation |
+| --- | --- | --- | --- | --- |
+| calendar-01 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-02 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-03 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-04 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-05 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-06 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-07 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-08 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-09 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-10 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-11 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-12 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-13 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-14 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-15 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-16 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-17 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-18 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-19 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-20 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-21 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-22 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-23 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-24 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-25 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-26 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-27 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-28 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-29 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-30 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-31 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-32 | block | default, new-york | pending | Needs item, variant and dependency review. |
+| chart-area-axes | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-default | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-gradient | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-icons | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-interactive | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-legend | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-linear | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-stacked | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-stacked-expand | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-area-step | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-active | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-default | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-horizontal | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-interactive | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-label | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-label-custom | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-mixed | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-multiple | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-negative | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-stacked | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-default | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-dots | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-dots-colors | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-dots-custom | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-interactive | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-label | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-label-custom | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-linear | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-multiple | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-line-step | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-donut | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-donut-active | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-donut-text | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-interactive | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-label | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-label-custom | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-label-list | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-legend | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-separator-none | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-simple | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-pie-stacked | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-default | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-dots | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-grid-circle | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-grid-circle-fill | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-grid-circle-no-lines | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-grid-custom | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-grid-fill | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-grid-none | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-icons | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-label-custom | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-legend | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-lines-only | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-multiple | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radar-radius | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radial-grid | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radial-label | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radial-shape | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radial-simple | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radial-stacked | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-radial-text | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-advanced | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-default | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-formatter | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-icons | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-indicator-line | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-indicator-none | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-label-custom | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-label-formatter | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-tooltip-label-none | block | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| dashboard-01 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| login-01 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| login-02 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| login-03 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| login-04 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| login-05 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| preview | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| preview-02 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| preview-03 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-01 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-02 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-03 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-04 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-05 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-06 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-07 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-08 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-09 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-10 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-11 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-12 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-13 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-14 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-15 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-16 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| signup-01 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| signup-02 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| signup-03 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| signup-04 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| signup-05 | block | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| example | component | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| accordion-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| accordion-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| alert-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| alert-destructive | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| alert-dialog-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| alert-dialog-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| alert-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| aspect-ratio-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| aspect-ratio-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| attachment-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| avatar-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| avatar-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| badge-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| badge-destructive | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| badge-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| badge-outline | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| badge-secondary | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| breadcrumb-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| breadcrumb-dropdown | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| breadcrumb-ellipsis | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| breadcrumb-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| breadcrumb-link | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| breadcrumb-responsive | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| breadcrumb-separator | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| bubble-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| button-as-child | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-default | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-destructive | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| button-ghost | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-dropdown | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| button-group-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-input-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-nested | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-orientation | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-popover | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-separator | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-size | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-group-split | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-icon | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-link | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-loading | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-outline | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-rounded | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-secondary | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-size | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| button-with-icon | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| calendar-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| calendar-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| calendar-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| calendar-hijri | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| card-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| card-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| card-with-form | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| carousel-api | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| carousel-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| carousel-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| carousel-orientation | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| carousel-plugin | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| carousel-size | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| carousel-spacing | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-demo-axis | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-demo-grid | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-demo-legend | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-bar-demo-tooltip | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| chart-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| chart-tooltip-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| checkbox-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| checkbox-disabled | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| checkbox-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| checkbox-form-multiple | example | default, new-york | pending | Needs item, variant and dependency review. |
+| checkbox-form-single | example | default, new-york | pending | Needs item, variant and dependency review. |
+| checkbox-with-text | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| code-block-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| collapsible-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| collapsible-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| combobox-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| combobox-dropdown-menu | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| combobox-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| combobox-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| combobox-popover | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| combobox-responsive | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| command-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| command-dialog | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| command-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| component-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| context-menu-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| context-menu-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| data-table-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| date-picker-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| date-picker-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| date-picker-with-presets | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| date-picker-with-range | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| demo | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| dialog-close-button | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| dialog-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| dialog-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| drawer-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| drawer-dialog | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| drawer-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| dropdown-menu-checkboxes | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| dropdown-menu-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| dropdown-menu-dialog | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| dropdown-menu-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| dropdown-menu-radio-group | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| empty-avatar | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| empty-avatar-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| empty-background | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| empty-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| empty-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| empty-icon | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| empty-input-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| empty-outline | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-checkbox | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-choice-card | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| field-fieldset | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-radio | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-responsive | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-slider | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| field-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-array | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-checkbox | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-radiogroup | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-next-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-next-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-array | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-checkbox | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-password | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-radiogroup | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-rhf-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-array | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-checkbox | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-radiogroup | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-tanstack-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| hover-card-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| hover-card-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| input-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-disabled | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| input-file | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| input-group-button | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-button-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-custom | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-dropdown | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| input-group-icon | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-label | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-spinner | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-text | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-group-tooltip | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-otp-controlled | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-otp-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-otp-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| input-otp-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| input-otp-pattern | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-otp-separator | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-with-button | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-with-label | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| input-with-text | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-avatar | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-dropdown | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| item-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-header | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-icon | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-image | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-link | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-size | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| item-variant | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| kbd-button | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| kbd-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| kbd-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| kbd-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| kbd-input-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| kbd-tooltip | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| label-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| label-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| marker-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| menubar-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| menubar-example | example | base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| message-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| message-scroller-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| mode-toggle | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| native-select-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| native-select-disabled | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| native-select-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| native-select-groups | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| native-select-invalid | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| navigation-menu-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| navigation-menu-example | example | base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| pagination-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| pagination-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| popover-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| popover-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| progress-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| progress-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| questionnaire-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| radio-group-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| radio-group-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| radio-group-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| resizable-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| resizable-demo-with-handle | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| resizable-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| resizable-handle | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| resizable-vertical | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| scroll-area-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| scroll-area-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| scroll-area-horizontal-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| select-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| select-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| select-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| select-scrollable | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| separator-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| separator-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sheet-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sheet-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sheet-side | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-floating-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-icon-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar-inset-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| skeleton-card | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| skeleton-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| skeleton-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| slider-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| slider-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sonner-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sonner-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sonner-types | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-badge | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-basic | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-button | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-color | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-custom | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-empty | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| spinner-input-group | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-item | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| spinner-size | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| switch-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| switch-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| switch-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| table-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| table-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| tabs-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| tabs-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| textarea-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| textarea-disabled | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| textarea-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| textarea-form | example | default, new-york | pending | Needs item, variant and dependency review. |
+| textarea-with-button | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| textarea-with-label | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| textarea-with-text | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toast-demo | example | default, new-york | pending | Needs item, variant and dependency review. |
+| toast-destructive | example | default, new-york | pending | Needs item, variant and dependency review. |
+| toast-example | example | base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega | pending | Needs item, variant and dependency review. |
+| toast-simple | example | default, new-york | pending | Needs item, variant and dependency review. |
+| toast-with-action | example | default, new-york | pending | Needs item, variant and dependency review. |
+| toast-with-title | example | default, new-york | pending | Needs item, variant and dependency review. |
+| toggle-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-disabled | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| toggle-group-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-group-disabled | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-group-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| toggle-group-lg | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-group-outline | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-group-single | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-group-sm | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-group-spacing | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-lg | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-outline | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-sm | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| toggle-with-text | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| tooltip-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| tooltip-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| trace-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| typography-blockquote | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-h1 | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-h2 | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-h3 | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-h4 | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-inline-code | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-large | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-lead | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-list | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-muted | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-p | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-small | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| typography-table | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| font-dm-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-eb-garamond | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-figtree | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-geist | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-geist-mono | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-dm-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-eb-garamond | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-figtree | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-geist | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-geist-mono | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-ibm-plex-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-instrument-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-instrument-serif | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-inter | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-jetbrains-mono | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-lora | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-manrope | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-merriweather | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-montserrat | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-noto-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-noto-serif | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-nunito-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-outfit | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-oxanium | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-playfair-display | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-public-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-raleway | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-roboto | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-roboto-slab | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-source-sans-3 | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-heading-space-grotesk | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-ibm-plex-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-instrument-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-instrument-serif | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-inter | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-jetbrains-mono | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-lora | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-manrope | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-merriweather | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-montserrat | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-noto-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-noto-serif | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-nunito-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-outfit | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-oxanium | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-playfair-display | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-public-sans | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-raleway | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-roboto | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-roboto-slab | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-source-sans-3 | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| font-space-grotesk | font | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| use-highlighted-code | hook | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | partial | Native Text output, thirteen grammars, aliases, ANSI, grammar state, streaming updates and theme switching tested. Hermes/device acceptance remains pending. |
+| use-mobile | hook | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | ported | Native window dimensions replace matchMedia; tested at the breakpoint, on resize and on subscription cleanup. Device acceptance remains separate. |
+| use-toast | hook | default, new-york | pending | Needs item, variant and dependency review. |
+| sidebar-controlled | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-demo | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-footer | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-group | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-group-action | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-group-collapsible | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-header | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-menu | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-menu-action | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-menu-badge | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-menu-collapsible | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-menu-sub | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| sidebar-rsc | internal | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
+| v0-login-01 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-01 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-02 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-03 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-04 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-05 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-06 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-07 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-08 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-09 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-10 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-11 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-12 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-13 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-14 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| v0-sidebar-15 | internal | default, new-york | pending | Needs item, variant and dependency review. |
+| utils | lib | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| index | style | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| style | style | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| theme-daylight | theme | default, new-york | pending | Needs item, variant and dependency review. |
+| theme-emerald | theme | default, new-york | pending | Needs item, variant and dependency review. |
+| theme-gray | theme | new-york-v4 | pending | Needs item, variant and dependency review. |
+| theme-midnight | theme | default, new-york | pending | Needs item, variant and dependency review. |
+| theme-neutral | theme | new-york-v4 | pending | Needs item, variant and dependency review. |
+| theme-slate | theme | new-york-v4 | pending | Needs item, variant and dependency review. |
+| theme-stone | theme | new-york-v4 | pending | Needs item, variant and dependency review. |
+| theme-zinc | theme | new-york-v4 | pending | Needs item, variant and dependency review. |
+| accordion | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| alert | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| alert-dialog | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| aspect-ratio | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| attachment | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| avatar | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| badge | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| breadcrumb | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| bubble | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| button | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| button-group | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| calendar | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| card | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| carousel | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| chart | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| checkbox | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| code-block | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| collapsible | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| combobox | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| command | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| context-menu | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| dialog | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| direction | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| drawer | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| dropdown-menu | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| empty | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| field | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| form | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | partial | React Hook Form provider/controller, required errors, native input binding and submission tested. Upstream form examples, resolver integrations and focus/accessibility acceptance remain pending. |
+| hover-card | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| input | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| input-group | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| input-otp | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| item | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| kbd | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| label | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| marker | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| menubar | ui | base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| message | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| message-scroller | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| native-select | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| navigation-menu | ui | base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| pagination | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| popover | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| progress | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| questionnaire | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| radio-group | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| resizable | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| scroll-area | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| select | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| separator | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sheet | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sidebar | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| skeleton | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| slider | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| sonner | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| spinner | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| switch | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| table | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| tabs | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| textarea | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| toast | ui | base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york | pending | Needs item, variant and dependency review. |
+| toggle | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| toggle-group | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| tooltip | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, default, new-york, new-york-v4, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+| trace | ui | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
+
+## Unresolved upstream registry references
+
+These upstream metadata gaps remain visible; they are not silently dropped or treated as Expo implementations.
+
+| Registry | Item | Missing registry dependency |
+| --- | --- | --- |
+| default | combobox-popover | combobox |
+| default | combobox-responsive | combobox |
+| default | data-table-demo | data-table |
+| new-york | combobox-popover | combobox |
+| new-york | combobox-responsive | combobox |
+| new-york | data-table-demo | data-table |
+| new-york-v4 | data-table-demo | data-table |
+
+## Web-specific checklist
+
+| Browser feature | Native policy | Acceptance |
+| --- | --- | --- |
+| HTML tags, DOM refs and browser events | Replace with typed React Native host components, native refs and event payloads. A name-only or HTML-backed adapter is not an Expo port. | pending item-by-item verification |
+| CSS styles, selectors, hover and focus-visible | Preserve each style's design intent with shared-token native StyleSheets, pressed/focus state and responsive layout; document selectors with no native meaning. | pending per-style and variant verification |
+| Next routes, Server Components, server actions and HTML form actions | Use explicit application navigation and native submit callbacks; keep authentication and persistence in the application's existing API. Do not ship working-looking provider stubs. | pending block and example verification |
+| Recharts DOM/SVG components | Use native SVG with each example's series, scale, axes, stacking, labels and interactions accounted for. Six generic chart renderers do not establish chart-registry parity. | pending chart-by-chart verification |
+| window.matchMedia, innerWidth and DOM resize observers | Use subscribed native window dimensions and native layout events, including rotation, split-screen and cleanup. | pending hook verification |
+| Browser clipboard, storage, file input and drag/drop | Use Expo/native platform bridges, explicit permission/error handling and touch/accessible alternatives. Do not execute browser APIs on device. | pending item-by-item verification |
+| next/font, CSS font variables and web font providers | Track every font and weight; native font loading requires actual Expo-compatible font assets and family mapping. CSS font metadata alone is not a native font port. | pending all 52 font items |
+| Shiki HTML spans and CSS theme variables | Keep grammar/state behavior using the JavaScript regex engine, but render themed native Text rather than HTML. | pending native highlighter verification |

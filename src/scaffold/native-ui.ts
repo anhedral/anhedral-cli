@@ -14,12 +14,14 @@ export function scaffoldNativeUI(root: string): void {
   const registry = JSON.parse(readFileSync(assets + 'native/registry.json', 'utf8')) as {
     components: { id: string; file: string }[];
     supportFiles: string[];
+    supportModules?: { file: string; exports: string[] }[];
   };
   const components = [
     ...registry.components.map((item) => item.id),
     'layout',
     'text',
     'theme-switcher',
+    ...(registry.supportModules ?? []).map((item) => item.file),
   ];
   const nativeFiles = [...registry.components.map((item) => item.file), ...registry.supportFiles];
   for (const file of [
@@ -46,6 +48,11 @@ export function scaffoldNativeUI(root: string): void {
   );
   put(
     root,
+    'packages/native-ui/native-registry.md',
+    readFileSync(fileURLToPath(new URL('../../docs/native-registry.md', import.meta.url)), 'utf8'),
+  );
+  put(
+    root,
     'packages/native-ui/NATIVE_COMPONENTS.json',
     readFileSync(assets + 'native/registry.json', 'utf8'),
   );
@@ -63,6 +70,8 @@ export function scaffoldNativeUI(root: string): void {
       '.': './src/index.ts',
       './components/*': './src/native/*.tsx',
       './theme': './src/theme.tsx',
+      './hooks/*': './src/native/*.tsx',
+      './lib/*': './src/native/*.tsx',
     },
     scripts: { typecheck: 'tsc --noEmit', lint: 'eslint . --max-warnings 0' },
     dependencies: {

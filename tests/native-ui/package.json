@@ -31,7 +31,9 @@
     "react-native-safe-area-context": "5.7.0",
     "react-native-svg": "15.15.4",
     "test-renderer": "1.2.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "shiki": "3.23.0",
+    "react-hook-form": "7.62.0"
   },
   "main": "index.js"
 }

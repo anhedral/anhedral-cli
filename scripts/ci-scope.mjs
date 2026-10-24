@@ -23,7 +23,7 @@ export function needsNativeUI(files) {
   return (
     files.length === 0 ||
     files.some((file) =>
-      /^(?:assets\/ui\/(?:native\/|theme)|src\/(?:dependencies\.ts|scaffold\/(?:native-ui|styling)\.ts|platforms\/mobile\.ts)|tests\/(?:native-ui\/|test-native-ui-catalog\.test\.mjs)|scripts\/native-ui-|\.github\/workflows\/ci\.yml)/.test(
+      /^(?:assets\/ui\/(?:native\/|official\/|theme)|src\/(?:dependencies\.ts|scaffold\/(?:native-ui|styling)\.ts|platforms\/mobile\.ts)|tests\/(?:native-ui\/|test-(?:native-ui-catalog|official-shadcn-registry)\.test\.mjs)|scripts\/(?:native-ui-|shadcn-registry\.mjs)|\.github\/workflows\/ci\.yml)/.test(
         file,
       ),
     )

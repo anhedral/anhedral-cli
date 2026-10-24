@@ -84,6 +84,10 @@ test('offline generator ships the entire port, its inventory and public module p
         'Generated source drift: ' + file,
       );
     assert.deepEqual(json(path.join(pkg, 'NATIVE_COMPONENTS.json')), registry);
+    assert.equal(
+      readFileSync(path.join(pkg, 'native-registry.md'), 'utf8'),
+      readFileSync('docs/native-registry.md', 'utf8'),
+    );
     const manifest = json(path.join(pkg, 'package.json'));
     assert.equal(manifest.exports['./components/*'], './src/native/*.tsx');
     const index = readFileSync(path.join(pkg, 'src/index.ts'), 'utf8');

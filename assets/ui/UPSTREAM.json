@@ -34,6 +34,14 @@
     "catalog": "native/registry.json",
     "baseline": "https://ui.shadcn.com/docs/components",
     "retrieved": "2026-10-24",
-    "implementation": "Anhedral-owned React Native semantic adaptations. Native APIs replace browser-only DOM and interaction APIs; device acceptance is tracked separately."
+    "implementation": "Anhedral-owned React Native semantic adaptations. Native APIs replace browser-only DOM and interaction APIs; device acceptance is tracked separately.",
+    "additionalModules": {
+      "sourceCommit": "617134d5810bba521803b3ed787190bacbb80b35",
+      "use-mobile": "Native useWindowDimensions adaptation of registry/hooks/use-mobile; rotation, breakpoint and cleanup behavior tested.",
+      "use-highlighted-code": "Streaming algorithm adapted from apps/v4/registry/bases/base/hooks/use-highlighted-code.ts.",
+      "highlighter": "Grammar/state loading adapted from apps/v4/registry/bases/base/lib/highlighter.tsx; native themed Text replaces HTML spans.",
+      "form": "Anhedral native React Hook Form bindings; broader registry examples and acceptance are tracked separately."
+    },
+    "fullRegistryChecklist": "https://github.com/anhedral/anhedral-cli/blob/staging/docs/native-registry.md"
   }
 }

@@ -1096,8 +1096,39 @@
     "_motion.tsx",
     "_overlay.tsx",
     "_selection.tsx",
+    "form.tsx",
+    "highlighter.tsx",
     "layout.tsx",
     "text.tsx",
-    "theme-switcher.tsx"
+    "theme-switcher.tsx",
+    "use-highlighted-code.tsx",
+    "use-mobile.tsx"
+  ],
+  "supportModules": [
+    {
+      "file": "highlighter",
+      "exports": ["loadHighlighter", "highlightCode"]
+    },
+    {
+      "file": "use-highlighted-code",
+      "exports": ["useHighlightedCode"]
+    },
+    {
+      "file": "use-mobile",
+      "exports": ["useIsMobile"]
+    },
+    {
+      "file": "form",
+      "exports": [
+        "Form",
+        "FormField",
+        "FormItem",
+        "FormControl",
+        "FormLabel",
+        "FormDescription",
+        "FormMessage",
+        "useFormField"
+      ]
+    }
   ]
 }

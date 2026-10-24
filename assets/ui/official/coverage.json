@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "items": {
+    "registry:hook/use-mobile": {
+      "status": "ported",
+      "reason": "Native window dimensions replace matchMedia; tested at the breakpoint, on resize and on subscription cleanup. Device acceptance remains separate.",
+      "nativeFiles": ["assets/ui/native/use-mobile.tsx"],
+      "tests": ["tests/native-ui/registry-support.test.tsx"],
+      "reviewedInputs": {
+        "aria-luma": "daa14a0f0cd4f92fd6891e4411c13b2cafd1749d10a262f4081a9cf2557a1099",
+        "aria-lyra": "c796dbae64e0c4fa74fc153fca8cc38af697bebb966edf27550f4b315cdaa221",
+        "aria-maia": "9819912e99c2cb113401e51e3b324d08b137f279fef95100e38f0b32c656b2f1",
+        "aria-mira": "a5b48cf8ad3f74c2a43c0794ad0bb2744890feee5f1e82764a6939c8bd3703af",
+        "aria-nova": "e8dca418ecbbd783c50a5c5d400ff2dc10fd01d0c1e9fd9b437e9bf42d0c73a1",
+        "aria-rhea": "485077cd6a5a31123e2a474ebf30f209484c5f2ef11b12491bf5d1c2dbf6b44e",
+        "aria-sera": "03462ec519e115aca48a332e690a37a0d5fa2f85effbfe28b64792d52a82f105",
+        "aria-vega": "021cb54d320e640ba699a5d88322283a8a4d929cc3847147a0007c45861bb213",
+        "base-luma": "5b044ae6441792d654357ecb4e1349cbaba46ad90984b0a4c63afacffa08959f",
+        "base-lyra": "5ba0b2ea6fe759e554f14b1643e71c14e25227fc3c510ef1907ab20fad89a264",
+        "base-maia": "628a4baffa19067d7b828735d32df547257d878341110afd1fb41e492d7409d6",
+        "base-mira": "a2aaf978f32bc57dee2dcbac79bdb027d15f52a94605cba098091dd60fe83f22",
+        "base-nova": "d487ad3fdee8ee11e511056dd5ab07b724905a07c41664ebad8ad2deba712982",
+        "base-rhea": "dfa510b8b6e30acccb25f906a123795adf8d595d17cf53761a0a77b17a8aeb3e",
+        "base-sera": "64337774d03def884722c43985a7e39057d756619206cc76603e33b16837317b",
+        "base-vega": "1e1502215731d8feb209dbc4541b32b7827c285b28bcb5559ea73e913a4424d9",
+        "default": "419141f307aa9021ec14b9499ebbbb7525d8dcb746a5a00a02c45d684f965a67",
+        "new-york": "533ff2b5defd1430cbe105a50bdb0da5f6fa569ed77a83d92147060995f698f6",
+        "new-york-v4": "39beda5654387c104d0e251463bfecb3dd6545221a8f7508a38f9c775d054879",
+        "radix-luma": "3878f0f26620a611f532ed96c6f07ce7cc8fcead65ffb348145de1cebc0d9557",
+        "radix-lyra": "984e72c1a3100fcc346168d80e3dc379f441070762a6144ca7f8e4c45d4c56c1",
+        "radix-maia": "08cff63c7b85ddfb73ed51130f96740209e1b7c04d0bcdd132fba0996e706247",
+        "radix-mira": "0257fc48d3ac39a9869e9819c3975ddb157bfd7373f428b56a555824251ff94e",
+        "radix-nova": "e063dd24d18cad7d813729f1358f7d4ff04750aea3e4de8422d595a3ff0ba2db",
+        "radix-rhea": "d718e727bfa44734076ed16c91b90e23862b39982ce2ba52022d7d2b9aec9a90",
+        "radix-sera": "554bc66ca3371f0556752c9afc58f414bcb48b44d436f8fcdfd04b54a68afd35",
+        "radix-vega": "74d897312505ce4b92caac9bea4a3bc312c6cc03ce0b1ca23def7c697fce0497"
+      }
+    },
+    "registry:hook/use-highlighted-code": {
+      "status": "partial",
+      "reason": "Native Text output, thirteen grammars, aliases, ANSI, grammar state, streaming updates and theme switching tested. Hermes/device acceptance remains pending.",
+      "nativeFiles": [
+        "assets/ui/native/use-highlighted-code.tsx",
+        "assets/ui/native/highlighter.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-support.test.tsx"]
+    },
+    "registry:ui/form": {
+      "status": "partial",
+      "reason": "React Hook Form provider/controller, required errors, native input binding and submission tested. Upstream form examples, resolver integrations and focus/accessibility acceptance remain pending.",
+      "nativeFiles": ["assets/ui/native/form.tsx"],
+      "tests": ["tests/native-ui/registry-support.test.tsx"]
+    }
+  },
+  "webSpecific": [
+    {
+      "feature": "HTML tags, DOM refs and browser events",
+      "adaptation": "Replace with typed React Native host components, native refs and event payloads. A name-only or HTML-backed adapter is not an Expo port.",
+      "status": "pending item-by-item verification"
+    },
+    {
+      "feature": "CSS styles, selectors, hover and focus-visible",
+      "adaptation": "Preserve each style's design intent with shared-token native StyleSheets, pressed/focus state and responsive layout; document selectors with no native meaning.",
+      "status": "pending per-style and variant verification"
+    },
+    {
+      "feature": "Next routes, Server Components, server actions and HTML form actions",
+      "adaptation": "Use explicit application navigation and native submit callbacks; keep authentication and persistence in the application's existing API. Do not ship working-looking provider stubs.",
+      "status": "pending block and example verification"
+    },
+    {
+      "feature": "Recharts DOM/SVG components",
+      "adaptation": "Use native SVG with each example's series, scale, axes, stacking, labels and interactions accounted for. Six generic chart renderers do not establish chart-registry parity.",
+      "status": "pending chart-by-chart verification"
+    },
+    {
+      "feature": "window.matchMedia, innerWidth and DOM resize observers",
+      "adaptation": "Use subscribed native window dimensions and native layout events, including rotation, split-screen and cleanup.",
+      "status": "pending hook verification"
+    },
+    {
+      "feature": "Browser clipboard, storage, file input and drag/drop",
+      "adaptation": "Use Expo/native platform bridges, explicit permission/error handling and touch/accessible alternatives. Do not execute browser APIs on device.",
+      "status": "pending item-by-item verification"
+    },
+    {
+      "feature": "next/font, CSS font variables and web font providers",
+      "adaptation": "Track every font and weight; native font loading requires actual Expo-compatible font assets and family mapping. CSS font metadata alone is not a native font port.",
+      "status": "pending all 52 font items"
+    },
+    {
+      "feature": "Shiki HTML spans and CSS theme variables",
+      "adaptation": "Keep grammar/state behavior using the JavaScript regex engine, but render themed native Text rather than HTML.",
+      "status": "pending native highlighter verification"
+    }
+  ]
+}

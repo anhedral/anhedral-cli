@@ -30,7 +30,9 @@
     "docs/assets/anhedral-stack.png",
     "docs/assets/anhedral-stack-light.png",
     "assets/ui",
-    "docs/native-ui.md"
+    "docs/native-ui.md",
+    "!assets/ui/official/**",
+    "docs/native-registry.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -86,7 +88,9 @@
     "test:billing": "node tests/test-generated-apps.mjs billing",
     "test:native-ui": "pnpm build && pnpm --dir tests/native-ui typecheck && pnpm --dir tests/native-ui test",
     "native-ui:docs": "node scripts/native-ui-catalog.mjs --write",
-    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream"
+    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream",
+    "native-ui:registry": "node scripts/shadcn-registry.mjs",
+    "native-ui:registry:docs": "node scripts/shadcn-registry.mjs --write"
   },
   "keywords": [
     "cli",
