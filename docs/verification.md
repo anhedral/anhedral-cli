@@ -784,7 +784,7 @@ platform owns its controls. Nova Input/Label integrate with the reviewed form PR
 
 Validation: focused generator/broker/Next tests (8), complete CLI unit suite
 (553 passed, one optional skip), unchanged CLI release gate including OSV, patch
-regressions, packed CLI and packlist passed before the final Nova merge. The
+regressions, packed CLI and packlist passed again on the final combined Nova/email/tooling source. The
 installed generated core fixture passed full checks including Fallow, dependency
 audit, types, lint, OpenNext/API builds; iOS/Android Hermes exports passed.
 Compiled Worker plus real Better Auth/Drizzle/in-memory SQLite proved signup,
@@ -839,3 +839,23 @@ gate with only the existing exact verified node-forge patch acceptance. Both
 Hermes native exports passed. The actual Expo plugin and MCP schemas passed
 positive/negative parsing against scoped Zod 4.6.6; CLI build/lint and 11 focused
 contract tests passed, and OSV passed for 62 locked/catalog versions.
+
+Final integrated acceptance: the unchanged full CLI release gate passed, including
+553 unit passes/one optional skip, refreshed OSV (62 locked/catalog versions),
+exact patch regressions, packed installation and strict packlist (249 files).
+Inspector/plugin check passed all 61 tests. Both core and Stripe+RevenueCat
+generated profiles passed full local checks and builds. The payment profile also
+passed real workerd SSR/RSC, protected account, D1 session/revocation, native
+scheme/origin rejection, compiled email acceptance and synthetic billing tests.
+The 28 generated browser JavaScript assets contain no managed-email broker
+configuration/module or native purchase modules. Browser reset-request confirmation
+passed; native exports do not establish physical-device acceptance.
+
+The final strict packlist initially rejected the recovered Input/Label paths;
+PR #62 requires and allowlists exactly those two files without widening exclusions.
+Nova form recovery is #60; security prerequisites are #58/#59. Storage safeguards
+were already recovered/shipped as anhedral-main#201: nine regressions, root
+check (26 tasks) and serial root build (five tasks) passed again at Platform
+source 822825e9; later observed staging changes did not touch those safeguards.
+No Comms source, retained recovery snapshot or stash was changed by this work.
+Publication and provider state are verified separately after promotion.
