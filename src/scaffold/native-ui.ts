@@ -10,22 +10,24 @@ import { writeReactLintConfig } from '../platforms/lint.js';
 
 /** Anhedral-maintained native shadcn port. Never imported by the DOM application. */
 export function scaffoldNativeUI(root: string): void {
+  const assets = fileURLToPath(new URL('../../assets/ui/', import.meta.url));
+  const registry = JSON.parse(readFileSync(assets + 'native/registry.json', 'utf8')) as {
+    components: { id: string; file: string }[];
+    supportFiles: string[];
+  };
   const components = [
-    'button',
-    'card',
-    'dialog',
-    'input',
-    'label',
+    ...registry.components.map((item) => item.id),
     'layout',
     'text',
     'theme-switcher',
   ];
+  const nativeFiles = [...registry.components.map((item) => item.file), ...registry.supportFiles];
   for (const file of [
     'theme.tsx',
     'theme-storage.ts',
     'LICENSE.shadcn',
     'UPSTREAM.json',
-    ...components.map((name) => `native/${name}.tsx`),
+    ...nativeFiles.map((name) => `native/${name}`),
   ]) {
     const source = readFileSync(
       fileURLToPath(new URL(`../../assets/ui/${file}`, import.meta.url)),
@@ -39,6 +41,16 @@ export function scaffoldNativeUI(root: string): void {
   }
   put(
     root,
+    'packages/native-ui/README.md',
+    readFileSync(fileURLToPath(new URL('../../docs/native-ui.md', import.meta.url)), 'utf8'),
+  );
+  put(
+    root,
+    'packages/native-ui/NATIVE_COMPONENTS.json',
+    readFileSync(assets + 'native/registry.json', 'utf8'),
+  );
+  put(
+    root,
     'packages/native-ui/src/index.ts',
     `export * from './theme';\n` +
       components.map((name) => `export * from './native/${name}';\n`).join(''),
@@ -47,7 +59,11 @@ export function scaffoldNativeUI(root: string): void {
     name: '@workspace/native-ui',
     private: true,
     type: 'module',
-    exports: { '.': './src/index.ts' },
+    exports: {
+      '.': './src/index.ts',
+      './components/*': './src/native/*.tsx',
+      './theme': './src/theme.tsx',
+    },
     scripts: { typecheck: 'tsc --noEmit', lint: 'eslint . --max-warnings 0' },
     dependencies: {
       ...NATIVE_UI_DEPENDENCIES.dependencies,

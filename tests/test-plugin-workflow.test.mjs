@@ -55,6 +55,8 @@ test('packaged plugin and isolated CLI carry a coherent local beginner workflow'
       recursive: true,
     });
     cpSync(path.join(root, 'package.json'), path.join(installed, 'package.json'));
+    mkdirSync(path.join(installed, 'docs'));
+    cpSync(path.join(root, 'docs/native-ui.md'), path.join(installed, 'docs/native-ui.md'));
     for (const dependency of Object.keys(
       JSON.parse(readFileSync(path.join(root, 'package.json'))).dependencies,
     )) {

@@ -40,7 +40,11 @@ function collect(directory) {
   for (const entry of readdirSync(directory)) {
     const absolute = path.join(directory, entry);
     const relative = path.relative(root, absolute);
-    if (relative.split(path.sep).some((part) => ['node_modules', 'dist', 'runtime'].includes(part)))
+    if (
+      relative
+        .split(path.sep)
+        .some((part) => ['node_modules', 'dist', 'runtime', '.generated', '.expo'].includes(part))
+    )
       continue;
     if (statSync(absolute).isDirectory()) files.push(...collect(absolute));
     else if (textExtensions.has(path.extname(entry))) files.push(absolute);

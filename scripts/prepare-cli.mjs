@@ -52,3 +52,8 @@ writeFileSync(
   new URL('verification.md', references),
   readFileSync(new URL('../docs/verification.md', import.meta.url)),
 );
+
+writeFileSync(
+  new URL('native-ui.md', references),
+  readFileSync(new URL('../docs/native-ui.md', import.meta.url)),
+);
