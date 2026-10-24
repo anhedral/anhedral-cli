@@ -65,3 +65,34 @@ test('manual main candidate is verified after quick checks before immutable uplo
     false,
   );
 });
+
+test('every exact-artifact smoke job provisions the generated workspace package manager first', () => {
+  const release = parse(
+    readFileSync(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8'),
+  );
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  let checked = 0;
+  for (const owner of [workflow, release]) {
+    for (const job of Object.values(owner.jobs)) {
+      const steps = job.steps ?? [];
+      const smoke = steps.findIndex((step) =>
+        /test-packed-cli\.js|release:artifact:smoke/.test(step.run ?? ''),
+      );
+      if (smoke < 0) continue;
+      const setup = steps.findIndex((step) => step.uses?.startsWith('pnpm/action-setup@'));
+      assert.ok(setup >= 0 && setup < smoke, 'installed CLI smoke requires pnpm on PATH');
+      assert.equal('pnpm@' + steps[setup].with.version, manifest.packageManager);
+      assert.equal(
+        steps[setup].with.run_install ?? false,
+        false,
+        'release smoke must not rebuild the reviewed artifact',
+      );
+      checked++;
+    }
+  }
+  assert.equal(
+    checked,
+    3,
+    'main candidate, release verification and exact artifact jobs are covered',
+  );
+});
