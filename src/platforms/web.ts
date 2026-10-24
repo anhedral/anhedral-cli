@@ -130,11 +130,15 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
 `,
   );
-  put(
-    root,
-    `${app}/components/ui/button.tsx`,
-    readFileSync(fileURLToPath(new URL('../../assets/ui/web/button.tsx', import.meta.url)), 'utf8'),
-  );
+  for (const component of ['button', 'input', 'label'])
+    put(
+      root,
+      `${app}/components/ui/${component}.tsx`,
+      readFileSync(
+        fileURLToPath(new URL(`../../assets/ui/web/${component}.tsx`, import.meta.url)),
+        'utf8',
+      ),
+    );
   for (const file of ['LICENSE.shadcn', 'UPSTREAM.json'])
     put(
       root,
@@ -339,6 +343,8 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 async function authenticate(data: FormData, create: boolean) {
   const email = String(data.get('email')); const password = String(data.get('password')); const name = String(data.get('name'));
   const result = create ? await authClient.signUp.email({ email, password, name }) : await authClient.signIn.email({ email, password });
@@ -351,6 +357,6 @@ export default function SignIn() {
     try { await authenticate(data, create); router.replace('/account'); router.refresh(); } catch { setError('Unable to sign in. Check your details and retry.'); } finally { setPending(false); }
   }
   const labels = create ? { title: 'Create account', password: 'new-password', toggle: 'Use an existing account' } : { title: 'Sign in', password: 'current-password', toggle: 'Create an account' };
-  return <section className="stack"><h1>{labels.title}</h1><form onSubmit={submit}>{create && <label>Name<input name="name" required autoComplete="name" /></label>}<label>Email<input name="email" type="email" required autoComplete="email" /></label><label>Password<input name="password" type="password" minLength={8} required autoComplete={labels.password} /></label><Button type="submit" disabled={pending}>{pending ? 'Working…' : labels.title}</Button></form><p role="status">{error}</p><Button type="button" onClick={() => setCreate(!create)}>{labels.toggle}</Button></section>;
+  return <section className="stack"><h1>{labels.title}</h1><form onSubmit={submit}>{create && <Label>Name<Input name="name" required autoComplete="name" /></Label>}<Label>Email<Input name="email" type="email" required autoComplete="email" /></Label><Label>Password<Input name="password" type="password" minLength={8} required autoComplete={labels.password} /></Label><Button type="submit" disabled={pending}>{pending ? 'Working…' : labels.title}</Button></form><p role="status">{error}</p><Button type="button" onClick={() => setCreate(!create)}>{labels.toggle}</Button></section>;
 }
 `;

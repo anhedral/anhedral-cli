@@ -27,6 +27,7 @@
     "The Base Nova web Button uses the local cn utility, an explicit React client boundary and a public variant export.",
     "Native components are Anhedral-maintained React Native ports, isolated from DOM components and without React Native Reusables.",
     "Native themes derive their colors from the generated shared semantic tokens; no separate native palette is installed.",
-    "Native Dialog restores focus to its actionable trigger on both iOS dismissal and Android close transitions."
+    "Native Dialog restores focus to its actionable trigger on both iOS dismissal and Android close transitions.",
+    "Recovered Input and Label use the local cn utility; Input delegates keyboard focus styling to the existing shared global focus rule."
   ]
 }
