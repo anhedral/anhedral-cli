@@ -751,3 +751,16 @@ separate evidence. This focused repair has no version bump or npm publication.
 ## 2026-10-23 — Product family naming
 
 Positioned Anhedral CLI as the starter foundation in the README and software factory, alongside Anhedral Platform, Anhedral Agents, and Anhedral Cloud. This documentation change does not publish a package or activate provider services. Validation: Git whitespace checks; canonical software-factory reference refreshed through the normal build.
+
+
+## 2026-10-23 — Generated audit dependency security recovery
+
+The managed-email recovery release check refreshed OSV and found two advisories
+against the existing generated Fallow 3.33.1 pin: GHSA-h4fr-cmh5-qr62 and
+GHSA-jfwm-3p3c-6hx5. Both upstream advisories identify 3.34.0 as the patched
+version. Pin the generated audit tool to that version; keep audit admission and
+all existing security gates enabled. No provider resources or databases changed.
+
+CLI build, lint/typecheck/format/hygiene/release policy, focused dependency/Next
+contracts (11 tests) and refreshed OSV audit (61 locked/catalog versions) passed.
+Publication of the integrated candidate remains separate.
