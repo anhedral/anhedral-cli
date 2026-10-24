@@ -182,6 +182,9 @@ test('default workspace separates full Next web, native owned UI and privileged 
     assert.match(read('apps/web/app/page.tsx'), /await headers\(\)/);
     assert.match(read('apps/web/app/account/page.tsx'), /sessionSchema.parse/);
     assert.match(read('apps/web/components/ui/button.tsx'), /@base-ui\/react\/button/);
+    assert.match(read('apps/web/components/ui/input.tsx'), /@base-ui\/react\/input/);
+    assert.doesNotMatch(read('apps/web/components/ui/input.tsx'), /focus-visible:(?:ring|border)/);
+    assert.match(read('apps/web/app/sign-in/page.tsx'), /<Label>Email<Input/);
     assert.match(read('apps/web/UPSTREAM.json'), /shadcn/);
     assert.match(read('packages/native-ui/src/native/button.tsx'), /Pressable/);
     const dialog = read('packages/native-ui/src/native/dialog.tsx');

@@ -764,3 +764,20 @@ all existing security gates enabled. No provider resources or databases changed.
 CLI build, lint/typecheck/format/hygiene/release policy, focused dependency/Next
 contracts (11 tests) and refreshed OSV audit (61 locked/catalog versions) passed.
 Publication of the integrated candidate remains separate.
+
+
+## 2026-10-23 — Nova authentication form recovery
+
+The current Next/native default already contains the recovered native shadcn
+foundation and Base Nova Button (#49). Recover the source-owned Base UI Nova
+Input and Label from the retained CLI snapshot and use them on generated web
+sign-in forms. Preserve the existing MIT notice and upstream provenance hashes;
+adapt only the local utility import, client boundary and focus ownership. Input
+delegates keyboard focus to the generated global rule rather than adding a
+second focus-only border/ring layer. Other historical components remain preserved
+in the recovery branch and are not installed as unused starter code.
+
+CLI build/lint/typecheck/format/hygiene and five Next contract tests passed.
+The integrated generated web fixture passed Next route/type generation and lint
+with these recovered controls. Browser interaction and final integrated release
+checks are recorded with the managed-email recovery.
