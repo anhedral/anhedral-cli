@@ -1,58 +1,50 @@
 import type { StandardOptions } from '../registry/types.js';
 import { put } from './files.js';
-
 export function writeSetupDocumentation(root: string, options: StandardOptions): void {
-  put(
-    root,
-    'AGENTS.md',
-    `# Anhedral application
-
-This project uses Next.js App Router/OpenNext for web and Expo for iOS/Android, a Hono Cloudflare Worker, Drizzle/D1, and private R2. Better Auth supplies the identity needed for private storage and payments. Shared styling tokens are in packages/styling; native components use the Anhedral-maintained shadcn port in packages/native-ui. Optional integrations are Stripe and RevenueCat only.
-
-Hono owns authentication, authorization, persistence, and provider credentials. Clients use API contracts in packages/contracts and never import database/auth server code. Apps must not import each other's source. Keep one root pnpm lockfile. No secrets belong in client bundles.
-
-Review SQL produced by pnpm db:generate. Apply local migrations explicitly using pnpm db:migrate. Remote migrations require an explicit --remote and reviewed target. Builds and startup never migrate databases. R2 stays private; the API derives object namespaces from the verified user, never client-supplied ownership.
-
-Run pnpm lint, pnpm typecheck, and pnpm build. Verify signup/signin/signout, anonymous rejection and cross-user file isolation. Payment additions require provider sandbox purchase/restore/webhook verification. Keep architecture and dated acceptance evidence in docs/architecture.md and docs/verification.md. Init does not provision, deploy or activate payment services.
-`,
-  );
   put(
     root,
     'README.md',
     `# ${options.name}
 
-Next.js web + native Expo + Hono + Drizzle/D1 + private R2. Better Auth provides email/password accounts for private files. ${options.products.includes('stripe') ? 'Stripe is selected. ' : ''}${options.products.includes('revenuecat') ? 'RevenueCat is selected.' : ''}
+Next.js App Router/OpenNext + Expo native + shadcn UI + Hono/workerd + Drizzle/D1 + private R2.
 
-## Local setup
+## Develop locally
 
-Use the Node and pnpm versions in package.json. Install dependencies if initialization used --skip-install.
+Use the Node and pnpm versions in package.json. Run pnpm install if generation used --skip-install. Run pnpm dev and open the web URL printed by Next (normally http://localhost:3000). Hono runs on http://127.0.0.1:8787; web /api/health proxies to it. No accounts or secrets are needed for the starter health flow.
 
-1. Copy apps/api/.dev.vars.example to apps/api/.dev.vars. Set BETTER_AUTH_SECRET to at least 32 random characters and keep BETTER_AUTH_URL=http://localhost:3000 for local web.
-2. Run pnpm db:generate, review the generated SQL, then pnpm db:migrate (local D1 only by default).
-3. Run pnpm dev. Open http://localhost:3000. Create an account using the Sign in / account link.
-4. Native development uses pnpm --dir apps/mobile start. Configure EXPO_PUBLIC_API_URL in apps/mobile/.env for an API address reachable by the device and set BETTER_AUTH_URL to that origin when testing native. Use HTTPS outside local development.
+Start native separately with pnpm --dir apps/mobile start. Copy apps/mobile/.env.example to apps/mobile/.env and set EXPO_PUBLIC_API_URL to the API origin reachable from the device. Local HTTP is development-only; use HTTPS outside development.
 
-## Private files
+## Data and private storage
 
-Authenticated POST /api/files accepts raw bytes up to 1 MiB and returns an opaque id. GET /api/files/:id downloads it; DELETE /api/files/:id deletes it. Every operation is scoped to the signed-in user. Files are forced to download as application/octet-stream; bucket credentials and public bucket URLs are never sent to clients. Applications add their own file picker, quotas, retention and product UI.
+Add tables in packages/db/src/schema.ts. Run pnpm db:generate, review SQL, then explicitly run pnpm db:migrate (local by default). Builds and startup do not migrate databases. Configure real D1 and private R2 identities in apps/api/wrangler.jsonc for your own deployment. Never enable public bucket access or put service credentials in clients.
 
-## Cloud resources and delivery
+apps/api/src/private-storage.ts is a server-side helper; it exposes no file routes. Implement your application's identity, authorization, ownership and limits before exposing database or object APIs.
 
-Initialization is local source generation. Configure the intended Cloudflare account, provision a D1 database and private R2 bucket using the CLI provider workflow, and review apps/api/wrangler.jsonc. Keep public R2 access disabled. Set production secrets through Wrangler. Review/apply remote migrations explicitly before deployment. Ship the API before the Next.js OpenNext Worker, then verify real authentication and file isolation. See docs/stack.md and anhedral.json for setup requirements.
+## Your application
 
-Next.js supports request-rendered HTML and React Server Components. Production requires the ANHEDRAL_API service binding; API_INTERNAL_URL is restricted to loopback development. The default OpenNext adapter does not provision persistent ISR/cache storage. Private R2 and all database/auth/provider credentials belong only to Hono.
+You own development, authentication, email, payments and hosting. Add Stripe or RevenueCat yourself if needed. This scaffold has no Platform account, managed provider connection or production activation. Generated configuration and scripts are yours to change. See docs/stack.md and run pnpm check before reviewing changes.
+`,
+  );
+  put(
+    root,
+    'AGENTS.md',
+    `# Application foundation
 
-Stripe and RevenueCat remain inactive until client-owned provider products, credentials, origins and webhooks are configured. Verify sandbox flows before live activation.
+Use Next.js App Router/OpenNext for web, Expo for native, DOM shadcn and the Anhedral native shadcn port, Hono on Workers/workerd, Drizzle/D1 and private R2. Shared contracts belong in packages/contracts, native components in packages/native-ui, tokens in packages/styling, and server schema/migrations in packages/db.
+
+Hono owns privileged operations. Clients and Next server actions call the API; apps never import one another's source. Keep database/storage credentials server-side. The starter has no authentication, payment integration or public file APIs. Implement identity and authorization before exposing private data. A private bucket is not user authorization.
+
+Use pnpm dev for web/API and pnpm --dir apps/mobile start for native. Read version-matched framework documentation. Run pnpm check and exercise changed flows. Review generated SQL and apply migrations explicitly; never migrate a configured remote database during tests, build or startup. Consumers own integration and hosting decisions. Preserve existing source; never reinitialize over an application.
 `,
   );
   put(
     root,
     'docs/architecture.md',
-    '# Architecture\n\nNext.js web / Expo native → Hono Worker → Drizzle/D1 and private R2. Better Auth identifies users. Record application flows, access boundaries and selected payment providers here.\n',
+    '# Architecture\n\nNext.js / Expo → Hono → Drizzle/D1 and private R2. Record application-owned identity, access rules and integrations here.\n',
   );
   put(
     root,
     'docs/verification.md',
-    '# Verification\n\nRecord dates, environments, commands, denied-access checks and unresolved acceptance gaps. Generated source is not production acceptance.\n',
+    '# Verification\n\nRecord commands, outcomes and environment. Generated source is not production acceptance.\n',
   );
 }

@@ -80,17 +80,6 @@
       "automerge": false
     },
     {
-      "matchPackageNames": [
-        "@types/node"
-      ],
-      "matchFileNames": [
-        "plugins/codex/inspector/package.json"
-      ],
-      "allowedVersions": ">=24 <25",
-      "groupName": "Inspector Node 24 type definitions",
-      "automerge": false
-    },
-    {
       "matchUpdateTypes": [
         "major"
       ],

@@ -19,13 +19,7 @@ function parseStandardFlags(remaining: readonly string[]) {
       gitSpecified = readGitFlag(token, gitSpecified);
       continue;
     }
-    if (token === '--stripe' || token === '--revenuecat') {
-      products.add(token.slice(2) as StandardProduct);
-      continue;
-    }
-    throw new Error(
-      `Unknown init option: ${token}. The core stack is always included; optional additions are --stripe and --revenuecat.`,
-    );
+    throw new Error(`Unknown init option: ${token}. Run anhedral init --help.`);
   }
   return { products, hosting, gitSpecified };
 }

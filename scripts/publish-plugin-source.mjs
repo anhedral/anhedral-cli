@@ -150,29 +150,20 @@ export function loadPluginRelease(metadataPath) {
     return JSON.parse(file.contents.toString('utf8'));
   };
   const manifest = json('plugin.json');
-  const capabilities = json('references/capabilities.json');
   const stack = json('references/stack-registry.json');
-  const build = json('runtime/build.json');
   if (
     manifest.name !== 'anhedral' ||
     manifest.version !== release.version ||
-    capabilities.cliVersion !== release.version ||
     stack.cliVersion !== release.version ||
     !Array.isArray(stack.items) ||
-    stack.items.some((item) => item.version !== release.version) ||
-    build.version !== release.version ||
-    !files.some((file) => file.name === 'runtime/server.mjs') ||
-    !files.some((file) => file.name === 'runtime/dashboard.html')
+    stack.items.some((item) => item.version !== release.version)
   )
     throw new Error('Plugin archive release identity mismatch.');
-  json('mcp.json');
-  if (!build.files || typeof build.files !== 'object' || Array.isArray(build.files))
-    throw new Error('Plugin runtime hashes are missing.');
-  for (const filename of ['server.mjs', 'dashboard.html', 'THIRD_PARTY_NOTICES.txt']) {
-    const file = files.find((file) => file.name === `runtime/${filename}`);
-    if (!file || build.files[filename] !== digest(file.contents, 'sha256'))
-      throw new Error('Plugin runtime integrity mismatch.');
-  }
+  if (files.some((file) => file.name === 'mcp.json' || file.name.startsWith('runtime/')))
+    throw new Error('Scaffold plugin cannot ship a managed runtime.');
+  for (const skill of ['init', 'design'])
+    if (!files.some((file) => file.name === `skills/anhedral-${skill}/SKILL.md`))
+      throw new Error('Plugin skill is missing.');
   return { version: release.version, integrity: plugin.integrity, files };
 }
 function gitObject(type, bytes) {

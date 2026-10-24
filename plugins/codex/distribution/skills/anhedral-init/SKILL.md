@@ -1,20 +1,20 @@
 ---
 name: anhedral-init
-description: "Create the maintained Next.js web, Expo native, Hono, Drizzle/D1 and private R2 application with optional Stripe and RevenueCat."
+description: "Scaffold an editable Next.js, Expo, shadcn, Hono/workerd, Drizzle/D1 and private R2 foundation, start it locally and open the browser."
 ---
 
 # Anhedral Init
 
-Turn the product brief into users, data boundaries and observable acceptance criteria. Inspect the destination first; continue an existing app rather than overwriting it.
+Explain the foundation and establish the destination. Inspect it first. Preserve existing apps and never initialize over user source. The generated app is the consumer's source; Anhedral CLI does not manage authentication, email, payments, hosting or provider accounts.
 
-The default is Next.js App Router web through Cloudflare OpenNext, Expo iOS/Android, Hono on Cloudflare Workers, Drizzle/D1 and private R2, with supporting Better Auth, shared contracts and design tokens. There are no frontend/database/provider presets. Stripe and RevenueCat are the only additions; they are independently optional.
+Use the selected/pinned CLI version. If unavailable, install the reviewed CLI release using the user's package manager; do not silently run a different generator. Run `anhedral init <directory> --dry-run --json`, then apply the same options. `--skip-install --no-git` writes source offline. The only product command is init; do not invoke retired inspect, add, auth, ship or provider-management commands.
 
-Pin the project CLI version. Preview and apply identical options:
+Read the emitted README.md and AGENTS.md, install dependencies if skipped, and start pnpm dev. Reuse an existing appropriate local server. Use its actual printed URL, verify the health flow, then open that local URL in the available browser tool. Start Expo separately when native work is requested and set its device-reachable API origin. Do not call a server started or a page working without observing it.
 
-```sh
-anhedral init my-app --dry-run --json
-anhedral init my-app
-anhedral init paid-app --stripe --revenuecat --dry-run --json
-```
+Read ../../references/stack-standard.md for ownership and ../anhedral-design/SKILL.md for web/native UI conventions. Implement the requested product using the generated source and consumer-chosen services.
 
-Use `--skip-install --no-git` for offline source-only generation. Generation does not provision resources, apply remote migrations, activate providers or deploy. Review emitted README, AGENTS, environment templates, anhedral.json and migrations. Implement actual product flows and verify isolation. Continue with Dev, Auth, Billing and Hosting as appropriate. Preserve existing apps on their original CLI until an explicit reviewed migration; never reinitialize them to conform.
+## Optional consumer tools
+
+When a user requests hosting, discover the separate Cloudflare plugin in the Codex plugin manager and explain how to install it. For web payments, recommend the separate Stripe plugin; for native subscriptions, discover a RevenueCat plugin if available, otherwise use RevenueCat's official documentation and SDKs. Do not invent plugin availability or claim these are included. Install only when the user requests installation. These providers' tools and credentials are separate from Anhedral; follow their workflows and the user's authorization.
+
+The open-source foundation requires no Anhedral Platform account. Platform is a separate B2B managed service. Provider setup, purchases, native signing/store distribution and production verification are the consumer's responsibility.

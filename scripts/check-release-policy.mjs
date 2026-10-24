@@ -386,12 +386,6 @@ function validatePluginRelease(root, version) {
   const manifest = JSON.parse(
     readFileSync(path.join(root, 'plugins/codex/distribution/plugin.json'), 'utf8'),
   );
-  const registry = JSON.parse(
-    readFileSync(
-      path.join(root, 'plugins/codex/distribution/references/capabilities.json'),
-      'utf8',
-    ),
-  );
   const failures = [];
   const stack = JSON.parse(
     readFileSync(
@@ -411,13 +405,11 @@ function validatePluginRelease(root, version) {
     entry.source.path !== './plugins/anhedral' ||
     entry.source.ref !== `plugin-v${version}` ||
     entry.policy?.installation !== 'AVAILABLE' ||
-    entry.policy?.authentication !== 'ON_INSTALL' ||
     entry.category !== 'Developer Tools'
   )
     failures.push('Marketplace must pin the matching self-contained plugin release');
   if (
     manifest.version !== version ||
-    registry.cliVersion !== version ||
     stack.cliVersion !== version ||
     stack.items.some((item) => item.version !== version)
   )

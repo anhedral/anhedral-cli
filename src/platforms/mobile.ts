@@ -3,7 +3,7 @@ import path from 'node:path';
 import { writeReactLintConfig } from './lint.js';
 import { appendGitignore, writeFile } from '../util.js';
 import { childPackageName, jsString } from '../render.js';
-import { MOBILE_APP_DEPENDENCIES, EAS_CLI_VERSION } from '../dependencies.js';
+import { MOBILE_APP_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { scaffoldNativeUI } from '../scaffold/native-ui.js';
 import { scaffoldExpoRuntime } from '../scaffold/expo-runtime.js';
@@ -44,12 +44,6 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
           build: 'pnpm typecheck',
           typecheck: 'tsc --noEmit',
           lint: 'eslint . --max-warnings 0',
-          'eas:login': `pnpm dlx eas-cli@${EAS_CLI_VERSION} login`,
-          'build:simulator:ios': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform ios --profile simulator`,
-          'build:internal:ios': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform ios --profile preview`,
-          'build:internal:android': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform android --profile preview`,
-          'build:production:ios': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform ios --profile production`,
-          'build:production:android': `pnpm dlx eas-cli@${EAS_CLI_VERSION} build --platform android --profile production`,
         },
         dependencies: {
           ...MOBILE_APP_DEPENDENCIES.dependencies,
@@ -161,26 +155,6 @@ export default function HomeScreen() {
 `,
   );
   writeFile(path.join(dir, '.env.example'), '');
-  writeFile(
-    path.join(dir, 'eas.json'),
-    JSON.stringify(
-      {
-        cli: { version: '>= 16.0.0' },
-        build: {
-          development: { developmentClient: true, distribution: 'internal' },
-          preview: {
-            environment: 'preview',
-            distribution: 'internal',
-            android: { buildType: 'apk' },
-          },
-          simulator: { environment: 'preview', ios: { simulator: true } },
-          production: { environment: 'production', autoIncrement: true },
-        },
-      },
-      null,
-      2,
-    ) + '\n',
-  );
   scaffoldExpoRuntime(context);
   appendGitignore(dir, [
     '.env',

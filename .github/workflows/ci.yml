@@ -61,7 +61,7 @@ jobs:
           pnpm --dir tests/native-ui test
       - name: Build plugin only for an explicitly requested main candidate
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
-        run: pnpm --dir plugins/codex/inspector install --frozen-lockfile && pnpm plugin:build
+        run: pnpm plugin:build
       - name: Build and verify Linux release candidate
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         run: |

@@ -1,13 +1,10 @@
 import { writeProjectSection } from './project-config.js';
 import { configureDependencyPatches } from './dependency-patches.js';
 import { randomUUID } from 'node:crypto';
-import { registerGeneratedProject } from './catalog-registration.js';
-import { recordScaffoldFiles } from './registry/receipt.js';
 import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, rmdirSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { execFile } from './util.js';
-import { registerApplication } from './delivery.js';
 import { runStagedTransaction } from './transaction.js';
 import { createSetupPlan } from './capabilities.js';
 import { bootstrapWorkspace, assertWorkspaceRuntime } from './scaffold/bootstrap.js';
@@ -65,21 +62,12 @@ export async function scaffoldStandardProject(
           schemaVersion: 1,
           id: randomUUID(),
         });
-        if (
-          readdirSync(path.join(stageRoot, 'apps')).some(
-            (app) =>
-              existsSync(path.join(stageRoot, 'apps', app, 'wrangler.jsonc')) ||
-              existsSync(path.join(stageRoot, 'apps', app, 'anhedral.cloudflare.json')),
-          )
-        )
-          registerApplication(stageRoot);
         if (!options.skipInstall) {
           printProgress('Resolving pinned dependencies…', display);
           run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
           if (configureDependencyPatches(stageRoot))
             run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stageRoot);
         }
-        recordScaffoldFiles(stageRoot);
         commitPaths.push(...readdirSync(stageRoot).filter((name) => name !== 'node_modules'));
       },
       afterCommit: () => {
@@ -102,10 +90,6 @@ export async function scaffoldStandardProject(
       {
         ...plan,
         generated: true,
-        catalog:
-          run === execFile || process.env.ANHEDRAL_PLUGIN_DATA || process.env.PLUGIN_DATA
-            ? registerGeneratedProject(root)
-            : { state: 'not-enabled' },
       },
       { ...output, json: options.json },
     );

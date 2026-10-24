@@ -4,11 +4,9 @@ import { dependencyOrder } from './dependency-order.js';
 import { GENERATOR_VERSION } from './version.js';
 import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
-import { scaffoldBetterAuth } from './scaffold/auth.js';
 import { scaffoldWeb } from './platforms/web.js';
 import { scaffoldExpo } from './platforms/mobile.js';
-import { scaffoldPrivateFiles } from './scaffold/integrations.js';
-import { scaffoldBilling } from './scaffold/billing.js';
+import { scaffoldPrivateStorage } from './scaffold/storage.js';
 import { sharedPackage } from './scaffold/files.js';
 import type {
   ItemDefinition,
@@ -29,13 +27,6 @@ function requirements(
   return { purpose, tools, access, credentials, resources, verify };
 }
 
-const BILLING_ENVIRONMENT_KEYS = [
-  'BILLING_ORIGIN',
-  'BILLING_ENVIRONMENT',
-  'BILLING_PLANS_JSON',
-  'BILLING_ENTITLEMENTS_JSON',
-  'BILLING_PREMIUM_ENTITLEMENT',
-];
 function packageSource(
   name: string,
   source: string,
@@ -77,7 +68,7 @@ const PRODUCT_ITEMS = defineItems({
       ['Cloudflare Workers deployment access'],
       [],
       ['Next.js Worker, assets and scoped ANHEDRAL_API binding'],
-      ['Request-rendered HTML, RSC, cookies and authenticated API routes'],
+      ['Request-rendered HTML, RSC, API transport'],
     ),
     install: scaffoldWeb,
     environment: ['API_INTERNAL_URL', 'ANHEDRAL_PREVIEW_ORIGIN'],
@@ -109,7 +100,7 @@ const PRODUCT_ITEMS = defineItems({
       ['Cloudflare Workers deployment access'],
       [],
       ['API Worker; application routes and authorization'],
-      ['Contract validation, unauthenticated rejection and resource ownership'],
+      ['Health contract and application-owned authorization'],
     ),
     install: scaffoldApi,
   },
@@ -140,114 +131,26 @@ const PRODUCT_ITEMS = defineItems({
     }),
     runtime: 'worker',
   },
-  'better-auth': {
-    type: 'integration',
-    description: 'Database-backed identity schema and runtime routes',
-    targets: [
-      'packages/auth',
-      'packages/managed-email',
-      'packages/db',
-      'apps/api',
-      'apps/mobile',
-      'apps/web',
-    ],
-    selection: { requiresAll: ['d1', 'hono', 'expo'] },
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'd1', 'expo', 'next'],
-    setup: requirements(
-      'Application-managed identity',
-      ['Selected database tooling'],
-      ['Selected database migration/runtime access'],
-      ['BETTER_AUTH_SECRET; BETTER_AUTH_URL'],
-      ['D1 database, auth schema, trusted origins and application routes'],
-      ['Sign-in/out, session expiry, sign-up policy and resource authorization'],
-    ),
-    install: scaffoldBetterAuth,
-    environment: ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'],
-    runtime: 'server',
-  },
   r2: {
     type: 'integration',
-    description: 'Private authenticated file upload, download and deletion',
-    targets: ['apps/api/src/private-files.ts'],
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'better-auth', 'hono'],
+    description: 'Server-only private R2 storage foundation',
+    targets: ['apps/api/src/private-storage.ts'],
+    registryDependencies: ['workspace', 'typescript', 'eslint', 'hono'],
     setup: requirements(
       'Private remote files',
       ['Wrangler'],
       ['Cloudflare R2 bucket/binding access'],
       [],
-      ['Private R2 bucket and FILES binding; authorized upload/download endpoints'],
+      ['Private R2 bucket and FILES binding; no public object routes'],
       [
-        'Public bucket access disabled; file ownership enforced; clients receive no storage credentials',
+        'Keep public access disabled; implement application authorization before adding object routes',
       ],
     ),
-    install: scaffoldPrivateFiles,
+    install: scaffoldPrivateStorage,
     configure: ({ options }) => ({
       r2_buckets: [{ binding: 'FILES', bucket_name: resourceName(options.name, 'private-files') }],
     }),
     runtime: 'worker',
-  },
-  stripe: {
-    type: 'integration',
-    description: 'Authenticated Stripe checkout, portal and server entitlement projection',
-    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile', 'apps/web'],
-    selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
-    registryDependencies: [
-      'workspace',
-      'typescript',
-      'eslint',
-      'hono',
-      'd1',
-      'better-auth',
-      'expo',
-      'next',
-    ],
-    setup: requirements(
-      'Web payments and subscriptions',
-      ['Stripe integration or CLI'],
-      ['Client-owned Stripe account; test/live access as required'],
-      ['STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET'],
-      ['Products/prices, signed webhooks and entitlement implementation'],
-      ['Test purchase/cancellation, webhook replay and transactional idempotency'],
-    ),
-    install: scaffoldBilling,
-    environment: [...BILLING_ENVIRONMENT_KEYS, 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
-  },
-  revenuecat: {
-    type: 'integration',
-    description: 'Native purchases, restore and server-enforced cross-store entitlements',
-    targets: ['packages/billing', 'packages/contracts', 'apps/api', 'apps/mobile', 'apps/web'],
-    selection: { requiresAll: ['hono', 'better-auth', 'd1'] },
-    registryDependencies: [
-      'workspace',
-      'typescript',
-      'eslint',
-      'hono',
-      'd1',
-      'better-auth',
-      'expo',
-      'next',
-    ],
-    setup: requirements(
-      'Cross-store subscription entitlements; Stripe is optional',
-      ['RevenueCat integration or API', 'Selected mobile store tooling'],
-      ['RevenueCat project; App Store/Play Store product access'],
-      ['Platform public SDK keys; server API/webhook credentials as required'],
-      [
-        'Native purchase SDK and authenticated entitlement APIs; configure offerings/store products before acceptance',
-      ],
-      ['Sandbox purchase/restore, verified webhooks and entitlement reconciliation'],
-    ),
-    install: scaffoldBilling,
-    environment: [
-      ...BILLING_ENVIRONMENT_KEYS,
-      'REVENUECAT_SECRET_KEY',
-      'REVENUECAT_WEBHOOK_AUTHORIZATION',
-      'REVENUECAT_WEBHOOK_SIGNING_SECRET',
-      'REVENUECAT_APP_IDS_JSON',
-      'REVENUECAT_PROJECT_ID',
-      'EXPO_PUBLIC_REVENUECAT_IOS_API_KEY',
-      'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY',
-    ],
   },
   styling: {
     type: 'package',
