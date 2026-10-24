@@ -78,7 +78,10 @@ process.exitCode = result.status ?? 1;
     tasks: {
       dev: { cache: false, persistent: true },
       lint: { dependsOn: ['^lint'] },
-      typecheck: { dependsOn: ['^typecheck'] },
+      typecheck: {
+        dependsOn: ['^typecheck'],
+        outputs: ['worker-configuration.d.ts', 'next-env.d.ts', '.next/types/**'],
+      },
       test: { dependsOn: ['^build'], outputs: ['coverage/**'] },
       'db:generate': { cache: false },
       'db:migrate': {
@@ -124,6 +127,7 @@ process.exitCode = result.status ?? 1;
     '.anhedral/',
     '.anhedral-audit-report.json',
     'worker-configuration.d.ts',
+    'next-env.d.ts',
   ]);
   writeEnvironmentExample(root, registry);
   writeStackDocumentation(root, registry);
