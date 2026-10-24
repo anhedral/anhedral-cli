@@ -19,6 +19,8 @@ const requiredFiles = new Set([
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
   'assets/ui/native/button.tsx',
+  'assets/ui/web/input.tsx',
+  'assets/ui/web/label.tsx',
   'assets/ui/theme.tsx',
   'assets/ui/LICENSE.shadcn',
   'assets/ui/UPSTREAM.json',
@@ -161,7 +163,7 @@ try {
 
   for (const file of packed.files) {
     const allowedNativeUI =
-      /^assets\/ui\/(?:web\/button\.tsx|native\/(?:button|card|dialog|input|label|layout|text|theme-switcher)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json)$/.test(
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|native\/(?:button|card|dialog|input|label|layout|text|theme-switcher)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
