@@ -1,5 +1,11 @@
 # Source text fields and native system pickers — October 25, 2026
 
+## 2026-10-25 — Published registry endpoints outside indexes
+
+The pinned upstream tree also publishes four block endpoints omitted by its registry indexes: default/new-york `v0-sidebar-16`, new-york `app-01`, and new-york `button-01`. All four returned HTTP 200 with bodies matching their pinned Git artifacts. The inventory now retains 6,441 style/item entries, 619 item groups and 2,085 referenced source files. The native checklist keeps the three added groups pending; existing review fingerprints are unchanged. Discovery reads tracked Git publication bytes, includes discovered style directories, ignores preview images and rejects unexpected JSON layouts. Cached index provenance remains separate from the snapshot assembly date.
+
+Validation: all 18 official registry contract tests passed, including committed-byte discovery, untracked-file exclusion, endpoint identity/path rejection and native evidence invalidation. The inventory diff contains exactly four additions and no removals or changed existing items. Detailed HTTP/hash and diff evidence is retained under `.artifacts/shadcn-registry/`. This discovery does not establish native completion for the added blocks.
+
 Input and Textarea retain all eleven source families and sixteen newer CSS rules,
 with responsive typography, native font scaling, placeholder/selection colors,
 focus/invalid/disabled state and caller overrides. Native field bindings now cover

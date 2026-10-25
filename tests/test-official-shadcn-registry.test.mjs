@@ -15,6 +15,8 @@ import {
   nativeApiReport,
   validateApiPolicy,
   incompleteNativeItems,
+  includePublishedRegistryEndpoints,
+  publishedRegistryFiles,
 } from '../scripts/shadcn-registry.mjs';
 const inventory = loadOfficialRegistry();
 const coverage = JSON.parse(readFileSync('assets/ui/official/coverage.json'));
@@ -50,9 +52,9 @@ test('full official registry snapshot retains every style, item, referenced file
       }
     }
   }
-  assert.equal(count, 6437);
-  assert.equal(keys.size, 616);
-  assert.equal(Object.keys(inventory.sources).length, 2073);
+  assert.equal(count, 6441);
+  assert.equal(keys.size, 619);
+  assert.equal(Object.keys(inventory.sources).length, 2085);
   assert.equal(Object.keys(inventory.styleSheets).length, 8);
   for (const sheet of Object.values(inventory.styleSheets))
     assert.equal(sheet.sha256, sha256(sheet.content));
@@ -107,7 +109,7 @@ test('whole-registry checklist reflects reviewed evidence and keeps unresolved i
   validateCoverage(inventory, coverage);
   const output = registryChecklist(inventory, coverage);
   assert.equal(readFileSync('docs/native-registry.md', 'utf8'), output);
-  assert.match(output, /6437 style\/item entries/);
+  assert.match(output, /6441 style\/item entries/);
   assert.match(output, /\| dashboard-01 \| block \|/);
   assert.match(output, /\| font-inter \| font \|/);
   assert.match(output, /\| use-toast \| hook \|/);
@@ -203,7 +205,7 @@ test('browser-only API classifications require a real upstream export and native
 });
 test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
   const pending = incompleteNativeItems(inventory, coverage);
-  assert.equal(pending.length, 519);
+  assert.equal(pending.length, 522);
   assert.ok(pending.includes('registry:ui/form'));
   assert.ok(pending.includes('registry:block/dashboard-01'));
   assert.ok(!pending.includes('registry:ui/button'));
@@ -227,7 +229,7 @@ test('export presence and browser-only policy cannot promote incomplete items to
   assert.ok(!pending.includes('registry:hook/use-toast'));
   assert.ok(!pending.includes('registry:lib/utils'));
   assert.ok(!pending.includes('registry:hook/use-mobile'));
-  assert.equal(incompleteNativeItems(inventory, { items: {} }).length, 616);
+  assert.equal(incompleteNativeItems(inventory, { items: {} }).length, 619);
 });
 
 test('omitted registry companion imports are inventoried and invalidate native review transitively', () => {
@@ -356,4 +358,118 @@ test('package-only updates invalidate affected native APIs and their registry de
   const globals = structuredClone(inventory);
   globals.styleGlobals['apps/v4/app/globals.css'].sha256 = 'a'.repeat(64);
   assert.ok(diffOfficialRegistry(inventory, globals).changed.includes('new-york-v4/card'));
+});
+
+test('published endpoints omitted from indexes retain their own metadata and normalized source paths', () => {
+  const indexed = {
+    items: [
+      {
+        name: 'existing',
+        type: 'registry:block',
+        files: [{ path: 'registry/new-york/existing.tsx' }],
+      },
+    ],
+  };
+  const endpoint = {
+    name: 'extra',
+    type: 'registry:block',
+    files: [{ path: 'blocks/extra/page.tsx', content: 'export default function Extra(){}' }],
+  };
+  const publication = {
+    filename: 'extra.json',
+    origin: 'apps/v4/public/r/styles/new-york/extra.json',
+    body: JSON.stringify(endpoint),
+  };
+  const output = includePublishedRegistryEndpoints(indexed, 'new-york', [publication]);
+  assert.equal(output.indexedItemCount, 1);
+  assert.equal(output.items.length, 2);
+  assert.deepEqual(output.items[0], indexed.items[0]);
+  assert.equal(output.items[1].files[0].path, 'registry/new-york/blocks/extra/page.tsx');
+  assert.equal(output.additionalEndpoints.extra.sha256, sha256(publication.body));
+  assert.equal(
+    output.additionalEndpoints.extra.url,
+    'https://ui.shadcn.com/r/styles/new-york/extra.json',
+  );
+  assert.equal(indexed.items.length, 1);
+  assert.equal(endpoint.files[0].path, 'blocks/extra/page.tsx');
+  const virtual = {
+    ...publication,
+    filename: 'theme-extra.json',
+    body: JSON.stringify({
+      name: 'theme-extra',
+      type: 'registry:theme',
+      cssVars: { theme: { '--radius': '1rem' } },
+    }),
+  };
+  assert.equal(includePublishedRegistryEndpoints(indexed, 'new-york', [virtual]).items.length, 2);
+});
+test('published discovery rejects ambiguous endpoint names and source traversal without replacing indexed owners', () => {
+  const indexed = { items: [{ name: 'existing', type: 'registry:ui', files: [] }] };
+  const make = (item, filename = item.name + '.json') => ({
+    filename,
+    origin: 'fixture/' + filename,
+    body: JSON.stringify(item),
+  });
+  const replacement = make({
+    name: 'existing',
+    type: 'registry:block',
+    files: [{ path: 'danger.tsx', content: 'never replace metadata' }],
+  });
+  assert.deepEqual(
+    includePublishedRegistryEndpoints(indexed, 'new-york', [replacement]).items,
+    indexed.items,
+  );
+  assert.throws(
+    () =>
+      includePublishedRegistryEndpoints(indexed, 'new-york', [
+        make({ name: 'extra', type: 'registry:block' }, 'other.json'),
+      ]),
+    /identity/,
+  );
+  for (const path of [
+    '../outside.tsx',
+    'registry/new-york/../../outside.tsx',
+    '/absolute.tsx',
+    'registry/new-york//file.tsx',
+    'ui\\escape.tsx',
+  ])
+    assert.throws(
+      () =>
+        includePublishedRegistryEndpoints(indexed, 'new-york', [
+          make({ name: 'extra', type: 'registry:block', files: [{ path }] }),
+        ]),
+      /Unsafe/,
+    );
+});
+
+test('published endpoint discovery uses committed bytes and ignores untracked files', () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'registry-publications-'));
+  try {
+    execFileSync('git', ['init', '-q', directory]);
+    const folder = path.join(directory, 'apps/v4/public/r/styles/new-style');
+    mkdirSync(folder, { recursive: true });
+    writeFileSync(path.join(folder, 'demo.json'), '{"name":"demo"}');
+    execFileSync('git', ['add', '.'], { cwd: directory });
+    execFileSync(
+      'git',
+      [
+        '-c',
+        'user.name=Fixture',
+        '-c',
+        'user.email=fixture@example.test',
+        'commit',
+        '-qm',
+        'fixture',
+      ],
+      { cwd: directory },
+    );
+    writeFileSync(path.join(folder, 'demo.json'), 'dirty');
+    writeFileSync(path.join(folder, 'untracked.json'), 'untracked');
+    const result = publishedRegistryFiles(directory, 'HEAD');
+    assert.deepEqual([...result.keys()], ['new-style']);
+    assert.equal(result.get('new-style').length, 1);
+    assert.equal(result.get('new-style')[0].body, '{"name":"demo"}');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
