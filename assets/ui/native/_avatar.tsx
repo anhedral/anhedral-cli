@@ -1,3 +1,4 @@
+import { useNativeItemGroupSize } from './_item-context';
 import {
   Children,
   Fragment,
@@ -130,6 +131,9 @@ export function Avatar({
     theme = useTheme(),
     [status, setCurrent] = useState<AvatarImageStatus>('idle'),
     [statuses, setStatuses] = useState<Record<string, AvatarImageStatus>>({});
+  useNativeItemGroupSize(
+    paint.source === 'default' || paint.source === 'new-york' ? undefined : size,
+  );
   const setStatus = useCallback((id: string, next: AvatarImageStatus) => {
     setCurrent(next);
     setStatuses((previous) => (previous[id] === next ? previous : { ...previous, [id]: next }));
@@ -580,4 +584,8 @@ export function AvatarImage({
     </>
   );
 }
-Object.assign(AvatarImage, { nativeRegistryImage: true, nativeRegistryMedia: true });
+Object.assign(AvatarImage, {
+  nativeRegistryImage: true,
+  nativeRegistryMedia: true,
+  nativeRegistryBitmap: true,
+});

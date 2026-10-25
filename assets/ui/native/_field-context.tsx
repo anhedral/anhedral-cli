@@ -1,3 +1,4 @@
+import { NativePhysicalScope } from './_physical-scope';
 import {
   createContext,
   useContext,
@@ -35,6 +36,12 @@ type FieldState = {
   control: { current: { focus?: () => void; activate?: () => void } | null };
   register: (key: string, part: RecordPart) => () => void;
 };
+export const NativeFieldsetDisabled = createContext({ scope: 'root', disabled: false });
+export function useNativeFieldsetDisabled() {
+  const value = useContext(NativeFieldsetDisabled),
+    scope = useContext(NativePhysicalScope);
+  return value.scope === scope && value.disabled;
+}
 const Field = createContext<FieldState | null>(null);
 export const useNativeField = () => useContext(Field);
 export function NativeFieldProvider({
@@ -165,14 +172,22 @@ export function useNativeFieldControlProperties(
     [register, key, nativeID, slot, disabled],
   );
 }
-export function useNativeFieldInput(props: InputProps): InputProps {
+export function useNativeFieldInput(input: InputProps): InputProps {
+  const field = useNativeField(),
+    fieldsetDisabled = useNativeFieldsetDisabled(),
+    props: InputProps = fieldsetDisabled
+      ? {
+          ...input,
+          editable: false,
+          accessibilityState: { ...input.accessibilityState, disabled: true },
+        }
+      : input;
   useNativeFieldControlProperties(
     'input',
     !!(props.accessibilityState?.disabled ?? (props.editable === false && !props.readOnly)),
     props.nativeID,
   );
-  const field = useNativeField(),
-    control = field?.control,
+  const control = field?.control,
     controls = field?.controls;
   const disabled = useRef(
       props.accessibilityState?.disabled ?? (props.editable === false && !props.readOnly),
@@ -227,6 +242,7 @@ export function useNativeFieldInput(props: InputProps): InputProps {
 
 export type NativeChoiceState = { disabled: boolean; checked: boolean };
 export const NativeChoiceLabelContext = createContext<{
+  scope?: string;
   activate: { current: (() => void) | null };
   setState: (value: NativeChoiceState) => void;
 } | null>(null);
@@ -239,7 +255,9 @@ export function useNativeFieldActivation(
 ) {
   useNativeFieldControlProperties(slot, disabled, nativeID);
   const field = useNativeField(),
-    choice = useContext(NativeChoiceLabelContext),
+    candidate = useContext(NativeChoiceLabelContext),
+    scope = useContext(NativePhysicalScope),
+    choice = (candidate?.scope ?? 'root') === scope ? candidate : null,
     latest = useRef({ activate, disabled });
   latest.current = { activate, disabled };
   const trigger = useCallback(() => {

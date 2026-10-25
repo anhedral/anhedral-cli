@@ -122,7 +122,13 @@ The OS owns text selection foreground and editing handles. Browser field-sizing 
 resize handles become native intrinsic sizing and scrolling; CSS focus outlines
 and transitions follow native focus/state rendering. Android RN 0.86 routes TextInput
 edge colors to every edge; a native width/padding projection preserves authored
-underlines and exact content insets without that unsupported edge-color dispatch.
+underlines and content insets without that unsupported edge-color dispatch. Single-line
+Android inputs fit source-owned vertical padding around the scaled native line box
+inside the authored height, avoiding clipped glyphs; explicit caller padding and
+multiline/iOS layout remain caller/platform owned. A stable Android View owns
+shadow paint and outer geometry, avoiding the RN EditText background replacement
+that restores system padding during focus/invalid shadow changes. The real TextInput
+keeps its native ID, editing, keyboard and ref semantics.
 
 Use FileInput for a system document picker with typed file metadata, MIME filters,
 multiple selection, cancellation and retry. Picked documents are copied to the local
@@ -234,6 +240,30 @@ backdrop-filter pseudo-elements and CSS animation timing remain explicit platfor
 boundaries. Native surfaces retain source alpha, native shadows and direct state paint.
 The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
 it does not install the browser primitive libraries or emulate DOM objects.
+
+Item retains six source publications, sixty class slots, three variants and eleven
+style families. Modern sources expose default/sm/xs; the frozen sources expose only
+default/sm. Native groups track source size attributes across Item, Button, Avatar,
+Select and Switch owners within the same physical root. Descriptions align media,
+images fill/crop their media box, immediately adjacent content keeps its source flex
+behavior, and source dropdown content retains its extra-small padding override.
+Native inline text runs, clamping, container/glyph composition, link activation and
+child-first cancellation replace browser div/anchor/render hosts. Native refs, OS
+line layout, underline placement and immediate state paint replace DOM refs, browser
+text breaking and exact CSS transitions. Arbitrary custom DOM data attributes and
+selectors through opaque third-party native hosts are web-specific.
+
+Field retains six source publications, seventy-eight class slots, three orientations,
+both legend variants and eleven style families. Responsive fields measure the nearest
+physical FieldGroup and switch at the source 28rem (448-point) container breakpoint.
+Native child widths, content alignment, choice offsets, nested group gaps, separator
+labels, source text metrics and source error deduplication are tested. FieldLabel uses
+controlID/nativeID association and preserves cancellation and explicit input ownership;
+FieldTitle remains informational. Disabled fieldsets reach nested native controls.
+Native accessibility labels/hints and live alert containers replace HTML associations
+and validation nodes. Native callbacks and styles replace browser events, fieldset/
+legend DOM semantics, arbitrary DOM selectors and browser constraint-validation APIs.
+The larger Field example stays partial while its choice/Slider/OTP owners remain open.
 
 Avatar retains six source publications, thirty class slots and eleven style families.
 Modern and New York V4 roots retain default/sm/lg sizes; Default and New York retain

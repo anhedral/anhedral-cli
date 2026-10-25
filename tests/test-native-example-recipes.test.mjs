@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { validateNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
-test('477 authored component examples retain native source and complete source/style/dependency provenance', () => {
+test('491 authored component examples retain native source and complete source/style/dependency provenance', () => {
   const catalog = loadNativeExampleRecipes();
   validateNativeChartRecipes(loadOfficialRegistry(), catalog);
-  assert.equal(catalog.recipes.length, 477);
+  assert.equal(catalog.recipes.length, 491);
   for (const recipe of catalog.recipes)
     assert.doesNotMatch(recipe.source, /<(?:div|span|button|input|form|svg)\b|onClick=/);
   const pagination = catalog.recipes.find((recipe) => recipe.name === 'pagination-demo');
@@ -156,4 +156,21 @@ test('input-group examples retain native Tabler glyphs, actual clipboard hooks, 
   assert.match(custom.source, /RegistryAutosizeTextarea as NativeAutosizeTextarea/);
   assert.match(custom.source, /nativeGroupControl=\{true\}/);
   assert.match(custom.source, /field-sizing-content/);
+});
+test('authored anchor tab attributes remain an explicit browser boundary while native destinations survive', async () => {
+  const { portNativeRegistryRecipe } = await import('../scripts/native-chart-recipes.mjs');
+  const output = portNativeRegistryRecipe(
+    'export default()=> <a href="https://example.com" target="_blank" rel="noopener noreferrer">Open</a>',
+    'fixture.tsx',
+  );
+  assert.match(output, /href="https:\/\/example.com"/);
+  assert.doesNotMatch(output, /target=|rel=/);
+  assert.throws(
+    () =>
+      portNativeRegistryRecipe(
+        'import {OTPInput} from "input-otp";export default()=> <OTPInput/>',
+        'fixture.tsx',
+      ),
+    /Unreviewed native input-otp/,
+  );
 });

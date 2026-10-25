@@ -23,8 +23,9 @@ import {
 import { Box, clamp, useControllable, useDirection, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
-import { useNativeField } from './_field-context';
+import { useNativeField, useNativeFieldsetDisabled } from './_field-context';
 export function Slider({
+  invalid,
   value,
   defaultValue = [0],
   onValueChange,
@@ -32,7 +33,7 @@ export function Slider({
   min = 0,
   max = 100,
   step = 1,
-  disabled = false,
+  disabled: requestedDisabled,
   minStepsBetweenThumbs = 0,
   accessibilityLabel,
   orientation = 'horizontal',
@@ -40,6 +41,7 @@ export function Slider({
   onLayout,
   ...props
 }: ViewProps & {
+  invalid?: boolean;
   value?: number[];
   defaultValue?: number[];
   onValueChange?: (value: number[]) => void;
@@ -57,6 +59,8 @@ export function Slider({
   const [values, set] = useControllable(value, defaultValue, onValueChange);
   const { colors } = useTheme();
   const field = useNativeField(),
+    fieldsetDisabled = useNativeFieldsetDisabled(),
+    disabled = !!requestedDisabled || fieldsetDisabled,
     firstThumb = useRef<View | null>(null),
     control = useMemo(
       () => ({
@@ -78,6 +82,8 @@ export function Slider({
       if (id && targets?.current.get(id) === control) targets.current.delete(id);
     };
   }, [target, targets, id, control]);
+  const bad = invalid ?? field?.invalid,
+    activeColor = bad ? colors.destructive : colors.primary;
   const label = accessibilityLabel ?? (field?.labelFor(id) || 'Value');
   const hint =
     props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ');
@@ -183,7 +189,7 @@ export function Slider({
       >
         <View
           style={[
-            { position: 'absolute', backgroundColor: colors.primary },
+            { position: 'absolute', backgroundColor: activeColor },
             vertical
               ? { bottom: `${beginning}%`, height: `${length}%`, width: 4 }
               : {
@@ -224,7 +230,7 @@ export function Slider({
               height: 22,
               borderRadius: 11,
               borderWidth: 2,
-              borderColor: colors.primary,
+              borderColor: activeColor,
               backgroundColor: colors.background,
             },
             vertical

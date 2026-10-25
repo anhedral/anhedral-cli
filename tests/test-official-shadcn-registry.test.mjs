@@ -205,7 +205,7 @@ test('browser-only API classifications require a real upstream export and native
 });
 test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
   const pending = incompleteNativeItems(inventory, coverage);
-  assert.equal(pending.length, 403);
+  assert.equal(pending.length, 386);
   for (const key of [
     'registry:ui/chart',
     'registry:ui/input-group',
@@ -239,7 +239,27 @@ test('export presence and browser-only policy cannot promote incomplete items to
     ].map((name) => 'registry:example/' + name),
   ])
     assert.ok(!pending.includes(key));
-  assert.ok(pending.includes('registry:example/native-select-example'));
+  assert.ok(!pending.includes('registry:example/native-select-example'));
+  for (const name of ['item', 'field']) assert.ok(!pending.includes('registry:ui/' + name));
+  for (const name of [
+    'item-example',
+    'item-demo',
+    'item-size',
+    'item-variant',
+    'item-icon',
+    'item-image',
+    'item-avatar',
+    'item-group',
+    'item-header',
+    'item-link',
+    'field-input',
+    'field-textarea',
+    'field-fieldset',
+    'field-select',
+  ])
+    assert.ok(!pending.includes('registry:example/' + name));
+  for (const name of ['field-example', 'field-demo', 'field-group', 'field-responsive'])
+    assert.ok(pending.includes('registry:example/' + name));
   assert.ok(!pending.includes('registry:ui/progress'));
   assert.ok(!pending.includes('registry:example/progress-demo'));
   assert.ok(pending.includes('registry:example/progress-example'));

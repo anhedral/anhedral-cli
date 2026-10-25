@@ -124,6 +124,8 @@ export const NativeDescendantStyleContext = createContext<{
   linkHoverColor?: string;
   paragraphGap?: number;
   paragraphLeading?: number;
+  imageFull?: boolean;
+  imageFit?: 'cover' | 'contain' | 'fill';
 }>({});
 /** RN 0.86 Text's runtime supports pointer enter/leave; its legacy public TextProps omit them. */
 export type NativeTextPointerProps = Pick<ViewProps, 'onPointerEnter' | 'onPointerLeave'>;

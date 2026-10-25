@@ -420,12 +420,8 @@ test('focused Select items apply source descendant foreground while preserving n
     </>,
   );
   await fireEvent(screen.getByTestId('focused-item'), 'focus');
-  expect(StyleSheet.flatten(screen.getByTestId('source-description').props.style).color).toBe(
-    expected,
-  );
-  expect(StyleSheet.flatten(screen.getByTestId('explicit-description').props.style).color).toBe(
-    '#ff00ff',
-  );
+  expect(StyleSheet.flatten(screen.getByText('Description').props.style).color).toBe(expected);
+  expect(StyleSheet.flatten(screen.getByText('Explicit').props.style).color).toBe('#ff00ff');
 });
 
 function nativeNodes(node: any): any[] {

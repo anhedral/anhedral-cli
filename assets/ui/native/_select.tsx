@@ -1,3 +1,4 @@
+import { useNativeItemGroupSize } from './_item-context';
 import {
   Children,
   Fragment,
@@ -313,6 +314,7 @@ export function SelectTrigger({
   invalid?: boolean;
   /** @internal A sibling source primitive owns this surface. */ nativeHideIcon?: boolean;
 }) {
+  useNativeItemGroupSize(size);
   const theme = useTheme(),
     inherited = useContext(NativeTextStyleContext);
   const state = useSelect(),

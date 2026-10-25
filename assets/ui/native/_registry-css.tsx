@@ -236,6 +236,11 @@ export function registryStyle(
       result.svgChildren.push(token.slice('[&>svg]:'.length));
       continue;
     }
+    const fieldContentDescendant = /^\*\*:data-\[slot=field-content\]:(min-w-\d+)$/.exec(token);
+    if (fieldContentDescendant) {
+      result.descendants.push('field-content:' + fieldContentDescendant[1]);
+      continue;
+    }
     if (token.startsWith('[&>*]:')) {
       result.children.push(token.slice('[&>*]:'.length));
       continue;
@@ -672,8 +677,10 @@ export function registryStyle(
       paint.turnTransition = 1;
       paint.transitionDuration = 150;
     } else if (token === 'rotate-90') paint.turnAngle = 90;
+    else if (token === 'translate-y-0.5') view.transform = [{ translateY: 2 }];
     else if (token === 'translate-y-1') view.transform = [{ translateY: 4 }];
     else if (token === 'translate-y-[1px]') view.transform = [{ translateY: 1 }];
+    else if (token === 'duration-100') paint.transitionDuration = 100;
     else if (token === 'transition-none') paint.transitionDuration = 0;
     else if (token === 'transition-all') paint.transitionDuration = 150;
     else if (token === 'ease-in-out') paint.transitionEasing = 'in-out';

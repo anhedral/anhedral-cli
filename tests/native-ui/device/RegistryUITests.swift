@@ -1,6 +1,44 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testItemAndFieldPresetsRetainNativeLayoutActionsAndValidation() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch();openStory("native/item-field-contract",in:app)
+    let scroll=storyScroll(app)
+    func target(_ name:String)->XCUIElement {app.descendants(matching:.any).matching(identifier:name).firstMatch}
+    func reveal(_ name:String)->XCUIElement {
+      let element=target(name)
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeUp()}
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeDown()}
+      XCTAssertTrue(element.isHittable,name);return element
+    }
+    let presets=["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"]
+    for (index,preset) in presets.enumerated() {
+      XCTAssertTrue(target("Item geometry: "+preset+":"+(index>=8 ? "40x40:0" : "32x32:8")).waitForExistence(timeout:10))
+      reveal("Item action").tap()
+      XCTAssertTrue(target("Item actions: "+String(index+1)).exists)
+      reveal("Next Item/Field preset").tap()
+    }
+    XCTAssertTrue(target("Field responsive: column").exists)
+    reveal("Toggle Field width").tap()
+    XCTAssertTrue(target("Field responsive: row").waitForExistence(timeout:5))
+    reveal("Toggle Field width").tap()
+    XCTAssertTrue(target("Field responsive: column").waitForExistence(timeout:5))
+    _ = reveal("Native account")
+    app.staticTexts["Native account"].firstMatch.tap()
+    XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout:5))
+    app.typeText("native\n")
+    XCTAssertTrue(target("Field value: native").waitForExistence(timeout:5))
+    reveal("Toggle Field error").tap()
+    XCTAssertTrue(target("Account required").waitForExistence(timeout:5))
+    reveal("Toggle Item description").tap()
+    XCTAssertFalse(target("Source description wraps with native typography.").exists)
+    app.buttons["Dark"].tap()
+    XCTAssertTrue(target("Item/Field appearance: dark:dark").waitForExistence(timeout:5))
+    reveal("Or continue").tap()
+    let shot=XCTAttachment(screenshot:app.screenshot());shot.name="item-field-dark-native-layout";shot.lifetime = .keepAlways;add(shot)
+    app.buttons["System"].tap()
+  }
   func testAvatarPresetsRetainNativeGeometryImageFallbackAndFilters() {
     let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
     app.launch();openStory("native/avatar-contract",in:app)

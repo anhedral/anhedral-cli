@@ -1280,7 +1280,18 @@
     "_avatar-presets.tsx",
     "_preset-avatar-style.tsx",
     "_avatar.tsx",
-    "_image-filter.tsx"
+    "_image-filter.tsx",
+    "_item-presets.tsx",
+    "_preset-item-style.tsx",
+    "_physical-scope.tsx",
+    "_item-context.tsx",
+    "_item.tsx",
+    "_field-presets.tsx",
+    "_preset-field-style.tsx",
+    "_compound-text.tsx",
+    "_field.tsx",
+    "registry-input-otp.ts",
+    "_native-style.ts"
   ],
   "supportModules": [
     {

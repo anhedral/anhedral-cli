@@ -2854,32 +2854,66 @@
       }
     },
     "registry:example/field-fieldset": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Field publications retain seventy-eight class slots, all three orientations, both legend variants and eleven style families. The nearest physical FieldGroup drives the 448-point responsive boundary, child widths/alignment, choice offsets and source spacing. Native controlID/nativeID associations, compound-title names, stable refs/keys, error deduplication, visible error edge spacing, live alerts and disabled FieldSet control inheritance are tested. Field disabled label metadata remains distinct from disabled fieldsets. Native hosts and accessible captions replace browser fieldset/legend/form nodes; FieldSeparator draws a decorative line with an accessible caption. Browser constraint validation, arbitrary DOM selectors and HTML first-legend exemptions require explicit native state. OS cases verify label activation, keyboard editing, responsive transitions, error and dark rendering. The authored input/textarea/fieldset/selection composition uses source-complete maintained owners and remains editable/selectable.",
       "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/registry-form-controls.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "ebdbacdf1b4adc7f764d4485a408c444d51e42cad8b6738eb5f6178cf8e2f394"
       }
     },
     "registry:example/field-input": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Field publications retain seventy-eight class slots, all three orientations, both legend variants and eleven style families. The nearest physical FieldGroup drives the 448-point responsive boundary, child widths/alignment, choice offsets and source spacing. Native controlID/nativeID associations, compound-title names, stable refs/keys, error deduplication, visible error edge spacing, live alerts and disabled FieldSet control inheritance are tested. Field disabled label metadata remains distinct from disabled fieldsets. Native hosts and accessible captions replace browser fieldset/legend/form nodes; FieldSeparator draws a decorative line with an accessible caption. Browser constraint validation, arbitrary DOM selectors and HTML first-legend exemptions require explicit native state. OS cases verify label activation, keyboard editing, responsive transitions, error and dark rendering. The authored input/textarea/fieldset/selection composition uses source-complete maintained owners and remains editable/selectable.",
       "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/registry-form-controls.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "1772d0870bac0256a9c70809ea724c615e187232162b7519c8dce0a361fc11c6"
@@ -2902,16 +2936,33 @@
       }
     },
     "registry:example/field-select": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Field publications retain seventy-eight class slots, all three orientations, both legend variants and eleven style families. The nearest physical FieldGroup drives the 448-point responsive boundary, child widths/alignment, choice offsets and source spacing. Native controlID/nativeID associations, compound-title names, stable refs/keys, error deduplication, visible error edge spacing, live alerts and disabled FieldSet control inheritance are tested. Field disabled label metadata remains distinct from disabled fieldsets. Native hosts and accessible captions replace browser fieldset/legend/form nodes; FieldSeparator draws a decorative line with an accessible caption. Browser constraint validation, arbitrary DOM selectors and HTML first-legend exemptions require explicit native state. OS cases verify label activation, keyboard editing, responsive transitions, error and dark rendering. The authored input/textarea/fieldset/selection composition uses source-complete maintained owners and remains editable/selectable.",
       "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/registry-form-controls.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "9e450a5f104229ac665d3935fe90dda6f858a1a7dd25317f2207998065845d02"
@@ -2950,16 +3001,33 @@
       }
     },
     "registry:example/field-textarea": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Field publications retain seventy-eight class slots, all three orientations, both legend variants and eleven style families. The nearest physical FieldGroup drives the 448-point responsive boundary, child widths/alignment, choice offsets and source spacing. Native controlID/nativeID associations, compound-title names, stable refs/keys, error deduplication, visible error edge spacing, live alerts and disabled FieldSet control inheritance are tested. Field disabled label metadata remains distinct from disabled fieldsets. Native hosts and accessible captions replace browser fieldset/legend/form nodes; FieldSeparator draws a decorative line with an accessible caption. Browser constraint validation, arbitrary DOM selectors and HTML first-legend exemptions require explicit native state. OS cases verify label activation, keyboard editing, responsive transitions, error and dark rendering. The authored input/textarea/fieldset/selection composition uses source-complete maintained owners and remains editable/selectable.",
       "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/registry-form-controls.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "1e08e48ab39c43339809618b5be897056c2c22d3c748fc9fc9618ac5844d6d85"
@@ -3207,32 +3275,58 @@
       }
     },
     "registry:example/item-icon": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
       "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "f16ea54bb30e7a66ad3f61b4db414afb2f57bc1b93ad6bf461f9f0f7c9eba852"
       }
     },
     "registry:example/item-variant": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
       "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "a75a719b05fd8e854ec7a6d64a6db8b079d7b3339cf9639b9680364f3da30b9d"
@@ -4326,16 +4420,35 @@
       }
     },
     "registry:example/native-select-example": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All three authored Native Select collections compose the completed four-source Native Select control, eleven styles and completed Field layout/label/error bindings. Preserved option/optgroup labels, source sizes, disabled/invalid/controlled/grouped choices and native selection replace browser select/change behavior; DOM keyboard/platform popup paint remains explicitly native.",
       "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/native-select.tsx",
+        "assets/ui/native/_preset-native-select-style.tsx",
+        "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-native-select.test.tsx",
+        "tests/native-ui/registry-native-select-examples.test.tsx"
       ],
       "reviewedInputs": {
         "aria-luma": "3648028f5b094aad0ebb6f079188e26b8b9f5b64c7202cedf0c7d2a45004d6e8",
@@ -5613,32 +5726,58 @@
       }
     },
     "registry:example/item-avatar": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
       "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "5d3106925b8965dead4c14e0cc1a7e866c1226be26917109af2064acd7c460ac"
       }
     },
     "registry:example/item-group": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
       "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "bb1aafba83143046d56f6998ac438922e04e322d0e442079188b84bbb1170411"
@@ -10441,6 +10580,423 @@
         "radix-sera": "a1a3ff400dfd77faa914197c242343bfb24001c28050e08be3d59770e8cb4933",
         "radix-vega": "2f3f95261970d60c6086dee1252d9bf626062f7bfc0b6dc70bfd61086f634e95"
       }
+    },
+    "registry:ui/item": {
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions.",
+      "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx"
+      ],
+      "tests": [
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "ae73c32b7743a7f4705bde0b789ee6e6b598dc5a1f6b16eb9c16ee0540f7f9bc",
+        "aria-lyra": "3c81a7b71eab432ca93ee9d5f339094896f958d3572dc1149ed7ae9c520bc7eb",
+        "aria-maia": "dc48399c9d6497e712c3e2d54b61326dc1f2c28a27eef0dfa5f760781c78498b",
+        "aria-mira": "3b7aeda4b4b75e8cecf4a4c0c36de4c746c27f61649896a51444f31121bdd989",
+        "aria-nova": "7f06c3f8c3dfc1df398b8b97bd9def21b13ed4a774b6dc5b35ee4eb0df3c36c5",
+        "aria-rhea": "7ccd46f37c96b6ff98980f76cfa0ea24a2305daddcb98ab3383c25d8e6dde150",
+        "aria-sera": "2c5bb11fe9ff599f937b7bca4bf6c17a17a6626ed4f36a12e3011ffa808457e9",
+        "aria-vega": "d9a294d60efd63f71217055ad4f2847d387efe66f3ebe7520bc5bab19755b364",
+        "base-luma": "51ef6c138e45f8e65eab90fdcc16758d124fc2f374c0763378df13204d88fbd4",
+        "base-lyra": "33938ace08d31b7c8f6948c2942c50b1effe6324e215773481b63685d0d9f308",
+        "base-maia": "519692527b7944cba9338e01d565ae0c7af362387e7f12640eddfc671c4e1e03",
+        "base-mira": "5d5d8259e798e6d1c26b6d2ddd14e0ffda51d684e47693208fa2a422c0bd52f0",
+        "base-nova": "9a595d82070bb274d26957a5bcaefa70bcfb3c74a064cc37b8b35a62b9ab8698",
+        "base-rhea": "6ea7ef8f62d9fe43b5be5efe978f3405e97534e3fe04f8a92351e09c15bf956d",
+        "base-sera": "267dc506d2671d63543b80935041617e66c73de59398aae7ae921aa5496b4e78",
+        "base-vega": "ff3fccfa77dd9b7799b507d6cb503ae32c0b37632b3a4eaf4dbd1d8c7ae13480",
+        "default": "0b8aabe4bf178e40da02c89ecb36b30e9d49de999eb0d1b55f6fce0d915c6f8d",
+        "new-york": "07d2a4fa51a1cdc14ee40576e6ab2fbde7c58486783a4b7570a2af9b5efb589d",
+        "new-york-v4": "8db7e2a7a6dac21a7ae6a2ef8955c1e7500721d75489d477cf12c8667f8940fc",
+        "radix-luma": "4c91245746143b44b54eefe59074cb1ee0f086ac6c12ad2fa01411403f9b321d",
+        "radix-lyra": "92adcfd7716bdbf6031a9d5d3c2954eb1f259259d62fe36588fff62c11a391ad",
+        "radix-maia": "67c173527a8b60137b04e3dd73d82e3c2a10047ab6e3467bb34c0486a1d57d4d",
+        "radix-mira": "ba77c010eaf00514795439a8495fd812838da168e8a388b84378e594d9b578bf",
+        "radix-nova": "705b4ceffb587f1710cd8cce7c08743538bbe19da87aaaf933596f548dba8970",
+        "radix-rhea": "87c87538305b91871e903b90aa9614cd245aae457535e2345adb276c69172262",
+        "radix-sera": "05520c0fdfbf781692be56250dc8f122a043ab2da9e42d8f64111cd8e7e156c1",
+        "radix-vega": "ef742bfb1b504d3067e4f5112c2157027b05a4b0f2e98b20595b53da9b3eec86"
+      }
+    },
+    "registry:example/item-example": {
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
+      "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "051924b3e0f749a6124fe19e865b6a08fba4464404f3ef34c0483f6f0faf9495",
+        "aria-lyra": "b2dd7944762bdc0d1ebfe4384ff8a5b537e9bed537abc3a4ae1c2f2571ce0e18",
+        "aria-maia": "d7d6660c5a2c094c87c132e59cba3cad5fc3914c8a2b00372f9ca741a7a7d52c",
+        "aria-mira": "8be1e589f2612d7a9b7f754c2f8f531c5e558f6ee25d389727679574553d7680",
+        "aria-nova": "2ebd53f0fd39fd5d7b22761d4f0f91a5aab298d95aec2b00ee9f5cb18b24a8e9",
+        "aria-rhea": "de3f8977db7dc2ed2e8d4fb1e49beba0b9f03bb9e521fbd2662ec2fc0f55fb9f",
+        "aria-sera": "91038463721022cc357425da36187752066d0ef8a83f331dc895df7b1971f420",
+        "aria-vega": "d70b2c6e4840fba8f7f41ab56056f136dd78130cb459182d5e6970bee8350b1f",
+        "base-luma": "b5b8730258282ab73fd6d8ae3a7478f392adb046020e033428ce54834a32589d",
+        "base-lyra": "3f4715fd9d6a054b3e5be3d82074191adc29a3db6e3ac9eeabae3d16ed9d379e",
+        "base-maia": "5f41e785afc2d592c1587606bf3c778f0bfcc3fcef01bc790679329479936a54",
+        "base-mira": "e27249fe9b10e5b4c037f216008718a7142096ecd6f092e4aa098b3af1388e0b",
+        "base-nova": "3cbdf9a85b5aa11c30a3e0aa313722f655cdef3b90dc672974df58db7016dda8",
+        "base-rhea": "021664e2c76786c7b79d250f71d4a15328229edb005b29dc4815605b578a49eb",
+        "base-sera": "9e03b8dcd6900158a622f9b8eed6c4bb9e74897d89f317b85d947a74e36ae082",
+        "base-vega": "8be28eb299c9da13191454a18054ce1a702ba51b96b92567cff6b5b7c74e34c8",
+        "radix-luma": "d471820b0668b4ad54d7c45675ad33d74d050f417b179b7c7f98133c58e19068",
+        "radix-lyra": "8778d30b0a1ff2e1959660b321c3755d61b6104099a05edc8d759bfa4b952a68",
+        "radix-maia": "6f6663ee11a259576e5b071a46902fd9fbf8c0bbb12c88c126f4120b2b8d99b1",
+        "radix-mira": "aedd8a9f5b7a8f6108ccc3613d88978626fe2b3589070270ebcaede7e499addb",
+        "radix-nova": "3a16379478159f3466a04af6c6f66425ef09562c258dddcc01eda6eec911c6b0",
+        "radix-rhea": "c2f25292998f1fa15bb819ab732bce1d7e9eeec9dadffeada7005c021a50e5b1",
+        "radix-sera": "f5f3a8c7d6eece796a0c64a7434be4baa0a0e9756ca6587b548c29bb0e113a3a",
+        "radix-vega": "5b7ed57b23d4815dcb120fd5f74dfa08601a45b828882643e3450d80f10a9bb2"
+      }
+    },
+    "registry:example/item-demo": {
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
+      "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "cccc7c515a240fd70f6f56ffec21c4c0f58591b1bbbf78ccf0f85b44de25d415"
+      }
+    },
+    "registry:example/item-size": {
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
+      "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "bcc9bcf77a27bf1423cb802a09abd37f4a8de4d5290819402e5a25aff305b9c0"
+      }
+    },
+    "registry:example/item-image": {
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
+      "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "0cba3f1aa2fd123b2fedb6a1ed5e98970187fe19532592db17881ac623c6c1bf"
+      }
+    },
+    "registry:example/item-header": {
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
+      "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "a62b2a30e465a1528d24af1e657fcc25bd1cdaa1e1349dd081569127eb3a85bc"
+      }
+    },
+    "registry:example/item-link": {
+      "status": "ported",
+      "reason": "Six Item publications retain sixty source class slots, two CVA recipes, three root/media variants, source-specific default/sm/xs vocabularies and eleven style families. Native group size/description metadata follows physical roots, adjacent content retains flex behavior, images fill/crop and source dropdown XS padding remains scoped. Base render callbacks receive concrete native styles and preserve transformed children; static/pressable/long-press/anchor composition retains refs and cancellation. Native text runs/clamping, View/Image refs and immediate state paint replace browser hosts, underline placement, arbitrary custom DOM selectors and exact CSS transition timing. Both OS cases verify every preset, zero-gap frozen groups, native actions and real Field interactions. Authored modern collections and all nine frozen Item compositions retain their pinned source, native actions, image/layout and link paths.",
+      "nativeFiles": [
+        "assets/ui/native/_item.tsx",
+        "assets/ui/native/_item-context.tsx",
+        "assets/ui/native/_item-presets.tsx",
+        "assets/ui/native/_preset-item-style.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/test-native-item-presets.test.mjs",
+        "tests/native-ui/registry-item-presets.test.tsx",
+        "tests/native-ui/registry-item.test.tsx",
+        "tests/native-ui/registry-item-examples.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "efbeef6314cf6d38f5a8463d8b3aed9c2cef76b63313ee15a7f019c3f319e83b"
+      }
+    },
+    "registry:ui/field": {
+      "status": "ported",
+      "reason": "Six Field publications retain seventy-eight class slots, all three orientations, both legend variants and eleven style families. The nearest physical FieldGroup drives the 448-point responsive boundary, child widths/alignment, choice offsets and source spacing. Native controlID/nativeID associations, compound-title names, stable refs/keys, error deduplication, visible error edge spacing, live alerts and disabled FieldSet control inheritance are tested. Field disabled label metadata remains distinct from disabled fieldsets. Native hosts and accessible captions replace browser fieldset/legend/form nodes; FieldSeparator draws a decorative line with an accessible caption. Browser constraint validation, arbitrary DOM selectors and HTML first-legend exemptions require explicit native state. OS cases verify label activation, keyboard editing, responsive transitions, error and dark rendering.",
+      "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx"
+      ],
+      "tests": [
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "07f797c9a368e0a5cbbce7b9d4edb11d1e25466a27268d12e0163d6f91e76b50",
+        "aria-lyra": "bf471637c5ff1cba9b89f97b4008cc1ca54e1c6e3c7f8c8b7559438a140fb74e",
+        "aria-maia": "58b9b4ec7c1ef097f6dc19c88902ef7753bf1b84a4f92ffdf1d1a064ef9ee27f",
+        "aria-mira": "1368980b78afc90546d3116d5baf921393c81c532a007f1355482095508f2c5d",
+        "aria-nova": "1f4bfa8f926c161b9798adaa122d34636c4fe53bb98feef7a8412086e4de901c",
+        "aria-rhea": "f2dc9394c11b04d4c42b6cefde2c8d1a4655bb735b1e57bc6a0a94d2729c28e0",
+        "aria-sera": "7c2dc02b1fa17c3cdb0391d585301041aee8efc393d7be744af3609ab5246a13",
+        "aria-vega": "53dd853c2f0bf0a9e00268f6fdedc855f906e15c1dcf44e5c5932fce62e5b1bf",
+        "base-luma": "bbdc31e91805eb0f134688513549a35c2a4d08c6033272812f373874279b5181",
+        "base-lyra": "da948317570d1b54165c45fb5f17c8ee8caad65f4a34e2ae5c61e5f1fda67506",
+        "base-maia": "a20e54b68eeda9ead96a1041576e20a7683477d70aeebeba545ab03f074ea4fd",
+        "base-mira": "69a5c2c6d1fb4da7f6c19799ad294e4801043a7e8a9d29d422f38a64319190df",
+        "base-nova": "b5021fc6a5794b0706e5e936e7a0931cec8e855efa60f634b5a3e4af86de42d0",
+        "base-rhea": "6f5a67fd5947baabbabb579cd20b89e4067da64d747de84ebb72aa9eaaaef8aa",
+        "base-sera": "35c2b96136f8e16d481bd1c7e28c88768025b5064b86148c42e2de017b230d7c",
+        "base-vega": "bb5f7889e6b4b6b265b97706b6c824cacb9772a3a98793d47e22abb9367a2b34",
+        "default": "9ebe9875d3fb13340d9e6faf9e9e34d579877612c87e6e0102c903dfef3ebf33",
+        "new-york": "a48b7fa94d252cd487b6bb018289619f665db2a9d389496dfbeefbf9215a6fbf",
+        "new-york-v4": "9e3fe28c2e66e9fe2a891c95023a3b2ef6d498c6d2d535365b6e9e75db4d0867",
+        "radix-luma": "72597a317d6852cb01ce4dea7aa558cbea0d9d0b5bec387b792ffda95a39199a",
+        "radix-lyra": "f826034bc4fbf4ef578d86f898ed3868a8399cd3f20e8caccf4b7e0fabd0c5eb",
+        "radix-maia": "2ad7919f9a351b5526d9fe8bf76ad1fe587f8d65fbedc2dd713e37501d65551e",
+        "radix-mira": "394df51cbf56e2f8213ef184e5835de4d849557cdf0de3b60490170eafb149f1",
+        "radix-nova": "e7fecb4a1c900b02ac09286691e7ba3b96b4aab65d8261ec686d40e11a5e6c29",
+        "radix-rhea": "1e9995f383a8d7b34c137014a3078316a843a59c0c68955386f068002165a531",
+        "radix-sera": "e5daa5fd1f3360f88cf71af010fae75b1c5e0dcfc6ed83e3b1fa49da0b4fad3b",
+        "radix-vega": "8e325f2e4efa8ca3b7dcaf50dbd8acecdc2d8f85c95b10263112ee2b0ce25b5d"
+      }
+    },
+    "registry:example/field-example": {
+      "status": "partial",
+      "reason": "Source Field layout, labels, input and native selection are implemented. Choice controls, Slider and/or full OTP source owners still require their own complete source/style/API review; rendering this composition is not sufficient to mark it complete.",
+      "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ]
+    },
+    "registry:example/field-demo": {
+      "status": "partial",
+      "reason": "Source Field layout, labels, input and native selection are implemented. Choice controls, Slider and/or full OTP source owners still require their own complete source/style/API review; rendering this composition is not sufficient to mark it complete.",
+      "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ]
+    },
+    "registry:example/field-group": {
+      "status": "partial",
+      "reason": "Source Field layout, labels, input and native selection are implemented. Choice controls, Slider and/or full OTP source owners still require their own complete source/style/API review; rendering this composition is not sufficient to mark it complete.",
+      "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ]
+    },
+    "registry:example/field-responsive": {
+      "status": "partial",
+      "reason": "Source Field responsive layout, inputs and textarea render natively. Its browser form has no submission action; the maintained native form makes the application-handler boundary explicit. Full example completion still requires the explicit native action-integration review.",
+      "nativeFiles": [
+        "assets/ui/native/_field.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_field-presets.tsx",
+        "assets/ui/native/_preset-field-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-border.tsx",
+        "assets/ui/native/_compound-text.tsx",
+        "assets/ui/native/_native-style.ts",
+        "assets/ui/native/_physical-scope.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/test-native-field-presets.test.mjs",
+        "tests/native-ui/registry-field-presets.test.tsx",
+        "tests/native-ui/registry-field.test.tsx",
+        "tests/native-ui/registry-field-examples.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-input-vertical-layout.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ]
     }
   },
   "webSpecific": [
@@ -10563,6 +11119,16 @@
       "feature": "Avatar image DOM/peer state, group selectors and filtered rasterization",
       "adaptation": "Source-owned native root/fallback/media/badge/group slots replace DOM hosts. Base/Radix callbacks and delay props remain distinct; Aria uses preceding direct image-peer metadata. Native callbacks compose with state, stale completions are ignored, decorative images remain hidden, direct member sizes drive counts, and native View/Image refs replace DOM refs/render hosts. Android uses RN color-matrix layers and one bitmap load event; iOS retains bitmap/SVG readiness and a bounded filter deadline. Native filter color spaces/rasterization, arbitrary data-has selectors across unrelated hosts, browser preload/referrer/cross-origin and responsive source policies remain explicit boundaries.",
       "status": "All six publications, thirty class slots and eleven styles have source/style and renderer coverage. Actual source examples cover every section and native filter/error transition. Android and iOS focused OS cases pass all eleven preset sizes, badges, group overlap, cached-image filtering, errors and recovery. Native dark screenshots were inspected; Android fixture pixels independently confirm neutral grayscale. Physical screen-reader/device acceptance remains separate."
+    },
+    {
+      "feature": "Item physical descendants, render hosts and native line layout",
+      "adaptation": "Six source-owned Item publications use native View/Pressable/Link render hosts, refs and child-first cancellation. Native size/description registration follows physical modal roots; maintained Button/Avatar/Select/Switch size attributes participate. Bitmap descendants fill/crop; native text runs and clamping preserve composition. Arbitrary DOM data selectors through opaque custom hosts, browser underline/text-breaking algorithms and exact CSS transition timing remain explicit boundaries.",
+      "status": "Sixty class slots, both recipes, every source size/variant/media and eleven styles have source/style and renderer tests. Modern collections and all nine frozen Item examples are tested; both OS cases verify source geometry and native actions."
+    },
+    {
+      "feature": "Field browser fieldsets, legends, constraint validation and CSS layout ancestry",
+      "adaptation": "Native FieldGroup measurement replaces container queries at the source 28rem boundary. Native labels/hints/live alert groups and scoped disabled FieldSet controls replace browser DOM bindings. Informational FieldTitle stays non-interactive; compound choice titles supply native control names. The separator line is decorative while its caption remains accessible. Arbitrary DOM selectors, browser form ownership/constraint-validation bubbles and HTML first-legend disabled exemptions are not emulated; use explicit native controls/state and an application submit handler.",
+      "status": "Seventy-eight class slots, orientation/legend variants and eleven styles have source/style, association/ref, callback, error, physical scope and fieldset tests. Both OS cases verify native label activation/editing, responsive layout, error and dark appearance. Compositions depending on unfinished choice/Slider/OTP owners or unconfigured native form actions remain partial."
     }
   ]
 }

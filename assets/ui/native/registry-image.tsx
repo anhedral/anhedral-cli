@@ -205,3 +205,5 @@ export function NativeRegistryImage({
 NativeRegistryImage.nativeRegistryImage = true;
 
 NativeRegistryImage.nativeRegistryMedia = true;
+
+NativeRegistryImage.nativeRegistryBitmap = true;

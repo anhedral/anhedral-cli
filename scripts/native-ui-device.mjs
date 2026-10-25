@@ -106,6 +106,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/alert-contract",Component:NativeAlertMatrix}',
           '{id: "native/empty-contract",Component:NativeEmptyMatrix}',
           '{id: "native/avatar-contract",Component:NativeAvatarMatrix}',
+          '{id: "native/item-field-contract",Component:NativeItemFieldMatrix}',
         ].join(',\n') +
         '];',
     );

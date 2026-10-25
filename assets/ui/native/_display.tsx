@@ -1,6 +1,5 @@
 import {
   cloneElement,
-  createContext,
   useContext,
   useEffect,
   type ReactNode,
@@ -157,85 +156,18 @@ export {
   EmptyContent,
   EmptyMedia,
 } from './_empty';
-const ItemSize = createContext<'default' | 'sm' | 'xs'>('default');
-export function Item({
-  variant = 'default',
-  size = 'default',
-  style,
-  ...props
-}: ViewProps & { variant?: 'default' | 'outline' | 'muted'; size?: 'default' | 'sm' | 'xs' }) {
-  const { colors, radius } = useTheme();
-  return (
-    <ItemSize.Provider value={size}>
-      <Box
-        {...props}
-        style={[
-          {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            borderRadius: radius,
-            borderWidth: 1,
-            borderColor: variant === 'outline' ? colors.border : 'transparent',
-            backgroundColor:
-              variant === 'muted'
-                ? withAlpha(colors.muted ?? colors.background, 0.5)
-                : 'transparent',
-            paddingHorizontal: size === 'xs' ? 10 : 12,
-            paddingVertical: size === 'xs' ? 8 : 10,
-            gap: size === 'xs' ? 8 : 10,
-          },
-          style,
-        ]}
-      />
-    </ItemSize.Provider>
-  );
-}
-export const ItemGroup = Box;
-export function ItemContent({ style, ...props }: ViewProps) {
-  const size = useContext(ItemSize);
-  return <Box {...props} style={[{ flex: 1, minWidth: 0, gap: size === 'xs' ? 0 : 4 }, style]} />;
-}
-export const ItemTitle = ({ style, ...props }: TextProps) => (
-  <LabelText {...props} style={[{ fontWeight: '500' }, style]} />
-);
-export function ItemDescription({ style, ...props }: TextProps) {
-  const size = useContext(ItemSize);
-  return <Muted {...props} style={[{ fontSize: size === 'xs' ? 12 : 14 }, style]} />;
-}
-Object.assign(ItemTitle, { nativeTextSlot: true });
-Object.assign(ItemDescription, { nativeTextSlot: true });
-export const ItemActions = ({ style, ...props }: ViewProps) => (
-  <Box {...props} style={row(style)} />
-);
-export function ItemMedia({
-  variant = 'default',
-  style,
-  ...props
-}: ViewProps & { variant?: 'default' | 'icon' | 'image' }) {
-  const { radius } = useTheme();
-  const size = useContext(ItemSize);
-  const extent = size === 'xs' ? 24 : size === 'sm' ? 32 : 40;
-  return (
-    <Box
-      {...props}
-      style={[
-        { alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-        variant === 'image' && {
-          width: extent,
-          height: extent,
-          borderRadius: Math.max(0, radius - 4),
-          overflow: 'hidden',
-        },
-        variant === 'icon' && { width: 16, height: 16 },
-        style,
-      ]}
-    />
-  );
-}
-export const ItemHeader = Box;
-export const ItemFooter = ItemActions;
-export const ItemSeparator = Separator;
+export {
+  Item,
+  ItemGroup,
+  ItemSeparator,
+  ItemMedia,
+  ItemContent,
+  ItemTitle,
+  ItemDescription,
+  ItemActions,
+  ItemHeader,
+  ItemFooter,
+} from './_item';
 const InlineCode = ({ style, ...props }: TextProps) => {
   const { colors } = useTheme();
   const font = useNativeFontStyle('mono');
@@ -324,7 +256,10 @@ export function Skeleton({ style, children, ...props }: ViewProps & { ref?: Ref<
 export const Breadcrumb = ({ style, ...props }: ViewProps) => (
   <Box accessibilityLabel="Breadcrumb" {...props} style={row(style)} />
 );
-export const BreadcrumbList = ItemActions;
+const NativeDisplayActions = ({ style, ...props }: ViewProps) => (
+  <Box {...props} style={row(style)} />
+);
+export const BreadcrumbList = NativeDisplayActions;
 export const BreadcrumbItem = Box;
 export function BreadcrumbLink({
   href,
@@ -442,9 +377,9 @@ export const Message = ({
 );
 export const MessageGroup = Box;
 export const MessageContent = Box;
-export const MessageHeader = ItemActions;
-export const MessageFooter = ItemActions;
-export const MessageActions = ItemActions;
+export const MessageHeader = NativeDisplayActions;
+export const MessageFooter = NativeDisplayActions;
+export const MessageActions = NativeDisplayActions;
 export const MessageAction = Button;
 export const MessageAvatar = Avatar;
 export const MessageTimestamp = Muted;

@@ -1,8 +1,12 @@
-import { useEffect, useState, useContext, useRef, useMemo, type Ref } from 'react';
-import { Platform, StyleSheet, TextInput, type TextInputProps } from 'react-native';
+import { useEffect, useState, useContext, useRef, useMemo, cloneElement, type Ref } from 'react';
+import { Platform, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { useNativeFieldInput } from './_field-context';
 import { useNativeInputAppearance } from './_input-appearance';
-import { nativeTextInputBorderStyle } from './_input-border';
+import {
+  nativeTextInputBorderStyle,
+  nativeSingleLineInputStyle,
+  nativeInputShadowFrame,
+} from './_input-border';
 import { NativeInputGroupContext, useNativeInputGroupMetadata } from './_input-group-context';
 import { composeNativeRefs } from './_slot';
 export type InputProps = TextInputProps & {
@@ -78,7 +82,32 @@ export function Input(input: InputProps) {
             Number(box.borderBottomWidth ?? box.borderWidth ?? 0),
         )
       : undefined;
-  return (
+  const shadow = nativeInputShadowFrame(
+    nativeTextInputBorderStyle(
+      nativeSingleLineInputStyle(
+        StyleSheet.flatten([
+          Platform.OS === 'android' &&
+            !props.multiline && {
+              includeFontPadding: false,
+              ...(props.textAlignVertical === undefined
+                ? { textAlignVertical: 'center' as const }
+                : {}),
+            },
+          ...frame,
+          ...text,
+          rowsHeight !== undefined && { height: rowsHeight },
+          style,
+        ]),
+        StyleSheet.flatten(style),
+        Platform.OS,
+        props.multiline,
+        fontScale,
+      ),
+      Platform.OS,
+    ),
+    Platform.OS,
+  );
+  const control = (
     <TextInput
       {...props}
       ref={mergedRef}
@@ -129,16 +158,21 @@ export function Input(input: InputProps) {
         setFocused(false);
         props.onBlur?.(event);
       }}
-      style={nativeTextInputBorderStyle(
-        StyleSheet.flatten([
-          ...frame,
-          ...text,
-          rowsHeight !== undefined && { height: rowsHeight },
-          style,
-        ]),
-        Platform.OS,
-      )}
+      style={shadow.input}
     />
+  );
+  return shadow.frame ? (
+    <View
+      collapsable={false}
+      accessible={false}
+      hitSlop={control.props.hitSlop}
+      style={shadow.frame}
+      onLayout={control.props.onLayout}
+    >
+      {cloneElement(control, { onLayout: undefined })}
+    </View>
+  ) : (
+    control
   );
 }
 export function Textarea(props: InputProps) {

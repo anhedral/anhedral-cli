@@ -84,9 +84,12 @@ test('official RHF checkbox labels activate their real native control, preserve 
   const task = screen
     .getAllByRole('checkbox', { name: 'Push notifications' })
     .find((node) => !node.props.accessibilityState.disabled)!;
-  const taskLabel = screen
-    .getAllByText('Push notifications')
-    .find((node) => task.props.accessibilityLabelledBy?.includes(node.props.nativeID));
+  const taskLabel = screen.getAllByText('Push notifications').find((node) => {
+    for (let host: typeof node | null = node; host; host = host.parent) {
+      if (task.props.accessibilityLabelledBy?.includes(host.props.nativeID)) return true;
+    }
+    return false;
+  });
   expect(taskLabel).toBeDefined();
   await fireEvent.press(taskLabel!);
   expect(task.props.accessibilityState.checked).toBe(true);

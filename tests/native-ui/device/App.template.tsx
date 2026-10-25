@@ -26,6 +26,137 @@ const NativeSourceGlyph = withRegistryStyles(IconPlaceholder, 'icon');
 const GridEmpty = withRegistryStyles(UI.Empty, 'view');
 const nativeAvatarFixture =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAcElEQVR4nO3QMQ0AIAwAsNngQQQO8P/txsuQsSzpUQONt091WjdbhQABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIEDA/4AOOOLH/K1dokQAAAABJRU5ErkJggg==';
+function NativeItemFieldMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  const [index, setIndex] = useState(0),
+    preset = presets[index]!,
+    frozen = ['default', 'new-york', 'new-york-v4'].includes(preset);
+  const [description, setDescription] = useState(true),
+    [actions, setActions] = useState(0),
+    [value, setValue] = useState(''),
+    [invalid, setInvalid] = useState(false),
+    [wide, setWide] = useState(false);
+  const [layout, setLayout] = useState<
+    Record<string, { x: number; y: number; width: number; height: number }>
+  >({});
+  const record = (name: string) => (event: LayoutChangeEvent) => {
+    const next = event.nativeEvent.layout;
+    setLayout((previous) =>
+      JSON.stringify(previous[name]) === JSON.stringify(next)
+        ? previous
+        : { ...previous, [name]: next },
+    );
+  };
+  const appearance = useTheme();
+  const extent = (name: string) =>
+    layout[name]
+      ? Math.round(layout[name]!.width) + 'x' + Math.round(layout[name]!.height)
+      : 'pending';
+  const gap =
+    layout.first && layout.second
+      ? Math.round(layout.second.y - layout.first.y - layout.first.height)
+      : 'pending';
+  return (
+    <View style={{ gap: 8 }}>
+      <UI.Text>{'Item/Field preset: ' + preset}</UI.Text>
+      <UI.Text>{'Item geometry: ' + preset + ':' + extent('media') + ':' + gap}</UI.Text>
+      <UI.Text>{'Item actions: ' + actions}</UI.Text>
+      <UI.Text>{'Field value: ' + value}</UI.Text>
+      <UI.Text>
+        {'Field responsive: ' +
+          (layout.responsiveInput && layout.responsiveLabel
+            ? layout.responsiveInput.x > layout.responsiveLabel.x
+              ? 'row'
+              : 'column'
+            : 'pending')}
+      </UI.Text>
+      <UI.Text>{'Item/Field appearance: ' + appearance.preference + ':' + appearance.mode}</UI.Text>
+      <UI.Button onPress={() => setIndex((current) => (current + 1) % presets.length)}>
+        Next Item/Field preset
+      </UI.Button>
+      <NativeRegistryPalette
+        generation={preset === 'default' || preset === 'new-york' ? 'legacy' : 'modern'}
+        source={frozen ? (preset as 'default' | 'new-york' | 'new-york-v4') : 'base'}
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <UI.ItemGroup key={preset} style={{ width: 320 }}>
+            <UI.Item size="sm" variant="outline" onLayout={record('first')}>
+              <UI.ItemMedia variant="image" testID="native-item-media" onLayout={record('media')}>
+                <UI.Avatar style={{ width: '100%', height: '100%' }}>
+                  <UI.AvatarImage source={{ uri: nativeAvatarFixture }} />
+                  <UI.AvatarFallback>IM</UI.AvatarFallback>
+                </UI.Avatar>
+              </UI.ItemMedia>
+              <UI.ItemContent>
+                <UI.ItemTitle>Native item title</UI.ItemTitle>
+                {description && (
+                  <UI.ItemDescription>
+                    Source description wraps with native typography.
+                  </UI.ItemDescription>
+                )}
+              </UI.ItemContent>
+              <UI.ItemActions>
+                <UI.Button size="sm" onPress={() => setActions((count) => count + 1)}>
+                  Item action
+                </UI.Button>
+              </UI.ItemActions>
+            </UI.Item>
+            <UI.Item size={frozen ? 'sm' : 'xs'} variant="muted" onLayout={record('second')}>
+              <UI.ItemContent>
+                <UI.ItemTitle>Second item</UI.ItemTitle>
+              </UI.ItemContent>
+            </UI.Item>
+          </UI.ItemGroup>
+          <UI.FieldGroup style={{ width: 320 }}>
+            <UI.Field invalid={invalid}>
+              <UI.FieldLabel testID="native-item-field-label" controlID="native-item-field-input">
+                Native account
+              </UI.FieldLabel>
+              <UI.Input
+                nativeID="native-item-field-input"
+                testID="native-item-field-input"
+                onSubmitEditing={() => Keyboard.dismiss()}
+                value={value}
+                onChangeText={setValue}
+              />
+              <UI.FieldDescription>Account description</UI.FieldDescription>
+              <UI.FieldError
+                errors={
+                  invalid ? [{ message: 'Account required' }, { message: 'Account required' }] : []
+                }
+              />
+            </UI.Field>
+            <UI.FieldSeparator>Or continue</UI.FieldSeparator>
+          </UI.FieldGroup>
+          <UI.FieldGroup style={{ width: wide ? 448 : 320 }}>
+            <UI.Field orientation="responsive">
+              <UI.FieldLabel onLayout={record('responsiveLabel')}>Responsive account</UI.FieldLabel>
+              <UI.Input onLayout={record('responsiveInput')} />
+            </UI.Field>
+          </UI.FieldGroup>
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+      <UI.Button onPress={() => setDescription((current) => !current)}>
+        Toggle Item description
+      </UI.Button>
+      <UI.Button onPress={() => setWide((current) => !current)}>Toggle Field width</UI.Button>
+      <UI.Button onPress={() => setInvalid((current) => !current)}>Toggle Field error</UI.Button>
+    </View>
+  );
+}
+
 function NativeAvatarMatrix() {
   const presets = [
     'nova',
@@ -1403,6 +1534,7 @@ function Gallery() {
       {active ? (
         <ScrollView
           testID="registry-story-scroll"
+          keyboardDismissMode="on-drag"
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: 16 }}
           keyboardShouldPersistTaps="handled"

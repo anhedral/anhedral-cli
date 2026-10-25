@@ -1,6 +1,11 @@
 package dev.anhedral.registryqa
 
 import android.graphics.Rect
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -39,6 +44,7 @@ class RegistryAndroidTests {
   }
   private fun UiAutomatorTestScope.label(name: String): UiObject2 {
     for (direction in listOf(Direction.DOWN, Direction.UP)) {
+      var stalled=0
       for (attempt in 0..24) {
         try {
           val container = onElementOrNull(timeoutMs = 200) { viewIdResourceName == "registry-story-scroll" }
@@ -50,10 +56,13 @@ class RegistryAndroidTests {
           onElementOrNull(timeoutMs = 250, block = visible)?.let { return it }
           if (container == null) break
           // A false scroll result can race the freshly mounted native layout. Keep
-          // resolving the owned story viewport and allow the injected gesture to settle.
+          // resolving the owned story viewport and allow two settled end-of-scroll checks.
+          container.setGestureMargin(minOf(160, viewport.height()/6, viewport.width()/6))
           val moved = container.scroll(direction, 0.6f)
           Thread.sleep(150)
           println("Registry reveal: " + name + " " + direction + " moved=" + moved + " viewport=" + viewport)
+          stalled=if(moved)0 else stalled+1
+          if(stalled>=2)break
         } catch (_: StaleObjectException) {
           // Layout state and navigation can replace nodes. Resolve fresh native objects
           // before the next assertion or gesture instead of retaining a stale container.
@@ -61,6 +70,47 @@ class RegistryAndroidTests {
       }
     }
     throw AssertionError("Missing visible native label: " + name)
+  }
+  private fun assertNativeInputLineFits() {
+    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+      fun find(view: View): EditText? {
+        if (view is EditText && view.text.toString()=="native") return view
+        if(view is ViewGroup) for(index in 0 until view.childCount) find(view.getChildAt(index))?.let { return it }
+        return null
+      }
+      val activity=ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).first()
+      val input=find(activity.window.decorView) ?: throw AssertionError("Missing edited native input")
+      val layout=input.layout
+      assertEquals("Native input text must not retain a vertical scroll offset",0,input.scrollY)
+      assertTrue("Native input viewport must contain its authored line height",input.height-input.compoundPaddingTop-input.compoundPaddingBottom >= layout.height)
+      println("Registry input metrics: height="+input.height+" padding="+input.paddingTop+","+input.paddingBottom+" compound="+input.compoundPaddingTop+","+input.compoundPaddingBottom+" total="+input.totalPaddingTop+","+input.totalPaddingBottom+" scroll="+input.scrollX+","+input.scrollY+" textSize="+input.textSize+" lineHeight="+input.lineHeight+" layoutHeight="+layout.height+" baseline="+layout.getLineBaseline(0)+" font="+input.paint.fontMetrics+" gravity="+input.gravity)
+    }
+  }
+  @Test fun itemAndFieldPresetsRetainNativeLayoutActionsAndValidation() = uiAutomator {
+    openStory("native/item-field-contract")
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
+    for ((index,preset) in presets.withIndex()) {
+      label("Item geometry: "+preset+":"+(if(index>=8)"40x40:0" else "32x32:8"))
+      label("Item action").apply {waitForStable();click()}
+      label("Item actions: "+(index+1))
+      label("Next Item/Field preset").apply {waitForStable();click()}
+    }
+    label("Field responsive: column")
+    label("Toggle Field width").apply {waitForStable();click()};label("Field responsive: row")
+    label("Toggle Field width").apply {waitForStable();click()};label("Field responsive: column")
+    label("Native account").waitForStable()
+    onElement {named("Native account") && className=="android.widget.TextView" && isVisibleToUser}.click()
+    onElement {viewIdResourceName=="native-item-field-input" && isFocused}.setText("native")
+    device.pressEnter();label("Field value: native");assertNativeInputLineFits()
+    label("Toggle Field error").apply {waitForStable();click()};label("Account required")
+    label("Toggle Item description").apply {waitForStable();click()}
+    onElement {named("Dark")}.apply {waitForStable();click()}
+    label("Item/Field appearance: dark:dark").waitForStable();label("Or continue").waitForStable();assertNativeInputLineFits()
+    val evidenceRun=InstrumentationRegistry.getArguments().getString("evidenceRun") ?: "local"
+    require(evidenceRun.matches(Regex("[A-Za-z0-9_-]+")))
+    val directory=File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),"native-qa/"+evidenceRun)
+    directory.mkdirs();assertTrue(device.takeScreenshot(File(directory,"item-field-dark-native-layout.png")))
+    onElement {named("System")}.click()
   }
   @Test fun avatarPresetsRetainNativeGeometryImageFallbackAndFilters() = uiAutomator {
     openStory("native/avatar-contract")

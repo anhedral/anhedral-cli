@@ -38,6 +38,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 import { NativeKbdSurfaceContext } from './_kbd-context';
 import { NativeExampleChildWidth } from './_registry-context';
+import { NativePhysicalPortalBoundary, NativeOverlayContentSlot } from './_physical-scope';
 import {
   NativeInputGroupContext,
   NativeInputGroupAddonContext,
@@ -287,154 +288,156 @@ export function OverlayContent({
       onDismiss={() => focus(state.returnFocus)}
       onRequestClose={() => state.set(false)}
     >
-      <NativeDescendantStyleContext.Provider value={{}}>
-        <NativeInputGroupContext.Provider value={null}>
-          <NativeInputGroupAddonContext.Provider value={null}>
-            <NativeInputGroupKbdPaint.Provider value={{}}>
-              <NativeInputGroupSurface.Provider
-                value={
-                  nativeSurface === 'combobox'
-                    ? {
-                        inCombobox: true,
-                        borderColor:
-                          typeof StyleSheet.flatten(style)?.borderColor === 'string'
-                            ? String(StyleSheet.flatten(style)?.borderColor)
-                            : colors['popover-foreground'],
-                      }
-                    : {}
-                }
-              >
-                <NativeExampleChildWidth.Provider value={false}>
-                  <NativeKbdSurfaceContext.Provider
-                    value={{ tooltip: nativeSurface === 'tooltip' }}
-                  >
-                    <KeyboardAvoidingView
-                      style={{ flex: 1 }}
-                      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <NativePhysicalPortalBoundary>
+        <NativeDescendantStyleContext.Provider value={{}}>
+          <NativeInputGroupContext.Provider value={null}>
+            <NativeInputGroupAddonContext.Provider value={null}>
+              <NativeInputGroupKbdPaint.Provider value={{}}>
+                <NativeInputGroupSurface.Provider
+                  value={
+                    nativeSurface === 'combobox'
+                      ? {
+                          inCombobox: true,
+                          borderColor:
+                            typeof StyleSheet.flatten(style)?.borderColor === 'string'
+                              ? String(StyleSheet.flatten(style)?.borderColor)
+                              : colors['popover-foreground'],
+                        }
+                      : {}
+                  }
+                >
+                  <NativeExampleChildWidth.Provider value={false}>
+                    <NativeKbdSurfaceContext.Provider
+                      value={{ tooltip: nativeSurface === 'tooltip' }}
                     >
-                      <View
-                        accessibilityElementsHidden={!state.open}
-                        importantForAccessibility={state.open ? 'auto' : 'no-hide-descendants'}
-                        style={{
-                          flex: 1,
-                          direction: 'ltr',
-                          justifyContent:
-                            side === 'top'
-                              ? 'flex-start'
-                              : side === 'bottom'
-                                ? 'flex-end'
-                                : horizontal
-                                  ? align === 'start'
-                                    ? 'flex-start'
-                                    : align === 'end'
-                                      ? 'flex-end'
-                                      : 'center'
-                                  : 'center',
-                          alignItems:
-                            side === 'left'
-                              ? 'flex-start'
-                              : side === 'right'
-                                ? 'flex-end'
-                                : 'stretch',
-                          padding: side === 'center' ? 24 : 0,
-                          ...(nativeSurface === 'select'
-                            ? {
-                                paddingTop: insets.top,
-                                paddingBottom: insets.bottom,
-                                paddingLeft: insets.left,
-                                paddingRight: insets.right,
-                              }
-                            : {}),
-                        }}
+                      <KeyboardAvoidingView
+                        style={{ flex: 1 }}
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                       >
-                        <Pressable
-                          accessible={dismissOnBackdrop}
-                          accessibilityRole="button"
-                          accessibilityLabel="Dismiss overlay"
-                          disabled={!dismissOnBackdrop}
-                          onPress={() => state.set(false)}
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            backgroundColor: colors.foreground,
-                            opacity: 0.35,
-                          }}
-                        />
                         <View
-                          {...props}
-                          accessibilityViewIsModal
-                          onAccessibilityEscape={() => state.set(false)}
-                          style={[
-                            {
-                              backgroundColor: colors.popover,
-                              direction,
-                              padding: 20,
-                              paddingTop: 20 + insets.top,
-                              paddingBottom: 20 + insets.bottom,
-                              paddingLeft: 20 + insets.left,
-                              paddingRight: 20 + insets.right,
-                              gap: 12,
-                              borderRadius: side === 'center' ? 12 : 0,
-                              maxHeight: '90%',
-                              width: horizontal ? '85%' : undefined,
-                            },
-                            horizontal && { height: '100%', maxHeight: '100%' },
-                            {
-                              alignSelf: horizontal
-                                ? side === 'left'
-                                  ? 'flex-start'
-                                  : 'flex-end'
-                                : align === 'start'
-                                  ? direction === 'rtl'
-                                    ? 'flex-end'
-                                    : 'flex-start'
-                                  : align === 'end'
-                                    ? direction === 'rtl'
+                          accessibilityElementsHidden={!state.open}
+                          importantForAccessibility={state.open ? 'auto' : 'no-hide-descendants'}
+                          style={{
+                            flex: 1,
+                            direction: 'ltr',
+                            justifyContent:
+                              side === 'top'
+                                ? 'flex-start'
+                                : side === 'bottom'
+                                  ? 'flex-end'
+                                  : horizontal
+                                    ? align === 'start'
                                       ? 'flex-start'
-                                      : 'flex-end'
+                                      : align === 'end'
+                                        ? 'flex-end'
+                                        : 'center'
                                     : 'center',
-                            },
-                            displacement,
-                            style,
-                          ]}
+                            alignItems:
+                              side === 'left'
+                                ? 'flex-start'
+                                : side === 'right'
+                                  ? 'flex-end'
+                                  : 'stretch',
+                            padding: side === 'center' ? 24 : 0,
+                            ...(nativeSurface === 'select'
+                              ? {
+                                  paddingTop: insets.top,
+                                  paddingBottom: insets.bottom,
+                                  paddingLeft: insets.left,
+                                  paddingRight: insets.right,
+                                }
+                              : {}),
+                          }}
                         >
-                          {swipeToDismiss && (
-                            <Pressable
-                              accessible
-                              accessibilityRole="button"
-                              accessibilityLabel="Close drawer"
-                              onPress={() => state.set(false)}
-                            >
-                              <View
-                                {...pan.panHandlers}
-                                style={{
-                                  minHeight: 28,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                }}
+                          <Pressable
+                            accessible={dismissOnBackdrop}
+                            accessibilityRole="button"
+                            accessibilityLabel="Dismiss overlay"
+                            disabled={!dismissOnBackdrop}
+                            onPress={() => state.set(false)}
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              backgroundColor: colors.foreground,
+                              opacity: 0.35,
+                            }}
+                          />
+                          <View
+                            {...props}
+                            accessibilityViewIsModal
+                            onAccessibilityEscape={() => state.set(false)}
+                            style={[
+                              {
+                                backgroundColor: colors.popover,
+                                direction,
+                                padding: 20,
+                                paddingTop: 20 + insets.top,
+                                paddingBottom: 20 + insets.bottom,
+                                paddingLeft: 20 + insets.left,
+                                paddingRight: 20 + insets.right,
+                                gap: 12,
+                                borderRadius: side === 'center' ? 12 : 0,
+                                maxHeight: '90%',
+                                width: horizontal ? '85%' : undefined,
+                              },
+                              horizontal && { height: '100%', maxHeight: '100%' },
+                              {
+                                alignSelf: horizontal
+                                  ? side === 'left'
+                                    ? 'flex-start'
+                                    : 'flex-end'
+                                  : align === 'start'
+                                    ? direction === 'rtl'
+                                      ? 'flex-end'
+                                      : 'flex-start'
+                                    : align === 'end'
+                                      ? direction === 'rtl'
+                                        ? 'flex-start'
+                                        : 'flex-end'
+                                      : 'center',
+                              },
+                              displacement,
+                              style,
+                            ]}
+                          >
+                            {swipeToDismiss && (
+                              <Pressable
+                                accessible
+                                accessibilityRole="button"
+                                accessibilityLabel="Close drawer"
+                                onPress={() => state.set(false)}
                               >
                                 <View
+                                  {...pan.panHandlers}
                                   style={{
-                                    width: 40,
-                                    height: 4,
-                                    borderRadius: 2,
-                                    backgroundColor: colors.border,
+                                    minHeight: 28,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
                                   }}
-                                />
-                              </View>
-                            </Pressable>
-                          )}
-                          {content(children)}
+                                >
+                                  <View
+                                    style={{
+                                      width: 40,
+                                      height: 4,
+                                      borderRadius: 2,
+                                      backgroundColor: colors.border,
+                                    }}
+                                  />
+                                </View>
+                              </Pressable>
+                            )}
+                            {content(children)}
+                          </View>
                         </View>
-                      </View>
-                    </KeyboardAvoidingView>
-                  </NativeKbdSurfaceContext.Provider>
-                </NativeExampleChildWidth.Provider>
-              </NativeInputGroupSurface.Provider>
-            </NativeInputGroupKbdPaint.Provider>
-          </NativeInputGroupAddonContext.Provider>
-        </NativeInputGroupContext.Provider>
-      </NativeDescendantStyleContext.Provider>
+                      </KeyboardAvoidingView>
+                    </NativeKbdSurfaceContext.Provider>
+                  </NativeExampleChildWidth.Provider>
+                </NativeInputGroupSurface.Provider>
+              </NativeInputGroupKbdPaint.Provider>
+            </NativeInputGroupAddonContext.Provider>
+          </NativeInputGroupContext.Provider>
+        </NativeDescendantStyleContext.Provider>
+      </NativePhysicalPortalBoundary>
     </Modal>
   );
 }
@@ -538,9 +541,14 @@ export const DropdownMenu = OverlayRoot;
 export const DropdownMenuTrigger = OverlayTrigger;
 export function DropdownMenuContent({
   align = 'center',
+  children,
+  nativeContentSlot = 'dropdown-menu-content',
   style,
   ...props
-}: React.ComponentProps<typeof OverlayContent> & { align?: 'start' | 'center' | 'end' }) {
+}: React.ComponentProps<typeof OverlayContent> & {
+  align?: 'start' | 'center' | 'end';
+  nativeContentSlot?: string;
+}) {
   return (
     <OverlayContent
       accessibilityRole="menu"
@@ -549,7 +557,11 @@ export function DropdownMenuContent({
         { alignSelf: align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center' },
         style,
       ]}
-    />
+    >
+      <NativeOverlayContentSlot.Provider value={nativeContentSlot}>
+        {children}
+      </NativeOverlayContentSlot.Provider>
+    </OverlayContent>
   );
 }
 export function DropdownMenuLabel({
@@ -670,10 +682,14 @@ export function DropdownMenuSubTrigger({
     />
   );
 }
-export const DropdownMenuSubContent = DropdownMenuContent;
+export const DropdownMenuSubContent = (props: React.ComponentProps<typeof DropdownMenuContent>) => (
+  <DropdownMenuContent {...props} nativeContentSlot="dropdown-menu-sub-content" />
+);
 export const ContextMenu = OverlayRoot;
 export const ContextMenuTrigger = LongPressTrigger;
-export const ContextMenuContent = DropdownMenuContent;
+export const ContextMenuContent = (props: React.ComponentProps<typeof DropdownMenuContent>) => (
+  <DropdownMenuContent {...props} nativeContentSlot="context-menu-content" />
+);
 export const ContextMenuItem = DropdownMenuItem;
 export const ContextMenuCheckboxItem = DropdownMenuCheckboxItem;
 export const ContextMenuRadioGroup = DropdownMenuRadioGroup;
@@ -684,11 +700,15 @@ export const ContextMenuGroup = Box;
 export const ContextMenuShortcut = Muted;
 export const ContextMenuSub = OverlayRoot;
 export const ContextMenuSubTrigger = DropdownMenuSubTrigger;
-export const ContextMenuSubContent = DropdownMenuContent;
+export const ContextMenuSubContent = (props: React.ComponentProps<typeof DropdownMenuContent>) => (
+  <DropdownMenuContent {...props} nativeContentSlot="context-menu-sub-content" />
+);
 export const Menubar = ({ style, ...props }: ViewProps) => <Box {...props} style={row(style)} />;
 export const MenubarMenu = OverlayRoot;
 export const MenubarTrigger = OverlayTrigger;
-export const MenubarContent = DropdownMenuContent;
+export const MenubarContent = (props: React.ComponentProps<typeof DropdownMenuContent>) => (
+  <DropdownMenuContent {...props} nativeContentSlot="menubar-content" />
+);
 export const MenubarItem = DropdownMenuItem;
 export const MenubarCheckboxItem = DropdownMenuCheckboxItem;
 export const MenubarRadioGroup = DropdownMenuRadioGroup;
@@ -699,7 +719,9 @@ export const MenubarGroup = Box;
 export const MenubarShortcut = Muted;
 export const MenubarSub = OverlayRoot;
 export const MenubarSubTrigger = DropdownMenuSubTrigger;
-export const MenubarSubContent = DropdownMenuContent;
+export const MenubarSubContent = (props: React.ComponentProps<typeof DropdownMenuContent>) => (
+  <DropdownMenuContent {...props} nativeContentSlot="menubar-sub-content" />
+);
 
 /** Native Modal content owns its platform window; no browser portal container is needed. */
 export const DropdownMenuPortal = ({ children }: { children?: ReactNode }) => <>{children}</>;

@@ -70,8 +70,10 @@ test.each(['default', 'outline', 'muted'] as const)(
     expect(screen.getByTestId('item')).toHaveStyle({
       borderWidth: 1,
       borderColor: variant === 'outline' ? 'hsl(0, 0%, 89.8%)' : 'transparent',
-      backgroundColor: variant === 'muted' ? 'rgba(245, 245, 245, 0.5)' : 'transparent',
     });
+    expect(StyleSheet.flatten(screen.getByTestId('item').props.style).backgroundColor).toBe(
+      variant === 'muted' ? 'rgba(245, 245, 245, 0.5)' : undefined,
+    );
   },
 );
 test.each(['default', 'sm', 'xs'] as const)(
@@ -89,14 +91,16 @@ test.each(['default', 'sm', 'xs'] as const)(
       </UI.Item>,
     );
     expect(screen.getByTestId('item')).toHaveStyle({
-      paddingHorizontal: size === 'xs' ? 10 : 12,
-      paddingVertical: size === 'xs' ? 8 : 10,
+      paddingLeft: size === 'xs' ? 10 : 12,
+      paddingRight: size === 'xs' ? 10 : 12,
+      paddingTop: size === 'xs' ? 8 : 10,
+      paddingBottom: size === 'xs' ? 8 : 10,
     });
     expect(screen.getByTestId('image')).toHaveStyle({
       overflow: 'hidden',
       width: size === 'xs' ? 24 : size === 'sm' ? 32 : 40,
     });
-    expect(screen.getByTestId('icon')).toHaveStyle({ width: 16, height: 16 });
+    expect(StyleSheet.flatten(screen.getByTestId('icon').props.style).width).toBeUndefined();
     expect(screen.getByTestId('default')).not.toHaveStyle({ width: 40 });
   },
 );
@@ -116,25 +120,27 @@ test.each(['default', 'border', 'separator'] as const)(
     }
   },
 );
-test('responsive field orientation follows its own container, and legend variants preserve hierarchy', async () => {
+test('responsive field orientation follows its FieldGroup container, and legend variants preserve hierarchy', async () => {
   await mount(
-    <UI.Field orientation="responsive" testID="field">
-      <UI.FieldLegend variant="label" testID="label">
-        Label
-      </UI.FieldLegend>
-      <UI.FieldLegend testID="legend">Legend</UI.FieldLegend>
-    </UI.Field>,
+    <UI.FieldGroup testID="field-group">
+      <UI.Field orientation="responsive" testID="field">
+        <UI.FieldLegend variant="label" testID="label">
+          Label
+        </UI.FieldLegend>
+        <UI.FieldLegend testID="legend">Legend</UI.FieldLegend>
+      </UI.Field>
+    </UI.FieldGroup>,
   );
-  await fireEvent(screen.getByTestId('field'), 'layout', {
+  await fireEvent(screen.getByTestId('field-group'), 'layout', {
     nativeEvent: { layout: { width: 320, height: 100, x: 0, y: 0 } },
   });
   expect(screen.getByTestId('field')).toHaveStyle({ flexDirection: 'column' });
-  await fireEvent(screen.getByTestId('field'), 'layout', {
+  await fireEvent(screen.getByTestId('field-group'), 'layout', {
     nativeEvent: { layout: { width: 900, height: 100, x: 0, y: 0 } },
   });
   expect(screen.getByTestId('field')).toHaveStyle({ flexDirection: 'row' });
-  expect(screen.getByTestId('label')).toHaveStyle({ fontSize: 14 });
-  expect(screen.getByTestId('legend')).toHaveStyle({ fontSize: 16 });
+  expect(screen.getByText('Label')).toHaveStyle({ fontSize: 14 });
+  expect(screen.getByText('Legend')).toHaveStyle({ fontSize: 16 });
 });
 test.each(['default', 'line'] as const)(
   'tabs list variant %s preserves controlled activation and selected styling',

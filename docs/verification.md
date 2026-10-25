@@ -1,3 +1,72 @@
+# Item and Field source presets, native composition and Android input layout — October 25, 2026
+
+Item retains six publications, sixty class slots, two CVA recipes, source-specific
+sizes, three root/media variants and eleven style families. Field retains six
+publications, seventy-eight class slots, all three orientations, both legend
+variants and eleven styles. Modern stylesheet reviews retain 152 Item and 96
+Field rules. Physical native scopes own descendant metadata, group sizing and
+portal separation. Native slots preserve concrete render styles, transformed
+children, refs, cancellation, long presses and caller padding. Inline text runs,
+clamping, bitmap crop and informational FieldTitle semantics are tested.
+
+FieldGroup measurement drives the 448-point responsive boundary. Native labels
+and control IDs preserve associations and focus; error messages deduplicate,
+actual visible errors participate in spacing, and alert containers remain
+accessible. Disabled FieldSet control inheritance is distinct from disabled Field
+label metadata. Choice/Slider/OTP source-owner work remains separate; the tested
+numeric OTP subset is not whole-owner parity. Browser fieldset/legend rules,
+constraint-validation UI, arbitrary DOM selectors, form ownership/default
+navigation, exact browser typography and CSS transitions retain explicit native
+boundaries. Form compositions without an application submit action remain partial.
+
+Android visual review caught clipped input text after passing text-content
+assertions. Live EditText diagnostics showed the pinned RN shadow update restored
+the system Drawable padding: 26/29 pixels and scrollY34 in an 84-pixel input.
+A stable Android View now owns shadow paint and outer geometry while TextInput
+retains native editing, IDs, borders, refs and keyboard behavior. Source-owned
+vertical insets fit the scaled line inside its unchanged height; explicit caller
+padding remains authoritative. The accepted device has 10/10-pixel compound
+padding, a complete 63-pixel line and scrollY0 before/after focus, invalid and dark
+paint. Native tests assert the viewport and scroll offset. The failed screenshots,
+intermediate binaries, metric probe and interrupted checks remain dated evidence.
+
+Complete native regression passes **86 suites /2,181 tests on each platform** at
+unchanged coverage gates. Native generated TypeScript, source/style guards, lint,
+static security and packed-consumer smoke pass. The CLI run covers 692 cases:
+690 passed, one existing optional skip, and one outdated parity-count assertion.
+After updating the expected count and explicit Item/Field/Native Select completion
+and pending-Field assertions, that entire 18-case parity file passes. The change
+has no remaining failing CLI case. All 756 modules compile as iOS and Android Hermes bytecode. Packlist policy
+passes with 249 files within the unchanged size budgets; terminal outputs are retained
+with the batch evidence. No coverage threshold or package budget changed.
+
+The catalog has 756 maintained modules /752 authored roots: 491 component examples,
+231 chart modules and 34 form modules. All three Native Select collections now
+exercise actual country selection, disabled controls and Field names across all
+eight modern styles. Modern Item collections and all nine frozen Item compositions
+retain authored source. Coverage closes seventeen groups: **232 ported, one
+web-specific utility and 386 unfinished**. Rendering or an export match does not
+promote the remaining owners, examples or blocks. The strict complete-parity gate
+remains open.
+
+Both focused Item/Field OS cases pass source geometry across all eleven presets,
+real label activation/editing, responsive transitions, actions, validation and dark
+appearance. These select one case from the required 26-case suite; they are not
+full-device-suite or whole-registry acceptance.
+
+- Android API36: `.artifacts/native-ui-android/2026-10-25T23-37-42-161Z/`.
+  App SHA256 `94ca8b549e08e6468e14b34e8acacd6896f00f15347ac9c9855448e06a0c3a30`;
+  test APK `c23f570273da0cfc80060e8cc9d786252dbd14586957c4fb19cfbcd6fee5fcc4`.
+- iOS26.5: `.artifacts/native-ui-ios/2026-10-25T23-38-33-745Z/`.
+  Exported screenshot `9C5E9A95-D8D5-4643-9421-658B0CC0DBC7.png` was inspected.
+- `.artifacts/native-ui/2026-10-25-item-field/final-device-source-equivalence.json`
+  verifies all 173 native TypeScript modules, every maintained recipe, generated
+  QA application and both compiled native test sources against those binaries.
+  Android's final dark screenshot was inspected and the full input text is legible.
+
+No npm publication, merge, deployment, provider mutation or dependency version
+change occurred. The separate iOS27 QA host lifecycle issue remains open.
+
 # Avatar source presets, authored examples and native image readiness — October 25, 2026
 
 Avatar retains six publications, thirty class slots and all eleven style families.

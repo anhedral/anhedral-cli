@@ -1,3 +1,5 @@
+import { useNativeFieldsetDisabled } from './_field-context';
+import { useNativeItemGroupSize } from './_item-context';
 import {
   Pressable,
   StyleSheet,
@@ -138,11 +140,13 @@ export function Button({
   variant = 'default',
   size = 'default',
   style,
-  disabled,
+  disabled: requestedDisabled,
   accessibilityState,
   accessibilityRole = 'button',
   ...props
 }: ButtonProps) {
+  const fieldsetDisabled = useNativeFieldsetDisabled(),
+    disabled = !!requestedDisabled || fieldsetDisabled;
   const { colors, radius, mode } = useTheme();
   const legacy = useRegistryPalette() === 'legacy';
   const requestedPreset = useNativeComponentStyle();
@@ -155,6 +159,12 @@ export function Button({
       : legacy
         ? 'default'
         : (requestedPreset ?? (registrySource ? 'nova' : undefined));
+  useNativeItemGroupSize(
+    !nativeBare &&
+      (registrySource === 'aria' || registrySource === 'radix' || registrySource === 'new-york-v4')
+      ? size
+      : undefined,
+  );
   const { fontScale } = useWindowDimensions();
   const inGroup = useContext(NativeButtonGroupContext);
   const [hovered, setHovered] = useState(false),

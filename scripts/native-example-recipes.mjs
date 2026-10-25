@@ -48,6 +48,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'dropdown-menu-demo',
       'dropdown-menu-dialog',
       'dropdown-menu-radio-group',
+      'field-demo',
+      'field-group',
+      'field-responsive',
       'field-checkbox',
       'field-choice-card',
       'field-fieldset',
@@ -77,6 +80,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'input-otp-separator',
       'input-with-button',
       'input-with-label',
+      'item-demo',
+      'item-size',
+      'item-image',
+      'item-header',
+      'item-link',
       'item-icon',
       'item-variant',
       'kbd-button',
@@ -291,6 +299,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     for (const base of ['base', 'radix', 'aria']) {
       origins.push(`apps/v4/registry/bases/${base}/examples/alert-example.tsx`);
       origins.push(`apps/v4/registry/bases/${base}/examples/empty-example.tsx`);
+      origins.push(`apps/v4/registry/bases/${base}/examples/item-example.tsx`);
+      origins.push(`apps/v4/registry/bases/${base}/examples/field-example.tsx`);
     }
     // Published legacy examples are separate authored inputs, even when their names
     // match a maintained modern recipe. Never substitute modern source for them.

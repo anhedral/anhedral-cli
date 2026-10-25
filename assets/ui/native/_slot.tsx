@@ -1,3 +1,4 @@
+import { nativeContainerStyle } from './_native-style';
 import {
   Children,
   Fragment,
@@ -186,13 +187,16 @@ export function NativeSlot({
       });
   }
   const inheritedStyle = buttonLike && slotButton ? slotButton.style : props.style;
-  const resolveStyle = (state: PressableStateCallbackType) => [
-    typeof inheritedStyle === 'function' ? inheritedStyle(state) : inheritedStyle,
-    removeInheritedStyle(
-      typeof own.style === 'function' ? own.style(state) : own.style,
-      slotInheritedStyle,
-    ),
-  ];
+  const resolveStyle = (state: PressableStateCallbackType) =>
+    nativeContainerStyle(
+      StyleSheet.flatten(
+        typeof inheritedStyle === 'function' ? inheritedStyle(state) : inheritedStyle,
+      ) ?? {},
+      removeInheritedStyle(
+        typeof own.style === 'function' ? own.style(state) : own.style,
+        slotInheritedStyle,
+      ),
+    );
   merged.style =
     slotStyle === 'static'
       ? resolveStyle({
@@ -223,7 +227,10 @@ export function NativeSlot({
     slotVariant !== undefined
   )
     merged.inline = false;
-  if (component === View && typeof merged.onPress === 'function')
+  if (
+    component === View &&
+    (typeof merged.onPress === 'function' || typeof merged.onLongPress === 'function')
+  )
     return createElement(Pressable, {
       ...merged,
       hitSlop: merged.hitSlop ?? 16,

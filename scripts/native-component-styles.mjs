@@ -462,6 +462,21 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeAvatarPresets(inventory),
     source: await nativeAvatarPresetSource(inventory),
   });
+  const { nativeItemPresets, nativeItemPresetSource } = await import('./native-item-presets.mjs');
+  outputs.push({
+    component: 'item',
+    target: target('item'),
+    data: nativeItemPresets(inventory),
+    source: await nativeItemPresetSource(inventory),
+  });
+  const { nativeFieldPresets, nativeFieldPresetSource } =
+    await import('./native-field-presets.mjs');
+  outputs.push({
+    component: 'field',
+    target: target('field'),
+    data: nativeFieldPresets(inventory),
+    source: await nativeFieldPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({

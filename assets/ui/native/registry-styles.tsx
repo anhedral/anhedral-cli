@@ -43,6 +43,7 @@ import {
   useTextTone,
   withAlpha,
 } from './_core';
+import { NativePhysicalScope } from './_physical-scope';
 import { NativeCardSpacingContext } from './_registry-context';
 import { useNativeFontStyle } from './fonts';
 import { tokenizeCode } from './code-block';
@@ -75,7 +76,10 @@ const RegistryLocalPaint = createContext<Record<string, string | number>>({});
 export const useNativeRegistryPaint = () => useContext(RegistryLocalPaint);
 export const RegistryPaintContext = createContext<Record<string, string | number>>({});
 const RegistryVariables = createContext<Record<string, string>>({});
-const DescendantStyle = createContext<string[]>([]);
+const DescendantStyle = createContext<{ scope: string; rules: string[] }>({
+  scope: 'root',
+  rules: [],
+});
 export type RegistryIcon = ComponentType<
   import('lucide-react-native').LucideProps & Pick<RecipeProps, 'className' | 'registryIcon'>
 >;
@@ -164,7 +168,9 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       inherited = useContext(NativeTextStyleContext),
       descendantPaint = useContext(NativeDescendantStyleContext),
       inheritedPaint = useContext(RegistryPaintContext),
-      descendant = useContext(DescendantStyle),
+      physicalScope = useContext(NativePhysicalScope),
+      descendantScope = useContext(DescendantStyle),
+      descendant = descendantScope.scope === physicalScope ? descendantScope.rules : [],
       tone = useTextTone();
     const localVariables = { ...variables };
     const inline = (
@@ -232,6 +238,11 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
                   : [],
             )
           : []),
+        ...('nativeFieldSlot' in Component && Component.nativeFieldSlot === 'FieldContent'
+          ? descendant.flatMap((rule) =>
+              rule.startsWith('field-content:') ? [rule.slice(14)] : [],
+            )
+          : []),
         className,
         kind === 'span' && descendant.includes('span:flex') ? 'flex' : '',
       ]
@@ -276,7 +287,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
     }
     const textOwner =
       ['text', 'link', 'icon', 'svg-root'].includes(kind) ||
-      ['nativeTextSlot', 'nativeCardTextSlot'].some(
+      ['nativeTextSlot', 'nativeCardTextSlot', 'nativeContainerTextSlot'].some(
         (key) =>
           key in Component && (Component as unknown as Record<string, unknown>)[key] === true,
       );
@@ -487,6 +498,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       if (translated.paint.objectFit !== undefined)
         forwarded.objectFit = translated.paint.objectFit;
     }
+    if ('nativeRegistryBitmap' in Component && Component.nativeRegistryBitmap === true) {
+      if (
+        descendantPaint.imageFit &&
+        props.objectFit === undefined &&
+        props.resizeMode === undefined
+      )
+        forwarded.objectFit = descendantPaint.imageFit;
+    }
     if (translated.paint.grayscale) {
       if (!('nativeRegistryImage' in Component))
         throw Error('Native grayscale requires a supported image component.');
@@ -559,8 +578,39 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           ...(nativeInline.letterSpacing !== undefined ? { letterSpacingEm: undefined } : {}),
           ...(nativeInline.lineHeight !== undefined ? { lineHeightMultiplier: undefined } : {}),
         };
-      if ('nativeContainerTextSlot' in Component && Component.nativeContainerTextSlot === true)
-        forwarded.textStyle = [translated.text, props.textStyle];
+      if ('nativeContainerTextSlot' in Component && Component.nativeContainerTextSlot === true) {
+        const textKeys = new Set([
+          'color',
+          'fontFamily',
+          'fontSize',
+          'fontStyle',
+          'fontVariant',
+          'fontWeight',
+          'includeFontPadding',
+          'letterSpacing',
+          'lineHeight',
+          'textAlign',
+          'textAlignVertical',
+          'textDecorationColor',
+          'textDecorationLine',
+          'textDecorationStyle',
+          'textShadowColor',
+          'textShadowOffset',
+          'textShadowRadius',
+          'textTransform',
+          'writingDirection',
+          'verticalAlign',
+          'userSelect',
+        ]);
+        const inlineText = Object.fromEntries(
+            Object.entries(nativeInline).filter(([key]) => textKeys.has(key)),
+          ),
+          inlineView = Object.fromEntries(
+            Object.entries(nativeInline).filter(([key]) => !textKeys.has(key)),
+          );
+        forwarded.textStyle = [translated.text, inlineText, props.textStyle];
+        forwarded.style = [translated.view, inlineView];
+      }
       if ('nativeCardSlot' in Component && Component.nativeCardSlot === true) {
         forwarded.textStyle = [translated.text, props.textStyle];
         forwarded.spacing = props.spacing ?? translated.paint.cardSpacing;
@@ -638,12 +688,20 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           ? (state: unknown) => [{ width: '100%' }, currentStyle(state)]
           : [{ width: '100%' }, currentStyle];
     }
+    if (
+      'nativeRegistryBitmap' in Component &&
+      Component.nativeRegistryBitmap === true &&
+      descendantPaint.imageFull
+    )
+      forwarded.style = [translated.view, { width: '100%', height: '100%' }, nativeInline];
     const result = (
       <NativeExampleChildWidth.Provider value={closesExampleScope ? false : exampleChildWidth}>
         <RegistryVariables.Provider value={localVariables}>
           <RegistryLocalPaint.Provider value={translated.paint}>
             <RegistryPaintContext.Provider value={paint}>
-              <DescendantStyle.Provider value={[...descendant, ...translated.descendants]}>
+              <DescendantStyle.Provider
+                value={{ scope: physicalScope, rules: [...descendant, ...translated.descendants] }}
+              >
                 <NativeTextStyleProvider
                   value={{
                     style: text,

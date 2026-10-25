@@ -221,7 +221,10 @@ test('readonly group controls remain enabled, dispatch native focus requests and
     focus.mockRestore();
   }
   await fireEvent(screen.getByLabelText('Read only'), 'focus', { nativeEvent: {} });
-  await fireEvent(screen.getByLabelText('Read only'), 'layout', {
+  let readOnlyLayout = screen.getByLabelText('Read only');
+  while (!readOnlyLayout.props.onLayout && readOnlyLayout.parent)
+    readOnlyLayout = readOnlyLayout.parent;
+  await fireEvent(readOnlyLayout, 'layout', {
     nativeEvent: { layout: { x: 0, y: 0, width: 180, height: 36 } },
   });
   expect(callerFocus).toHaveBeenCalledTimes(1);
@@ -339,7 +342,10 @@ test('large native fonts expand source text buttons and measured group frames wi
   );
   expect(screen.getByTestId('text-button')).toHaveStyle({ height: 44 });
   expect(screen.getByTestId('icon-button')).toHaveStyle({ height: 24, width: 24 });
-  await fireEvent(screen.getByLabelText('Large input'), 'layout', {
+  let largeInputLayout = screen.getByLabelText('Large input');
+  while (!largeInputLayout.props.onLayout && largeInputLayout.parent)
+    largeInputLayout = largeInputLayout.parent;
+  await fireEvent(largeInputLayout, 'layout', {
     nativeEvent: { layout: { width: 150, height: 64, x: 0, y: 0 } },
   });
   expect(screen.getByTestId('large-group')).toHaveStyle({ height: 64 });

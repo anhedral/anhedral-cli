@@ -76,6 +76,9 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       'React.ComponentProps<"svg">',
       'import("lucide-react-native").LucideProps & {className?:string}',
     );
+  // The authored temperature range is a fixed two-thumb controlled array.
+  if (filename.endsWith('/field-example.tsx'))
+    source = source.replace(/temperature\[([01])\]\.toFixed/g, 'temperature[$1]!.toFixed');
   if (filename.endsWith('/select-example.tsx'))
     source = source.replace(/(fonts|plans)\[0\]\.(value|name)/g, '$1[0]!.$2');
   const ariaRecipe = filename.includes('/bases/aria/');
@@ -395,6 +398,22 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           )
             throw Error('Unreviewed native Select companion import.');
           target = '../../native/registry-aria-select';
+        } else if (module === 'input-otp') {
+          const bindings = node.importClause?.namedBindings;
+          if (
+            node.importClause?.name ||
+            !bindings ||
+            !ts.isNamedImports(bindings) ||
+            bindings.elements.some((e) => (e.propertyName ?? e.name).text !== 'REGEXP_ONLY_DIGITS')
+          )
+            throw Error('Unreviewed native input-otp companion import.');
+          return f.updateImportDeclaration(
+            node,
+            node.modifiers,
+            node.importClause,
+            f.createStringLiteral('../../native/registry-input-otp'),
+            undefined,
+          );
         } else if (module === '@/hooks/use-copy-to-clipboard')
           target = '../../native/registry-copy-to-clipboard';
         else if (module === 'react-textarea-autosize') {
@@ -640,6 +659,9 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       if (ts.isJsxAttribute(node)) {
         const name = node.name.getText(file),
           tag = node.parent.parent.tagName?.getText(file);
+        // OS/app navigation owns external destinations; browser tab/security attributes have no native host.
+        if (['a', 'Link', 'RegistryLink'].includes(tag) && ['target', 'rel'].includes(name))
+          return undefined;
         if (
           nativeForms &&
           node.initializer &&
