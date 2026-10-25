@@ -1,3 +1,4 @@
+import { twMerge } from 'tailwind-merge';
 import {
   Children,
   Fragment,
@@ -50,6 +51,7 @@ import {
   useNativeExampleStyle,
   useRegistryPalette,
   NativeButtonIconSize,
+  NativeExampleChildWidth,
   NativeIconForcedSize,
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
@@ -122,13 +124,27 @@ function mapRegistryChildren(
 export function withRegistryStyles<C extends ComponentType<any>>(Component: C, kind = 'view') {
   function Styled(input: StyledProps<ComponentProps<C>>) {
     const {
-      className,
+      className: inputClassName,
       registryIndex,
       registryCount,
       registryIcon: _registryIcon,
       ...props
     } = input as Omit<ComponentProps<C>, Exclude<keyof RecipeProps, 'children'>> &
       Omit<RecipeProps, 'children'> & { children?: unknown };
+    const ownsClassName =
+      'nativeRegistryOwnClassName' in Component && Component.nativeRegistryOwnClassName === true;
+    const className = ownsClassName ? undefined : inputClassName;
+    const exampleChildWidth = useContext(NativeExampleChildWidth);
+    const exampleContainer =
+      ('nativeExampleContainer' in Component && Component.nativeExampleContainer === true) ||
+      ('nativeCardSlot' in Component && Component.nativeCardSlot === true);
+    const closesExampleScope =
+      exampleContainer ||
+      kind !== 'view' ||
+      ['nativeInputSlot', 'nativeTextSlot', 'nativeBadgeSlot', 'nativeSpinnerSlot'].some(
+        (key) =>
+          key in Component && (Component as unknown as Record<string, unknown>)[key] === true,
+      );
     const buttonIconSize = useContext(NativeButtonIconSize);
     const forcedIconSize = useContext(NativeIconForcedSize);
     const spinner = 'nativeSpinnerSlot' in Component && Component.nativeSpinnerSlot === true;
@@ -501,37 +517,52 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           selected: props['data-active'],
         };
     }
+    if (ownsClassName) forwarded.className = inputClassName;
+    if (
+      exampleChildWidth &&
+      exampleContainer &&
+      translated.view.width === undefined &&
+      nativeInline.width === undefined
+    ) {
+      const currentStyle = forwarded.style;
+      forwarded.style =
+        typeof currentStyle === 'function'
+          ? (state: unknown) => [{ width: '100%' }, currentStyle(state)]
+          : [{ width: '100%' }, currentStyle];
+    }
     const result = (
-      <RegistryVariables.Provider value={localVariables}>
-        <RegistryLocalPaint.Provider value={translated.paint}>
-          <RegistryPaintContext.Provider value={paint}>
-            <DescendantStyle.Provider value={[...descendant, ...translated.descendants]}>
-              <NativeTextStyleProvider
-                value={{
-                  style: text,
-                  fontRole: translated.fontRole ?? inherited.fontRole,
-                  textBreakStrategy:
-                    translated.paint.textBreakStrategy === 'balanced'
-                      ? 'balanced'
-                      : translated.paint.textBreakStrategy === 'highQuality'
-                        ? 'highQuality'
-                        : inherited.textBreakStrategy,
-                  numberOfLines:
-                    typeof translated.paint.lines === 'number'
-                      ? translated.paint.lines
-                      : inherited.numberOfLines,
-                }}
-              >
-                <TextToneProvider
-                  value={typeof translated.text.color === 'string' ? translated.text.color : tone}
+      <NativeExampleChildWidth.Provider value={closesExampleScope ? false : exampleChildWidth}>
+        <RegistryVariables.Provider value={localVariables}>
+          <RegistryLocalPaint.Provider value={translated.paint}>
+            <RegistryPaintContext.Provider value={paint}>
+              <DescendantStyle.Provider value={[...descendant, ...translated.descendants]}>
+                <NativeTextStyleProvider
+                  value={{
+                    style: text,
+                    fontRole: translated.fontRole ?? inherited.fontRole,
+                    textBreakStrategy:
+                      translated.paint.textBreakStrategy === 'balanced'
+                        ? 'balanced'
+                        : translated.paint.textBreakStrategy === 'highQuality'
+                          ? 'highQuality'
+                          : inherited.textBreakStrategy,
+                    numberOfLines:
+                      typeof translated.paint.lines === 'number'
+                        ? translated.paint.lines
+                        : inherited.numberOfLines,
+                  }}
                 >
-                  <Component {...(forwarded as ComponentProps<C>)} />
-                </TextToneProvider>
-              </NativeTextStyleProvider>
-            </DescendantStyle.Provider>
-          </RegistryPaintContext.Provider>
-        </RegistryLocalPaint.Provider>
-      </RegistryVariables.Provider>
+                  <TextToneProvider
+                    value={typeof translated.text.color === 'string' ? translated.text.color : tone}
+                  >
+                    <Component {...(forwarded as ComponentProps<C>)} />
+                  </TextToneProvider>
+                </NativeTextStyleProvider>
+              </DescendantStyle.Provider>
+            </RegistryPaintContext.Provider>
+          </RegistryLocalPaint.Provider>
+        </RegistryVariables.Provider>
+      </NativeExampleChildWidth.Provider>
     );
     const scoped =
       typeof translated.paint.radius === 'number' ? (
@@ -770,6 +801,7 @@ function RecipeButton({ children, ...props }: PressableProps) {
 export const RegistryButtonLink = withRegistryStyles(LinkButton, 'button');
 export const RegistryLink = withRegistryStyles(NativeLink, 'link');
 export const RegistryImage = withRegistryStyles(NativeRegistryImage);
+RecipeView.nativeExampleContainer = true;
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
 /** HTML samp is read-only sample output with a monospace face. */
@@ -818,7 +850,7 @@ export function registryClassNames(...values: RegistryClassName[]): string {
     else for (const [key, enabled] of Object.entries(value)) if (enabled) output.push(key);
   };
   values.forEach(visit);
-  return output.join(' ');
+  return twMerge(output.join(' '));
 }
 
 function RecipePre({ children, style, ...props }: React.ComponentProps<typeof ScrollView>) {

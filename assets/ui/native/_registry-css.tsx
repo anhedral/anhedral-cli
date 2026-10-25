@@ -158,8 +158,25 @@ export function registryStyle(
       text.lineHeight = leadingPixels;
     }
   };
+  // CSS media variants win over base rules, independently of class attribute order.
+  const cascadeOrder = (token: string) => {
+    const important = /(?:^|:)!|!$/.test(token) ? 100000 : 0;
+    const dark = token.startsWith('dark:') ? 20000 : 0;
+    const preset = /^(?:dark:)?style-(vega|nova|maia|lyra|mira|luma|sera|rhea):/.test(token)
+      ? 10000
+      : 0;
+    const responsive = /^(?:dark:)?(sm|md|lg|xl|2xl):/.exec(token);
+    return (
+      important +
+      dark +
+      preset +
+      (responsive
+        ? ({ sm: 640, md: 768, lg: 1024, xl: 1280, '2xl': 1536 }[responsive[1]!] ?? 0)
+        : 0)
+    );
+  };
   for (const original of (classes?.split(/\s+/).filter(Boolean) ?? []).sort(
-    (a, b) => Number(/(?:^|:)!|!$/.test(a)) - Number(/(?:^|:)!|!$/.test(b)),
+    (a, b) => cascadeOrder(a) - cascadeOrder(b),
   )) {
     const important = /(?:^|:)!|!$/.test(original) ? 2 : 0;
     let token = original.replace(/^!|!$/g, '');
@@ -363,10 +380,14 @@ export function registryStyle(
       view.alignItems = 'center';
       view.justifyContent = 'center';
     } else if (token === 'flex-wrap') view.flexWrap = 'wrap';
-    else if (token === 'flex-1') view.flex = 1;
-    else if (token === 'flex-none') {
+    else if (token === 'flex-1') {
+      view.flexGrow = 1;
+      view.flexShrink = 1;
+      view.flexBasis = '0%';
+    } else if (token === 'flex-none') {
       view.flexGrow = 0;
       view.flexShrink = 0;
+      view.flexBasis = 'auto';
     } else if (token === 'inline-flex') {
       view.display = 'flex';
       view.flexDirection ??= 'row';
@@ -388,7 +409,9 @@ export function registryStyle(
           baseline: 'baseline',
         } as const
       )[token.slice(5) as 'auto' | 'start' | 'end' | 'center' | 'stretch' | 'baseline'];
-    else if (token.startsWith('items-')) {
+    else if (token === 'content-center') {
+      paint.contentCenter = 1;
+    } else if (token.startsWith('items-')) {
       const value = token.slice(6);
       const align = {
         center: 'center',
@@ -426,6 +449,10 @@ export function registryStyle(
       const value = match[4] === 'auto' ? 'auto' : number(match[4]!) * (match[1] ? -1 : 1);
       if (value === 'auto' && prefix === 'padding') throw Error('Native padding cannot be auto.');
       for (const side of suffix) Object.assign(view, { [prefix + side]: value });
+      // Explicit native shorthand overrides must also replace a component's existing edges.
+      if (match[3] === '')
+        for (const side of ['Top', 'Right', 'Bottom', 'Left'])
+          Object.assign(view, { [prefix + side]: value });
     } else if (
       /^w-\(--(?:radix-(?:dropdown-menu|context-menu|popover|tooltip|select)-trigger-width|anchor-width)\)$/.test(
         token,
@@ -436,6 +463,11 @@ export function registryStyle(
       const match = /^(min-|max-)?(w|h|size)-(.+)$/.exec(token)!;
       const names =
         match[2] === 'size' ? ['width', 'height'] : [match[2] === 'w' ? 'width' : 'height'];
+      if (match[1] === 'max-' && match[3] === 'none') {
+        for (const name of names)
+          Object.assign(view, { ['max' + name[0]!.toUpperCase() + name.slice(1)]: undefined });
+        continue;
+      }
       const value = /^\[\d+(?:\.\d+)?%\]$/.test(match[3]!)
         ? match[3]!.slice(1, -1)
         : /^[1-9]\/[1-9]$/.test(match[3]!)
@@ -452,7 +484,7 @@ export function registryStyle(
                   ? '100%'
                   : /^(4|5|6|7)xl$/.test(match[3]!)
                     ? (
-                        { '4xl': 1024, '5xl': 1152, '6xl': 1280, '7xl': 1440 } as Record<
+                        { '4xl': 896, '5xl': 1024, '6xl': 1152, '7xl': 1280 } as Record<
                           string,
                           number
                         >
@@ -759,6 +791,11 @@ export function registryStyle(
       },
       ...((view.boxShadow as []) ?? []),
     ];
+  }
+  if (paint.contentCenter) {
+    if (paint.columns !== undefined && view.flexDirection === 'column')
+      view.justifyContent = 'center';
+    else view.alignContent = 'center';
   }
   if (leadingPixels !== undefined) text.lineHeight = leadingPixels;
   else if (

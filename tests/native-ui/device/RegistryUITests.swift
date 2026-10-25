@@ -1,6 +1,18 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testSourceExampleLayoutsRetainPaddingFlexAndGridGeometry() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/example-layout", in: app)
+    let scroll = storyScroll(app)
+    for text in ["Example panel geometry: 320x116", "Example child geometry: 48,48,20,20", "Example zero geometry: 320x20", "Example zero child: 0,0,20,20", "Example grid geometry: 144x116;144x116"] {
+      let value = app.staticTexts.matching(identifier:text).firstMatch
+      func visible() -> Bool { value.exists && !value.frame.isEmpty && scroll.frame.contains(CGPoint(x:value.frame.midX,y:value.frame.midY)) }
+      for _ in 0..<12 { if visible() { break }; scroll.swipeUp() }
+      XCTAssertTrue(visible(), text)
+    }
+  }
   func testEveryAuthoredStoryCommitsOnTheNativeRenderer() {
     XCTAssertGreaterThan(authoredStoryCount, 0)
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")

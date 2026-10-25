@@ -5,14 +5,16 @@ import {
   assertNativeAndroidResult,
   nativeAndroidTestCount,
   nativeAndroidTestGradle,
+  nativeAndroidTestSelection,
+  nativeAndroidRunResult,
 } from '../scripts/native-ui-android.mjs';
-const result = (count = 16) =>
+const result = (count = 17) =>
   Array.from(
     { length: count },
     () => 'INSTRUMENTATION_STATUS_CODE: 1\nINSTRUMENTATION_STATUS_CODE: 0\n',
   ).join('') + `OK (${count} tests)\nINSTRUMENTATION_CODE: -1\n`;
 test('Android native acceptance requires every expected instrumentation case and rejects skips, crashes and incomplete output', () => {
-  assert.deepEqual(assertNativeAndroidResult(result()), { tests: 16, failures: 0 });
+  assert.deepEqual(assertNativeAndroidResult(result()), { tests: 17, failures: 0 });
   for (const output of [
     '',
     result(0),
@@ -58,4 +60,27 @@ test('the native Android suite owns every required case and retains device artif
   assert.match(source, /takeScreenshot/);
   assert.match(source, /dumpWindowHierarchy/);
   assert.match(source, /evidenceRun/);
+});
+
+test('focused Android diagnostics select owned cases and cannot masquerade as complete native acceptance', () => {
+  const source = readFileSync('tests/native-ui/device/RegistryAndroidTests.kt', 'utf8');
+  const all = nativeAndroidTestSelection(source);
+  assert.equal(all.length, nativeAndroidTestCount);
+  const selected = nativeAndroidTestSelection(
+    source,
+    'sourceExampleLayoutsRetainPaddingFlexAndGridGeometry,authoredCardControlsAndListRetainNativeSemantics',
+  );
+  assert.equal(selected.length, 2);
+  assert.deepEqual(nativeAndroidRunResult(result(2), selected, true), {
+    tests: 2,
+    failures: 0,
+    phase: 'focused-passed',
+  });
+  assert.throws(() => nativeAndroidRunResult(result(2), selected), /selection requires review/);
+  assert.throws(() => nativeAndroidTestSelection(source, 'missing'), /Unknown/);
+  assert.throws(() => nativeAndroidTestSelection(source, all[0] + ',' + all[0]), /duplicate/);
+  assert.throws(
+    () => nativeAndroidTestSelection(source.replace('@Test fun ', 'fun ')),
+    /count changed/,
+  );
 });

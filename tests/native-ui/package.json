@@ -46,6 +46,7 @@
     "react-native-safe-area-context": "5.7.0",
     "react-native-svg": "15.15.4",
     "shiki": "3.23.0",
+    "tailwind-merge": "3.5.0",
     "test-renderer": "1.2.0",
     "typescript": "6.0.3",
     "valibot": "1.4.0",

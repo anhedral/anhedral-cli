@@ -20,7 +20,7 @@ import {
   nativeQAStoryCountSource,
 } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeAndroidTestCount = 16;
+export const nativeAndroidTestCount = 17;
 const start = '// BEGIN ANHEDRAL NATIVE REGISTRY QA',
   end = '// END ANHEDRAL NATIVE REGISTRY QA';
 export function nativeAndroidTestGradle(source) {
@@ -72,6 +72,32 @@ export function assertNativeAndroidResult(output, expected = nativeAndroidTestCo
     throw Error('Native Android instrumentation did not pass every expected test.');
   return { tests: Number(match[1]), failures: 0 };
 }
+export function nativeAndroidTestSelection(source, requested) {
+  const available = [...source.matchAll(/@Test fun ([A-Za-z0-9]+)\(/g)].map((match) => match[1]);
+  if (available.length !== nativeAndroidTestCount || new Set(available).size !== available.length)
+    throw Error('Native instrumentation source count changed without review.');
+  if (requested === undefined) return available;
+  const selected = requested.split(',').map((value) => value.trim());
+  if (
+    selected.some((name) => !available.includes(name)) ||
+    new Set(selected).size !== selected.length
+  )
+    throw Error('Unknown or duplicate focused native instrumentation selection.');
+  return selected;
+}
+export function nativeAndroidRunResult(output, selected, focused = false) {
+  if (
+    !Array.isArray(selected) ||
+    !selected.length ||
+    new Set(selected).size !== selected.length ||
+    (!focused && selected.length !== nativeAndroidTestCount)
+  )
+    throw Error('Native instrumentation selection requires review.');
+  return {
+    ...assertNativeAndroidResult(output, selected.length),
+    phase: focused ? 'focused-passed' : 'passed',
+  };
+}
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const value = (flag) => {
     const index = process.argv.indexOf(flag);
@@ -98,12 +124,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     readFileSync(path.join(root, 'tests/native-ui/device/RegistryAndroidTests.kt'), 'utf8'),
     JSON.parse(readFileSync(path.join(qa, '.generated/NATIVE_RECIPES.json'))),
   );
+  const focused = process.argv.includes('--tests');
+  if (focused && value('--tests') === undefined)
+    throw Error('Pass native instrumentation method names after --tests.');
+  const selected = nativeAndroidTestSelection(testSource, focused ? value('--tests') : undefined);
   writeFileSync(path.join(evidence, 'test-source.kt'), testSource);
   const state = {
     schemaVersion: 1,
     device,
     source: JSON.parse(readFileSync(path.join(qa, '.generated/NATIVE_RECIPES.json'))).upstream,
     phase: 'prebuild',
+    cases: selected,
     startedAt: new Date().toISOString(),
   };
   const save = () =>
@@ -212,7 +243,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         '-r',
         '-e',
         'class',
-        'dev.anhedral.registryqa.RegistryAndroidTests',
+        focused
+          ? selected.map((name) => 'dev.anhedral.registryqa.RegistryAndroidTests#' + name).join(',')
+          : 'dev.anhedral.registryqa.RegistryAndroidTests',
         '-e',
         'evidenceRun',
         stamp,
@@ -220,7 +253,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       ],
       'instrumentation.log',
     );
-    Object.assign(state, assertNativeAndroidResult(output), { phase: 'passed' });
+    Object.assign(state, nativeAndroidRunResult(output, selected, focused));
   } catch (error) {
     Object.assign(state, { phase: 'failed', error: error.message });
     throw error;

@@ -1,70 +1,103 @@
-import { type ReactNode } from 'react';
-import { View, type ViewProps } from 'react-native';
-import { nativeRegistryIcons } from './registry-icons';
+import { type ReactNode, type Ref } from 'react';
+import {
+  useWindowDimensions,
+  type ViewProps,
+  type View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { useTheme } from '../theme';
+import { registryStyle } from './_registry-css';
+import { nativeRegistryIcons } from './registry-icons';
 import { LabelText, content } from './_core';
-import { RegistryView } from './registry-styles';
+import { RegistryView, registryClassNames } from './registry-styles';
 
-import { useNativeExampleStyle } from './_registry-context';
+import { useNativeExampleStyle, NativeExampleChildWidth } from './_registry-context';
+import { nativeExampleLayoutSource } from './_example-layout-source';
 export { NativeExampleOptions, type NativeExampleStyle } from './_registry-context';
 /** Browser gallery search parameters become explicit native preview context. */
 export function useDesignSystemSearchParams() {
   return [{ style: useNativeExampleStyle() }] as const;
 }
-export function ExampleWrapper({ children, style, ...props }: ViewProps) {
-  const { colors } = useTheme();
+/** Source className belongs to the inner gallery grid, not the outer background. */
+export function ExampleWrapper({
+  children,
+  className,
+  style,
+  ...props
+}: ViewProps & { className?: string; ref?: Ref<View> }) {
   return (
-    <View
-      {...props}
-      style={[{ width: '100%', backgroundColor: colors.background, gap: 32, padding: 16 }, style]}
-    >
-      {content(children)}
-    </View>
+    <RegistryView className={nativeExampleLayoutSource.slots.outer}>
+      <RegistryView
+        {...props}
+        className={registryClassNames(nativeExampleLayoutSource.slots.wrapper, className)}
+        style={style}
+      >
+        {content(children)}
+      </RegistryView>
+    </RegistryView>
   );
 }
+ExampleWrapper.nativeRegistryOwnClassName = true;
 export function Example({
   title,
   children,
   containerClassName,
   className,
+  style,
+  contentStyle,
   ...props
-}: ViewProps & { title?: string; containerClassName?: string; className?: string }) {
-  const { colors, radius } = useTheme(),
-    preset = useNativeExampleStyle();
+}: ViewProps & {
+  title?: string;
+  containerClassName?: string;
+  className?: string;
+  ref?: Ref<View>;
+  contentStyle?: StyleProp<ViewStyle>;
+}) {
+  const preset = useNativeExampleStyle();
+  const regular: string[] = [],
+    conditional: string[] = [];
+  for (const token of registryClassNames(nativeExampleLayoutSource.slots.content, className).split(
+    /\s+/,
+  )) {
+    if (token.startsWith('*:')) continue;
+    const match = /^style-(lyra|sera):(.+)$/.exec(token);
+    if (match) {
+      if (preset === match[1]) conditional.push(match[2]!);
+    } else regular.push(token);
+  }
+  const contentClasses = [...regular, ...conditional].join(' ');
+  const { width, height } = useWindowDimensions(),
+    { mode } = useTheme();
+  const basis = registryStyle(
+    contentClasses
+      .split(/\s+/)
+      .filter((token) => /(?:^|:)basis-/.test(token))
+      .join(' '),
+    { width, height, mode, styleName: preset, radius: 0, color: () => '' },
+  ).view.flexBasis;
+  // Native flex columns need an intrinsic basis to reproduce CSS grid auto-row sizing in scroll views.
+  const intrinsic = basis === undefined ? { flexBasis: 'auto' as const } : undefined;
   return (
     <RegistryView
       {...props}
-      className={containerClassName}
-      style={[{ width: '100%', gap: 4 }, props.style]}
+      className={registryClassNames(nativeExampleLayoutSource.slots.example, containerClassName)}
+      style={style}
     >
       {title && (
-        <LabelText
-          accessibilityRole="header"
-          style={{
-            paddingHorizontal: 6,
-            paddingVertical: 8,
-            fontSize: 12,
-            color: colors['muted-foreground'],
-            fontWeight: '500',
-          }}
-        >
-          {title}
-        </LabelText>
+        <RegistryView className={nativeExampleLayoutSource.slots.title}>
+          <LabelText accessibilityRole="header">{title}</LabelText>
+        </RegistryView>
       )}
-      <RegistryView
-        className={className}
-        style={{
-          gap: 24,
-          padding: 24,
-          backgroundColor: colors.card,
-          borderRadius: preset === 'lyra' || preset === 'sera' ? 0 : radius + 4,
-        }}
-      >
-        {children}
+      <RegistryView className={contentClasses} style={[intrinsic, contentStyle]}>
+        <NativeExampleChildWidth.Provider value>
+          {content(children)}
+        </NativeExampleChildWidth.Provider>
       </RegistryView>
     </RegistryView>
   );
 }
+Example.nativeRegistryOwnClassName = true;
 /** Native recipes use the official Lucide icon; browser icon-package pickers stay in the web gallery. */
 export function IconPlaceholder({
   lucide,

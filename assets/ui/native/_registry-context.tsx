@@ -71,3 +71,6 @@ export const NativeButtonIconSize = createContext<number | undefined>(undefined)
 export const NativeIconForcedSize = createContext<number | undefined>(undefined);
 
 export const NativeCardSpacingContext = createContext<number | undefined>(undefined);
+
+/** Native example container defaults replace the gallery's direct-div CSS selector. */
+export const NativeExampleChildWidth = createContext(false);

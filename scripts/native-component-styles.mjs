@@ -398,6 +398,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeLabelPresets(inventory),
     source: await nativeLabelPresetSource(inventory),
   });
+  const { nativeExampleLayout, nativeExampleLayoutSource } =
+    await import('./native-example-layout.mjs');
+  outputs.push({
+    component: 'example-layout',
+    target: fileURLToPath(
+      new URL('../assets/ui/native/_example-layout-source.tsx', import.meta.url),
+    ),
+    data: nativeExampleLayout(inventory),
+    source: await nativeExampleLayoutSource(inventory),
+  });
   outputs.push({
     component: 'metrics',
     target: metricsTarget,

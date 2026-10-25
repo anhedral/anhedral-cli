@@ -1,3 +1,32 @@
+# Source example gallery sizing — October 25, 2026
+
+The three modern Example/ExampleWrapper implementations now retain source background,
+responsive grid/container widths, 48-point panel padding, theme radius and caller
+class ownership. Native class composition uses the pinned tailwind-merge 3.5.0.
+Utility translation corrects container widths, media/dark/preset precedence, padding
+replacement and flex basis resets. The direct-container width selector currently
+covers raw views and Card roots; other component owners remain explicitly partial.
+
+Native device testing caught zero-height single-column panels: native scroll/flex
+layout needed an intrinsic auto basis to reproduce CSS grid auto rows. Explicit
+active basis utilities and native contentStyle still override it. Final Android
+screenshots were inspected and show restored Card list content. Measured gallery
+panels are 320×116 with child inset 48,48; p-0 panels are 320×20; two-column cells
+are 144×116. Earlier failed and focused runs remain preserved.
+
+Validation: all 58 native suites/1,691 assertions passed per platform, all 720
+registry modules bundled for both Hermes targets, and all 17 required OS cases
+passed on Android and iOS 26.5. Both runs include all 716 authored story roots.
+All 137 native source files matched both private device copies. CLI tests passed
+664 with one existing optional skip; lint, static security, packed consumer and
+packlist checks passed (1,044,262 packed bytes). The source-equivalence report is
+`.artifacts/native-ui/2026-10-25-example-layout/device-source-equivalence.json`.
+Android evidence: `.artifacts/native-ui-android/2026-10-25T13-59-28-163Z/`, APK
+719e8fa4c1d3693644a073f6eace1f544e4aa27c84243324e23124cac6861460,
+test APK 16ca1f3b397810019daacf9392012f81d0187b0b049019938379377fc4db430e.
+iOS evidence: `.artifacts/native-ui-ios/2026-10-25T14-00-42-011Z/`.
+These runs establish this layout fix, not completion of the remaining registry.
+
 # Source labels and complete authored native rendering sweep — October 25, 2026
 
 Label retains all six source implementations and sixteen newer theme slots, including Sera's distinct input versus checkbox/radio/switch typography. Reactive native control metadata and Field disabled state replace DOM label lookup, peer/group selectors and vendor LabelContext. Native labels preserve cancellation, independent control IDs/refs, disabled targets, read-only focus, cleanup and explicit caller styles. Tracking resets now clear inherited em spacing. Keyboard groups and unbound labels preserve inherited native text tone.

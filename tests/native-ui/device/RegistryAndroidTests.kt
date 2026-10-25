@@ -62,6 +62,10 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun sourceExampleLayoutsRetainPaddingFlexAndGridGeometry() = uiAutomator {
+    openStory("native/example-layout")
+    for (value in listOf("Example panel geometry: 320x116", "Example child geometry: 48,48,20,20", "Example zero geometry: 320x20", "Example zero child: 0,0,20,20", "Example grid geometry: 144x116;144x116")) label(value)
+  }
   @Test fun everyAuthoredStoryCommitsOnTheNativeRenderer() = uiAutomator {
     assertTrue("Missing private catalog story count", authoredStoryCount > 0)
     openStory("native/runtime-sweep")
@@ -207,7 +211,9 @@ class RegistryAndroidTests {
     openStory("native/file-input")
     onElement { contentDescription?.toString()?.startsWith("Native document") == true }.click()
     device.wait(Until.findObject(By.desc("Show roots")),15000)
-    if (!device.hasObject(By.text("Open from"))) device.findObject(By.desc("Show roots")).click()
+    // The picker activity can expose its toolbar before its initial drawer state settles.
+    device.waitForIdle(1000)
+    if (!device.wait(Until.hasObject(By.text("Open from")),500)) device.wait(Until.findObject(By.desc("Show roots")),5000).click()
     assertTrue("Document roots drawer did not open",device.wait(Until.hasObject(By.text("Open from")),5000))
     device.waitForIdle(1000)
     device.wait(Until.findObject(By.text("Downloads")),5000).click()

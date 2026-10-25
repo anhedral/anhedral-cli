@@ -5,7 +5,11 @@ import * as UI from './.generated';
 import { NativeRegistryPalette } from './.generated/src/native/_registry-context';
 import { withRegistryStyles, RegistryView } from './.generated/src/native/registry-styles';
 import { Textarea as SourceTextarea } from './.generated/src/native/registry-form-controls';
-import { NativeExampleOptions } from './.generated/src/native/registry-example';
+import {
+  NativeExampleOptions,
+  Example as SourceExample,
+  ExampleWrapper as SourceExampleWrapper,
+} from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
 function NativeInputMatrix() {
@@ -256,6 +260,53 @@ function NativeRenderHostMatrix() {
         <UI.Text>{'Host count: ' + count}</UI.Text>
       </View>
     </UI.NativeComponentStyleProvider>
+  );
+}
+const MeasuredSourceExample = withRegistryStyles(SourceExample),
+  MeasuredSourceExampleWrapper = withRegistryStyles(SourceExampleWrapper);
+function NativeExampleLayoutMatrix() {
+  const [metrics, setMetrics] = useState<Record<string, string>>({});
+  const measure =
+    (name: string, position = false) =>
+    (event: LayoutChangeEvent) => {
+      const { x, y, width, height } = event.nativeEvent.layout;
+      const next = (position ? [x, y, width, height] : [width, height])
+        .map(Math.round)
+        .join(position ? ',' : 'x');
+      setMetrics((previous) =>
+        previous[name] === next ? previous : { ...previous, [name]: next },
+      );
+    };
+
+  return (
+    <View style={{ width: 320, gap: 12 }}>
+      <MeasuredSourceExampleWrapper className="min-h-0 p-0 max-w-none" style={{ width: 320 }}>
+        <MeasuredSourceExample onLayout={measure('panel')}>
+          <RegistryView style={{ width: 20, height: 20 }} onLayout={measure('child', true)} />
+        </MeasuredSourceExample>
+      </MeasuredSourceExampleWrapper>
+      <UI.Text>{'Example panel geometry: ' + metrics.panel}</UI.Text>
+      <UI.Text>{'Example child geometry: ' + metrics.child}</UI.Text>
+      <MeasuredSourceExampleWrapper className="min-h-0 p-0 max-w-none" style={{ width: 320 }}>
+        <MeasuredSourceExample className="p-0" onLayout={measure('zero')}>
+          <RegistryView style={{ width: 20, height: 20 }} onLayout={measure('zeroChild', true)} />
+        </MeasuredSourceExample>
+      </MeasuredSourceExampleWrapper>
+      <UI.Text>{'Example zero geometry: ' + metrics.zero}</UI.Text>
+      <UI.Text>{'Example zero child: ' + metrics.zeroChild}</UI.Text>
+      <MeasuredSourceExampleWrapper
+        className="min-h-0 p-0 max-w-none grid-cols-2"
+        style={{ width: 320 }}
+      >
+        <MeasuredSourceExample onLayout={measure('left')}>
+          <RegistryView style={{ width: 20, height: 20 }} />
+        </MeasuredSourceExample>
+        <MeasuredSourceExample onLayout={measure('right')}>
+          <RegistryView style={{ width: 20, height: 20 }} />
+        </MeasuredSourceExample>
+      </MeasuredSourceExampleWrapper>
+      <UI.Text>{'Example grid geometry: ' + metrics.left + ';' + metrics.right}</UI.Text>
+    </View>
   );
 }
 function NativeLayoutMatrix() {

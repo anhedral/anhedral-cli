@@ -313,7 +313,7 @@ Every row applies to all listed registries. The machine inventory retains each s
 | signup-04 | block | S6 | pending | Needs item, variant and dependency review. |
 | signup-05 | block | S6 | pending | Needs item, variant and dependency review. |
 | v0-sidebar-16 | block | S2 | pending | Needs item, variant and dependency review. |
-| example | component | S5 | pending | Needs item, variant and dependency review. |
+| example | component | S5 | partial | All three source gallery implementations now retain source panel padding, viewport/grid constraints, typography, theme radius, class ownership and native intrinsic content sizing. Source cn conflicts use the existing pinned Tailwind merge version; native viewport/dark precedence and container metrics are tested. Direct div/Card defaults and modal boundaries are modeled; remaining component container traits must be accounted for during their source preset reviews. Native examples use typed props/styles rather than arbitrary DOM selector reflection. |
 | accordion-demo | example | S3 | partial | Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending. |
 | accordion-example | example | S5 | pending | Needs item, variant and dependency review. |
 | alert-demo | example | S3 | pending | Needs item, variant and dependency review. |

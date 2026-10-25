@@ -97,6 +97,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/file-input",Component:NativeFileMatrix}',
           '{id: "native/temporal-input",Component:NativeTemporalMatrix}',
           '{id: "native/runtime-sweep",Component:NativeRuntimeSweep}',
+          '{id: "native/example-layout",Component:NativeExampleLayoutMatrix}',
         ].join(',\n') +
         '];',
     );

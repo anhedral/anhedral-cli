@@ -103,6 +103,8 @@ export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
     '@types/d3-shape': '3.2.0',
   },
   dependencies: {
+    // renovate: datasource=npm depName=tailwind-merge
+    'tailwind-merge': '3.5.0',
     // renovate: datasource=npm depName=@hookform/resolvers
     '@hookform/resolvers': '6.0.0',
     // renovate: datasource=npm depName=zod

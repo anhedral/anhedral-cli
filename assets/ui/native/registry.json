@@ -1254,7 +1254,8 @@
     "_preset-kbd-style.tsx",
     "_kbd-context.tsx",
     "_label-presets.tsx",
-    "_preset-label-style.tsx"
+    "_preset-label-style.tsx",
+    "_example-layout-source.tsx"
   ],
   "supportModules": [
     {

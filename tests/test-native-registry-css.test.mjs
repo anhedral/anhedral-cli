@@ -322,3 +322,62 @@ test('border width utilities preserve explicit all-edge and directional colors r
   assert.equal(edges.view.borderTopWidth, 2);
   assert.equal(edges.view.borderLeftColor, 'color:blue');
 });
+
+test('source container widths, constraint removal and grid content alignment retain native viewport semantics', () => {
+  for (const [name, width] of [
+    ['4xl', 896],
+    ['5xl', 1024],
+    ['6xl', 1152],
+    ['7xl', 1280],
+  ])
+    assert.equal(registryStyle('max-w-' + name, options).view.maxWidth, width);
+  assert.equal(
+    registryStyle('max-w-lg lg:max-w-none', { ...options, width: 1200 }).view.maxWidth,
+    undefined,
+  );
+  assert.equal(
+    registryStyle('max-w-lg lg:max-w-none', { ...options, width: 700 }).view.maxWidth,
+    512,
+  );
+  const single = registryStyle('grid min-h-screen content-center md:grid-cols-2', {
+    ...options,
+    width: 390,
+    height: 844,
+  });
+  assert.equal(single.view.minHeight, 844);
+  assert.equal(single.view.justifyContent, 'center');
+  const pair = registryStyle('grid min-h-screen content-center md:grid-cols-2', {
+    ...options,
+    width: 800,
+    height: 600,
+  });
+  assert.equal(pair.view.alignContent, 'center');
+  assert.equal(pair.view.justifyContent, undefined);
+  const flex = registryStyle('flex-1', options).view;
+  assert.deepEqual(flex, { flexGrow: 1, flexShrink: 1, flexBasis: '0%' });
+});
+
+test('responsive and dark source rules retain precedence after base caller overrides', () => {
+  assert.equal(registryStyle('md:gap-8 gap-4', { ...options, width: 800 }).view.gap, 32);
+  assert.equal(
+    registryStyle('lg:p-12 sm:p-6 p-4', { ...options, width: 1200 }).view.paddingTop,
+    48,
+  );
+  assert.equal(
+    registryStyle('dark:bg-background bg-muted', { ...options, mode: 'dark' }).view.backgroundColor,
+    'color:background',
+  );
+  assert.equal(
+    registryStyle('dark:bg-background bg-muted', { ...options, mode: 'light' }).view
+      .backgroundColor,
+    'color:muted',
+  );
+  assert.equal(registryStyle('p-0', options).view.paddingLeft, 0);
+});
+
+test('responsive flex-none resets percentage basis and growth instead of retaining earlier flex-one state', () => {
+  const view = registryStyle('flex-1 md:flex-none', { ...options, width: 800 }).view;
+  assert.equal(view.flexGrow, 0);
+  assert.equal(view.flexShrink, 0);
+  assert.equal(view.flexBasis, 'auto');
+});

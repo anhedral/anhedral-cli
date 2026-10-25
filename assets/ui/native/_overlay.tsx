@@ -35,6 +35,7 @@ import { Button, type NativeControlButtonProps as ButtonProps } from './button';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 import { NativeKbdSurfaceContext } from './_kbd-context';
+import { NativeExampleChildWidth } from './_registry-context';
 
 type OverlayState = {
   open: boolean;
@@ -249,88 +250,90 @@ export function OverlayContent({
       onDismiss={() => focus(state.returnFocus)}
       onRequestClose={() => state.set(false)}
     >
-      <NativeKbdSurfaceContext.Provider value={{ tooltip: nativeSurface === 'tooltip' }}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <View
-            accessibilityElementsHidden={!state.open}
-            importantForAccessibility={state.open ? 'auto' : 'no-hide-descendants'}
-            style={{
-              flex: 1,
-              justifyContent:
-                side === 'top' ? 'flex-start' : side === 'bottom' ? 'flex-end' : 'center',
-              alignItems:
-                side === 'left' ? 'flex-start' : side === 'right' ? 'flex-end' : 'stretch',
-              padding: side === 'center' ? 24 : 0,
-            }}
+      <NativeExampleChildWidth.Provider value={false}>
+        <NativeKbdSurfaceContext.Provider value={{ tooltip: nativeSurface === 'tooltip' }}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
-            <Pressable
-              accessible={dismissOnBackdrop}
-              accessibilityRole="button"
-              accessibilityLabel="Dismiss overlay"
-              disabled={!dismissOnBackdrop}
-              onPress={() => state.set(false)}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: colors.foreground,
-                opacity: 0.35,
-              }}
-            />
             <View
-              {...props}
-              accessibilityViewIsModal
-              onAccessibilityEscape={() => state.set(false)}
-              style={[
-                {
-                  backgroundColor: colors.popover,
-                  padding: 20,
-                  paddingTop: 20 + insets.top,
-                  paddingBottom: 20 + insets.bottom,
-                  paddingLeft: 20 + insets.left,
-                  paddingRight: 20 + insets.right,
-                  gap: 12,
-                  borderRadius: side === 'center' ? 12 : 0,
-                  maxHeight: '90%',
-                  width: horizontal ? '85%' : undefined,
-                },
-                horizontal && { height: '100%', maxHeight: '100%' },
-                {
-                  alignSelf:
-                    align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center',
-                },
-                style,
-              ]}
+              accessibilityElementsHidden={!state.open}
+              importantForAccessibility={state.open ? 'auto' : 'no-hide-descendants'}
+              style={{
+                flex: 1,
+                justifyContent:
+                  side === 'top' ? 'flex-start' : side === 'bottom' ? 'flex-end' : 'center',
+                alignItems:
+                  side === 'left' ? 'flex-start' : side === 'right' ? 'flex-end' : 'stretch',
+                padding: side === 'center' ? 24 : 0,
+              }}
             >
-              {swipeToDismiss && (
-                <Pressable
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel="Close drawer"
-                  onPress={() => state.set(false)}
-                >
-                  <View
-                    {...pan.panHandlers}
-                    style={{ minHeight: 28, justifyContent: 'center', alignItems: 'center' }}
+              <Pressable
+                accessible={dismissOnBackdrop}
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss overlay"
+                disabled={!dismissOnBackdrop}
+                onPress={() => state.set(false)}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: colors.foreground,
+                  opacity: 0.35,
+                }}
+              />
+              <View
+                {...props}
+                accessibilityViewIsModal
+                onAccessibilityEscape={() => state.set(false)}
+                style={[
+                  {
+                    backgroundColor: colors.popover,
+                    padding: 20,
+                    paddingTop: 20 + insets.top,
+                    paddingBottom: 20 + insets.bottom,
+                    paddingLeft: 20 + insets.left,
+                    paddingRight: 20 + insets.right,
+                    gap: 12,
+                    borderRadius: side === 'center' ? 12 : 0,
+                    maxHeight: '90%',
+                    width: horizontal ? '85%' : undefined,
+                  },
+                  horizontal && { height: '100%', maxHeight: '100%' },
+                  {
+                    alignSelf:
+                      align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center',
+                  },
+                  style,
+                ]}
+              >
+                {swipeToDismiss && (
+                  <Pressable
+                    accessible
+                    accessibilityRole="button"
+                    accessibilityLabel="Close drawer"
+                    onPress={() => state.set(false)}
                   >
                     <View
-                      style={{
-                        width: 40,
-                        height: 4,
-                        borderRadius: 2,
-                        backgroundColor: colors.border,
-                      }}
-                    />
-                  </View>
-                </Pressable>
-              )}
-              {content(children)}
+                      {...pan.panHandlers}
+                      style={{ minHeight: 28, justifyContent: 'center', alignItems: 'center' }}
+                    >
+                      <View
+                        style={{
+                          width: 40,
+                          height: 4,
+                          borderRadius: 2,
+                          backgroundColor: colors.border,
+                        }}
+                      />
+                    </View>
+                  </Pressable>
+                )}
+                {content(children)}
+              </View>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </NativeKbdSurfaceContext.Provider>
+          </KeyboardAvoidingView>
+        </NativeKbdSurfaceContext.Provider>
+      </NativeExampleChildWidth.Provider>
     </Modal>
   );
 }

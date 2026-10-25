@@ -7185,6 +7185,51 @@
         "radix-sera": "f59059041c6707dd28a38e0ed3a06f54d5ac628b5c0bb38c6c332af53f66d0d3",
         "radix-vega": "fb9b9a201172f1d63e9fa21220890cdc6cc3d5e4c6bbd280f7a108db35ee9745"
       }
+    },
+    "registry:component/example": {
+      "status": "partial",
+      "reason": "All three source gallery implementations now retain source panel padding, viewport/grid constraints, typography, theme radius, class ownership and native intrinsic content sizing. Source cn conflicts use the existing pinned Tailwind merge version; native viewport/dark precedence and container metrics are tested. Direct div/Card defaults and modal boundaries are modeled; remaining component container traits must be accounted for during their source preset reviews. Native examples use typed props/styles rather than arbitrary DOM selector reflection.",
+      "nativeFiles": [
+        "assets/ui/native/registry-example.tsx",
+        "assets/ui/native/_example-layout-source.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/_overlay.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-example-layout.test.tsx",
+        "tests/test-native-example-layout.test.mjs",
+        "tests/test-native-registry-css.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "e8f799e0a49381825ca1b9ced718788908960d82651dce542cb1d942a797e816",
+        "aria-lyra": "c1bd8ea89a798803128f22fb6f6168df9705f7f0f58bab5661bcbc6ae30c0df3",
+        "aria-maia": "6d3f34a361677809fe6b4af36474ba41e71f379a66c3dbb2807cba408ac8802c",
+        "aria-mira": "0c1fd65230fc3791f4c40e0b96d739c57dcee3fbe19e59657cfbce215d930243",
+        "aria-nova": "846f8a57fc24bfe9ae0e41a02e3a1acc48c954cbb0e602c527ca8c31e5484a43",
+        "aria-rhea": "13fb0a9f378a1096b983f1618f8bc0c1542a66e22d668a9b097b24a513b7a09b",
+        "aria-sera": "ad500833afef035bedf2870a302f4110bf64c88ddc3d5fddc36ce0bb638ff02e",
+        "aria-vega": "bc1be1c0662caa8942ea518542445ab0425e8f299e70f8272bfcdb56a014794a",
+        "base-luma": "5a2fa2f898651965d92c233abc3f4d2732bcb39978178927e9c5227f90a86f97",
+        "base-lyra": "ba000d487cb3e9c38dd1e40256c5cd234d169422ece1a5b466da46f40e5929f9",
+        "base-maia": "0c10e2fab6032d4464a4acd95fdc5a5cad35eaa8a60cab774535ab38f74c4665",
+        "base-mira": "5c6e04531d758325381231590dd859355020b563ccd4af0c1a234ed303724977",
+        "base-nova": "75cac9cc9ceb49f3934bafb061e1f5089be01a198f56150400d82e50badaf3ad",
+        "base-rhea": "0e6effa3d9fd8924442782708b374e09bb93b95a348def3bf36df07409e99d2d",
+        "base-sera": "42fd8d0a162ff83ea77412341b305553a2be87ceb5b9d36cd9c83bfd7d24f5b4",
+        "base-vega": "4c5daa7816fe039f3fcfa49d064a351add78943ab87094ab626065f5a9547588",
+        "radix-luma": "ac928e6070f03bc2636e2c80be8444cf6c0a51ce4bcb93be32bd1bb768bc928c",
+        "radix-lyra": "5482680317d722ec2ed834841dfdfff39470f10ccfe45c75ce68617722afc27d",
+        "radix-maia": "e600f12fbe88632ed9fe6649f19df066eb37ddd1ba7b5d85a5ea37c04530d775",
+        "radix-mira": "3ce569868a8cb29871bb20664be8b25eed068c37a428d08a0f4c2d90b90dca2f",
+        "radix-nova": "cf3b77047225f82dc67932cafae7ac80f179af48ff3d48bb7b786af4d643368e",
+        "radix-rhea": "e48211f1e2404ebb8b6e2a19be00d66a6e8ccdfc194e06f0af41260b61264a75",
+        "radix-sera": "c732d6ada4a5d2c272be2bf32611246b0265bd782820210692d736e2684bf375",
+        "radix-vega": "65f810b3c24392bc3dd980d0b9b6c0732615a4dfb25afa96ee9b8e3fbfaf7c8e"
+      }
     }
   },
   "webSpecific": [
