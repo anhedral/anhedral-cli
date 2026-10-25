@@ -18,6 +18,88 @@ import {
 } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+function NativeProgressMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  const [index, setIndex] = useState(0),
+    [height, setHeight] = useState(0),
+    [unknown, setUnknown] = useState(false);
+  const preset = presets[index]!;
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Progress preset: ' + preset}</UI.Text>
+      <UI.Text>{'Progress geometry: ' + preset + ':320x' + height}</UI.Text>
+      <UI.Button onPress={() => setIndex((index + 1) % presets.length)}>
+        Next progress preset
+      </UI.Button>
+      <NativeRegistryPalette
+        source={
+          preset === 'default' || preset === 'new-york' || preset === 'new-york-v4'
+            ? preset
+            : 'base'
+        }
+        generation={preset === 'default' || preset === 'new-york' ? 'legacy' : 'modern'}
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <UI.Progress
+            value={25}
+            testID="native-progress-source"
+            accessibilityLabel="Native source progress"
+            style={{ width: 320 }}
+            onLayout={({ nativeEvent: { layout } }) => setHeight(Math.round(layout.height))}
+          />
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+      <NativeRegistryPalette source="base" generation="modern">
+        <UI.Progress value={25} max={50} testID="native-progress-base-range" style={{ width: 320 }}>
+          <UI.ProgressLabel>Base source range</UI.ProgressLabel>
+          <UI.ProgressValue />
+        </UI.Progress>
+      </NativeRegistryPalette>
+      <NativeRegistryPalette source="aria" generation="modern">
+        <UI.Progress
+          value={25}
+          maxValue={50}
+          testID="native-progress-aria-range"
+          style={{ width: 320 }}
+        >
+          <UI.ProgressLabel>Aria source range</UI.ProgressLabel>
+          <UI.ProgressValue />
+        </UI.Progress>
+      </NativeRegistryPalette>
+      <UI.Text>{'Progress unknown: ' + unknown}</UI.Text>
+      <UI.Button onPress={() => setUnknown((value) => !value)}>Toggle unknown progress</UI.Button>
+      <NativeRegistryPalette source="base" generation="modern">
+        <UI.Progress
+          value={unknown ? null : 50}
+          testID="native-progress-base-unknown"
+          accessibilityLabel="Base unknown progress"
+          style={{ width: 320 }}
+        />
+      </NativeRegistryPalette>
+      <NativeRegistryPalette source="aria" generation="modern">
+        <UI.Progress
+          value={50}
+          isIndeterminate={unknown}
+          testID="native-progress-aria-unknown"
+          accessibilityLabel="Aria unknown progress"
+          style={{ width: 320 }}
+        />
+      </NativeRegistryPalette>
+    </View>
+  );
+}
 function NativeSelectControlMatrix() {
   const presets = [
     'nova',

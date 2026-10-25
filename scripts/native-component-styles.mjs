@@ -430,6 +430,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeSelectControlPresets(inventory),
     source: await nativeSelectControlPresetSource(inventory),
   });
+  const { nativeProgressPresets, nativeProgressPresetSource } =
+    await import('./native-progress-presets.mjs');
+  outputs.push({
+    component: 'progress',
+    target: target('progress'),
+    data: nativeProgressPresets(inventory),
+    source: await nativeProgressPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({

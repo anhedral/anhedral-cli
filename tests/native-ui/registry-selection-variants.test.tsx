@@ -157,7 +157,7 @@ test('native object-valued combobox uses stable value IDs and explicit labels', 
   await fireEvent.press(screen.getByRole('radio', { name: 'Project' }));
   expect(change).toHaveBeenCalledWith(item);
 });
-test('native compound progress labels, values and indeterminate state share the same bounded state', async () => {
+test('native compound progress retains source value formatting, bounded state and unknown progress labels', async () => {
   const rendered = await mount(
     <UI.Progress value={25} max={50}>
       <UI.ProgressLabel>Uploading</UI.ProgressLabel>
@@ -165,7 +165,7 @@ test('native compound progress labels, values and indeterminate state share the 
     </UI.Progress>,
   );
   expect(screen.getByRole('progressbar')).toHaveAccessibilityValue({ now: 25, max: 50 });
-  expect(screen.getByText('50%')).toBeOnTheScreen();
+  expect(screen.getByText('25%', { includeHiddenElements: true })).toBeOnTheScreen();
   await rendered.rerender(
     <UI.ThemeProvider>
       <UI.Progress value={null}>
@@ -175,7 +175,10 @@ test('native compound progress labels, values and indeterminate state share the 
     </UI.ThemeProvider>,
   );
   expect(screen.getByRole('progressbar')).toBeBusy();
-  expect(screen.getByText('Loading')).toBeOnTheScreen();
+  expect(screen.getByRole('progressbar', { name: 'Waiting' })).toHaveAccessibilityValue({
+    text: 'indeterminate progress',
+  });
+  expect(screen.queryByText('Loading')).toBeNull();
 });
 test.each([
   ['ar-EG', 'rtl'],

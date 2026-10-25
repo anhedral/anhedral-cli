@@ -220,6 +220,23 @@ boundaries. Native surfaces retain source alpha, native shadows and direct state
 The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
 it does not install the browser primitive libraries or emulate DOM objects.
 
+Progress retains six source implementations, eleven style families and eighteen
+source class slots. Base/Aria roots append their track after source labels/values;
+Radix and frozen roots retain their single track. Native width geometry disables
+unwanted flex growth; Radix/frozen fills keep physical left anchoring, while compound
+tracks inherit logical direction. Thin source tracks remain fixed under font scaling.
+Base preserves raw-value formatting and its (formattedValue, rawValue) callback;
+Aria preserves normalized range formatting and its single formatted-value callback.
+Aria's unknown indicator is full width and has no value text/callback; the other
+source families retain an empty unknown track. Native finite range guards, progressbar
+values and busy state replace browser hosts. Unknown transitions explicitly clear old
+accessibility text. Formatting uses a locale prop/provider or the runtime locale. Dynamic ProgressLabel text registers
+with its own root. External field labels/descriptions apply only with an explicit
+nativeID, so a supporting strength bar cannot steal an input's label. Native View/Text
+refs and layout events replace DOM refs, and native direct state paint replaces CSS
+transition/percentage-transform timing. Companion primitive contracts are reviewed
+against their exact upstream lock-integrity-verified package versions.
+
 NativeSelect owns all four actual upstream source definitions and all nine published
 style families (the older Default/New York registries do not publish this component).
 Its wrapper, control, icon, option and optgroup slots retain source typography, size,

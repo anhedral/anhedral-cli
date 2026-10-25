@@ -4,8 +4,12 @@
     "registry:hook/use-mobile": {
       "status": "ported",
       "reason": "Native window dimensions replace matchMedia; tested at the breakpoint, on resize and on subscription cleanup. Device acceptance remains separate.",
-      "nativeFiles": ["assets/ui/native/use-mobile.tsx"],
-      "tests": ["tests/native-ui/registry-support.test.tsx"],
+      "nativeFiles": [
+        "assets/ui/native/use-mobile.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-support.test.tsx"
+      ],
       "reviewedInputs": {
         "aria-luma": "d0e94dce967761b0b86467ec81f79ab34db4e5e2afc01e087be39eff2b7a7667",
         "aria-lyra": "3d40b14f4c62ede80154608801255d121151d5819e4806da89fd2221aa4beb0f",
@@ -43,7 +47,9 @@
         "assets/ui/native/use-highlighted-code.tsx",
         "assets/ui/native/highlighter.tsx"
       ],
-      "tests": ["tests/native-ui/registry-support.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-support.test.tsx"
+      ],
       "reviewedInputs": {
         "aria-luma": "e14f72abb63998978b1af0311e6463ff0024d14d1e1c96fecd74a82e1acf86e1",
         "aria-lyra": "312cbe33bebf81e114cda8093e57b978b98b0ba9f703c39547b092468d6e8256",
@@ -74,7 +80,9 @@
     "registry:ui/form": {
       "status": "partial",
       "reason": "React Hook Form provider/controller and native control binding retain refs, focus, labels, descriptions, validation messages, resolver integration, field arrays and submission. HTML slot/aria attributes become native control props and hints; device accessibility acceptance is separate. Component preset styles and inherited global metric parity remain pending.",
-      "nativeFiles": ["assets/ui/native/form.tsx"],
+      "nativeFiles": [
+        "assets/ui/native/form.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-form.test.tsx",
         "tests/native-ui/registry-support.test.tsx"
@@ -112,8 +120,14 @@
     "registry:font/font-dm-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "62b125a897941cbc3212845cc11e6b49fcc7f81a9b50d05bff55df2aee057ead",
         "aria-lyra": "62b125a897941cbc3212845cc11e6b49fcc7f81a9b50d05bff55df2aee057ead",
@@ -145,8 +159,14 @@
     "registry:font/font-eb-garamond": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "e23c4c756db2849ad73021a9270e8341a36f02c06bca4564b632c2d3f55507d0",
         "aria-lyra": "e23c4c756db2849ad73021a9270e8341a36f02c06bca4564b632c2d3f55507d0",
@@ -178,8 +198,14 @@
     "registry:font/font-figtree": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "879e9ce7436ff514f7dec427cd6189c0eeed08aeb585aea57a5740ebaa3cdc6c",
         "aria-lyra": "879e9ce7436ff514f7dec427cd6189c0eeed08aeb585aea57a5740ebaa3cdc6c",
@@ -211,8 +237,14 @@
     "registry:font/font-geist": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "d0e5ce2390408273fdd91130512928d62707b3cc3ec131d8320bb1279bb35257",
         "aria-lyra": "d0e5ce2390408273fdd91130512928d62707b3cc3ec131d8320bb1279bb35257",
@@ -244,8 +276,14 @@
     "registry:font/font-geist-mono": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "666cde0c39e1ec45cba6babe0a578c4d6fccf39cc7aec4e5e452a7f9aa84af9d",
         "aria-lyra": "666cde0c39e1ec45cba6babe0a578c4d6fccf39cc7aec4e5e452a7f9aa84af9d",
@@ -277,8 +315,14 @@
     "registry:font/font-heading-dm-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "78045cec115c06c8e8106acf8f56aae4d6aae921cce6a1450428ea5927bd6a0c",
         "aria-lyra": "78045cec115c06c8e8106acf8f56aae4d6aae921cce6a1450428ea5927bd6a0c",
@@ -310,8 +354,14 @@
     "registry:font/font-heading-eb-garamond": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "681d50ffe313b622776478a797b5c62c8de9352553340a131f94c3fba4c07ea3",
         "aria-lyra": "681d50ffe313b622776478a797b5c62c8de9352553340a131f94c3fba4c07ea3",
@@ -343,8 +393,14 @@
     "registry:font/font-heading-figtree": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "878b18245aa047dc65a64cac21a314a7efb8efbfc5f78024ee47fbd383c02da0",
         "aria-lyra": "878b18245aa047dc65a64cac21a314a7efb8efbfc5f78024ee47fbd383c02da0",
@@ -376,8 +432,14 @@
     "registry:font/font-heading-geist": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "e8e1e4134babbae1c528c3189f1490cf3fd151671b4556dd044a57483e695e49",
         "aria-lyra": "e8e1e4134babbae1c528c3189f1490cf3fd151671b4556dd044a57483e695e49",
@@ -409,8 +471,14 @@
     "registry:font/font-heading-geist-mono": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "8ddcc5267d038f0d3e8728fa5e4550733fbf18ef2a12618826f33292fc0e2259",
         "aria-lyra": "8ddcc5267d038f0d3e8728fa5e4550733fbf18ef2a12618826f33292fc0e2259",
@@ -442,8 +510,14 @@
     "registry:font/font-heading-ibm-plex-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "1cb178fd558eada22ed3162a88900ea61d1450d2b1f563160cbb3b6e5463b1a2",
         "aria-lyra": "1cb178fd558eada22ed3162a88900ea61d1450d2b1f563160cbb3b6e5463b1a2",
@@ -475,8 +549,14 @@
     "registry:font/font-heading-instrument-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "6216bc4a795c3796bab886fb0dd9e935bd6341d2ee3f81e8560422480bc7ad16",
         "aria-lyra": "6216bc4a795c3796bab886fb0dd9e935bd6341d2ee3f81e8560422480bc7ad16",
@@ -508,8 +588,14 @@
     "registry:font/font-heading-instrument-serif": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "fcea55d90c8799cf8a9421cc0fb6265d4d512b52e16608b695be6efb5344f047",
         "aria-lyra": "fcea55d90c8799cf8a9421cc0fb6265d4d512b52e16608b695be6efb5344f047",
@@ -541,8 +627,14 @@
     "registry:font/font-heading-inter": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "e09c9f9e5abf4388a597e523856f2078ac3d2db15c84e699cbab285ba928db70",
         "aria-lyra": "e09c9f9e5abf4388a597e523856f2078ac3d2db15c84e699cbab285ba928db70",
@@ -574,8 +666,14 @@
     "registry:font/font-heading-jetbrains-mono": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "260d2e5ea071ccef9865d46fb48803ce385dc34376c09f22a5bc4f5fc2628372",
         "aria-lyra": "260d2e5ea071ccef9865d46fb48803ce385dc34376c09f22a5bc4f5fc2628372",
@@ -607,8 +705,14 @@
     "registry:font/font-heading-lora": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "0503ab5bf7005a7ff9553be42f387f6862c1c2b81f0210e8eb1c5e87918d609e",
         "aria-lyra": "0503ab5bf7005a7ff9553be42f387f6862c1c2b81f0210e8eb1c5e87918d609e",
@@ -640,8 +744,14 @@
     "registry:font/font-heading-manrope": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "2cd02bd4c0c40144da109389df953fc0627c1739492ec807edf573e13799e38a",
         "aria-lyra": "2cd02bd4c0c40144da109389df953fc0627c1739492ec807edf573e13799e38a",
@@ -673,8 +783,14 @@
     "registry:font/font-heading-merriweather": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "f1cf5ad7166c6a3e59e7dae57ddb7eb765bfa87bc2898c01d49763b56f5d77c4",
         "aria-lyra": "f1cf5ad7166c6a3e59e7dae57ddb7eb765bfa87bc2898c01d49763b56f5d77c4",
@@ -706,8 +822,14 @@
     "registry:font/font-heading-montserrat": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "eb06f3457f1d760815c9842df6348a89a31a74e74ca11baed70f195e90c6e3c7",
         "aria-lyra": "eb06f3457f1d760815c9842df6348a89a31a74e74ca11baed70f195e90c6e3c7",
@@ -739,8 +861,14 @@
     "registry:font/font-heading-noto-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "f491bf26cb032e986e39ef9c1e41a99683956395ee45c13cead9a36c14d82211",
         "aria-lyra": "f491bf26cb032e986e39ef9c1e41a99683956395ee45c13cead9a36c14d82211",
@@ -772,8 +900,14 @@
     "registry:font/font-heading-noto-serif": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "856a08147a9ba449691b3a297285b65c1ec8c0b3b94ee2da6a242e6e8aecda84",
         "aria-lyra": "856a08147a9ba449691b3a297285b65c1ec8c0b3b94ee2da6a242e6e8aecda84",
@@ -805,8 +939,14 @@
     "registry:font/font-heading-nunito-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "1740d1358ab19c97aa89db72bbb460d61882637faa7261d2da1993a84662c31d",
         "aria-lyra": "1740d1358ab19c97aa89db72bbb460d61882637faa7261d2da1993a84662c31d",
@@ -838,8 +978,14 @@
     "registry:font/font-heading-outfit": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "5d9e9c190d97561e63c218c2af2520a0d014896898e740395e63f1b5751b39f6",
         "aria-lyra": "5d9e9c190d97561e63c218c2af2520a0d014896898e740395e63f1b5751b39f6",
@@ -871,8 +1017,14 @@
     "registry:font/font-heading-oxanium": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "85bfaf331633aa19c2df32c1f1cb56d1232f8219daf6cbf045d916604be6aa9f",
         "aria-lyra": "85bfaf331633aa19c2df32c1f1cb56d1232f8219daf6cbf045d916604be6aa9f",
@@ -904,8 +1056,14 @@
     "registry:font/font-heading-playfair-display": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "2c9d229858074b0086baa7b6b507459d8c78340353155e73d3465b487240d82b",
         "aria-lyra": "2c9d229858074b0086baa7b6b507459d8c78340353155e73d3465b487240d82b",
@@ -937,8 +1095,14 @@
     "registry:font/font-heading-public-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "ddb4a96197aa2d403972be398789fd45b03d4278d09f70dc515894ea33f0ba18",
         "aria-lyra": "ddb4a96197aa2d403972be398789fd45b03d4278d09f70dc515894ea33f0ba18",
@@ -970,8 +1134,14 @@
     "registry:font/font-heading-raleway": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "6d07699d311c12a07a6545bacde19cf2622f51c50b8de097ecbf40331a9a6556",
         "aria-lyra": "6d07699d311c12a07a6545bacde19cf2622f51c50b8de097ecbf40331a9a6556",
@@ -1003,8 +1173,14 @@
     "registry:font/font-heading-roboto": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "e2c298fd0fb0caf304babfbca4596b52d81276c3ed48f03d6086a54a04a62740",
         "aria-lyra": "e2c298fd0fb0caf304babfbca4596b52d81276c3ed48f03d6086a54a04a62740",
@@ -1036,8 +1212,14 @@
     "registry:font/font-heading-roboto-slab": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "8a80e85b5ac8a729e5881aba57864b8df5c404ba980685a68594be72b2aa0408",
         "aria-lyra": "8a80e85b5ac8a729e5881aba57864b8df5c404ba980685a68594be72b2aa0408",
@@ -1069,8 +1251,14 @@
     "registry:font/font-heading-source-sans-3": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "b2e88abf4cef9171116037b5578494e5413a3e36816aca4d26cf1bdf735be37a",
         "aria-lyra": "b2e88abf4cef9171116037b5578494e5413a3e36816aca4d26cf1bdf735be37a",
@@ -1102,8 +1290,14 @@
     "registry:font/font-heading-space-grotesk": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "95ab49b5e38fb00530f8e96fd0df50e48dcebc2e30cec22ced8a6463c027ca4a",
         "aria-lyra": "95ab49b5e38fb00530f8e96fd0df50e48dcebc2e30cec22ced8a6463c027ca4a",
@@ -1135,8 +1329,14 @@
     "registry:font/font-ibm-plex-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "e506cf54ba5b15ccf2834a6a99a3a4c2fe5a5fdff37feadc68fefe8e462e6a6a",
         "aria-lyra": "e506cf54ba5b15ccf2834a6a99a3a4c2fe5a5fdff37feadc68fefe8e462e6a6a",
@@ -1168,8 +1368,14 @@
     "registry:font/font-instrument-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "89253bca5cabfe2d60eefb2ed3bcf6939582b144a69260e4e93a1b3a361415ca",
         "aria-lyra": "89253bca5cabfe2d60eefb2ed3bcf6939582b144a69260e4e93a1b3a361415ca",
@@ -1201,8 +1407,14 @@
     "registry:font/font-instrument-serif": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "3b17431cdee454e41975876513c25dffc9172403c01ad268712b3d29f052d892",
         "aria-lyra": "3b17431cdee454e41975876513c25dffc9172403c01ad268712b3d29f052d892",
@@ -1234,8 +1446,14 @@
     "registry:font/font-inter": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "cb90a5ccb55dbb3d574d208084d335cf078492cd7c7491474d732d90f32e09dd",
         "aria-lyra": "cb90a5ccb55dbb3d574d208084d335cf078492cd7c7491474d732d90f32e09dd",
@@ -1267,8 +1485,14 @@
     "registry:font/font-jetbrains-mono": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "de20cb0528c06c4b08bb590ffebbef8271ebb5d11da98c00866e1b9373330df5",
         "aria-lyra": "de20cb0528c06c4b08bb590ffebbef8271ebb5d11da98c00866e1b9373330df5",
@@ -1300,8 +1524,14 @@
     "registry:font/font-lora": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "0f813d39c13c9a62551a1147a12d4f50a42d3716b73dfbeee727cb2d44745029",
         "aria-lyra": "0f813d39c13c9a62551a1147a12d4f50a42d3716b73dfbeee727cb2d44745029",
@@ -1333,8 +1563,14 @@
     "registry:font/font-manrope": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "dde530a3d17c048cb4b28fa144e308db11de9ae5de1c0cfca7a522f09590367d",
         "aria-lyra": "dde530a3d17c048cb4b28fa144e308db11de9ae5de1c0cfca7a522f09590367d",
@@ -1366,8 +1602,14 @@
     "registry:font/font-merriweather": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "127891a4d0eb4db4064fa71ce90dbe0ffc609170696981e1f252bfe33e0350e9",
         "aria-lyra": "127891a4d0eb4db4064fa71ce90dbe0ffc609170696981e1f252bfe33e0350e9",
@@ -1399,8 +1641,14 @@
     "registry:font/font-montserrat": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "59bbb47512712c2c92dadd186ae46fadddd1f3be4552286926c932a8b88e28b8",
         "aria-lyra": "59bbb47512712c2c92dadd186ae46fadddd1f3be4552286926c932a8b88e28b8",
@@ -1432,8 +1680,14 @@
     "registry:font/font-noto-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "e5614535af29c6db8703d77f7929fab140fba7d09382aa88f4f7e13beb5f7568",
         "aria-lyra": "e5614535af29c6db8703d77f7929fab140fba7d09382aa88f4f7e13beb5f7568",
@@ -1465,8 +1719,14 @@
     "registry:font/font-noto-serif": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "dcf8458c546001c42461718a830193f83307f518b0b60b98d574cc2e6aa46926",
         "aria-lyra": "dcf8458c546001c42461718a830193f83307f518b0b60b98d574cc2e6aa46926",
@@ -1498,8 +1758,14 @@
     "registry:font/font-nunito-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "a9cd1c9b16d768e52842d7e551a842b2289f166bcaf3775ee79edec3746a6f72",
         "aria-lyra": "a9cd1c9b16d768e52842d7e551a842b2289f166bcaf3775ee79edec3746a6f72",
@@ -1531,8 +1797,14 @@
     "registry:font/font-outfit": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "f6992b180c23d3bff534e7bdd6f888f86b5b6b3126e8102348e28d311cba56b3",
         "aria-lyra": "f6992b180c23d3bff534e7bdd6f888f86b5b6b3126e8102348e28d311cba56b3",
@@ -1564,8 +1836,14 @@
     "registry:font/font-oxanium": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "fd729c7db5d2cb7b26081546655ce97954d7c8f65bc9591d61df1f8782fb9cec",
         "aria-lyra": "fd729c7db5d2cb7b26081546655ce97954d7c8f65bc9591d61df1f8782fb9cec",
@@ -1597,8 +1875,14 @@
     "registry:font/font-playfair-display": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "87e6a91ae11826b88d65a4b8bb597bca5dd8d7768efc1fb330e19444b8894d62",
         "aria-lyra": "87e6a91ae11826b88d65a4b8bb597bca5dd8d7768efc1fb330e19444b8894d62",
@@ -1630,8 +1914,14 @@
     "registry:font/font-public-sans": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "6646f983c90b5bf21f02f639f02f1f8ba68ccac375a94be44a17b7ad861a6d05",
         "aria-lyra": "6646f983c90b5bf21f02f639f02f1f8ba68ccac375a94be44a17b7ad861a6d05",
@@ -1663,8 +1953,14 @@
     "registry:font/font-raleway": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "4cdbab4fca1b7ec430864f4e2380d204895792e6fb92639b2b36aafdf5cde4b1",
         "aria-lyra": "4cdbab4fca1b7ec430864f4e2380d204895792e6fb92639b2b36aafdf5cde4b1",
@@ -1696,8 +1992,14 @@
     "registry:font/font-roboto": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "89ab40ee2487cbc217e2f5a32740ab82c72cf7f718c49592f188459caf80f955",
         "aria-lyra": "89ab40ee2487cbc217e2f5a32740ab82c72cf7f718c49592f188459caf80f955",
@@ -1729,8 +2031,14 @@
     "registry:font/font-roboto-slab": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "becb43fd67cbe63209537932a54b51bdc28a410718048295fa37571a7175c5af",
         "aria-lyra": "becb43fd67cbe63209537932a54b51bdc28a410718048295fa37571a7175c5af",
@@ -1762,8 +2070,14 @@
     "registry:font/font-source-sans-3": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "09f504e10a6216c1d22f40e532a8bbadcc610fedb4d0b84dd4d9bcb73bb28e04",
         "aria-lyra": "09f504e10a6216c1d22f40e532a8bbadcc610fedb4d0b84dd4d9bcb73bb28e04",
@@ -1795,8 +2109,14 @@
     "registry:font/font-space-grotesk": {
       "status": "ported",
       "reason": "Native font provider: pinned TTF cuts, retained licenses, CSS weight matching, role mapping, loading/error/retry and all cuts tested. Variable CSS axes map to explicit native cuts; device acceptance is separate.",
-      "nativeFiles": ["assets/ui/native/fonts.tsx", "assets/ui/native-fonts.json.gz"],
-      "tests": ["tests/native-ui/registry-fonts.test.tsx", "tests/test-native-fonts.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/native/fonts.tsx",
+        "assets/ui/native-fonts.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-fonts.test.tsx",
+        "tests/test-native-fonts.test.mjs"
+      ],
       "reviewedInputs": {
         "aria-luma": "441e9e7d8dc5cea37273d5527e8bce6517374a007a8195393a1a49195468afa0",
         "aria-lyra": "441e9e7d8dc5cea37273d5527e8bce6517374a007a8195393a1a49195468afa0",
@@ -1828,8 +2148,14 @@
     "registry:theme/theme-daylight": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "default": "481374f5b942fe9a4e7af403a6ecdf7a2a8a7d61eae2adda2f2a430580362022",
         "new-york": "481374f5b942fe9a4e7af403a6ecdf7a2a8a7d61eae2adda2f2a430580362022"
@@ -1838,8 +2164,14 @@
     "registry:theme/theme-emerald": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "default": "cbd51dc470a8d18f5f172cecc1b7113ffaf027988742c0f744e94ebac8717da0",
         "new-york": "cbd51dc470a8d18f5f172cecc1b7113ffaf027988742c0f744e94ebac8717da0"
@@ -1848,8 +2180,14 @@
     "registry:theme/theme-gray": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "new-york-v4": "51dce2ff946d8a7898ad2e149c44574bb3f082c0308f7c0b09c91c9eeab968f0"
       }
@@ -1857,8 +2195,14 @@
     "registry:theme/theme-midnight": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "default": "7a5ec93c775dbf7b1892ec6987b6abe57433b9883e9a6ee070982729927436e5",
         "new-york": "7a5ec93c775dbf7b1892ec6987b6abe57433b9883e9a6ee070982729927436e5"
@@ -1867,8 +2211,14 @@
     "registry:theme/theme-neutral": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "new-york-v4": "6fbfb163611e09ec79fedefc70766567cb589d8cdae43b621e9d079d9dc54143"
       }
@@ -1876,8 +2226,14 @@
     "registry:theme/theme-slate": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "new-york-v4": "d0331eb783182f8603a28a6331fffe6224d7052475cdb1c7164e60df4f94d5c5"
       }
@@ -1885,8 +2241,14 @@
     "registry:theme/theme-stone": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "new-york-v4": "5eedc4966aa58d22f9b7b1987d05dcbddaa9e226c1f92e2972a7180c90aff540"
       }
@@ -1894,8 +2256,14 @@
     "registry:theme/theme-zinc": {
       "status": "ported",
       "reason": "Every light/dark color and radius retained in shared styling; HSL/OKLCH converted to native sRGB with alpha, and all tokens tested. Device display acceptance is separate.",
-      "nativeFiles": ["assets/ui/theme.tsx", "assets/ui/registry-themes.json.gz"],
-      "tests": ["tests/native-ui/registry-themes.test.tsx", "tests/test-native-themes.test.mjs"],
+      "nativeFiles": [
+        "assets/ui/theme.tsx",
+        "assets/ui/registry-themes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-themes.test.tsx",
+        "tests/test-native-themes.test.mjs"
+      ],
       "reviewedInputs": {
         "new-york-v4": "a28f0efc2019dc2287e1bfb7aa5aabfe8f2373ab3b11441d7044a6a48bfcc163"
       }
@@ -1908,7 +2276,9 @@
         "assets/ui/native/_toast-store.tsx",
         "assets/ui/native/toast.tsx"
       ],
-      "tests": ["tests/native-ui/registry-toast-manager.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-toast-manager.test.tsx"
+      ],
       "reviewedInputs": {
         "default": "8b2313a0fe4dcf91de7695d97c322cc76644e993070d53465e2e243ebebc3691",
         "new-york": "8a8c66ddb5891ecb9f17a57f9ff27dab211881dfb621139888c5bb41f016babd"
@@ -1917,8 +2287,12 @@
     "registry:lib/utils": {
       "status": "web-specific",
       "reason": "cn composes CSS class strings with clsx/Tailwind merge. Native sources use typed variant props and nativeStyles/StyleSheet composition, which is tested with arrays, conditions, registered styles and precedence; no misleading native CSS-string alias is installed.",
-      "nativeFiles": ["assets/ui/native/utils.tsx"],
-      "tests": ["tests/native-ui/registry-utils.test.tsx"],
+      "nativeFiles": [
+        "assets/ui/native/utils.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-utils.test.tsx"
+      ],
       "reviewedInputs": {
         "aria-luma": "1c7fc883b806ada38e70109104a0d6befd6982d2367c4f16c2f7a099f5a3f79c",
         "aria-lyra": "662854c4896d269bd439f7b097e4a756ccecf627457250f82ceb9efda71a7a50",
@@ -1957,7 +2331,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-actions.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-actions.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "02666b003137dbde31de8d9239898440fdbf3c8abdc7aae963e0e45dee7ce9c6"
       }
@@ -1970,7 +2346,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-actions.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-actions.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "0d6018189d894a9126f2941a80e495f5338bc38426b06a885ff365184922cdf1"
       }
@@ -1983,7 +2361,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "2f359e173ba981723d9ee7b9d1b4d2647e0724d64ffc2e7cbb4b1c4d8495c693"
       }
@@ -1996,7 +2376,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "7e559bcf52aafd59f98930b5e9169f6bcebc54fcf5e4211fbd80b0bdaee58ca9"
       }
@@ -2009,7 +2391,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "bca8ba4fa8650a56f2d33dff4c7c014eadbe4546033e79613898aa8c489d267a"
       }
@@ -2022,7 +2406,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "a48d67af0b57a68250f0931bf7037382ee66d45625de60c232e4455350b3e2be"
       }
@@ -2035,7 +2421,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "be630e564e8cd7c049d2521b1c1e0b13f1bb4868d06635722ee5b8dce40151af"
       }
@@ -2048,7 +2436,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "a73714f307704062d77392eeb6085e3e6bd3a89081aa652e54119b6b3e26a44d"
       }
@@ -2061,7 +2451,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "91f4b44788189e37d0d59736e0fc84ae22c31467a4cce77b4f5785fd6f4bc145"
       }
@@ -2074,7 +2466,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "ae69a637fef818d010395eb6fff1f1232d88dd747a8eb6a8c42bd2075a92d086"
       }
@@ -2087,7 +2481,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "26cd4b0abf2ce5f91e23bc04bae78344d722dca2797e4f4b31f33a9519ea7b4d"
       }
@@ -2100,7 +2496,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-rhf.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "2a2f785741f3a3faa9269436e8a37fb9b8fa322cd0d6b5c9aec8d95d03b24668"
       }
@@ -2113,7 +2511,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "4975b15e7eb8614018ed9dc57001f9dad4cd2c7f7e500fca9e30fc3c31a5d168"
       }
@@ -2126,7 +2526,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "00306a69b2f7c41e0540d96fdc3181a4c7755dc6265181a81017d65927a6b6d2"
       }
@@ -2139,7 +2541,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "5ea62e4c8885e84ac66410bb5e63f0c32195fb4d06a73fb0e41dc6ebe4e22139"
       }
@@ -2152,7 +2556,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "12bfef741304acd349a320d4c65aeee8daee23b11f242fa6ef0ed425927eadf0"
       }
@@ -2165,7 +2571,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "1503e14db76aefe61b1a197a124be5eb7cfd05d69066204f44d0902344b65ea7"
       }
@@ -2178,7 +2586,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "ea5fff47a91d1025138d690fabbcf9e8353fefb8588a875e3ba69258bc144b3e"
       }
@@ -2191,7 +2601,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "9ec580086d79a5366675a406ec36995cf34a6249f308eadb2663bf5d34bd7399"
       }
@@ -2204,7 +2616,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "e988da44dcbdf5fa2c1e3c25e58630d3d4718e886cf46c128a338d0ebdf513d3"
       }
@@ -2217,7 +2631,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-tanstack.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "e7e6dababbd858cba85412e01a3636ba0ca818c3d5382fc00f7484aa2ebb3c10"
       }
@@ -2230,7 +2646,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "1265b7986b2df60a41ad0d026a9bebcebedc56b399fc284d4db19de67f496965"
       }
@@ -2243,7 +2661,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "1c6d8cb3dc99f216e56186830163e0a9b8796d0f009d20ae5624fec2756cc0dc"
       }
@@ -2256,7 +2676,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "176de1f7e5058cebc30607c047dc1ea495de44fa738c085ad24e8818ea67961c"
       }
@@ -2269,7 +2691,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "d0cd97e83355b5e25f2a3ebe6495295bae42043d80642e3a3df1fdad33ca1eff"
       }
@@ -2282,7 +2706,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "928041ca0901b7c687a4dbb62c81cf94dd0b1a5c52b14d06a6f53ea375683b55"
       }
@@ -2295,7 +2721,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "c93a68fd67f6020e8d3e475deff7c37918c2debe69b7243f9453ecae49d94ec7"
       }
@@ -2308,7 +2736,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "1dba8e4a160efe8304f10ebf225ea08d0b4c040a1e23db5e7554812df85dbcc8"
       }
@@ -2321,7 +2751,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "950fdb8f0a14e8775773f782596d88cc3c3a2ca1c6f09b8677b6bfcd78014a4b"
       }
@@ -2334,7 +2766,9 @@
         "assets/ui/native/registry-form-controls.tsx",
         "assets/ui/native/native-form.tsx"
       ],
-      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-official-formisch.test.tsx"
+      ],
       "reviewedInputs": {
         "new-york-v4": "1892216b0158348c1d373a71bea9e681cb44897c82ae9a6cf843bea2b1f8360b"
       }
@@ -3503,7 +3937,10 @@
     "registry:example/skeleton-card": {
       "status": "ported",
       "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_display.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-static-layouts.test.tsx",
@@ -5692,16 +6129,25 @@
       }
     },
     "registry:example/progress-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All three frozen authored progress demos retain initial value 13, the actual 500 ms update to 66, source 60% width and timer cleanup. Source/native Progress presets retain each family's track height/color; native roles and direct width paint replace browser primitive hosts and CSS transform timing. The modern progress-example remains separately partial for Slider/Item/Field dependencies.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/progress.tsx",
+        "assets/ui/native/_progress-presets.tsx",
+        "assets/ui/native/_preset-progress-style.tsx",
+        "assets/ui/native/direction.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-progress.test.tsx",
+        "tests/native-ui/registry-progress-examples.test.tsx",
+        "tests/test-native-progress-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "default": "12d2b5afcb6bc282170b987c14dd3c4aca109c6633bb8f07f2749aab7ee3ecbf",
@@ -5730,7 +6176,10 @@
     "registry:example/separator-demo": {
       "status": "ported",
       "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_display.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-static-layouts.test.tsx",
@@ -5781,7 +6230,10 @@
     "registry:example/skeleton-demo": {
       "status": "ported",
       "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_display.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-static-layouts.test.tsx",
@@ -6162,7 +6614,10 @@
     "registry:example/carousel-api": {
       "status": "partial",
       "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_motion.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx"
@@ -6176,7 +6631,10 @@
     "registry:example/resizable-demo": {
       "status": "partial",
       "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_motion.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx"
@@ -6190,7 +6648,10 @@
     "registry:example/resizable-demo-with-handle": {
       "status": "partial",
       "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_motion.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx"
@@ -6204,7 +6665,10 @@
     "registry:example/resizable-vertical": {
       "status": "partial",
       "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_motion.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx"
@@ -6218,7 +6682,10 @@
     "registry:example/resizable-handle": {
       "status": "partial",
       "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_motion.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx"
@@ -6232,7 +6699,10 @@
     "registry:example/resizable-example": {
       "status": "partial",
       "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_motion.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx"
@@ -6319,7 +6789,10 @@
     "registry:example/aspect-ratio-demo": {
       "status": "ported",
       "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_display.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-static-layouts.test.tsx",
@@ -6334,7 +6807,10 @@
     "registry:example/aspect-ratio-example": {
       "status": "ported",
       "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
-      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_display.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-static-layouts.test.tsx",
@@ -6620,7 +7096,9 @@
         "assets/ui/native/_skeleton-presets.tsx",
         "assets/ui/native/_preset-skeleton-style.tsx"
       ],
-      "tests": ["tests/native-ui/registry-skeleton-presets.test.tsx"],
+      "tests": [
+        "tests/native-ui/registry-skeleton-presets.test.tsx"
+      ],
       "reviewedInputs": {
         "aria-luma": "e2593d366a38bef15f8673c2c4bc43db84f2fcccfaf189c5d0e30ef84be50acb",
         "aria-lyra": "dd2b5f413f3c43ab9eb2878be644b17b8fb1161bb2ee6347c32ac8d658a95083",
@@ -6654,7 +7132,10 @@
     "registry:ui/aspect-ratio": {
       "status": "ported",
       "reason": "Native aspectRatio replaces CSS custom properties and padding wrappers. All six component definitions retain ratio, geometry and explicit overrides; native one-host asChild/render composition preserves refs, child content and layout callbacks. DOM props are replaced by native View props. Device acceptance is tracked separately.",
-      "nativeFiles": ["assets/ui/native/_display.tsx", "assets/ui/native/_layout.tsx"],
+      "nativeFiles": [
+        "assets/ui/native/_display.tsx",
+        "assets/ui/native/_layout.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-static-layouts.test.tsx",
         "tests/native-ui/presentation.test.tsx"
@@ -6692,7 +7173,10 @@
     "registry:ui/separator": {
       "status": "ported",
       "reason": "Every source generation retains horizontal/vertical dimensions, shrink behavior and decorative defaults. Native labeled separator roles and hidden decorative elements replace DOM/hr semantics; native child/render composition preserves refs/styles/callbacks. Device acceptance is tracked separately.",
-      "nativeFiles": ["assets/ui/native/_display.tsx", "assets/ui/native/_layout.tsx"],
+      "nativeFiles": [
+        "assets/ui/native/_display.tsx",
+        "assets/ui/native/_layout.tsx"
+      ],
       "tests": [
         "tests/native-ui/registry-static-layouts.test.tsx",
         "tests/native-ui/presentation.test.tsx"
@@ -9931,6 +10415,52 @@
         "radix-sera": "8b766637d9586b141250648203aa382d78389dc65ffe95c8b1b188d6a4a40f0e",
         "radix-vega": "e63389c792caf053ad77333800ee6c1c6c9528cc93705f94f428ff1f7ee2d398"
       }
+    },
+    "registry:ui/progress": {
+      "status": "ported",
+      "reason": "All six Progress implementations retain eighteen source slots and eleven style families, including track heights, radii, source backgrounds, label/value typography and source composition. Base raw-value formatting, Aria normalized ranges and their distinct callback/indeterminate contracts are retained against lock-verified primitive source. Native width geometry prevents unwanted flex growth and keeps physical legacy/Radix versus logical compound fill direction. Native progressbar values/busy state, dynamic labels, explicit field targets, caller styles/refs and runtime locale fallback have tests. Native OS checks verify eleven heights, actual half/full fill bounds, formatted ranges and known/unknown/known accessibility transitions. Native direct state paint and View/Text/layout refs replace CSS transforms/transitions and DOM host APIs.",
+      "nativeFiles": [
+        "assets/ui/native/progress.tsx",
+        "assets/ui/native/_progress-presets.tsx",
+        "assets/ui/native/_preset-progress-style.tsx",
+        "assets/ui/native/direction.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-progress.test.tsx",
+        "tests/native-ui/registry-progress-examples.test.tsx",
+        "tests/test-native-progress-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "6ef6580a5ecea0a700c2531aa27b3103962c4410f56427adf79115845cf4412a",
+        "aria-lyra": "60eb4875416f8dc935fb9cdecf08331e5af2954ea0975363b5b06381fec7430a",
+        "aria-maia": "8f2eda0a461bbad5e1a5139179a4ab1d90a4277eec16c5f07f5128a36c5eb7d3",
+        "aria-mira": "e778ef6998eda451be42a8767786d97092860beb6713c097d01f5500a73c1a7e",
+        "aria-nova": "4fc3ab30a891d03786915960540932dda636810e425059447da012d7c98e26d0",
+        "aria-rhea": "96764ecb6d232acd582dc8b0680b264e21d9c2e3ed5a212b8012777fe663fbcf",
+        "aria-sera": "90d2fd8566ea47970134e5bbfa88276fca50c8775e2deb2b560929d348a19154",
+        "aria-vega": "0d3d9d423a868a2228a41936eff2a68efc9e9f0cc51300f22b4cf912fd2eb753",
+        "base-luma": "46903b37ac8458ab82e08df77cf4b548ce59220754741199f15aad58ca26a788",
+        "base-lyra": "fecf3d843c64382b520ee5fcb12968370e52999558f72a9f69caa06f680e0f1e",
+        "base-maia": "a57aa999d43827210699729fed9eed23cc3ddcac5ac291b1ed67fc2e6d1ec18b",
+        "base-mira": "35d77e67cdcfc4ffcb63e1cf3b9b6ca38919568f418c53cdd989af04f0ce2c7f",
+        "base-nova": "5dcdd092945d025b4e07163cc22b837321c3bec4ca04948b4b3db020d614af71",
+        "base-rhea": "e9b134c0f48fc3d8c7f0a6bb653c080d1bda30ba3c09674ed6c9b07d94119791",
+        "base-sera": "46ef4e172975925dbdc4dcdc1f4b3784f7814ebbdd8709e9465605519c43a859",
+        "base-vega": "1b4ec947354c99db3e3fe356584d1f29e1e0a6be82aebd3946e8ab5d1396b187",
+        "default": "12a07386bc8f02336bdd76e1e975a0a2674e8a25f9275252ec56e5f07e762215",
+        "new-york": "c38c7dd7122312cfa09900d87490cd25899b3c001a6dadb77cad468a47b3bf71",
+        "new-york-v4": "9a5f9961143a947d293a8405a7d8ba91310b8c53eb03e03f55d4e5318903ec66",
+        "radix-luma": "0e46b129280bdb2ba2b84ed700941d17e446fc7422902e4586c23d6594c4d725",
+        "radix-lyra": "803fe8d0520905c28e682e315c1450bfe45e8c4657f6240b41c6f21655d2bbc8",
+        "radix-maia": "d542f225907e63fac131c581b7c5e16bf8403f543933027368edc32fcc2a519f",
+        "radix-mira": "bf5664e6b45c8f824b4827e253989582747bb882ac9f60dd58dd5fa369c1e4ea",
+        "radix-nova": "fae7b9443e6ba68248d4164e933fd6b796c8eabe0c23d46818520efb1f52e2b1",
+        "radix-rhea": "6957991c7493a71e745abb7c65244f7521bc14f6daa48d1a7d1ac57f09d9332b",
+        "radix-sera": "703b8342ca70bf15fdabe0ea5c25a87c57f9bbaba8efeab6b4f25327f344055c",
+        "radix-vega": "131d586e0727f839632bf439a4e950e7e6904d046de3b05e52235c45838cdb04"
+      }
     }
   },
   "webSpecific": [
@@ -10033,6 +10563,11 @@
       "feature": "HTML native select picker, Canvas colors, option values and DOM form events",
       "adaptation": "Use the native Modal collection with source-owned select control/icon slots, native View refs and onValueChange. Native text measurement sizes the widest option; source sizes and start alignment remain literal. Canvas/CanvasText use native popover tokens. First eligible, empty/omitted values and disabled groups retain selection semantics; browser form submission/constraint validation, system picker appearance, keyboard/typeahead and CSS transition timing remain platform-specific.",
       "status": "All four source publications, twenty class slots and nine official styles have strict source/style integrity and native renderer tests. Native OS cases pass source geometry, intrinsic width and option selection. The old Default/New York registries have no Native Select publication; their optional native extension uses New York v4 metrics. Screen-reader and physical-keyboard acceptance remain separate."
+    },
+    {
+      "feature": "Progress primitive DOM hosts, percentage transforms and accessibility value updates",
+      "adaptation": "Native View/Text refs, direct percentage widths, source-owned track/label/value paint and native progressbar ranges replace browser primitive hosts and transforms. Base keeps raw-value formatting and formatted/raw callback; Aria keeps normalized formats, one-argument callbacks and no indeterminate value text. Native unknown state explicitly clears old accessibility text, and locale uses a provider/prop or runtime fallback. Dynamic ProgressLabel registration and explicit nativeID field targets replace DOM label contexts. CSS transition timing and external primitive DOM/render APIs remain web-specific.",
+      "status": "Six source implementations, eighteen class slots and eleven styles have source/style integrity and renderer coverage. Both native OS cases pass source geometry, actual native fill bounds/ranges, formatting and known/unknown/known state restoration. Three frozen demos retain authored delay and cleanup. OS screen-reader and physical-device acceptance remain separate."
     }
   ]
 }

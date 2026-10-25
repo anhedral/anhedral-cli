@@ -1267,7 +1267,9 @@
     "_kbd-context.tsx",
     "_label-presets.tsx",
     "_preset-label-style.tsx",
-    "_example-layout-source.tsx"
+    "_example-layout-source.tsx",
+    "_progress-presets.tsx",
+    "_preset-progress-style.tsx"
   ],
   "supportModules": [
     {

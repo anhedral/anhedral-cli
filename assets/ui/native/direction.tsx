@@ -1,7 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { DirectionProvider, useDirection } from './_core';
 export { DirectionProvider, useDirection };
-const Locale = createContext('en-US');
+const Locale = createContext<string | undefined>(undefined);
 export function I18nProvider({
   locale = Intl.DateTimeFormat().resolvedOptions().locale,
   children,
@@ -24,5 +24,8 @@ export function I18nProvider({
   );
 }
 export function useLocale() {
-  return { locale: useContext(Locale), direction: useDirection() };
+  return {
+    locale: useContext(Locale) ?? Intl.DateTimeFormat().resolvedOptions().locale,
+    direction: useDirection(),
+  };
 }

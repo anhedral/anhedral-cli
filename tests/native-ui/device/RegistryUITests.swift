@@ -1,6 +1,36 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testProgressPresetsRetainNativeGeometryRangeFormattingAndUnknownState() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch();openStory("native/progress-contract",in:app)
+    let scroll=storyScroll(app)
+    func target(_ name:String)->XCUIElement {app.descendants(matching:.any).matching(identifier:name).firstMatch}
+    func press(_ name:String) {
+      let element=target(name)
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeUp()}
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeDown()}
+      XCTAssertTrue(element.isHittable,name);element.tap()
+    }
+    let presets=["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"],heights=[4,6,12,4,4,12,2,8,16,8,8]
+    for (index,preset) in presets.enumerated() {
+      XCTAssertTrue(app.staticTexts["Progress geometry: "+preset+":320x"+String(heights[index])].waitForExistence(timeout:10))
+      press("Next progress preset")
+    }
+    let base=target("native-progress-base-range"),aria=target("native-progress-aria-range")
+    XCTAssertTrue(base.exists);XCTAssertEqual(base.value as? String,"25%")
+    XCTAssertTrue(aria.exists);XCTAssertEqual(aria.value as? String,"50%")
+    let before=XCTAttachment(screenshot:app.screenshot());before.name="Native source progress range and formatting";before.lifetime = .keepAlways;add(before)
+    press("Toggle unknown progress")
+    XCTAssertTrue(app.staticTexts["Progress unknown: true"].waitForExistence(timeout:10))
+    XCTAssertTrue((target("native-progress-base-unknown").value as? String ?? "").contains("indeterminate progress"))
+    XCTAssertFalse((target("native-progress-aria-unknown").value as? String ?? "").contains("50%"))
+    let image=XCTAttachment(screenshot:app.screenshot());image.name="Native source indeterminate progress";image.lifetime = .keepAlways;add(image)
+    press("Toggle unknown progress")
+    XCTAssertTrue(app.staticTexts["Progress unknown: false"].waitForExistence(timeout:10))
+    XCTAssertEqual(target("native-progress-aria-unknown").value as? String,"50%")
+
+  }
   func testNativeSelectControlsRetainSourceGeometryAndOptionSemantics() {
     let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
     app.launch();openStory("native/native-select-contract",in:app)

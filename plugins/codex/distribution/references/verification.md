@@ -1,3 +1,59 @@
+# Progress source semantics, native geometry and accessibility — October 25, 2026
+
+Progress now retains six source implementations, eleven style families and eighteen
+reviewed class slots. Base/Aria roots append source tracks after label/value content;
+Radix/frozen roots retain their own track. Thin track heights, source backgrounds,
+radii, label/value typography and Sera tracking/case survive native rendering.
+Native percentage widths reset flex growth and preserve physical legacy/Radix fill
+versus logical compound direction. All source slots have a renderer consumption audit.
+
+Source semantics were reviewed against lock-integrity-verified @base-ui/react 1.6.0,
+React Aria Components 1.20.0 and react-aria 3.51.0 archives, without installing or
+executing them. Base formats raw value/100 independently from min/max track scaling;
+Aria formats normalized ranges. Their callback arguments and indeterminate states
+remain distinct. The native API keeps finite progressbar ranges, busy state, refs,
+caller styles, scoped label registration and explicit field targets. Locale now
+falls back to the runtime locale outside a provider. Three frozen authored demos
+retain value 13, their actual 500 ms update to 66, 60% width and timer cleanup.
+
+Full native regression passes all 68 suites /1,861 tests on each platform. All 729
+registry modules compile as iOS and Android Hermes bytecode. Generated TypeScript,
+source/style/API integrity and focused form/demo/behavior checks pass. CLI unit tests
+passed 680 with one existing optional skip (681 total); lint, static security and
+packed-consumer/packlist checks pass, within unchanged budgets (249 packaged files).
+The expanded source/driver contract checks retain strict expected counts.
+
+Both final focused native OS cases passed. They verify all eleven track heights,
+source range formatting and known/unknown/known native values. Android also measures
+actual 50% fill bounds and full Aria indeterminate width. Device application copies
+match all 151 canonical native TypeScript modules, and their compiled driver sources
+match the maintained 725-root catalog substitution. The required OS suite now has 22
+cases; this owner ran the focused Progress case, not the complete 22-case suite.
+
+- Android: `.artifacts/native-ui-android/2026-10-25T19-18-57-479Z/`; application
+  SHA-256 `8f2c0eed4a808961d97783aa592cf7b34be47780ed2a03c4510216af8c9974aa`,
+  test APK `28ca3c7a7e511592f9407849d5527482eb927d3daa68ad841edafb05a58556fe`.
+- iOS: `.artifacts/native-ui-ios/2026-10-25T19-19-51-947Z/` on the dedicated iOS 26.5
+  simulator. Final Android and iOS indeterminate/known screenshots were inspected.
+- Source/test equivalence, pinned package/source review and terminal evidence:
+  `.artifacts/native-ui/2026-10-25-progress/`.
+
+The retained first full-regression failure exposed a supporting password-strength
+bar inheriting its input's field label. Only explicitly targeted progress elements
+now inherit external field metadata. The retained Android failure at 19:09:50 exposed
+stale 50% accessibility text when an Aria value became indeterminate; an explicit
+empty native text value now clears it, and the same OS transition is retested.
+Earlier iOS acceptance at 19:12:13 belongs to its earlier binary. Source formatter
+regressions were corrected against actual pinned primitive behavior, rather than
+changing implementation to preserve the former generic formatter.
+
+CSS transition timing, DOM transforms/refs and external primitive render APIs have
+explicit native/platform decisions in the checklist. OS screen-reader and physical
+hardware acceptance remain separate. The checklist now records 199 ported groups
+plus one web-specific group, with 419 unfinished. The modern progress-example remains
+partial for Slider/Item/Field composition. This is not full-registry completion;
+nothing was merged, published or deployed.
+
 # Native Select source slots, intrinsic sizing and native hit testing — October 25, 2026
 
 Native Select now owns all four actual pinned upstream definitions and all nine

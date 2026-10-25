@@ -62,6 +62,34 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun progressPresetsRetainNativeGeometryRangeFormattingAndUnknownState() = uiAutomator {
+    openStory("native/progress-contract")
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
+    val heights=listOf(4,6,12,4,4,12,2,8,16,8,8)
+    for ((index,preset) in presets.withIndex()) {
+      label("Progress geometry: "+preset+":320x"+heights[index])
+      label("Next progress preset").apply {waitForStable();click()}
+    }
+    onElement {viewIdResourceName=="native-progress-base-range" && rangeInfo?.current==25f && rangeInfo?.max==50f && contentDescription?.contains("25%")==true}
+    onElement {viewIdResourceName=="native-progress-aria-range" && rangeInfo?.current==25f && rangeInfo?.max==50f && contentDescription?.contains("50%")==true}
+    val baseBounds=onElement {viewIdResourceName=="native-progress-base-range"}.visibleBounds
+    val baseFill=onElement {viewIdResourceName=="native-progress-base-range-indicator"}.visibleBounds
+    val ariaBounds=onElement {viewIdResourceName=="native-progress-aria-range"}.visibleBounds
+    val ariaFill=onElement {viewIdResourceName=="native-progress-aria-range-indicator"}.visibleBounds
+    assertTrue(abs(baseFill.width()*2-baseBounds.width())<=2)
+    assertTrue(abs(ariaFill.width()*2-ariaBounds.width())<=2)
+    label("Toggle unknown progress").apply {waitForStable();click()}
+    label("Progress unknown: true")
+    onElement {viewIdResourceName=="native-progress-base-unknown" && rangeInfo==null && contentDescription?.contains("indeterminate progress")==true}
+    onElement {viewIdResourceName=="native-progress-aria-unknown" && rangeInfo==null && contentDescription?.contains("50%")==false}
+    val unknown=onElement {viewIdResourceName=="native-progress-aria-unknown"}.visibleBounds
+    val full=onElement {viewIdResourceName=="native-progress-aria-unknown-indicator"}.visibleBounds
+    assertTrue(abs(full.width()-unknown.width())<=2)
+    label("Toggle unknown progress").apply {waitForStable();click()}
+    label("Progress unknown: false")
+    onElement {viewIdResourceName=="native-progress-aria-unknown" && rangeInfo?.current==50f && contentDescription?.contains("50%")==true}
+
+  }
   @Test fun nativeSelectControlsRetainSourceGeometryAndOptionSemantics() = uiAutomator {
     openStory("native/native-select-contract")
     fun press(name:String) { label(name).apply {waitForStable();click()} }
