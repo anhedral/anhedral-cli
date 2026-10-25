@@ -381,3 +381,29 @@ test('responsive flex-none resets percentage basis and growth instead of retaini
   assert.equal(view.flexShrink, 0);
   assert.equal(view.flexBasis, 'auto');
 });
+
+test('large source shadows retain both layers beneath the native ring', () => {
+  const result = registryStyle('shadow-lg ring-1 ring-foreground/5', options);
+  assert.deepEqual(result.view.boxShadow, [
+    { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 1, color: 'color:foreground/5' },
+    { offsetX: 0, offsetY: 10, blurRadius: 15, spreadDistance: -3, color: 'rgba(0,0,0,0.1)' },
+    { offsetX: 0, offsetY: 4, blurRadius: 6, spreadDistance: -4, color: 'rgba(0,0,0,0.1)' },
+  ]);
+  assert.deepEqual(registryStyle('shadow-lg shadow-none', options).view.boxShadow, []);
+});
+
+test('source shadows and rings never add a second Android elevation shadow or stacking change', () => {
+  for (const classes of [
+    'shadow-xs',
+    'shadow-sm',
+    'shadow-md',
+    'shadow-lg',
+    'shadow-xl',
+    'shadow-none',
+    'ring-1 ring-foreground/10',
+  ]) {
+    const result = registryStyle(classes, options);
+    assert.equal(result.view.elevation, 0, classes);
+    assert.ok(Array.isArray(result.view.boxShadow));
+  }
+});

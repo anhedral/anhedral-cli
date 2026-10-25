@@ -62,6 +62,28 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun sourceChartsRetainPresetGeometryAndSeriesInteractions() = uiAutomator {
+    openStory("native/chart-contract")
+    for (preset in listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")) {
+      label("Chart preset: " + preset)
+      val height = if (preset == "mira") 52 else if (preset in listOf("luma","sera","rhea")) 46 else 48
+      label("Tooltip geometry: " + preset + ":128x" + height)
+      label("Next chart preset").click()
+    }
+    for (kind in listOf("bar","line","area","pie","radar","radial")) {
+      label("Chart kind: " + kind)
+      label("Next chart point").click()
+      label("Chart selection: February=20")
+      label("20")
+      label("Next chart point").click()
+      label("Chart selection: March=30")
+      label("30")
+      label("Next chart point").click()
+      label("Chart selection: January=10")
+      label("10")
+      label("Next chart kind").click()
+    }
+  }
   @Test fun sourceExampleLayoutsRetainPaddingFlexAndGridGeometry() = uiAutomator {
     openStory("native/example-layout")
     for (value in listOf("Example panel geometry: 320x116", "Example child geometry: 48,48,20,20", "Example zero geometry: 320x20", "Example zero child: 0,0,20,20", "Example grid geometry: 144x116;144x116")) label(value)

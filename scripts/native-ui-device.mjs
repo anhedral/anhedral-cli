@@ -98,6 +98,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/temporal-input",Component:NativeTemporalMatrix}',
           '{id: "native/runtime-sweep",Component:NativeRuntimeSweep}',
           '{id: "native/example-layout",Component:NativeExampleLayoutMatrix}',
+          '{id: "native/chart-contract",Component:NativeChartMatrix}',
         ].join(',\n') +
         '];',
     );

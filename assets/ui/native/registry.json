@@ -1209,6 +1209,8 @@
     "utils.tsx",
     "_color.tsx",
     "_chart-context.tsx",
+    "_chart-presets.tsx",
+    "_preset-chart-style.tsx",
     "_chart-math.tsx",
     "charts.tsx",
     "_slot.tsx",

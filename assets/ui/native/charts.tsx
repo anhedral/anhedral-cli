@@ -27,7 +27,7 @@ import Svg, {
   type TextProps as SvgTextProps,
 } from 'react-native-svg';
 import { line as linePath, area as areaPath } from 'd3-shape';
-import { Box, useControllable, nativeComponent, NativeTextStyleContext } from './_core';
+import { Box, useControllable, nativeComponent, NativeTextStyleContext, withAlpha } from './_core';
 import { useNativeFontStyle, type NativeFontRole } from './fonts';
 import { useTheme } from '../theme';
 import { RegistryPaintContext } from './registry-styles';
@@ -504,10 +504,11 @@ function Canvas({
                   />
                 ) : kind === 'line' || kind === 'area' ? (
                   <SvgLine
-                    x1={cart.category(activeIndex)}
-                    x2={cart.category(activeIndex)}
-                    y1={cart.plot.top}
-                    y2={cart.plot.bottom}
+                    testID="chart-tooltip-cursor"
+                    x1={cart.vertical ? cart.plot.left : cart.category(activeIndex)}
+                    x2={cart.vertical ? cart.plot.right : cart.category(activeIndex)}
+                    y1={cart.vertical ? cart.category(activeIndex) : cart.plot.top}
+                    y2={cart.vertical ? cart.category(activeIndex) : cart.plot.bottom}
                     stroke={colors.border}
                   />
                 ) : null)}
@@ -621,7 +622,7 @@ export function Dot({
       cy={cy}
       r={r}
       fill={frame.color(fill)}
-      stroke={stroke ? frame.color(stroke) : undefined}
+      stroke={stroke === '#fff' ? 'transparent' : stroke ? frame.color(stroke) : undefined}
       strokeWidth={strokeWidth}
       onPress={onPress}
     />
@@ -964,11 +965,16 @@ export function CartesianGrid({
         ys.map((y, index) => (
           <SvgLine
             key={'h' + index}
+            testID={'chart-grid-h-' + index}
             x1={plot.left}
             x2={plot.right}
             y1={y}
             y2={y}
-            stroke={frame.color(stroke ?? colors.border)}
+            stroke={
+              stroke === undefined || stroke === '#ccc'
+                ? withAlpha(colors.border!, 0.5)
+                : frame.color(stroke)
+            }
             strokeWidth={strokeWidth}
             strokeDasharray={strokeDasharray}
           />
@@ -977,11 +983,16 @@ export function CartesianGrid({
         xs.map((x, index) => (
           <SvgLine
             key={'v' + index}
+            testID={'chart-grid-v-' + index}
             x1={x}
             x2={x}
             y1={plot.top}
             y2={plot.bottom}
-            stroke={frame.color(stroke ?? colors.border)}
+            stroke={
+              stroke === undefined || stroke === '#ccc'
+                ? withAlpha(colors.border!, 0.5)
+                : frame.color(stroke)
+            }
             strokeWidth={strokeWidth}
             strokeDasharray={strokeDasharray}
           />
@@ -1019,7 +1030,7 @@ export function Sector({
       d={sectorPath(innerRadius, outerRadius, startAngle, endAngle, cornerRadius, paddingAngle)}
       fill={frame.color(fill)}
       fillOpacity={fillOpacity}
-      stroke={stroke ? frame.color(stroke) : undefined}
+      stroke={stroke === '#fff' ? 'transparent' : stroke ? frame.color(stroke) : undefined}
       strokeWidth={strokeWidth}
       onPress={onPress}
     />
@@ -1346,7 +1357,7 @@ export function PolarGrid({
             : undefined) ??
             (index === 0 ? (firstFill ?? String(recipePaint.firstFill ?? 'none')) : undefined) ??
             'none',
-          frame.color(stroke ?? colors.border),
+          frame.color(stroke === '#ccc' ? colors.border : (stroke ?? colors.border)),
         ),
       )}
       {radialLines &&
@@ -1359,7 +1370,7 @@ export function PolarGrid({
               y1={frame.cy}
               x2={frame.cx + Math.cos(theta) * frame.outer}
               y2={frame.cy + Math.sin(theta) * frame.outer}
-              stroke={frame.color(stroke ?? colors.border)}
+              stroke={frame.color(stroke === '#ccc' ? colors.border : (stroke ?? colors.border))}
               strokeWidth={strokeWidth}
             />
           );

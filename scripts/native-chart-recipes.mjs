@@ -1019,7 +1019,66 @@ export function validateNativeRecipeSyntax(source, filename) {
         ts.flattenDiagnosticMessageText(parsed.parseDiagnostics[0].messageText, ' '),
     );
 }
-export const portChartRecipe = portNativeRegistryRecipe;
+/** Data/config literals must survive translation byte-for-byte after AST printing. */
+export function chartLiteralInputs(source) {
+  const file = ts.createSourceFile(
+      'chart.tsx',
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TSX,
+    ),
+    printer = ts.createPrinter({ removeComments: true }),
+    result = [];
+  function visit(node) {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      /(?:Data$|^chartConfig$)/.test(node.name.text) &&
+      node.initializer
+    ) {
+      let value = node.initializer;
+      while (
+        ts.isAsExpression(value) ||
+        ts.isSatisfiesExpression(value) ||
+        ts.isParenthesizedExpression(value)
+      )
+        value = value.expression;
+      if (ts.isArrayLiteralExpression(value) || ts.isObjectLiteralExpression(value))
+        result.push([node.name.text, printer.printNode(ts.EmitHint.Expression, value, file)]);
+    }
+    if (
+      ts.isJsxAttribute(node) &&
+      ['data', 'payload', 'config'].includes(node.name.getText(file)) &&
+      node.parent.parent.tagName?.getText(file) !== 'ChartStyle' &&
+      node.initializer &&
+      ts.isJsxExpression(node.initializer) &&
+      node.initializer.expression
+    ) {
+      const value = node.initializer.expression;
+      if (ts.isArrayLiteralExpression(value) || ts.isObjectLiteralExpression(value))
+        result.push([
+          'prop:' + node.name.getText(file),
+          printer.printNode(ts.EmitHint.Expression, value, file),
+        ]);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(file);
+  return result;
+}
+export function assertChartLiteralInputs(source, native, filename) {
+  const original = chartLiteralInputs(source),
+    translated = chartLiteralInputs(native);
+  if (JSON.stringify(original) !== JSON.stringify(translated))
+    throw Error('Native chart data/config literals changed: ' + filename);
+  return { count: original.length, sha256: hash(JSON.stringify(original)) };
+}
+export function portChartRecipe(source, filename, options) {
+  const native = portNativeRegistryRecipe(source, filename, options);
+  assertChartLiteralInputs(source, native, filename);
+  return native;
+}
 export function loadNativeChartRecipes() {
   return JSON.parse(
     gunzipSync(readFileSync(path.join(root, 'assets/ui/native-chart-recipes.json.gz'))),
@@ -1035,6 +1094,13 @@ export function validateNativeChartRecipes(inventory, catalog) {
     if (inventory.sources[recipe.origin]?.sha256 !== recipe.upstreamSha256)
       throw Error('Stale native chart source: ' + recipe.origin);
     validateNativeRecipeSyntax(recipe.source, recipe.origin);
+    const dataInputs = chartLiteralInputs(recipe.source);
+    if (
+      recipe.name.startsWith('chart-') &&
+      (recipe.dataInputs?.count !== dataInputs.length ||
+        recipe.dataInputs?.sha256 !== hash(JSON.stringify(dataInputs)))
+    )
+      throw Error('Stale native chart data/config review: ' + recipe.origin);
     if (hash(recipe.source) !== recipe.nativeSha256)
       throw Error('Changed native chart output: ' + recipe.origin);
     const key =
@@ -1082,6 +1148,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv.includes(
       upstreamSha256: entry.sha256,
       reviewedInputs: reviewedInputs(inventory, `registry:${block ? 'block' : 'example'}/${name}`),
       nativeSha256: hash(native),
+      dataInputs: assertChartLiteralInputs(source, native, origin),
       source: native,
     });
   }

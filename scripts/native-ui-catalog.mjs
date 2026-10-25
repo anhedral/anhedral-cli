@@ -264,7 +264,19 @@ including their data, formatters and controls, plus all 21 authored chart exampl
 \`@workspace/native-ui/recipes\` for the source, style/dependency and translated-file hashes.
 \`assets/ui/native-chart-recipes.json.gz\` is the maintained compressed source overlay;
 regenerate it with \`node scripts/native-chart-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`.
-The generator verifies every input against the official inventory before translating.\nThe npm artifact stores native templates in a lossless Brotli overlay; generated source\nis byte-identical to the maintained files and is editable in the application.
+ChartContainer, ChartTooltipContent and ChartLegendContent accept native View refs
+and typed \`textStyle\` overrides. Tooltip \`labelStyle\` replaces browser
+\`labelClassName\`. All eleven source style families retain tooltip padding,
+border/ring/shadow layers, radius, twelve-point type and indicator/icon geometry.
+Native SVG paints source grid, axis, cursor and marker rules directly. CSS selector
+matching and Recharts DOM animation internals remain browser mechanisms; the native
+renderer uses explicit drawing state, touch selection and accessibility actions.
+
+The generator verifies every input against the official inventory before translating.
+It also compares all authored data/config literal ASTs before and after translation,
+including inline payloads; changed, missing or reordered inputs fail generation.
+Each chart recipe retains that review fingerprint. Browser ChartStyle's redundant
+CSS-injection config is excluded from this check; native ChartContainer owns colors.\nThe npm artifact stores native templates in a lossless Brotli overlay; generated source\nis byte-identical to the maintained files and is editable in the application.
 
 Recipe layouts use a reviewed native utility vocabulary, measured container widths,
 native text inheritance and native SVG paint. Unknown utilities fail instead of

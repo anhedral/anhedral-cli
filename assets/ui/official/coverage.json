@@ -7230,6 +7230,2465 @@
         "radix-sera": "c732d6ada4a5d2c272be2bf32611246b0265bd782820210692d736e2684bf375",
         "radix-vega": "65f810b3c24392bc3dd980d0b9b6c0732615a4dfb25afa96ee9b8e3fbfaf7c8e"
       }
+    },
+    "registry:ui/chart": {
+      "status": "ported",
+      "reason": "Reviewed all six source implementations and eleven style families: native tooltip surfaces, source type/indicator/icon geometry, View refs, labelStyle/textStyle overrides, controlled visibility, payload/config lookup, custom formatters, legend filtering and native color contexts. SVG rules paint source grids, axes, cursors and literal-white marker outlines directly. ChartStyle CSS injection and browser DOM/animation mechanisms remain explicit native boundaries; full item coverage does not claim the Recharts package API.",
+      "nativeFiles": [
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "d4683936a5bcb639b9d0097bb0d34080edb3a9f3697f8eed02ee43087a5f53d2",
+        "aria-lyra": "57862e94ebf314ee9fcf543024a1b31940e02bd409be1f7e420a683531d84031",
+        "aria-maia": "6575558e0e76ff23596e5a21b9b5bf71a116d5b892a4ec09054b7f68cba3563a",
+        "aria-mira": "3ddf6f05dd726bff1ea374ebc79073630a37b430a950ddc51f31b73e7281f55b",
+        "aria-nova": "135e36a53aa2d2ef3cc3bc0058955f326e4f99b8ef1de557b4075ed382f9d90d",
+        "aria-rhea": "42faaf6081a67b8ef2e13de1c7607fa29ba56ac088743c51e9f694df2b028325",
+        "aria-sera": "3139430d61d9ab0238091006e4add7b0ae43a8533e2a367112586a4285d4bc5f",
+        "aria-vega": "14fb2990e00398427d8a11d65d20086fa9e0c358ba039b0d5c2f4a7c125b0734",
+        "base-luma": "5f3b61153e0dff77c94f153d04c84b55664964af7fe4994969caf4f39c49e05e",
+        "base-lyra": "a89f2c7a105dfed569bb363ebd5a1a123160020ac369d5bd17a492f4a41a498e",
+        "base-maia": "0c5bae2cad7e7fba5490002eafc0d75d30c2787d062eec1bb9d171292fbfd60c",
+        "base-mira": "ef9b949c9e3a4319d59c9f793681e203e882bd9427ee3ad6075d575cebcbcde2",
+        "base-nova": "993c2bcf1d159f55727c43484fe2445ad7cbd6b21788bb9e0af4c5e64090f994",
+        "base-rhea": "1761b9d4d9bf433ed2531393a9abbb1762978d2d0ef06f02abcf9cc68d697902",
+        "base-sera": "9ea09bf61e5885c40374f6076377d5e8cfb358636ba57c438fbdb657eba0c852",
+        "base-vega": "985384c263496a781a15fa62665302ab2ff5eca77cbf311ad7c9acfdc1540564",
+        "default": "1d3eb55a080a64de63f45ac37aa52e48d15a3ab70d33c4a92ac96e8e0e5d5dd7",
+        "new-york": "30a16b5fa4a1ddcf9945f4a116d4f908df01dafbdecf4d1c84d573e6c2b537de",
+        "new-york-v4": "d7733255b1a3ea3627055812d90d7a5971c2369e40b635268956cd1dc477387c",
+        "radix-luma": "41f8c2579b32e4358257630e4d7035fd386c06be3b34b3da54aa7a1faed51e8d",
+        "radix-lyra": "c9beafbdbde38cadd95e7ee9c80f2c24b2f5cf1e2d644fecddcd99ebf4fd910f",
+        "radix-maia": "8e0c5e79f5330e695b15d5d04cbc6d29ad9e2dcfe91d26a6ba5fa35fc32739ef",
+        "radix-mira": "ac53c3b2a6840524df98eabd335138a1287538f3f396edb42e7cf10bf0465ce3",
+        "radix-nova": "9e5e8181b0421de522c0625dd161a62306b84b60fc754f13604f80c20adb1982",
+        "radix-rhea": "7bc87efe98f8c8c112d109d0f1126765f735ca9f9adaf92360819a250bad97ef",
+        "radix-sera": "720c33b800862365811b8ce46b21e63774890ab69e61f68cabdaec6c72a2580f",
+        "radix-vega": "8a7c98e7ad94a2691d3929bebb364f8d43d983af7dea45ea6126586829e7d4c8"
+      }
+    },
+    "registry:example/chart-example": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "d75e43a20cab9be0cf989cb10795424524a86715224bf6d5e85e291e2c2da698",
+        "aria-lyra": "0825d7c028a270ce08ae1c35c8cf2e401ffa9fd71cf6c89d722661443438f161",
+        "aria-maia": "d276983d6af4bcc15a04c6343667b5ef55cb9cd3925658d04eaafc4fbd1b1315",
+        "aria-mira": "a120fbe6ae07caca6e11aea5964bf3987e1a09bfbfc1a9d34a40ad3b10817865",
+        "aria-nova": "79a840b19124bb1f1d6a7ee8f6ca4d908cfc5dc6f93287199c6ba1c70afdb48c",
+        "aria-rhea": "43ffa39883d8416c8eb7cb1a69eeb9566b76de75754ca16f3df2d8fda99b41aa",
+        "aria-sera": "a3a53dfe798e60c8a3393fa8e2755f381b32b090b5120e8fce77c746ef9304b4",
+        "aria-vega": "cd99930d413b53ad9a0789d9dc8af3d6c560eeba691c3f30ff424939bc822582",
+        "base-luma": "c52b7674a2c3a18c3837c26103b02c0f1a27dcc91a919650fc7cbc048adb851e",
+        "base-lyra": "d0a2a1305072383bf9408ad07f57c244d304ae068bcfb268eebbcec57989e8f0",
+        "base-maia": "0934036f3cb540e78cd1e367481d0c6d3717a84f39e5abf0b7fb0c9a3897696c",
+        "base-mira": "3a359ebf758cf6949ea2ea4020d98c3a7428a3e3cfd377b5005123038af8189b",
+        "base-nova": "f4543bf1abb524c602a70c67359b086121ba1dfd76707ae867557b4f22352973",
+        "base-rhea": "90bbbeeb149dcebedde4780b44f1a45352f6ec984d93ac97cd581a2db492c9fd",
+        "base-sera": "574bdeaceb9c0b96bbfe1d1ca47a5e3e57fbdf0bfda8118203ce874552fab066",
+        "base-vega": "85886d643a802b528708a1baaf9a64be42333567a2010e181d44b7f754803f5c",
+        "radix-luma": "61d6bbce247eb85c6ab523ac0000f71156689953aee3eeeb520fa40c92aa40ed",
+        "radix-lyra": "e77fb2f6f7d679283b4944b5adedbb8d27bdb1d01db77c05e16c96b0d21379d5",
+        "radix-maia": "15e6d2742c6aa72c5380b87902a698bd65ec564b21cc0f9f99b3e5f195182202",
+        "radix-mira": "1436374ccc2cbc8b114b850cd946734830967181412a37693f093e02337292a4",
+        "radix-nova": "a649103ea4e046b1bf4bec4d2c228b6c0f73393b12f08d19dfc25ae868808bfd",
+        "radix-rhea": "42d93b4a7c15a837ef38d0bc5bfe9199c951b138a5ee6241ed0b6e131539ab87",
+        "radix-sera": "2a74416b94620e4d9e048a541eb33bac45b559ed1356a94d61a5ccdc4dbbc0d4",
+        "radix-vega": "0353ef34d199dc6df5dec5cb3cc3adc9eb857cc56935620d143f986e8882617f"
+      }
+    },
+    "registry:block/chart-area-axes": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "52ef63fd907c97a4d5caf4e77671abee161c6477e5dd446f416a07371afde92c",
+        "new-york": "9bc5e5a12802b283d56af38805449767f257f760afe417cabd4f86daecf6d813",
+        "new-york-v4": "36ed05f8262a92790441de53bdb257cd438de9e3435f8d31ddec0ed6ad1d86bf"
+      }
+    },
+    "registry:block/chart-area-default": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "f688f476533cee19be831573f08ece63e16c3ca354b08604f35edd170c9542aa",
+        "new-york": "6aaedcf5b92a6661beb79dc11290167d68866c2576e940f03b67dd7a7b528dcf",
+        "new-york-v4": "ef13e01678c912fd14cbf81815c7228d44ba0d95a63ffb81e2759c8bbb5972e3"
+      }
+    },
+    "registry:block/chart-area-gradient": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "e910ef982ea5764bc0f44a7d588115f21f7d14c49989bcd1bab86baaef2b8f4c",
+        "new-york": "0d5194d51587a713bccd941c15e1c399fd1b4145478489f4fc53540e35e914bc",
+        "new-york-v4": "5129fa17e455ef41ae61d46e267180baa0c2223ba2cb55c66b2b917847aca4dd"
+      }
+    },
+    "registry:block/chart-area-icons": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "e36ba40b690716e3dd4d629b4d34ea89805d00dc2c7a2c861bd3e94329387620",
+        "new-york": "14afd6516b8b6c97101b7f2bb4bde99076c2b9ff43663a2167d3818fbe4093f3",
+        "new-york-v4": "82cfe4ca1cbed78472619cbedb0eba0c4ae441af9cd4fee70e8c128bea6f1481"
+      }
+    },
+    "registry:block/chart-area-interactive": {
+      "status": "partial",
+      "reason": "Original datasets, formatters, native SVG and controlled selection are retained and tested. The authored Select controls still require complete per-style native verification.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "42b865bc5b605a7aa05ecc05d6f2e3cbbb4fb816fc220b445eb82fc4b057a98e",
+        "new-york": "54d98883f838ac162a3e0b496b69a7442f44485ba35e1f4300cabc5077f5090c",
+        "new-york-v4": "57da6d19a230ac15c3f39e42fe7856d9f75518af9a00a405a7bc11275fd28df4"
+      }
+    },
+    "registry:block/chart-area-legend": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "df30e2be36452b4104ed221b5a71478b6c0e1961687291cb84dd643a1d31734f",
+        "new-york": "3d5b83693d2c1f59502bd1e235d44edd69b77dca7d863d7ed7b19db1c3b5f6e0",
+        "new-york-v4": "483cb13fbab29e09139f2816fb909f4cc36f0f3a637c3bdd291d0a446bcf650c"
+      }
+    },
+    "registry:block/chart-area-linear": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "dd91c7dd72a0e28188bfd3c158c27943043e5fd5cf8644811bca7d1157d7b32b",
+        "new-york": "e9a87c77fa447af79a76ba98c9036c5a07d8a0a935ebbacef810c7b6778f3f30",
+        "new-york-v4": "3151039b9b62038dc6354f994eab26e477b44898e39fc5b6e9fbb8617e879d32"
+      }
+    },
+    "registry:block/chart-area-stacked-expand": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "125fdf4a87e45f3542f28aea00d997f59115a80153eea7c87d182711cdf630cc",
+        "new-york": "0e0c9cc5340ba93dbd0a577f19875eebd4a0582d611fda3b7c15ba976ff8033d",
+        "new-york-v4": "a8b9b7808a64f44fa013f0b4059d14a220c9c1e6505da133f6e64ee4cc1edf39"
+      }
+    },
+    "registry:block/chart-area-stacked": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "176f86866ef9e67ce2ee672e26fbcdb3d67f6ac201b7f112573549c790793cb1",
+        "new-york": "b89a6d6b64691f0371fa208d4a8808b16e76dbb9148b8e91ba632806e04aca78",
+        "new-york-v4": "826c90b370ad88c824d0aceca71796f7e0c70d5528ef938a5757b65ebd2a0123"
+      }
+    },
+    "registry:block/chart-area-step": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "26cd5775d3b20639993db6e3189f80478370442fa9d940eb543ea9c6366c8c7f",
+        "new-york": "0d4d6573d99cc5b61832e313ec37b4a64a15687389b308f14d295a7be035657e",
+        "new-york-v4": "29359c60ec03848def38b356e6c9cf91d5ae365fa09cc88d75289d92c1cd2412"
+      }
+    },
+    "registry:block/chart-bar-active": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "5868ce061f3e1c2acb49caab6a525c35d950ed39efa698b35e6b744d3152403f",
+        "new-york": "7bf7ead17d4941d9250ee264870736557aac68039b3ae7a7bcc29a327d82ba26",
+        "new-york-v4": "8924d23f3c0fee77dd4596fc8dedd9c6c96aabb659474a6c01010f44826f93e2"
+      }
+    },
+    "registry:block/chart-bar-default": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "3dc8da095da46d9cad846476618fc1f93a1cc1823b13371b5c877c576335a51c",
+        "new-york": "f9088fed2ab517a695d56e7555f617a2716add4b0e622e77aa31e621beec8a27",
+        "new-york-v4": "9db0ea24ad3defd19c2d0aad899e602988dd415667f0e669b5bed4aa5e60b172"
+      }
+    },
+    "registry:block/chart-bar-horizontal": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "66cb26c8de925a148e31d3ac5479cac32cb9c8aab755a253ace0b579ea855a32",
+        "new-york": "5ec8a9e610ba4f3c1494e89ea233664bdd5f1909372ea8ba5dd6994da9583da8",
+        "new-york-v4": "ee9949be16e0f2b571bb5e39a0b2ec4efe674222de2a836bd99a793d15c7d169"
+      }
+    },
+    "registry:block/chart-bar-interactive": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "4e04fc82c0fe319df7e2cf269337e7e484a7ff6f6e43cca41872d8cb20bde3a1",
+        "new-york": "b3f4be05a27df72d3c0f401fa005e94616fa7acf6d06f0c8a8664e02e4cf1643",
+        "new-york-v4": "8c0ef2b9cbc20570c98caac06e7a36a965b6785ebd08f808242e386439cccc92"
+      }
+    },
+    "registry:block/chart-bar-label-custom": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c0695207e22b2f8c922f6b5b9883ac616a7ad45950eafb64c834c509bc50747c",
+        "new-york": "68706032ffe0cc5cca8f14468201f452ea70ee90513560e90f14e1ecc4169fe8",
+        "new-york-v4": "6718fd8559ccf895e53134a87cd46940af81bd328053e6c2824ccffffcaa0aae"
+      }
+    },
+    "registry:block/chart-bar-label": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "b25be27b34be1c4d769ce08e19bb8cf7cfa459cf00f4649327853d88b8c4f9b2",
+        "new-york": "58428e78912a1a704b7feb413cb4779fc3476bb96bb49f7847bd524f0ece509a",
+        "new-york-v4": "5dac08865dca366fe2038d8688e93c0ebbe46e091bd2f5942dcedfebecbfda04"
+      }
+    },
+    "registry:block/chart-bar-mixed": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "d00c362f32284cdaa2119afb1b5609b4c643778f5f8def20df6ad98f102a1b4c",
+        "new-york": "27104ccc8da8b8485a9154f69c7d639d7bd867e201d251b37c4966e5de23592b",
+        "new-york-v4": "45a8fe2d744d6eccdb0ea06a08f48b32c9ef96debe736f45b27d857243c04d81"
+      }
+    },
+    "registry:block/chart-bar-multiple": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "0c8084cd72df847cd8846404b4623cfa30f690b2b20817daf262565a217f9ff6",
+        "new-york": "dfd4ab9563d8d9f61a6cf014f5e694a84ea38e43a81808372d7448bfa2fa2e30",
+        "new-york-v4": "8f9e7ba6a873e1806af15a5f5af94391a14bef072a83c29a9390bcbc9ce7b647"
+      }
+    },
+    "registry:block/chart-bar-negative": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "ec2a2d72dbf2db75b4dafb4c82e8fd9be7f926f5db1c5a26072274b7caf21281",
+        "new-york": "508e1973f6a830e34f2147a0a99a6043899706d1574a5d4f26a08fb9a4932153",
+        "new-york-v4": "0976044a3f31d986e2f8dfe661744b79cbbe6eaaf9e96bee17f0fc9190fec0b4"
+      }
+    },
+    "registry:block/chart-bar-stacked": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "5d48706479dacfd4bc4bef43bf9b86b7a166ac74b5091822c7e18f48edd892aa",
+        "new-york": "27f0412e0e9b7fe320973dce81fa813be528c354e9d37be64b5bf9e0040037bf",
+        "new-york-v4": "51809d90fb2fb9a03ed8b02978fd527fa700738d8012ddcf9be1109f22ecdf55"
+      }
+    },
+    "registry:block/chart-line-default": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "88ed45e7ed8324e2ce58943b8c383906d25505335d02f51dfd5c2409e4c6e2c6",
+        "new-york": "813f22c6eebd1e5e447b10bea631d5f283bd4920a07055be4d902366e0e561f9",
+        "new-york-v4": "4665a7f8b7f36ed790bc8114fa636a74e3f94f46d87a92b407f612f19fe4501a"
+      }
+    },
+    "registry:block/chart-line-dots-colors": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "6aa4e889281d751110847eb1302611d1557df49eb35538e9e9f909e1881e3d42",
+        "new-york": "202bc61b382ce982fac68a8d85ca7bca87ff7ef3b2dc709b3d04f38df5604dbf",
+        "new-york-v4": "9ae98134ba5304edb4c36fafe16188f833fdfea89bc2695f09cc1a7a86f48c68"
+      }
+    },
+    "registry:block/chart-line-dots-custom": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "3550ec7c40bf8c5d2f113226fdf018979503734a147a7606b6460b3d0f314ce4",
+        "new-york": "f0e893a300d341cfa77337f14fbbf2dc7e1f579318b234c1ebb1a1eeda8e2180",
+        "new-york-v4": "f5aab19f432eb610f18bcade9e8f8131f930cc09b609101690c36a922ab12f3c"
+      }
+    },
+    "registry:block/chart-line-dots": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "dd1a30b2c6c3bb4e9dfaaef77cc5fb7664d88b48480d9cb92e3c3016e2b7d514",
+        "new-york": "92388388565e5e96a46a30a2f78a6495a3a1a6ed9f990fe88a54e5e3efaea923",
+        "new-york-v4": "df1eb519baadc37e79e3b97622c17dc5b9b3a69af204038a6f4cd1187bca7b4f"
+      }
+    },
+    "registry:block/chart-line-interactive": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "eb1db48275558697534d1e32f3dded77c981176707110d9a11371b2d993f4bb3",
+        "new-york": "cca94119e11fa053e9cdf0dcc159475942a16c2eafcaeb16e34ccf170af3bc1f",
+        "new-york-v4": "cc4c45974da67ba4279f0721bdff0de4dc70d4be443b2b4115fb2b186638e40e"
+      }
+    },
+    "registry:block/chart-line-label-custom": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "75990659249ff70b06c80efb74791481764464f5469287ac8caac4a736cdf50a",
+        "new-york": "ee28124a339038207c49b0f6f2727f5455ddd261ab861c35b37773a186f7e9b3",
+        "new-york-v4": "46982599964e65dd35131e736e21c6f82edf02949553428f6f74434529b8d2fb"
+      }
+    },
+    "registry:block/chart-line-label": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "908ba26069bd25ab57b2428fc61a9e9c67b9f7ce58f0fe5f94c93c17ae15b423",
+        "new-york": "ef5d81774058a21103a78c834f8399fce6073b3c4bd2645b4ad146c8ebb54979",
+        "new-york-v4": "4416af907896359b201d2d86948716b1b0b9eaefe2c140e509884ab73a3e4dfc"
+      }
+    },
+    "registry:block/chart-line-linear": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "1da240d9d09949ecb7e7d8a4df7e27a60f3b5009b931aae2b43cd068a70879f2",
+        "new-york": "cca49c076346ce686fcd74fb497051f5dc7a16732c5393d869d3a7ab996f8d9f",
+        "new-york-v4": "20598975af4d9049f5edb7f3d8726c03740ead58b58bbbae2d5bd79ef8e96591"
+      }
+    },
+    "registry:block/chart-line-multiple": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "bb54c9b0bad1ee4a15418e60c46325884c133c69e76020b0866cc6c552ad5148",
+        "new-york": "fd11fc572ecd13e22091ed420aeb44409d006d67b5bc706cf2b933b593cd3958",
+        "new-york-v4": "ae23ea707f6027e8fdc16ae83a006fd3a59a846732ab71908e2129cc0d277c27"
+      }
+    },
+    "registry:block/chart-line-step": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "35136be2105454846501ea4295d93f5fddaa3f3a3a6642ef771b279ca01d0e82",
+        "new-york": "e959be64863f94c3f69d51c1eb248d2f3efe22b0d4cfdfa342633213d24a5495",
+        "new-york-v4": "e0e0f223d9a72153a3cc8ba710ba4f26ce805064b312f59618eacf8d3592d5ae"
+      }
+    },
+    "registry:block/chart-pie-donut-active": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "b2336509fdd84ee1a57915349ef30fb0b978f447f5656e47bdaa04ea3c28dee2",
+        "new-york": "9438730cff15019ba949b01709ca50eeb367b510ef191f4a5c1903f743ac56ab",
+        "new-york-v4": "2340a500b04839c54c90517fb941cfb5775da46b62c71bce71fea92342287940"
+      }
+    },
+    "registry:block/chart-pie-donut-text": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "70523b45268becc41cc81547d18966882472f86fdfca7b5489117a462b99dbcf",
+        "new-york": "5a4222ba5ab95e8b92af5753e5471d33cf3c52add40568c4ddbf23baa78005ca",
+        "new-york-v4": "a4280914b8ef994e5bd4c1846a621f5fa48b5dcc81cc19a2091e28ada2025d86"
+      }
+    },
+    "registry:block/chart-pie-donut": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "7e5d31f1ce04a60153dcf3e16781d1883e82d0a37f4a52712b7fa06b07b899d7",
+        "new-york": "8f80b151f3544cb04284e654f5b9c69bfb0e20e4b8c6f087a0c629f71d083e1f",
+        "new-york-v4": "ab9f2edaa41631138d204bc9dc1596a4d92c2226259f3fb2d44e023aa86e5e3b"
+      }
+    },
+    "registry:block/chart-pie-interactive": {
+      "status": "partial",
+      "reason": "Original datasets, formatters, native SVG and controlled selection are retained and tested. The authored Select controls still require complete per-style native verification.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "0a53f484b863daf63eb0f75fad70650f54974f3db810a46c04d16b495721f920",
+        "new-york": "da382d34f231d374cb550ecdf58d4e8424eafb697a5e2618d046d19d61dc8c87",
+        "new-york-v4": "673e76f3d736fde155cec3f50842310c159a98064e3e0149cfb1f50e03426f1e"
+      }
+    },
+    "registry:block/chart-pie-label-custom": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "1493762eaaaa693be772e7ea3e512dc785146511c9fd14037b4d1d91b18c5d86",
+        "new-york": "6b39880dd356cd59f82eabeb18d788f0cfc6f36f8fa38edde874aa10c0a649f7",
+        "new-york-v4": "25d24387c91c4c5f71b18f41a42fe0b0b6cc5ef153cd922eb44e54954accba61"
+      }
+    },
+    "registry:block/chart-pie-label-list": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c820b95c8f7661dadbb604b669fa611ae4bcc621c87ac277a2b097917850f34e",
+        "new-york": "ebbbecf01de8b15e17ac44356b08a8be79d4ee568e1bc251a4a6d45f73225ee9",
+        "new-york-v4": "026c9149f0e24cffee1e524b5d1cfb81bf5b7b54a30f8f83cfefdfa6183f7f14"
+      }
+    },
+    "registry:block/chart-pie-label": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "75f20eb560539305c12de66dd464818924e5ce2c5b30170c1b6c5b51b8bc8d27",
+        "new-york": "eee0f30a8e15f139c2736aedea93ac81b9fd5757cdd672fe97687b15462c8093",
+        "new-york-v4": "2f93e35bd9c2477493f476ccfc9cf011a7bef6c393833f30cf377db6a07761ab"
+      }
+    },
+    "registry:block/chart-pie-legend": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "922a2530097c7cc2d24f578d85fa49f2f0c3c7eff88da2637c8e7367ecc9e76a",
+        "new-york": "58355a2ffc0b223db431d2ad9b798126e27d7bb9f49134fc17ca58af289c9112",
+        "new-york-v4": "89fdc2780e3bf59c3f5edb6e353786f3ae660e03bc31199f05250fcb12dced0e"
+      }
+    },
+    "registry:block/chart-pie-separator-none": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "48f2b9b571ac186ebb15f5bf1bb186b95b4de7cb6982ffff9693ba766d35bd13",
+        "new-york": "d2555a0c8ddfe4ae52eb875314fce0e9900083e2b68982df0d98406be41a0b97",
+        "new-york-v4": "80d02c2630d656c1c21095d0490c20ca766265a71f70eaec49bd3d92cb505d9b"
+      }
+    },
+    "registry:block/chart-pie-simple": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "b5f48e4428b9a36e3362876c8c3c47d03bd670d4c4f4e015fc4d7ddae4e20da6",
+        "new-york": "3b0bee79540f2f9760b2b244922db3b8edc29816baebac6ae5f81a1a40b67b4d",
+        "new-york-v4": "9425ffb62e22e8c27c941b6ac5f9c99326fc75686f74320e61cf540a9e07354e"
+      }
+    },
+    "registry:block/chart-pie-stacked": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "a1128d8c1e2fcdb0a0688424cfc4f4407c3eb0e1fb1e793aba6c163b7b12a2ef",
+        "new-york": "8f5e2b92724315f02432a4715688835c6c99a302b3a69e362e7b9ab7512f151e",
+        "new-york-v4": "a2717fbddb702d8b92fee4f02225efaee0c016c3ad0d2f2e622502b405dd3ebf"
+      }
+    },
+    "registry:block/chart-radar-default": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "a38be296d8f3f3121a0ca28c0c97feed8393bb26118d40528548589152226a85",
+        "new-york": "d0818a4a7ec070248c8a1f82f66dd25b70616e0b36cdc5a35c2b9e9df404ce7f",
+        "new-york-v4": "2776a4ff21019cbb35b345bea8fd8a2df3c0023eaad396f6c579b672f42915a4"
+      }
+    },
+    "registry:block/chart-radar-dots": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "1538501c6662041414db728e131c57556ae5200132e1b269fdeeababef8668b4",
+        "new-york": "dc31a2fd4d5778e9f87f4c0001bb0a2fc7bd0fa223dcbf89989c486b529d857d",
+        "new-york-v4": "1ac872a4d5cae703ba8f0e06aa1a60fafc8a4e766c4d73059135bff280189ceb"
+      }
+    },
+    "registry:block/chart-radar-grid-circle-fill": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "fdbe5fc0e94a357b1a9e25adb41e00d2655d0fa08c7fca77408411dc46b987ee",
+        "new-york": "f527a6cad33e936fe9017266e88873f4c56a359050b5ab638775b0eb02f25a66",
+        "new-york-v4": "1b6bb8a5fbf21200828637eda6b1cd60654a3c32e48df7e146c81f43b3455327"
+      }
+    },
+    "registry:block/chart-radar-grid-circle-no-lines": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "b89c0e1a97dc09f82c0b1a64f7f42fa7711139debee2dc11c75574df2714230a",
+        "new-york": "ead55a50a62f620877c45af0f7bf6bb4e4b813e280e7559123558f9254eab4d4",
+        "new-york-v4": "540ec72a4dcdec2a835fe44484519a9cb4b308869039853587ea741e93594760"
+      }
+    },
+    "registry:block/chart-radar-grid-circle": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "df111517273f17252b79f99a37a33b2e4b5d8f4497dd6d0993beee3e2560e8ab",
+        "new-york": "27bb952a937bb5871afb933fcea6c4e9304fc4adde794bbe538b40a809800b3f",
+        "new-york-v4": "e44ba73feb2f1c8d48acefa74999930024e09910542809f166fdf5e0062d1ef4"
+      }
+    },
+    "registry:block/chart-radar-grid-custom": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "50a975e163c8e392c38194fcd14e8924e2d637fbe09c761ce6e3fa7ea7e3ac81",
+        "new-york": "2846cda845f1f3b4dfadad56ed1a6de0cf40569f966705c30e269b27aecf8612",
+        "new-york-v4": "1292a0ef6f9f6e91a0544709498faf8298226bbfdc28d0e0fe432fada95fbce5"
+      }
+    },
+    "registry:block/chart-radar-grid-fill": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "897f51ddbbf620f75d6d1a7f44706c3c915137e253dfade8a670a868a5ac5022",
+        "new-york": "a26228ebc2aa9d2c021a28366f1e363817d635e153c231e454c27880bb279900",
+        "new-york-v4": "b30028802f656e5adfed22729b42b80318b1d6d142bac6e7b50ffc323852778b"
+      }
+    },
+    "registry:block/chart-radar-grid-none": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "4dfb37345281d798db1bc5e681a40ca475c9aff738128410beaec88eb9a43f45",
+        "new-york": "16f155195987e18d21f54d47c51908e608faf2da6e25de954b727314cdc2d49a",
+        "new-york-v4": "e646991e62771baf6505e598944193fdb835a7aac8a872041e3a9e975224d375"
+      }
+    },
+    "registry:block/chart-radar-icons": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "817d70af84d254bb0dd825dbb0e62770543052f68a8e4f9d3a4de24868fec9da",
+        "new-york": "4dee59cbaa78f8ee62b4cb89fed1b1e2d6c5efbb0f0e4c932c2257ab7aa09237",
+        "new-york-v4": "5c204782433fbab11f1900ea78adc07ae2e4958cf5f507a99f98dd7dd0b3703e"
+      }
+    },
+    "registry:block/chart-radar-label-custom": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "08eff2f049059225d6f7123ff3edec23f4320123580b811db2c21143e22b5a80",
+        "new-york": "713b1ae4b9e559bcb02232db0e800bee877beb5d597270359458a37f19a090ed",
+        "new-york-v4": "9b1e9ef73a93e4cbea23c67555e1a192bea564ebe0759db187442363c7fea5b0"
+      }
+    },
+    "registry:block/chart-radar-legend": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c953592b2523be183d1badece5f0a6373085918c3b99a092ad5f70bd2de8fb91",
+        "new-york": "23b5a6812596158903b79e6cf134305cca14715b6ff162e1e4733192170d2b11",
+        "new-york-v4": "af97f08bec8791be9e11bc982b515138c38f24ca5b498c8ccabf9862ccbd64c9"
+      }
+    },
+    "registry:block/chart-radar-lines-only": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "8752c55445da1f53fc596c7af76676e3d7abb417943a204c25c3a11afafeedf7",
+        "new-york": "34933d45ab3da90783603f70197d8fb24205304a0c9acbb67c1c048a0d16e7b6",
+        "new-york-v4": "4a095a0619ffa1b6d0f25b60ae512a367e4069b1824c79f139a7247856e8631a"
+      }
+    },
+    "registry:block/chart-radar-multiple": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "3096bf2de765f7c57ecbb43b0290e7c13f01a3e0f779e61fe8487446661130ef",
+        "new-york": "d3c52eb260b7ab270a61cc1a9ba1ef4ee83b514f82aa1914c87e58ab702611dd",
+        "new-york-v4": "744237d84266f269020ebbd337b85a2fe79bfe4f695db3fb935c7f7f99d216f4"
+      }
+    },
+    "registry:block/chart-radar-radius": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "7b7566414cedea9b79a32771a61ebe68aff70c6ec596598a4979bdf1db4e4f61",
+        "new-york": "b51ffe5ebc34aa666e0e8e11e0cfedecea3f4b95f57e77cb938e1fc3fe92b42a",
+        "new-york-v4": "8f16b7277868e655b7668f51fd3e19e0fb63b5bbdd854356601afe58fdc124bd"
+      }
+    },
+    "registry:block/chart-radial-grid": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "0cffb1dd8e2846feb5b8329405a786446a0ee0b4f7f664b96cff4a815d51abfa",
+        "new-york": "12307896a82d2cabd711c4e0ab6d51610645928c6baa7cb67e495a8b178594a2",
+        "new-york-v4": "617e28504cf51ebbfb429cc8ce3f6060c76f825d741121a3e12fef93728fb1f0"
+      }
+    },
+    "registry:block/chart-radial-label": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "dc8c9cf8057e6abdfc8cadcf57da95c648bf9a3ba8364407a41c8f985520f435",
+        "new-york": "7dd732b48796fcc71566136326e1891e90ebaf3d61adc29093b396d2caa37e08",
+        "new-york-v4": "29a2410a892a3f45ecaa797f6b2c1b63bffb4497535258e7d1c06436566ad531"
+      }
+    },
+    "registry:block/chart-radial-shape": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "430235a5e5de4cbec19aaf32ca5aa9d62af7b1a570704dd7f7dc8e8cf5641e99",
+        "new-york": "9dfc74ff40fa97eb1840e8e174bb07e87401ec7b56cd094406eb9a5db0aba06b",
+        "new-york-v4": "99318e7a46d11d1e288e218cc9d079800e932eead90444d8da2598b54311cb1a"
+      }
+    },
+    "registry:block/chart-radial-simple": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "dab278b4455f37032898bb4b1739dbd09be13beba9853b98f52e0cbdaa9f1a5f",
+        "new-york": "93252f8afbe06a458dfc8a35138fc41235a2be4e8cc98079f50fe9028f352efb",
+        "new-york-v4": "8fdc916040faebd577cc8d393f7858a71673f3337285de011c0fa96b47ceed98"
+      }
+    },
+    "registry:block/chart-radial-stacked": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "5c4d46a506d075d50a67bb0a9b5b105a12d9ea53c6e5a6bf6088208a146981be",
+        "new-york": "95f9c8a5f1c43797a021acd44fdac50379c32e4045ec43d8af21deb6fee25f8f",
+        "new-york-v4": "3990c45479b21734c9c441f7f3474874210658ece9bff63ecec19dbcf96e884f"
+      }
+    },
+    "registry:block/chart-radial-text": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "041600fe80189f8bff1dd1feb98cc021d2a025e757e06166ab3c2735b3ec05df",
+        "new-york": "c2ff8155b71ca9a7a0fac613071388474e6c7b22e0e9242e988d2b3c8e764d51",
+        "new-york-v4": "056d2e4a0281a2dca35d50ee7ef7f655f6641c4dda520afac4cbbaf0a13c982d"
+      }
+    },
+    "registry:block/chart-tooltip-default": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "1810e0e763d97b5884b1e0678196888ef72eec768b323a180ac9b032db6f51a4",
+        "new-york": "a931536df7fced40f54b61406cf3c1992d80b3039b167f480a32a1f777a6f235",
+        "new-york-v4": "34d239f01be713c77f07f33d711df57b426e44352d2e6b279fc36f4551be81b9"
+      }
+    },
+    "registry:block/chart-tooltip-indicator-line": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "fbc1c511fe8158e4baff7cf8c71e003d5145d7c848477ea39bdad10fcdc5d195",
+        "new-york": "f880cf65a56172685f9312deaff37e50213aaae7eb5688b2578e7cc34ff74e79",
+        "new-york-v4": "b025f3bacbf6d0f7e80f8e060e7f3610904e37199094aa48158888733c7f641d"
+      }
+    },
+    "registry:block/chart-tooltip-indicator-none": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "305bf191f05657c74a4a4fe4508bc30b5cbcae50f07f647d898e65b46585a66e",
+        "new-york": "f68f4cc0c531ef23a383eb618d1cd0b918a37c1c2c2c09191c166e272a36e8a6",
+        "new-york-v4": "20ea82e6e103b3ced50a2aa7b933f697dfffc2a96910a078d6bcca18b12b3316"
+      }
+    },
+    "registry:block/chart-tooltip-label-none": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "98829cd1262b5b7e171d60426f3d196e2f425fc0e7ac19f421a66e8f26577e43",
+        "new-york": "80dde5fbbad687ae3909db0aff9368d7ada11705ab2569c0d31a95d6d6789822",
+        "new-york-v4": "30d4c45142377f746cda1c35f27c46c3a6cc360e6c6c58bbc7c22a6ed18afea0"
+      }
+    },
+    "registry:block/chart-tooltip-label-custom": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "9a5b58f2bad04b92920728f36c92082c2451177dc8c81ebe36ff193e6967f8c4",
+        "new-york": "e5bde0b4b8943c49ecae4254fb2ff7b948cbcb3dc7ee5db1c08d17dd7a402086",
+        "new-york-v4": "b13d6c2241722b5240a2cfdd70c2416b3ca610f73cda1d3c3ebc73978898c203"
+      }
+    },
+    "registry:block/chart-tooltip-label-formatter": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "553af493e7ae2b0364d597c41358c2597416ee7eebeb09f5cfcdff8cb669153d",
+        "new-york": "eaffb704ea5c5ce4058b4b32a79d47ae3aa652eafdb47cd4415736a7043018be",
+        "new-york-v4": "6273a30cee7da948edcbaf60830c4838cffcf9748afcc3f362ad50b941dfcaf8"
+      }
+    },
+    "registry:block/chart-tooltip-formatter": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "4f537bdd69bad2d680170e704f59ff8d633969635643f27314dfe60c706b56ad",
+        "new-york": "5cb34bdfb021b9fb2baebc367b06cdf2a262f37097edbeef980e9b180a24a46d",
+        "new-york-v4": "2f8e94a874d0b2b11aef745cd0f299eb4facbb18f329f1541d1899c1c250b1b6"
+      }
+    },
+    "registry:block/chart-tooltip-icons": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "78f25f3d71e485acf86d9546b35acbd3340942baad85e870e5a8f6d18f860fa8",
+        "new-york": "26dde867ad7213d7d66839d3e557565cf7d5d18925899de2ac3a922a4516c3a9",
+        "new-york-v4": "166af565d83cc64eba1c89f176f0a3cb30c494183691a992a106507756fff82b"
+      }
+    },
+    "registry:block/chart-tooltip-advanced": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "7e0bdc519502765c8e6645519502e4c8acc54abbdcba6f9366da4fafec7f2abf",
+        "new-york": "6591b363c5eb23a6060a103ca36364f02e91a2a679a7ee97d4eceb45faa30e9a",
+        "new-york-v4": "567881a6892c2d7d938ac9f58c419c6d7d9c863ca732c8e3f7598ab43a1ca3c2"
+      }
+    },
+    "registry:example/chart-bar-demo": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "2dffcf5b8862c6ae4d544cd717ff12c73896eec0f83a01232ad1b7c56eece683",
+        "new-york": "dfab2975be908fc831f7981d8fff9bd81dd6cb1d2b8608e5fc66ec67730a8901",
+        "new-york-v4": "b44e3a16d93aff13eedd71d2a4b610311933ce2cf7d8dc12a43c9a2d9a4938ce"
+      }
+    },
+    "registry:example/chart-bar-demo-grid": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "957372cb6b9f9e8688cc9d29754a2fa79ffb1a29e534db8e0b480118d25cec56",
+        "new-york": "c84f63ac24115b3a577ba6a0047f469154f450f77b67c2d1863da03d4832bf55",
+        "new-york-v4": "49ea2bb0b213d109b074743712c377801983c3df2110abd06272cadfaed2dabf"
+      }
+    },
+    "registry:example/chart-bar-demo-axis": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "cc8f11a31781221ee349723024a4db096bdc991f1e96197428db6c1414937606",
+        "new-york": "b149a4b61062fb05594ef052d02d059863c9d147ae7499e3318fbbb6ef4b81c5",
+        "new-york-v4": "f2e18349b4a6cadb8cd2d912e9ac2045fc64e1696eb3ddc838008705efc1febf"
+      }
+    },
+    "registry:example/chart-bar-demo-tooltip": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "db6d67b7fb033d1e368b6988df5c41f1f9f3d36987114a8c18ca92bd906b1362",
+        "new-york": "7a4966f37dbf779f1f2aaa777efe7a533059b260cf9973b9687d13dc0f7ec961",
+        "new-york-v4": "663d2531c045d777bcb476069d8417d223067ce85eaee9479f108f07a2603f21"
+      }
+    },
+    "registry:example/chart-bar-demo-legend": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "aaee023c07b87b716d56d7a43f3a6cd882f64118e0338929dc4c02c4c7890079",
+        "new-york": "62258135035e109d239002729cd2dad22cd0c5a755c123b3b882c66e73949810",
+        "new-york-v4": "002ba4e99df452bb259b4e00326c850f76552e1dc8c79438e8a90690acd8e380"
+      }
+    },
+    "registry:example/chart-tooltip-demo": {
+      "status": "ported",
+      "reason": "Pinned authored data/config literals, formatters, layouts and native SVG series are preserved. All chart modules render and select original data under both native test targets; chart-specific tests cover all source tooltip presets, geometry and controlled interactions. Native drawing/controls replace browser Recharts rendering; scoped colors replace CSS injection. The source examples use native Card/Chart/raw-view containers whose gallery width behavior is accounted for.",
+      "nativeFiles": [
+        "assets/ui/native-chart-recipes.json.gz",
+        "assets/ui/native/chart.tsx",
+        "assets/ui/native/charts.tsx",
+        "assets/ui/native/_chart-context.tsx",
+        "assets/ui/native/_chart-math.tsx",
+        "assets/ui/native/_chart-presets.tsx",
+        "assets/ui/native/_preset-chart-style.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-chart-contracts.test.tsx",
+        "tests/native-ui/registry-chart-engine.test.tsx",
+        "tests/native-ui/registry-chart-presets.test.tsx",
+        "tests/test-native-chart-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/registry-chart-recipes.test.tsx",
+        "tests/native-ui/registry-chart-examples.test.tsx",
+        "tests/test-native-chart-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "067ea86685893b9c05c7d634998f0236911b18a42a62d355e3a37d65e70496fa",
+        "new-york": "550689051cb7d9d6f41311b65c31510629697106396b350e0421ef7ff8de3e1a",
+        "new-york-v4": "8292a119464d36b2451f644d6d72a112bbb94f75fab660f732086426cb68072e"
+      }
     }
   },
   "webSpecific": [
@@ -7322,6 +9781,11 @@
       "feature": "HTML label lookup, CSS peer/group selectors and React Aria LabelContext",
       "adaptation": "Use typed native View refs, native press events and scoped field/controlID ownership. Reactive native control metadata replaces order-dependent DOM peer selectors; Field disabled metadata models group state without implicitly disabling its input. Associated labels avoid duplicate accessibility names, preserve cancellation and can focus read-only inputs. Source typography and Sera choice-control exceptions are retained. Browser cursor/slot/for properties and vendor context are replaced by the native association API.",
       "status": "All eleven style families, six source implementations, sixteen theme slots and all group/peer combinations have native tests. Native refs, live disabled state, checkbox/radio/switch activation, read-only focus, cancellation, independent targets and cleanup pass on both targets. Field/choice-control full source preset parity remains pending separately."
+    },
+    {
+      "feature": "ChartStyle CSS injection, chart DOM/SVG selectors and Recharts animation internals",
+      "adaptation": "Keep ChartStyle in the upstream web implementation. Native ChartContainer scopes light/dark series colors in React context; the native SVG renderer paints source grid/axis/cursor/marker rules and exposes explicit selection. Native View refs, textStyle and labelStyle replace DOM refs/classes. Browser Recharts rendering/animation internals and its entire external package API are not native exports.",
+      "status": "Six source implementations, eleven tooltip style families, all three indicators, custom icons/formatters, legend policies, scoped colors, real layout and every authored chart module have native tests. Interactive area and pie blocks retain pending Select preset coverage."
     }
   ]
 }

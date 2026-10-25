@@ -1,3 +1,85 @@
+# Source chart styles, native rendering and input provenance — October 25, 2026
+
+ChartContainer/Tooltip/Legend retain all six source implementations and eleven style
+families, including tooltip surfaces, padding/radius/shadows/rings, source type,
+three indicators, icon precedence, formatter zero, scoped colors, native refs and
+caller textStyle/labelStyle. Source SVG rules now retain grid border/50, axis/cursor
+paint and literal-white marker outline handling. Vertical charts draw a horizontal cursor
+at the selected category. Browser ChartStyle injection, DOM refs,
+CSS selectors and Recharts animation/package internals remain explicit boundaries.
+
+All 231 chart modules now guard 483 authored data/config literal inputs through AST
+comparison during translation and retained fingerprints. The native module sources
+are byte-identical to the previous catalog; the new metadata records that review.
+The shared validator still accepts non-chart form/example catalogs. Source review
+accounts for 76 further item groups; 438 remain unfinished. Interactive area and pie
+blocks keep pending Select preset coverage, including Select imports omitted by
+upstream registryDependencies. Other UI/example/block work remains open.
+
+Visual/source review caught double Android shadows: RN 0.86 applies elevation to
+the native View and independently paints boxShadow drawables. Source utilities now
+use their exact shadow/ring layers with zero additional elevation. Before/after
+Android screenshots were inspected and retained with the owning native excerpts.
+
+Validation for this change:
+
+- All 59 native suites/1,719 assertions passed on each target after the final shadow
+  correction. All 720 modules bundle for both Hermes targets. Source generators,
+  API ledger, generated typecheck, lint and static security pass. CLI tests: 669
+  passed, one existing optional skip. Packed consumer and packlist passed: 249 files,
+  1,050,158 packed bytes, within the existing budgets.
+- Android: all 18 instrumentation cases passed, including the 716-root sweep,
+  eleven measured tooltip presets, all six series and actual displayed value updates.
+  Evidence: `.artifacts/native-ui-android/2026-10-25T14-29-00-133Z/`.
+  APK 22837b094457abac63dd8d48832fa865b9d3b0fea25ef2a0238243b6ab433996;
+  test APK 361f8896c2e443374678d5b1cce2b315bd009df83b47675888d685b437ba3265.
+- iOS 26.5: all 18 XCTest cases passed, including the 716-root sweep and chart
+  matrix. Files restores its previous folder and can expose two Browse buttons;
+  the driver now targets the actual document-picker tab bar. The failed full run
+  at `2026-10-25T14-30-32-591Z` is retained. The focused regression passed at
+  `2026-10-25T14-46-45-954Z`; the complete rerun used those unchanged built binaries.
+  Full evidence: `.artifacts/native-ui-ios/2026-10-25T14-52-12-472Z-reuse-full/`.
+  App binary ec764566e0216ac244043ebe94d08c3722ae1183f884dceec1ee33c42c487a81;
+  XCTest binary 47cb94560f8f607474f2ce5e6720d12b8e751851c9f1c30396fd7f6056d914cc.
+  Both hashes were checked before/after execution, and all 139 shipped native source
+  files matched the review index and private built copy. Focused runs are not counted
+  as full acceptance. An earlier obsolete run was interrupted for the shadow update
+  and is separately identified as interrupted.
+
+Detailed source equivalence, immutable-input review, native shadow owners and visual
+comparison live under `.artifacts/native-ui/2026-10-25-chart-presets/`. Expanded
+screen-reader/physical-device acceptance and the QA application's iOS 27 scene
+lifecycle work remain separate; these results do not close the remaining registry.
+
+# Source example gallery sizing — October 25, 2026
+
+The three modern Example/ExampleWrapper implementations now retain source background,
+responsive grid/container widths, 48-point panel padding, theme radius and caller
+class ownership. Native class composition uses the pinned tailwind-merge 3.5.0.
+Utility translation corrects container widths, media/dark/preset precedence, padding
+replacement and flex basis resets. The direct-container width selector currently
+covers raw views and Card roots; other component owners remain explicitly partial.
+
+Native device testing caught zero-height single-column panels: native scroll/flex
+layout needed an intrinsic auto basis to reproduce CSS grid auto rows. Explicit
+active basis utilities and native contentStyle still override it. Final Android
+screenshots were inspected and show restored Card list content. Measured gallery
+panels are 320×116 with child inset 48,48; p-0 panels are 320×20; two-column cells
+are 144×116. Earlier failed and focused runs remain preserved.
+
+Validation: all 58 native suites/1,691 assertions passed per platform, all 720
+registry modules bundled for both Hermes targets, and all 17 required OS cases
+passed on Android and iOS 26.5. Both runs include all 716 authored story roots.
+All 137 native source files matched both private device copies. CLI tests passed
+664 with one existing optional skip; lint, static security, packed consumer and
+packlist checks passed (1,044,262 packed bytes). The source-equivalence report is
+`.artifacts/native-ui/2026-10-25-example-layout/device-source-equivalence.json`.
+Android evidence: `.artifacts/native-ui-android/2026-10-25T13-59-28-163Z/`, APK
+719e8fa4c1d3693644a073f6eace1f544e4aa27c84243324e23124cac6861460,
+test APK 16ca1f3b397810019daacf9392012f81d0187b0b049019938379377fc4db430e.
+iOS evidence: `.artifacts/native-ui-ios/2026-10-25T14-00-42-011Z/`.
+These runs establish this layout fix, not completion of the remaining registry.
+
 # Source labels and complete authored native rendering sweep — October 25, 2026
 
 Label retains all six source implementations and sixteen newer theme slots, including Sera's distinct input versus checkbox/radio/switch typography. Reactive native control metadata and Field disabled state replace DOM label lookup, peer/group selectors and vendor LabelContext. Native labels preserve cancellation, independent control IDs/refs, disabled targets, read-only focus, cleanup and explicit caller styles. Tracking resets now clear inherited em spacing. Keyboard groups and unbound labels preserve inherited native text tone.

@@ -596,13 +596,11 @@ export function registryStyle(
       else view.borderColor = options.color(value);
     } else if (token === 'shadow-none') {
       view.boxShadow = [];
-      view.elevation = 0;
     } else if (token === 'shadow-md') {
       view.boxShadow = [
         { offsetX: 0, offsetY: 4, blurRadius: 6, spreadDistance: -1, color: 'rgba(0,0,0,0.1)' },
         { offsetX: 0, offsetY: 2, blurRadius: 4, spreadDistance: -2, color: 'rgba(0,0,0,0.1)' },
       ];
-      view.elevation = 4;
     } else if (token === 'shadow-sm' || token === 'shadow') {
       view.boxShadow =
         token === 'shadow-sm' && options.generation === 'legacy'
@@ -631,13 +629,16 @@ export function registryStyle(
                 color: 'rgba(0,0,0,0.1)',
               },
             ];
-      view.elevation = 1;
+    } else if (token === 'shadow-lg') {
+      view.boxShadow = [
+        { offsetX: 0, offsetY: 10, blurRadius: 15, spreadDistance: -3, color: 'rgba(0,0,0,0.1)' },
+        { offsetX: 0, offsetY: 4, blurRadius: 6, spreadDistance: -4, color: 'rgba(0,0,0,0.1)' },
+      ];
     } else if (token === 'shadow-xl') {
       view.boxShadow = [
         { offsetX: 0, offsetY: 20, blurRadius: 25, spreadDistance: -5, color: 'rgba(0,0,0,0.1)' },
         { offsetX: 0, offsetY: 8, blurRadius: 10, spreadDistance: -6, color: 'rgba(0,0,0,0.1)' },
       ];
-      view.elevation = 8;
     } else if (/^ring-offset-\d+$/.test(token)) paint.ringOffsetWidth = Number(token.slice(12));
     else if (token.startsWith('ring-offset-'))
       paint.ringOffsetColor = options.color(token.slice(12));
@@ -703,7 +704,6 @@ export function registryStyle(
       view.boxShadow = [
         { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: 'rgba(0,0,0,0.05)' },
       ];
-      view.elevation = 1;
     } else if (token === 'text-pretty' || token === 'text-balance') {
       paint.textBreakStrategy = token === 'text-pretty' ? 'highQuality' : 'balanced';
     } else if (token === 'tabular-nums') text.fontVariant = ['tabular-nums'];
@@ -792,6 +792,9 @@ export function registryStyle(
       ...((view.boxShadow as []) ?? []),
     ];
   }
+  // The maintained Expo target supports CSS boxShadow. Android elevation paints
+  // a second OS shadow and changes stacking, neither of which the source utility requests.
+  if (view.boxShadow !== undefined) view.elevation = 0;
   if (paint.contentCenter) {
     if (paint.columns !== undefined && view.flexDirection === 'column')
       view.justifyContent = 'center';

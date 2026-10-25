@@ -1,3 +1,56 @@
+# Source chart styles, native rendering and input provenance — October 25, 2026
+
+ChartContainer/Tooltip/Legend retain all six source implementations and eleven style
+families, including tooltip surfaces, padding/radius/shadows/rings, source type,
+three indicators, icon precedence, formatter zero, scoped colors, native refs and
+caller textStyle/labelStyle. Source SVG rules now retain grid border/50, axis/cursor
+paint and literal-white marker outline handling. Vertical charts draw a horizontal cursor
+at the selected category. Browser ChartStyle injection, DOM refs,
+CSS selectors and Recharts animation/package internals remain explicit boundaries.
+
+All 231 chart modules now guard 483 authored data/config literal inputs through AST
+comparison during translation and retained fingerprints. The native module sources
+are byte-identical to the previous catalog; the new metadata records that review.
+The shared validator still accepts non-chart form/example catalogs. Source review
+accounts for 76 further item groups; 438 remain unfinished. Interactive area and pie
+blocks keep pending Select preset coverage, including Select imports omitted by
+upstream registryDependencies. Other UI/example/block work remains open.
+
+Visual/source review caught double Android shadows: RN 0.86 applies elevation to
+the native View and independently paints boxShadow drawables. Source utilities now
+use their exact shadow/ring layers with zero additional elevation. Before/after
+Android screenshots were inspected and retained with the owning native excerpts.
+
+Validation for this change:
+
+- All 59 native suites/1,719 assertions passed on each target after the final shadow
+  correction. All 720 modules bundle for both Hermes targets. Source generators,
+  API ledger, generated typecheck, lint and static security pass. CLI tests: 669
+  passed, one existing optional skip. Packed consumer and packlist passed: 249 files,
+  1,050,158 packed bytes, within the existing budgets.
+- Android: all 18 instrumentation cases passed, including the 716-root sweep,
+  eleven measured tooltip presets, all six series and actual displayed value updates.
+  Evidence: `.artifacts/native-ui-android/2026-10-25T14-29-00-133Z/`.
+  APK 22837b094457abac63dd8d48832fa865b9d3b0fea25ef2a0238243b6ab433996;
+  test APK 361f8896c2e443374678d5b1cce2b315bd009df83b47675888d685b437ba3265.
+- iOS 26.5: all 18 XCTest cases passed, including the 716-root sweep and chart
+  matrix. Files restores its previous folder and can expose two Browse buttons;
+  the driver now targets the actual document-picker tab bar. The failed full run
+  at `2026-10-25T14-30-32-591Z` is retained. The focused regression passed at
+  `2026-10-25T14-46-45-954Z`; the complete rerun used those unchanged built binaries.
+  Full evidence: `.artifacts/native-ui-ios/2026-10-25T14-52-12-472Z-reuse-full/`.
+  App binary ec764566e0216ac244043ebe94d08c3722ae1183f884dceec1ee33c42c487a81;
+  XCTest binary 47cb94560f8f607474f2ce5e6720d12b8e751851c9f1c30396fd7f6056d914cc.
+  Both hashes were checked before/after execution, and all 139 shipped native source
+  files matched the review index and private built copy. Focused runs are not counted
+  as full acceptance. An earlier obsolete run was interrupted for the shadow update
+  and is separately identified as interrupted.
+
+Detailed source equivalence, immutable-input review, native shadow owners and visual
+comparison live under `.artifacts/native-ui/2026-10-25-chart-presets/`. Expanded
+screen-reader/physical-device acceptance and the QA application's iOS 27 scene
+lifecycle work remain separate; these results do not close the remaining registry.
+
 # Source example gallery sizing — October 25, 2026
 
 The three modern Example/ExampleWrapper implementations now retain source background,

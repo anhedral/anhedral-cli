@@ -264,6 +264,84 @@ function NativeRenderHostMatrix() {
 }
 const MeasuredSourceExample = withRegistryStyles(SourceExample),
   MeasuredSourceExampleWrapper = withRegistryStyles(SourceExampleWrapper);
+function NativeChartMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  const kinds = ['bar', 'line', 'area', 'pie', 'radar', 'radial'] as const;
+  const [presetIndex, setPresetIndex] = useState(0),
+    [kindIndex, setKindIndex] = useState(0),
+    [value, setValue] = useState(0),
+    [tooltip, setTooltip] = useState('');
+  const ChartKind = [
+    UI.BarChart,
+    UI.LineChart,
+    UI.AreaChart,
+    UI.PieChart,
+    UI.RadarChart,
+    UI.RadialBarChart,
+  ][kindIndex]!;
+  const Series = [UI.Bar, UI.Line, UI.Area, UI.Pie, UI.Radar, UI.RadialBar][kindIndex]!;
+  const preset = presets[presetIndex]!,
+    kind = kinds[kindIndex]!;
+  const data = [
+    { month: 'January', visits: 10 },
+    { month: 'February', visits: 20 },
+    { month: 'March', visits: 30 },
+  ];
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Chart preset: ' + preset}</UI.Text>
+      <UI.Text>{'Chart kind: ' + kind}</UI.Text>
+      <UI.Text>{'Chart selection: ' + data[value]!.month + '=' + data[value]!.visits}</UI.Text>
+      <UI.Button onPress={() => setPresetIndex((presetIndex + 1) % presets.length)}>
+        Next chart preset
+      </UI.Button>
+      <UI.Button onPress={() => setKindIndex((kindIndex + 1) % kinds.length)}>
+        Next chart kind
+      </UI.Button>
+      <UI.Button onPress={() => setValue((value + 1) % data.length)}>Next chart point</UI.Button>
+      <UI.NativeComponentStyleProvider style={preset}>
+        <UI.ChartContainer
+          key={preset + '/' + kind}
+          config={{
+            visits: { label: 'Visits', color: 'var(--chart-1)' },
+            January: { label: 'January' },
+            February: { label: 'February' },
+            March: { label: 'March' },
+          }}
+          style={{ width: 320, height: 200 }}
+        >
+          <ChartKind data={data} width={320} height={200} value={value} onValueChange={setValue}>
+            <Series dataKey="visits" fill="var(--color-visits)" stroke="var(--color-visits)" />
+            <UI.ChartTooltip
+              content={
+                <UI.ChartTooltipContent
+                  onLayout={({ nativeEvent: { layout } }) => {
+                    const next =
+                      preset + ':' + Math.round(layout.width) + 'x' + Math.round(layout.height);
+                    setTooltip((previous) => (previous === next ? previous : next));
+                  }}
+                />
+              }
+            />
+          </ChartKind>
+        </UI.ChartContainer>
+      </UI.NativeComponentStyleProvider>
+      <UI.Text>{'Tooltip geometry: ' + tooltip}</UI.Text>
+    </View>
+  );
+}
 function NativeExampleLayoutMatrix() {
   const [metrics, setMetrics] = useState<Record<string, string>>({});
   const measure =

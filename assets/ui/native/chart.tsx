@@ -6,10 +6,23 @@ import {
   isValidElement,
   type ReactNode,
   type ReactElement,
+  type Ref,
 } from 'react';
-import { View, Pressable, type ViewProps } from 'react-native';
+import { View, Pressable, type ViewProps, type TextStyle, type StyleProp } from 'react-native';
 import Svg, { Rect, Path, Circle, Polygon } from 'react-native-svg';
-import { Box, LabelText, Muted, row, useControllable, content } from './_core';
+import {
+  Box,
+  LabelText,
+  Muted,
+  row,
+  useControllable,
+  content,
+  NativeTextStyleProvider,
+  TextToneProvider,
+} from './_core';
+import { useNativeChartStyle } from './_preset-chart-style';
+import { NativeIconForcedSize } from './_registry-context';
+type ChartViewProps = ViewProps & { ref?: Ref<View>; textStyle?: StyleProp<TextStyle> };
 import { useTheme } from '../theme';
 export type ChartPoint = { label: string; value: number };
 import {
@@ -24,10 +37,15 @@ export function ChartContainer({
   config = {},
   initialDimension = { width: 320, height: 200 },
   onLayout,
+  textStyle,
   children,
   style,
   ...props
-}: ViewProps & { config?: ChartConfig; initialDimension?: { width: number; height: number } }) {
+}: ChartViewProps & {
+  config?: ChartConfig;
+  initialDimension?: { width: number; height: number };
+}) {
+  const typography = useNativeChartStyle(textStyle);
   const id = useId(),
     { colors, mode } = useTheme(),
     [dimension, setDimension] = useState(initialDimension);
@@ -50,24 +68,30 @@ export function ChartContainer({
   };
   return (
     <ChartContext.Provider value={{ config, ...dimension, resolveColor }}>
-      <Box
-        {...props}
-        style={[{ aspectRatio: 16 / 9 }, style]}
-        nativeID={props.nativeID ?? 'chart-' + id.replace(/:/g, '')}
-        onLayout={(event) => {
-          const { width, height } = event.nativeEvent.layout;
-          setDimension((previous) => {
-            const nextWidth = Number.isFinite(width) && width > 0 ? width : previous.width,
-              nextHeight = Number.isFinite(height) && height > 0 ? height : previous.height;
-            return nextWidth === previous.width && nextHeight === previous.height
-              ? previous
-              : { width: nextWidth, height: nextHeight };
-          });
-          onLayout?.(event);
-        }}
-      >
-        {children}
-      </Box>
+      <NativeTextStyleProvider value={{ ...typography.textContext, style: typography.text }}>
+        <TextToneProvider
+          value={typeof typography.text.color === 'string' ? typography.text.color : undefined}
+        >
+          <View
+            {...props}
+            style={[{ aspectRatio: 16 / 9, justifyContent: 'center' }, style]}
+            nativeID={props.nativeID ?? 'chart-' + id.replace(/:/g, '')}
+            onLayout={(event) => {
+              const { width, height } = event.nativeEvent.layout;
+              setDimension((previous) => {
+                const nextWidth = Number.isFinite(width) && width > 0 ? width : previous.width,
+                  nextHeight = Number.isFinite(height) && height > 0 ? height : previous.height;
+                return nextWidth === previous.width && nextHeight === previous.height
+                  ? previous
+                  : { width: nextWidth, height: nextHeight };
+              });
+              onLayout?.(event);
+            }}
+          >
+            {children}
+          </View>
+        </TextToneProvider>
+      </NativeTextStyleProvider>
     </ChartContext.Provider>
   );
 }
@@ -228,7 +252,10 @@ export function Chart({
     </Box>
   );
 }
-type TooltipProps = ViewProps & {
+ChartContainer.nativeExampleContainer = true;
+ChartContainer.nativeContainerTextSlot = true;
+type TooltipProps = ChartViewProps & {
+  labelStyle?: StyleProp<TextStyle>;
   point?: ChartPoint;
   cursor?: boolean | { fill?: string; stroke?: string };
   defaultIndex?: number;
@@ -264,10 +291,13 @@ export function ChartTooltipContent({
   labelKey,
   color,
   labelFormatter,
+  labelStyle,
   formatter,
+  textStyle,
   style,
   ...props
 }: TooltipProps) {
+  const typography = useNativeChartStyle(textStyle);
   const chart = useContext(ChartContext),
     data = useContext(ChartDataContext),
     { colors } = useTheme(),
@@ -289,110 +319,162 @@ export function ChartTooltipContent({
     );
   const rawLabel =
     !labelKey && typeof label === 'string' ? (config[label]?.label ?? label) : labelConfig?.label;
-  const header = hideLabel ? null : labelFormatter ? labelFormatter(rawLabel, items) : rawLabel;
+  const headerValue = hideLabel
+    ? null
+    : labelFormatter
+      ? labelFormatter(rawLabel, items)
+      : rawLabel;
+  // Source formatter creates its label wrapper even for zero or an empty child.
+  const hasHeader = !hideLabel && (!!labelFormatter || !!rawLabel);
   const nested = items.length === 1 && indicator !== 'dot';
-  return (
-    <Box
-      {...props}
-      accessibilityLiveRegion="polite"
+  const header = hasHeader ? (
+    <LabelText
       style={[
-        {
-          minWidth: 128,
-          gap: 6,
-          padding: 12,
-          backgroundColor: colors.popover,
-          borderWidth: 1,
-          borderColor: colors.border,
-          borderRadius: 8,
-        },
-        style,
+        { fontWeight: '500' },
+        nested && { lineHeight: typography.tooltipText.fontSize ?? 12 },
+        labelStyle,
       ]}
     >
-      {!nested && header && <LabelText style={{ fontWeight: '500' }}>{header}</LabelText>}
-      {items
-        .filter((item) => item.type !== 'none')
-        .map((item, index) => {
-          const entry = payloadConfig(
-              config,
-              item,
-              String(nameKey ?? item.name ?? item.dataKey ?? 'value'),
-            ),
-            Icon = entry?.icon;
-          const rawColor =
-            color ??
-            (typeof item.payload?.fill === 'string' ? item.payload.fill : undefined) ??
-            item.color ??
-            entry?.color;
-          const fill = chart?.resolveColor(rawColor) ?? rawColor ?? colors.primary;
-          return (
-            <Box key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              {formatter && item.value !== undefined && item.name ? (
-                content(formatter(item.value, item.name, item, index, item.payload))
-              ) : (
-                <>
-                  {Icon ? (
-                    <Icon size={12} color={colors['muted-foreground']} />
-                  ) : (
-                    !hideIndicator && (
-                      <View
-                        testID={props.testID ? props.testID + '-indicator-' + index : undefined}
-                        style={
-                          indicator === 'dot'
-                            ? { width: 10, height: 10, backgroundColor: fill, borderRadius: 2 }
-                            : indicator === 'line'
-                              ? {
-                                  width: 4,
-                                  alignSelf: 'stretch',
-                                  minHeight: 12,
-                                  backgroundColor: fill,
-                                  borderRadius: 2,
-                                }
-                              : {
-                                  width: 0,
-                                  alignSelf: 'stretch',
-                                  minHeight: 12,
-                                  borderLeftWidth: 1.5,
-                                  borderColor: fill,
-                                  borderStyle: 'dashed',
-                                }
-                        }
-                      />
-                    )
-                  )}
+      {headerValue}
+    </LabelText>
+  ) : null;
+  return (
+    <NativeTextStyleProvider value={{ ...typography.textContext, style: typography.tooltipText }}>
+      <TextToneProvider
+        value={
+          typeof typography.tooltipText.color === 'string'
+            ? typography.tooltipText.color
+            : undefined
+        }
+      >
+        <View
+          {...props}
+          accessibilityLiveRegion="polite"
+          style={[
+            { minWidth: 128, gap: 6, alignItems: 'flex-start' },
+            typography.tooltip.view,
+            style,
+          ]}
+        >
+          {!nested && header}
+          <View style={{ gap: 6, alignSelf: 'stretch' }}>
+            {items
+              .filter((item) => item.type !== 'none')
+              .map((item, index) => {
+                const entry = payloadConfig(
+                    config,
+                    item,
+                    String(nameKey ?? item.name ?? item.dataKey ?? 'value'),
+                  ),
+                  Icon = entry?.icon;
+                const rawColor =
+                  color ??
+                  (typeof item.payload?.fill === 'string' ? item.payload.fill : undefined) ??
+                  item.color ??
+                  entry?.color;
+                const fill = chart?.resolveColor(rawColor) ?? rawColor ?? colors.primary;
+                return (
                   <Box
+                    key={index}
                     style={{
-                      flex: 1,
+                      width: '100%',
                       flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: nested ? 'flex-end' : 'center',
-                      gap: 12,
+                      flexWrap: 'wrap',
+                      alignItems: indicator === 'dot' ? 'center' : 'stretch',
+                      gap: 8,
                     }}
                   >
-                    <Box style={{ gap: 6 }}>
-                      {nested && header && (
-                        <LabelText style={{ fontWeight: '500' }}>{header}</LabelText>
-                      )}
-                      <Muted>{entry?.label ?? item.name}</Muted>
-                    </Box>
-                    {item.value != null && (
-                      <LabelText
-                        fontRole="mono"
-                        style={{ fontWeight: '500', fontVariant: ['tabular-nums'] }}
-                      >
-                        {typeof item.value === 'number'
-                          ? item.value.toLocaleString()
-                          : String(item.value)}
-                      </LabelText>
+                    {formatter && item.value !== undefined && item.name ? (
+                      content(formatter(item.value, item.name, item, index, item.payload))
+                    ) : (
+                      <>
+                        {Icon ? (
+                          <NativeIconForcedSize.Provider value={10}>
+                            <TextToneProvider value={colors['muted-foreground']}>
+                              <Icon size={10} color={colors['muted-foreground']} />
+                            </TextToneProvider>
+                          </NativeIconForcedSize.Provider>
+                        ) : (
+                          !hideIndicator && (
+                            <View
+                              testID={
+                                props.testID ? props.testID + '-indicator-' + index : undefined
+                              }
+                              style={
+                                indicator === 'dot'
+                                  ? {
+                                      width: 10,
+                                      height: 10,
+                                      flexShrink: 0,
+                                      backgroundColor: fill,
+                                      borderRadius: 2,
+                                    }
+                                  : indicator === 'line'
+                                    ? {
+                                        width: 4,
+                                        alignSelf: 'stretch',
+                                        flexShrink: 0,
+                                        backgroundColor: fill,
+                                        borderRadius: 2,
+                                      }
+                                    : {
+                                        width: 0,
+                                        alignSelf: 'stretch',
+                                        flexShrink: 0,
+                                        borderWidth: 1.5,
+                                        borderRadius: 2,
+                                        marginVertical: nested ? 2 : 0,
+                                        backgroundColor: 'transparent',
+                                        borderColor: fill,
+                                        borderStyle: 'dashed',
+                                      }
+                              }
+                            />
+                          )
+                        )}
+                        <Box
+                          style={{
+                            flex: 1,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: nested ? 'flex-end' : 'center',
+                          }}
+                        >
+                          <Box style={{ gap: 6 }}>
+                            {nested && header && header}
+                            <Muted style={{ lineHeight: typography.tooltipText.fontSize ?? 12 }}>
+                              {entry?.label ?? item.name}
+                            </Muted>
+                          </Box>
+                          {item.value != null && (
+                            <LabelText
+                              fontRole="mono"
+                              style={{
+                                color: colors.foreground,
+                                lineHeight: typography.tooltipText.fontSize ?? 12,
+                                fontWeight: '500',
+                                fontVariant: ['tabular-nums'],
+                              }}
+                            >
+                              {typeof item.value === 'number'
+                                ? item.value.toLocaleString()
+                                : String(item.value)}
+                            </LabelText>
+                          )}
+                        </Box>
+                      </>
                     )}
                   </Box>
-                </>
-              )}
-            </Box>
-          );
-        })}
-    </Box>
+                );
+              })}
+          </View>
+        </View>
+      </TextToneProvider>
+    </NativeTextStyleProvider>
   );
 }
+ChartTooltipContent.nativeExampleContainer = true;
+ChartTooltipContent.nativeContainerTextSlot = true;
 export function ChartTooltip({
   content: element,
   ...props
@@ -413,15 +495,17 @@ export function ChartLegendContent({
   hideIcon = false,
   verticalAlign = 'bottom',
   nameKey,
+  textStyle,
   style,
   ...props
-}: ViewProps & {
+}: ChartViewProps & {
   items?: { label: ReactNode; color?: string }[];
   payload?: readonly ChartPayload[];
   hideIcon?: boolean;
   verticalAlign?: 'top' | 'middle' | 'bottom';
   nameKey?: string;
 }) {
+  const typography = useNativeChartStyle(textStyle);
   const chart = useContext(ChartContext),
     data = useContext(ChartDataContext),
     { colors } = useTheme(),
@@ -433,42 +517,59 @@ export function ChartLegendContent({
     [];
   if (!records.length) return null;
   return (
-    <Box
-      {...props}
-      style={[
-        row(),
-        {
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: 16,
-          ...(verticalAlign === 'top' ? { paddingBottom: 12 } : { paddingTop: 12 }),
-        },
-        style,
-      ]}
-    >
-      {records
-        .filter((item: ChartPayload) => item.type !== 'none')
-        .map((item: ChartPayload, index: number) => {
-          const entry = payloadConfig(config, item, String(nameKey ?? item.dataKey ?? 'value')),
-            Icon = entry?.icon;
-          const fill = chart?.resolveColor(item.color) ?? item.color ?? colors.primary;
-          return (
-            <Box key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              {Icon && !hideIcon ? (
-                <Icon size={12} color={colors['muted-foreground']} />
-              ) : (
-                <View
-                  accessible={false}
-                  style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: fill }}
-                />
-              )}
-              <LabelText>{entry?.label ?? item.label}</LabelText>
-            </Box>
-          );
-        })}
-    </Box>
+    <NativeTextStyleProvider value={{ ...typography.textContext, style: typography.text }}>
+      <TextToneProvider
+        value={typeof typography.text.color === 'string' ? typography.text.color : undefined}
+      >
+        <Box
+          {...props}
+          style={[
+            row(),
+            {
+              justifyContent: 'center',
+              gap: 16,
+              ...(verticalAlign === 'top' ? { paddingBottom: 12 } : { paddingTop: 12 }),
+            },
+            style,
+          ]}
+        >
+          {records
+            .filter((item: ChartPayload) => item.type !== 'none')
+            .map((item: ChartPayload, index: number) => {
+              const entry = payloadConfig(config, item, String(nameKey ?? item.dataKey ?? 'value')),
+                Icon = entry?.icon;
+              const fill = chart?.resolveColor(item.color) ?? item.color ?? colors.primary;
+              return (
+                <Box key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {Icon && !hideIcon ? (
+                    <NativeIconForcedSize.Provider value={12}>
+                      <TextToneProvider value={colors['muted-foreground']}>
+                        <Icon size={12} color={colors['muted-foreground']} />
+                      </TextToneProvider>
+                    </NativeIconForcedSize.Provider>
+                  ) : (
+                    <View
+                      accessible={false}
+                      style={{
+                        width: 8,
+                        height: 8,
+                        flexShrink: 0,
+                        borderRadius: 2,
+                        backgroundColor: fill,
+                      }}
+                    />
+                  )}
+                  <LabelText>{entry?.label ?? item.label}</LabelText>
+                </Box>
+              );
+            })}
+        </Box>
+      </TextToneProvider>
+    </NativeTextStyleProvider>
   );
 }
+ChartLegendContent.nativeExampleContainer = true;
+ChartLegendContent.nativeContainerTextSlot = true;
 export function ChartLegend({
   content: element,
   ...props

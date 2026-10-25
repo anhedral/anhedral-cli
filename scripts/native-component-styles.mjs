@@ -398,6 +398,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeLabelPresets(inventory),
     source: await nativeLabelPresetSource(inventory),
   });
+  const { nativeChartPresets, nativeChartPresetSource } =
+    await import('./native-chart-presets.mjs');
+  outputs.push({
+    component: 'chart',
+    target: target('chart'),
+    data: nativeChartPresets(inventory),
+    source: await nativeChartPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({

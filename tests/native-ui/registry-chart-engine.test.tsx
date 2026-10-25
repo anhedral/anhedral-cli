@@ -1,4 +1,5 @@
 import React from 'react';
+import { processColor } from 'react-native';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import * as UI from './.generated';
 import {
@@ -11,6 +12,7 @@ import {
   curve,
   polarTextPath,
 } from './.generated/src/native/_chart-math';
+import { withAlpha } from './.generated/src/native/_core';
 import type { BarShapeProps, PieSectorShapeProps } from './.generated/src/native/charts';
 const data = [
   { month: 'January', desktop: 10, mobile: 30 },
@@ -363,4 +365,41 @@ test('native SVG labels apply inherited casing and preserve explicit child overr
     </UI.PieChart>,
   );
   expect(svgText(screen.getByRole('adjustable'))).toContain('DESKTOPMobile VisitscamelCase');
+});
+
+test('source chart descendant rules keep default grid opacity and literal white marker outlines', async () => {
+  let border = '';
+  function ThemeProbe() {
+    border = UI.useTheme().colors.border!;
+    return null;
+  }
+  await mount(
+    <>
+      <ThemeProbe />
+      <UI.LineChart data={data} value={0}>
+        <UI.CartesianGrid />
+        <UI.Line dataKey="desktop" dot={{ stroke: '#fff' }} />
+        <UI.Dot testID="custom-dot" cx={10} cy={10} stroke="#ffffff" />
+        <UI.Sector testID="white-sector" innerRadius={10} outerRadius={20} stroke="#fff" />
+        <UI.ChartTooltip />
+      </UI.LineChart>
+    </>,
+  );
+  const brush = (color: string) => ({ type: 0, payload: processColor(color) });
+  expect(node('chart-dot-0-1').props.stroke).toEqual(brush('transparent'));
+  expect(node('custom-dot').props.stroke).toEqual(brush('#ffffff'));
+  expect(node('white-sector').props.stroke).toEqual(brush('transparent'));
+  expect(node('chart-grid-h-0').props.stroke).toEqual(brush(withAlpha(border, 0.5)));
+  expect(node('chart-grid-v-0').props.stroke).toEqual(brush(withAlpha(border, 0.5)));
+});
+test('vertical native line tooltips track the selected horizontal category without drawing a vertical cursor', async () => {
+  await mount(
+    <UI.LineChart data={data} layout="vertical" value={1}>
+      <UI.Line dataKey="desktop" />
+      <UI.ChartTooltip />
+    </UI.LineChart>,
+  );
+  const cursor = node('chart-tooltip-cursor');
+  expect(cursor.props.y1).toBe(cursor.props.y2);
+  expect(cursor.props.x2).toBeGreaterThan(cursor.props.x1);
 });

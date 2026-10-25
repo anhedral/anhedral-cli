@@ -1,6 +1,42 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testSourceChartsRetainPresetGeometryAndSeriesInteractions() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/chart-contract", in: app)
+    let scroll = storyScroll(app)
+    func reveal(_ element: XCUIElement) {
+      for _ in 0..<8 {
+        if element.exists && !element.frame.isEmpty && scroll.frame.contains(CGPoint(x:element.frame.midX,y:element.frame.midY)) { return }
+        scroll.swipeUp()
+      }
+      for _ in 0..<8 {
+        if element.exists && !element.frame.isEmpty && scroll.frame.contains(CGPoint(x:element.frame.midX,y:element.frame.midY)) { return }
+        scroll.swipeDown()
+      }
+      XCTFail("Missing visible chart control: " + element.description)
+    }
+    func label(_ text: String) {
+      let element = app.staticTexts.matching(identifier:text).firstMatch
+      XCTAssertTrue(element.waitForExistence(timeout:10),text)
+      reveal(element)
+    }
+    func press(_ text: String) {let element=app.buttons[text];reveal(element);element.tap()}
+    for preset in ["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"] {
+      label("Chart preset: " + preset)
+      let height = preset == "mira" ? 52 : ["luma","sera","rhea"].contains(preset) ? 46 : 48
+      label("Tooltip geometry: " + preset + ":128x" + String(height))
+      press("Next chart preset")
+    }
+    for kind in ["bar","line","area","pie","radar","radial"] {
+      label("Chart kind: " + kind)
+      press("Next chart point");label("Chart selection: February=20");label("20")
+      press("Next chart point");label("Chart selection: March=30");label("30")
+      press("Next chart point");label("Chart selection: January=10");label("10")
+      press("Next chart kind")
+    }
+  }
   func testSourceExampleLayoutsRetainPaddingFlexAndGridGeometry() {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()
@@ -309,7 +345,7 @@ final class RegistryUITests: XCTestCase {
     app.launch(); openStory("native/file-input",in:app)
     let field=app.buttons.matching(NSPredicate(format:"label == %@","Native document")).firstMatch
     XCTAssertTrue(field.waitForExistence(timeout:10)); field.tap()
-    let browse=app.buttons["Browse"]
+    let browse=app.tabBars["DOC.browsingModeTabBar"].buttons["Browse"]
     if browse.waitForExistence(timeout:3) { browse.tap() }
     let local=app.cells.matching(NSPredicate(format:"label CONTAINS %@","On My iPhone")).firstMatch
     if local.waitForExistence(timeout:3) { local.tap() }

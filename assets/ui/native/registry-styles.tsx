@@ -453,6 +453,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           ...(nativeInline.letterSpacing !== undefined ? { letterSpacingEm: undefined } : {}),
           ...(nativeInline.lineHeight !== undefined ? { lineHeightMultiplier: undefined } : {}),
         };
+      if ('nativeContainerTextSlot' in Component && Component.nativeContainerTextSlot === true)
+        forwarded.textStyle = [translated.text, props.textStyle];
       if ('nativeCardSlot' in Component && Component.nativeCardSlot === true) {
         forwarded.textStyle = [translated.text, props.textStyle];
         forwarded.spacing = props.spacing ?? translated.paint.cardSpacing;

@@ -6,6 +6,8 @@ import {
   loadNativeChartRecipes,
   portChartRecipe,
   validateNativeChartRecipes,
+  assertChartLiteralInputs,
+  chartLiteralInputs,
 } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
 const hash = (v) => createHash('sha256').update(v).digest('hex');
@@ -91,4 +93,38 @@ test('native chart review fails on changed source, style/dependency input or tra
   ).files[0].source;
   staleDependency.sources[source].sha256 = '1'.repeat(64);
   assert.throws(() => validateNativeChartRecipes(staleDependency, catalog), /style\/dependency/);
+});
+
+test('chart translation refuses changed, reordered or omitted data/config literals and preserves scoped duplicate datasets', () => {
+  const source = `const chartData=[{month:"January",visits:10},{month:"February",visits:20}];const chartConfig={visits:{label:"Visits",color:"var(--chart-1)"}} satisfies ChartConfig;function Other(){const chartData=[{value:30}];return null}`;
+  const native = portChartRecipe(source, 'fixture.tsx');
+  assert.equal(chartLiteralInputs(source).length, 3);
+  const review = assertChartLiteralInputs(source, native, 'fixture.tsx');
+  assert.equal(review.count, 3);
+  for (const changed of [
+    native.replace('visits: 10', 'visits: 11'),
+    native.replace('var(--chart-1)', 'var(--chart-2)'),
+    native.replace('value: 30', 'value: 0'),
+  ])
+    assert.throws(
+      () => assertChartLiteralInputs(source, changed, 'fixture.tsx'),
+      /literals changed/,
+    );
+  assert.throws(
+    () => assertChartLiteralInputs('const chartData=[1,2];', 'const chartData=[2,1];', 'order.tsx'),
+    /literals changed/,
+  );
+  assert.throws(
+    () => assertChartLiteralInputs('const chartData=[1];', 'const renamed=[];', 'omitted.tsx'),
+    /literals changed/,
+  );
+  const catalog = loadNativeChartRecipes();
+  assert.equal(catalog.recipes.length, 231);
+  assert.ok(catalog.recipes.every((recipe) => recipe.dataInputs.count > 0));
+  const changed = structuredClone(catalog);
+  changed.recipes[0].dataInputs.sha256 = 'changed';
+  assert.throws(
+    () => validateNativeChartRecipes(loadOfficialRegistry(), changed),
+    /data\/config review/,
+  );
 });
