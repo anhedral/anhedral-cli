@@ -185,11 +185,9 @@ export default function Layout({ children }: { children: React.ReactNode }) { re
   put(
     root,
     `${app}/app/page.tsx`,
-    `import { headers } from 'next/headers';
-import { FoundationExample } from '@/components/foundation-example';
-export default async function Home() {
-  const request = await headers();
-  return <section className="stack"><h1>${escapeJsx(options.name)}</h1><p>Next.js on Cloudflare, with a shared Hono API.</p><p className="muted" data-rendering="server">Rendered on the server for {request.get('host') ?? 'this request'}.</p><FoundationExample /></section>;
+    `import { FoundationExample } from '@/components/foundation-example';
+export default function Home() {
+  return <section className="stack"><h1>${escapeJsx(options.name)}</h1><p>Next.js on Cloudflare, with a shared Hono API.</p><p className="muted" data-rendering="server">Prerendered at build time; ready to hydrate in the browser.</p><FoundationExample /></section>;
 }
 `,
   );
@@ -217,6 +215,12 @@ export function FoundationExample() {
     `${app}/app/error.tsx`,
     `'use client';\nexport default function ErrorPage({ reset }: { reset: () => void }) { return <section><h1>Unable to load this page</h1><button onClick={reset}>Try again</button></section>; }\n`,
   );
+  put(
+    root,
+    `${app}/public/_headers`,
+    '/_next/static/*\n  Cache-Control: public, max-age=31536000, immutable\n/*\n  X-Content-Type-Options: nosniff\n',
+  );
+  put(root, `${app}/public/robots.txt`, 'User-agent: *\nAllow: /\n');
   put(root, `${app}/lib/api-proxy.ts`, WEB_API_PROXY);
   put(
     root,

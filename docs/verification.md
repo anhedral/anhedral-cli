@@ -1,3 +1,9 @@
+# Next/OpenNext runtime gate — October 25, 2026
+
+Implemented in an isolated branch from staging; unrelated native registry work remains untouched. Relevant PRs compile the current init-only foundation and exercise actual OpenNext/workerd: prerendered home, dynamic SSR/RSC, synthetic Server Action/cookie round-trip, Hono service binding and immutable asset headers. The fixture remains local and has no configured database migrations or provider calls.
+
+Validation: CLI build, lint/typecheck/format/hygiene, static security/release policy, packed consumer and packlist passed. Unit suite: 99 passed, zero failed, one conditional skip. Compiled runtime smoke passed; final emitted Worker measured 5,219,988 raw bytes and 1,078,898 individually gzipped bytes, below the initial 4 MiB regression ceiling. Budget boundary/overflow and scope-selection regressions passed. The public homepage is proven prerendered from Next's manifest; request-dependent fixture routes remain dynamic. No npm publication, deployment or installed plugin update occurred. CI is configured in source; hosted acceptance remains separate.
+
 # Scaffold-only CLI preparation — October 24, 2026
 
 Prepared on `codex/scaffold-only` from staging in an isolated checkout. The actively edited CLI checkout and its native UI work are preserved. This is an unpublished breaking 0.16.0 candidate; no installed plugin, Platform image, provider account, remote database or deployment was changed.
