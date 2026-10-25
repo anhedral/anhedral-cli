@@ -1,3 +1,36 @@
+# Native OS registry acceptance runners — October 24, 2026
+
+Added an explicit-device Android instrumentation runner and shared owned QA app
+preparation. Preparation rejects unrelated directories and symlinked outputs;
+source manifests identify the copied native gallery. Android evidence retains
+both APKs and their hashes, the exact runner/test sources, instrumentation output,
+logcat, eight screenshots and native hierarchy XML. Result validation rejects
+skips, partial runs and abnormal completion. CI scope now includes all owned native
+generators, boundary checks and runner contract tests.
+
+- Android API 36 arm64 emulator: all eight physical interaction cases passed,
+  including source Button metrics/actions, composed hosts, route destinations,
+  toggle/pagination state, associated input focus, layout geometry and visible
+  authored description terms/values. Evidence:
+  .artifacts/native-ui-android/2026-10-25T06-36-51-967Z/.
+- iOS 26.5 simulator: the same eight acceptance areas passed. Xcode then spent ten
+  minutes collecting simulator diagnostics and reported a diagnostic timeout;
+  its completed xcresult and process still report TEST SUCCEEDED. The retained
+  screenshots were exported and visually reviewed, including all three visible
+  description rows. Evidence:
+  .artifacts/native-ui-ios/2026-10-25T06-34-17-996Z/results.xcresult.
+- CLI build, lint, static security, 630 root tests (one existing optional skip),
+  packed-consumer smoke and packlist policy passed. Packed artifact before this
+  evidence entry: 249 files, 1,001,295 compressed bytes. Contract logs remain under
+  /private/tmp/anhedral-native-device-*.log. Native implementation is unchanged
+  from the preceding 1,389 tests per platform / 702-module Hermes validation.
+- Earlier failing Android runs remain retained. They exposed gallery transition
+  synchronization and inline accessibility-name assumptions; the corrected tests
+  require actual visible elements and assert destination/state after real taps.
+  This does not establish screen-reader, physical-device/store, iOS 27 or complete
+  registry parity. Coverage remains 79 accounted groups and 537 pending. No package
+  publication or deployment ran.
+
 # Native description lists and authored layout metrics — October 24, 2026
 
 Added native term/definition hosts for authored description lists, including nested

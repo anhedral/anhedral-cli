@@ -98,4 +98,23 @@ final class RegistryUITests: XCTestCase {
     add(screenshot)
   }
 
+  func testAuthoredDescriptionsRetainNativeTermsAndValues() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("base/separator-example", in:app)
+    for index in 1...3 {
+      let value = app.descendants(matching:.any).matching(identifier:"Item " + String(index) + ": Value " + String(index)).firstMatch
+      for _ in 0..<4 {
+        if value.exists && value.isHittable { break }
+        app.scrollViews.firstMatch.swipeUp()
+      }
+      XCTAssertTrue(value.exists)
+      XCTAssertTrue(value.isHittable)
+    }
+    let screenshot = XCTAttachment(screenshot:app.screenshot())
+    screenshot.name = "Native description term and value labels"
+    screenshot.lifetime = .keepAlways
+    add(screenshot)
+  }
+
 }

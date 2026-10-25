@@ -30,6 +30,16 @@ Use \`node scripts/native-ui-ios.mjs --prepare-only\` for gallery/type validatio
 The generated QA application has its own bundle ID; dated Xcode logs and result
 bundles remain under \`.artifacts/native-ui-ios/\`. Keep native preparation/test
 commands serial because they regenerate the shared harness source directory.
+For Android, set \`JAVA_HOME\` and \`ANDROID_HOME\` for the pinned React Native
+runtime and start a dedicated emulator. Run \`pnpm test:native-ui:android -- --device emulator-5558\`.
+The runner builds a release app and AndroidX UI Automator instrumentation, then checks
+all eight required native cases. Skipped, aborted and incomplete runs fail. Source
+hashes, retained APKs, native screenshots, hierarchy dumps and logs remain under
+\`.artifacts/native-ui-android/\`. Both platforms use one owned QA preparation path;
+unrelated directories and symlinked outputs are rejected. Keep harness preparation
+commands serial. Native OS runs remain explicit hardware checks alongside CI's native
+rendering, type and Hermes checks.
+
 Expo 57's scene lifecycle is incompatible with iOS 27/Xcode 27; use a compatible
 runtime for current acceptance and retain that SDK compatibility gap explicitly.
 
