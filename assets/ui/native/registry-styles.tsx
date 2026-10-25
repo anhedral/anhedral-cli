@@ -272,6 +272,22 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       if (translated.paint.hoverForeground)
         translated.paint.hoverForeground = descendantPaint.textColor;
     }
+    if (kind === 'link') {
+      if (descendantPaint.linkUnderline) translated.text.textDecorationLine = 'underline';
+      if (descendantPaint.linkHoverColor)
+        translated.paint.hoverForeground = descendantPaint.linkHoverColor;
+    }
+    if ('nativeRegistryParagraph' in Component && Component.nativeRegistryParagraph === true) {
+      if (descendantPaint.paragraphLeading !== undefined)
+        translated.paint.lineHeightMultiplier = descendantPaint.paragraphLeading;
+      if (
+        descendantPaint.paragraphGap !== undefined &&
+        registryIndex !== undefined &&
+        registryCount !== undefined &&
+        registryIndex < registryCount - 1
+      )
+        translated.view.marginBottom = descendantPaint.paragraphGap;
+    }
     const paint = { ...inheritedPaint, ...translated.paint };
     const text = { ...StyleSheet.flatten(inherited.style), ...translated.text };
     if (typeof paint.lineHeightMultiplier === 'number' && paint.lineHeightMultiplier > 0)
@@ -403,6 +419,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         translated.view.height = forcedIconSize;
     }
     if (translated.paint.listMarker !== undefined) forwarded.marker = translated.paint.listMarker;
+    if (translated.paint.listPosition !== undefined)
+      forwarded.markerPosition = translated.paint.listPosition;
     if (translated.paint.pointerEvents && props.pointerEvents === undefined)
       forwarded.pointerEvents = translated.paint.pointerEvents;
     if (translated.paint.brightness !== undefined || translated.paint.objectFit !== undefined) {
@@ -843,6 +861,13 @@ export const RegistryImage = withRegistryStyles(NativeRegistryImage);
 RecipeView.nativeExampleContainer = true;
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
+const NativeParagraph = Object.assign(
+  (props: ComponentProps<typeof LabelText>) => <LabelText {...props} />,
+  { nativeRegistryParagraph: true },
+);
+/** Preserve HTML paragraph identity for scoped source spacing and leading rules. */
+export const RegistryParagraph = withRegistryStyles(NativeParagraph, 'text');
+
 /** HTML samp is read-only sample output with a monospace face. */
 export const RegistrySample = withRegistryStyles(
   ({ style, ...props }: ComponentProps<typeof LabelText>) => (

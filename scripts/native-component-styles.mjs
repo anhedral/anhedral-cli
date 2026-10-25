@@ -438,6 +438,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeProgressPresets(inventory),
     source: await nativeProgressPresetSource(inventory),
   });
+  const { nativeAlertPresets, nativeAlertPresetSource } =
+    await import('./native-alert-presets.mjs');
+  outputs.push({
+    component: 'alert',
+    target: target('alert'),
+    data: nativeAlertPresets(inventory),
+    source: await nativeAlertPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({

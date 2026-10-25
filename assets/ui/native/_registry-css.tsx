@@ -771,6 +771,8 @@ export function registryStyle(
     else if (token === 'overflow-x-auto' || token === 'overflow-x-scroll')
       paint.scrollHorizontal = 1;
     else if (token === 'overflow-y-auto' || token === 'overflow-y-scroll') paint.scrollVertical = 1;
+    else if (token === 'list-inside' || token === 'list-outside')
+      paint.listPosition = token.slice(5);
     else if (token === 'list-decimal' || token === 'list-disc' || token === 'list-none')
       paint.listMarker = token.slice(5);
     else if (token === 'transition-[color,box-shadow]') paint.webTransition = 'color,box-shadow';

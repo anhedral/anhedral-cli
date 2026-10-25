@@ -20,7 +20,7 @@ import {
   nativeQAStoryCountSource,
 } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeAndroidTestCount = 22;
+export const nativeAndroidTestCount = 23;
 const start = '// BEGIN ANHEDRAL NATIVE REGISTRY QA',
   end = '// END ANHEDRAL NATIVE REGISTRY QA';
 export function nativeAndroidTestGradle(source) {
@@ -147,7 +147,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       result = spawnSync(command, args, {
         cwd,
         stdio: ['ignore', descriptor, descriptor],
-        env: { ...process.env, CI: '1', EXPO_NO_TELEMETRY: '1', EXPO_NO_DOTENV: '1' },
+        env: {
+          ...process.env,
+          ANDROID_HOME: sdk,
+          ANDROID_SDK_ROOT: sdk,
+          CI: '1',
+          EXPO_NO_TELEMETRY: '1',
+          EXPO_NO_DOTENV: '1',
+        },
       });
     } finally {
       closeSync(descriptor);

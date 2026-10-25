@@ -103,6 +103,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/select-contract",Component:NativeSelectMatrix}',
           '{id: "native/native-select-contract",Component:NativeSelectControlMatrix}',
           '{id: "native/progress-contract",Component:NativeProgressMatrix}',
+          '{id: "native/alert-contract",Component:NativeAlertMatrix}',
         ].join(',\n') +
         '];',
     );

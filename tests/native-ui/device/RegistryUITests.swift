@@ -1,6 +1,24 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testAlertPresetsRetainNativeLayoutDescriptionsAndActions() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch();openStory("native/alert-contract",in:app)
+    let presets=["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"],gaps=[2,2,2,2,2,2,4,2,4,4,2]
+    for (index,preset) in presets.enumerated() {
+      XCTAssertTrue(app.staticTexts["Alert row gap: "+preset+":"+String(gaps[index])].waitForExistence(timeout:10))
+      let title=app.staticTexts["native-alert-title"]
+      XCTAssertTrue(title.exists);XCTAssertGreaterThan(title.frame.width,0)
+      app.buttons["Undo alert change"].tap()
+      XCTAssertTrue(app.staticTexts["Alert actions: "+String(index+1)].waitForExistence(timeout:10))
+      if preset == "sera" {let image=XCTAttachment(screenshot:app.screenshot());image.name="Sera native source Alert";image.lifetime = .keepAlways;add(image)}
+      app.buttons["Next alert preset"].tap()
+    }
+    app.buttons["Toggle destructive alert"].tap()
+    XCTAssertTrue(app.staticTexts["Alert destructive: true"].waitForExistence(timeout:10))
+    XCTAssertTrue(app.links["details"].exists)
+    let image=XCTAttachment(screenshot:app.screenshot());image.name="Destructive native source Alert with paragraphs and link";image.lifetime = .keepAlways;add(image)
+  }
   func testProgressPresetsRetainNativeGeometryRangeFormattingAndUnknownState() {
     let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
     app.launch();openStory("native/progress-contract",in:app)

@@ -16,8 +16,90 @@ import {
   Example as SourceExample,
   ExampleWrapper as SourceExampleWrapper,
 } from './.generated/src/native/registry-example';
+import { IconPlaceholder } from './.generated/src/native/registry-example';
+import { RegistryParagraph, RegistryLink } from './.generated/src/native/registry-styles';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+const AlertSourceGlyph = withRegistryStyles(IconPlaceholder, 'icon');
+function NativeAlertMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  const [index, setIndex] = useState(0),
+    [changes, setChanges] = useState(0),
+    [destructive, setDestructive] = useState(false);
+  const [title, setTitle] = useState({ y: 0, height: 0 }),
+    [description, setDescription] = useState({ y: 0, height: 0 });
+  const preset = presets[index]!;
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Alert preset: ' + preset}</UI.Text>
+      <UI.Text>
+        {'Alert row gap: ' + preset + ':' + Math.round(description.y - title.y - title.height)}
+      </UI.Text>
+      <UI.Text>{'Alert actions: ' + changes}</UI.Text>
+      <UI.Text>{'Alert destructive: ' + destructive}</UI.Text>
+      <UI.Button onPress={() => setIndex((index + 1) % presets.length)}>
+        Next alert preset
+      </UI.Button>
+      <UI.Button onPress={() => setDestructive((value) => !value)}>
+        Toggle destructive alert
+      </UI.Button>
+      <NativeRegistryPalette
+        source={
+          preset === 'default' || preset === 'new-york' || preset === 'new-york-v4'
+            ? preset
+            : 'base'
+        }
+        generation={preset === 'default' || preset === 'new-york' ? 'legacy' : 'modern'}
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <UI.Alert
+            key={preset}
+            variant={destructive ? 'destructive' : 'default'}
+            testID="native-alert-source"
+          >
+            <AlertSourceGlyph lucide="CircleAlertIcon" />
+            <UI.AlertTitle
+              testID="native-alert-title"
+              onLayout={({ nativeEvent: { layout } }) => setTitle(layout)}
+            >
+              Changes saved
+            </UI.AlertTitle>
+            <UI.AlertDescription
+              testID="native-alert-description"
+              onLayout={({ nativeEvent: { layout } }) => setDescription(layout)}
+            >
+              <RegistryParagraph>Your changes were saved.</RegistryParagraph>
+              <RegistryParagraph>
+                Read the <RegistryLink href="#">details</RegistryLink>.
+              </RegistryParagraph>
+            </UI.AlertDescription>
+            <UI.AlertAction>
+              <UI.Button
+                size={preset === 'default' || preset === 'new-york' ? 'sm' : 'xs'}
+                accessibilityLabel="Undo alert change"
+                onPress={() => setChanges((value) => value + 1)}
+              >
+                Undo
+              </UI.Button>
+            </UI.AlertAction>
+          </UI.Alert>
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+    </View>
+  );
+}
 function NativeProgressMatrix() {
   const presets = [
     'nova',

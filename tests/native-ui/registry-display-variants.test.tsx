@@ -275,9 +275,9 @@ test('destructive alerts announce their content and carry the destructive tone t
         <UI.AlertDescription>Try again</UI.AlertDescription>
       </UI.Alert>,
     );
-    expect(announce).toHaveBeenCalledWith('Unable to saveTry again');
+    expect(announce).toHaveBeenCalledWith('Unable to save Try again');
     expect(screen.getByText('Unable to save')).toHaveStyle({ color: 'hsl(0, 84.2%, 60.2%)' });
-    expect(screen.getByText('Try again')).toHaveStyle({ color: 'hsl(0, 84.2%, 60.2%)' });
+    expect(screen.getByText('Try again')).toHaveStyle({ color: 'rgba(239, 68, 68, 0.9)' });
   } finally {
     announce.mockRestore();
   }

@@ -62,6 +62,23 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun alertPresetsRetainNativeLayoutDescriptionsAndActions() = uiAutomator {
+    openStory("native/alert-contract")
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
+    val gaps=listOf(2,2,2,2,2,2,4,2,4,4,2)
+    for ((index,preset) in presets.withIndex()) {
+      label("Alert row gap: "+preset+":"+gaps[index])
+      val title=onElement {viewIdResourceName=="native-alert-title"}.visibleBounds
+      val body=onElement {viewIdResourceName=="native-alert-description"}.visibleBounds
+      assertTrue(title.width()>0);assertTrue(body.top>=title.bottom)
+      label("Undo alert change").apply {waitForStable();click()}
+      label("Alert actions: "+(index+1))
+      label("Next alert preset").apply {waitForStable();click()}
+    }
+    label("Toggle destructive alert").apply {waitForStable();click()}
+    label("Alert destructive: true")
+    label("details")
+  }
   @Test fun progressPresetsRetainNativeGeometryRangeFormattingAndUnknownState() = uiAutomator {
     openStory("native/progress-contract")
     val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")

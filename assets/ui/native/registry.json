@@ -1269,7 +1269,10 @@
     "_preset-label-style.tsx",
     "_example-layout-source.tsx",
     "_progress-presets.tsx",
-    "_preset-progress-style.tsx"
+    "_preset-progress-style.tsx",
+    "_alert-presets.tsx",
+    "_preset-alert-style.tsx",
+    "_alert.tsx"
   ],
   "supportModules": [
     {

@@ -1,3 +1,58 @@
+# Alert source variants, typography and native descriptions — October 25, 2026
+
+Alert now retains all six upstream publications, twenty-one source class slots,
+both default/destructive variants and all eleven style families. Modern rows keep
+the source icon column, title/description gap and action placement/reserved space.
+Frozen styles retain their physical icon inset, div-only sibling offset and title
+clamping. Sera’s pseudo stripe becomes a non-interactive native edge. Generic
+Empty/Typography titles remain independent from Alert-specific ownership.
+
+Descriptions keep actual paragraph/list blocks and inline text/link runs. Scoped
+link underline/hover, paragraph spacing/leading, native inside-list markers and
+modern destructive description opacity are tested. Native announcements preserve
+block boundaries and authored inline spacing while excluding hidden content and
+actions. Explicit source text sizes override inherited metrics; unitless leading
+and tracking follow caller font sizes, while explicit caller metrics retain ownership.
+The source audit caught and removed an inherited pixel-leading seed that had
+incorrectly overridden upstream text-size utilities.
+
+The final native regression passes 70 suites /1,899 tests on each platform. All
+735 registry modules compile as iOS and Android Hermes bytecode: 470 component
+examples, 231 chart modules and 34 form modules, including four support modules.
+The gallery has 731 authored roots. All six authored Alert example publications
+and the three frozen destructive examples have renderer coverage. Generated
+TypeScript, source/style/API guards, CLI lint and static security pass. CLI unit
+tests pass 682 with one existing optional skip (683 total). Packed-consumer and
+packlist guards remain mandatory; their final output is retained with the terminal
+evidence for this change. No package budget or coverage threshold was weakened.
+
+Both native OS cases pass all eleven source row gaps, actual Undo taps, destructive
+state and the description link. These are focused runs of the added Alert case;
+the required native suite now has 23 cases, and this is not a full 23-case device run.
+Final evidence:
+
+- Android: `.artifacts/native-ui-android/2026-10-25T20-24-13-400Z/`.
+  App SHA-256 `7e9a7284ae09366dd5cffd11294dc7f48b3253543fc556875c1159173cd6e501`;
+  test APK `3e01e14d3baa3943aff499e9d3397ea0beafc1fdbd27271ffdc12857b3574ed2`.
+- iOS 26.5: `.artifacts/native-ui-ios/2026-10-25T20-26-16-697Z/`.
+- `.artifacts/native-ui/2026-10-25-alert/final-device-source-equivalence.json`
+  verifies all 154 native TypeScript modules, all 735 recipe modules, the generated
+  gallery and both compiled test sources against the final binaries’ source manifests.
+  Final Android and iOS screenshots were inspected, including Sera’s native stripe.
+
+The first Android build failed because the runner passed `--sdk` to ADB without
+forwarding it to Gradle. The runner now supplies both Android SDK environment
+variables to its captured commands; the successful native build verifies that path.
+The failed `.artifacts/native-ui-android/2026-10-25T20-01-05-543Z/` run, earlier
+native binaries, failed assertions and terminal logs remain retained. Browser
+underline offset, text-layout algorithms, DOM refs/events and arbitrary selector
+execution have explicit native policies. Physical screen-reader acceptance and the
+previously recorded iOS 27 scene-host issue remain separate.
+
+The checklist now records 203 ported groups and one web-specific group, with 415
+unfinished groups. This completes the reviewed Alert groups; it does not claim
+complete official-registry parity. No merge, release, publication or deployment occurred.
+
 # Progress source semantics, native geometry and accessibility — October 25, 2026
 
 Progress now retains six source implementations, eleven style families and eighteen

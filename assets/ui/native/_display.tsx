@@ -50,56 +50,11 @@ import { NativeSlot } from './_slot';
 import { NativeLayout, type NativeLayoutProps } from './_layout';
 import Svg, { Defs, Filter, FeColorMatrix, Image as SvgImage } from 'react-native-svg';
 
-const AlertTone = createContext<'default' | 'destructive'>('default');
-export function Alert({
-  variant = 'default',
-  children,
-  style,
-  ...props
-}: ViewProps & { variant?: 'default' | 'destructive' }) {
-  const { colors } = useTheme();
-  const text = plainText(children);
-  useEffect(() => {
-    if (text) AccessibilityInfo.announceForAccessibility(text);
-  }, [text]);
-  return (
-    <AlertTone.Provider value={variant}>
-      <Surface
-        accessibilityRole="alert"
-        accessibilityLiveRegion="assertive"
-        {...props}
-        style={[{ borderColor: colors.border }, style]}
-      >
-        {children}
-      </Surface>
-    </AlertTone.Provider>
-  );
+export { Alert, AlertTitle, AlertDescription, AlertAction } from './_alert';
+/** Generic display aliases do not inherit Alert-specific typography or ownership. */
+function NativeDisplayTitle({ style, ...props }: TextProps) {
+  return <LabelText accessibilityRole="header" {...props} style={[{ fontWeight: '500' }, style]} />;
 }
-export function AlertTitle({ style, ...props }: TextProps) {
-  const variant = useContext(AlertTone),
-    { colors } = useTheme();
-  return (
-    <LabelText
-      accessibilityRole="header"
-      {...props}
-      style={[
-        { fontWeight: '500' },
-        variant === 'destructive' && { color: colors.destructive },
-        style,
-      ]}
-    />
-  );
-}
-export function AlertDescription({ style, ...props }: TextProps) {
-  const variant = useContext(AlertTone),
-    { colors } = useTheme();
-  return (
-    <Muted {...props} style={[variant === 'destructive' && { color: colors.destructive }, style]} />
-  );
-}
-export const AlertAction = ({ style, ...props }: ViewProps) => (
-  <Box {...props} style={[{ position: 'absolute', right: 12, top: 12 }, style]} />
-);
 export type AspectRatioProps = NativeLayoutProps & { ratio?: number };
 export function AspectRatio({ ratio = 1, style, ...props }: AspectRatioProps) {
   return (
@@ -335,7 +290,7 @@ export const Empty = ({ style, ...props }: ViewProps) => (
   <Surface {...props} style={[{ alignItems: 'center', padding: 24 }, style]} />
 );
 export const EmptyHeader = Box;
-export const EmptyTitle = AlertTitle;
+export const EmptyTitle = NativeDisplayTitle;
 export const EmptyDescription = Muted;
 export const EmptyContent = Box;
 export function EmptyMedia({
@@ -481,7 +436,7 @@ export const TypographyMuted = Muted;
 export const TypographyLead = ({ style, ...props }: TextProps) => (
   <Muted {...props} style={[{ fontSize: 18, lineHeight: 27 }, style]} />
 );
-export const TypographyLarge = AlertTitle;
+export const TypographyLarge = NativeDisplayTitle;
 export const TypographySmall = ({ style, ...props }: TextProps) => (
   <LabelText {...props} style={[{ fontSize: 12 }, style]} />
 );

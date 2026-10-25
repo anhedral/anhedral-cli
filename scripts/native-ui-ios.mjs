@@ -10,7 +10,7 @@ import {
 } from './native-ui-device.mjs';
 export { nativeQAApp, nativeQAExport } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeIOSTestCount = 22;
+export const nativeIOSTestCount = 23;
 export function nativeIOSTestSelection(source, requested) {
   const available = [...source.matchAll(/^\s*func (test[A-Za-z0-9]+)\(/gm)].map(
     (match) => match[1],

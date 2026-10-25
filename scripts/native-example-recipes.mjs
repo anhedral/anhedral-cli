@@ -21,6 +21,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const upstream = path.resolve(process.argv[index + 1]),
       recipes = [];
     const names = [
+      'alert-demo',
       'alert-destructive',
       'alert-dialog-demo',
       'badge-destructive',
@@ -283,6 +284,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       origins.push(`apps/v4/registry/bases/${base}/examples/kbd-example.tsx`);
       origins.push(`apps/v4/registry/bases/${base}/examples/input-group-example.tsx`);
     }
+    for (const base of ['base', 'radix', 'aria'])
+      origins.push(`apps/v4/registry/bases/${base}/examples/alert-example.tsx`);
     // Published legacy examples are separate authored inputs, even when their names
     // match a maintained modern recipe. Never substitute modern source for them.
     const maintainedNames = new Set(origins.map((origin) => path.basename(origin, '.tsx')));

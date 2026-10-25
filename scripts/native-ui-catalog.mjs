@@ -235,6 +235,19 @@ boundaries. Native surfaces retain source alpha, native shadows and direct state
 The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
 it does not install the browser primitive libraries or emulate DOM objects.
 
+Alert retains all six source implementations, twenty-one class slots, both variants and
+all eleven style families. Modern native rows preserve direct glyph columns, title/body
+spacing and action padding; frozen roots retain their physical icon inset and the
+source div-only sibling offset. Sera's source pseudo stripe becomes a non-interactive
+native edge. Scoped native link underline/hover and paragraph spacing/leading preserve
+the authored descriptions, including their lists. Native descriptions use block Views
+with inline Text runs, so paragraphs and lists do not collapse into a single text node.
+Generic display titles remain independent from Alert typography. Native announcements,
+View/Text refs and native action events replace browser alert hosts and DOM events.
+CSS underline offset, browser text layout algorithms and DOM selectors remain explicit
+platform boundaries; native line breaking/clamping and direct geometry provide their
+reviewed adaptations. Physical screen-reader acceptance remains separate.
+
 Progress retains six source implementations, eleven style families and eighteen
 source class slots. Base/Aria roots append their track after source labels/values;
 Radix and frozen roots retain their single track. Native width geometry disables

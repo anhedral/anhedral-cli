@@ -220,6 +220,19 @@ boundaries. Native surfaces retain source alpha, native shadows and direct state
 The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
 it does not install the browser primitive libraries or emulate DOM objects.
 
+Alert retains all six source implementations, twenty-one class slots, both variants and
+all eleven style families. Modern native rows preserve direct glyph columns, title/body
+spacing and action padding; frozen roots retain their physical icon inset and the
+source div-only sibling offset. Sera's source pseudo stripe becomes a non-interactive
+native edge. Scoped native link underline/hover and paragraph spacing/leading preserve
+the authored descriptions, including their lists. Native descriptions use block Views
+with inline Text runs, so paragraphs and lists do not collapse into a single text node.
+Generic display titles remain independent from Alert typography. Native announcements,
+View/Text refs and native action events replace browser alert hosts and DOM events.
+CSS underline offset, browser text layout algorithms and DOM selectors remain explicit
+platform boundaries; native line breaking/clamping and direct geometry provide their
+reviewed adaptations. Physical screen-reader acceptance remains separate.
+
 Progress retains six source implementations, eleven style families and eighteen
 source class slots. Base/Aria roots append their track after source labels/values;
 Radix and frozen roots retain their single track. Native width geometry disables
@@ -264,11 +277,11 @@ maintained separately. Overlay preset/API parity remains unfinished.
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 464 reviewed source modules,
+The authored component example overlay currently includes 470 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 `node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`
 and `node scripts/native-icons.mjs --check`. Their coverage remains partial while
-component preset/API parity is unfinished. The overlay includes 100 distinct published examples from each of the legacy Default and New York registries. Their original
+component preset/API parity is unfinished. The overlay includes 101 distinct published examples from each of the legacy Default and New York registries. Their original
 source files, color generation, controlled callbacks and hashes are retained;
 matching names never substitute the modern source. Filled legacy destructive buttons
 and badges remain distinct from modern translucent variants.

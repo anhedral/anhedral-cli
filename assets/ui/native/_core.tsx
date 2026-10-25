@@ -118,6 +118,10 @@ export const NativeTextStyleProvider = NativeTextStyleContext.Provider;
 export const NativeDescendantStyleContext = createContext<{
   textColor?: string;
   iconColor?: string;
+  linkUnderline?: boolean;
+  linkHoverColor?: string;
+  paragraphGap?: number;
+  paragraphLeading?: number;
 }>({});
 /** RN 0.86 Text's runtime supports pointer enter/leave; its legacy public TextProps omit them. */
 export type NativeTextPointerProps = Pick<ViewProps, 'onPointerEnter' | 'onPointerLeave'>;

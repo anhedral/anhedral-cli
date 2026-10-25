@@ -15,12 +15,13 @@ import { LabelText, content, nativeComponent, plainText } from './_core';
 import { isNativeTextContent } from './_description-list';
 
 type Marker = 'decimal' | 'disc' | 'none';
-const ListContext = createContext<Marker | null>(null);
+const ListContext = createContext<{ marker: Marker; position: 'inside' | 'outside' } | null>(null);
 type ListProps = ViewProps & {
   ref?: Ref<View>;
   start?: number;
   reversed?: boolean;
   marker?: Marker;
+  markerPosition?: 'inside' | 'outside';
 };
 type ItemProps = ViewProps & { ref?: Ref<View>; value?: number; listOrdinal?: number };
 function integer(value: number | undefined, fallback: number) {
@@ -28,7 +29,14 @@ function integer(value: number | undefined, fallback: number) {
   if (!Number.isSafeInteger(value)) throw Error('Native list counters must be safe integers.');
   return value;
 }
-function NativeList({ children, start, reversed = false, marker = 'disc', ...props }: ListProps) {
+function NativeList({
+  children,
+  start,
+  reversed = false,
+  marker = 'disc',
+  markerPosition = 'outside',
+  ...props
+}: ListProps) {
   const collect = (nodes: ReactNode): number =>
     Children.toArray(nodes).reduce<number>(
       (total, child) =>
@@ -54,7 +62,7 @@ function NativeList({ children, start, reversed = false, marker = 'disc', ...pro
       return cloneElement(child as ReactElement<ItemProps>, { listOrdinal: current });
     });
   return (
-    <ListContext.Provider value={marker}>
+    <ListContext.Provider value={{ marker, position: markerPosition }}>
       <View role="list" {...props}>
         {visit(children)}
       </View>
@@ -74,9 +82,11 @@ export function NativeListItem({
   style,
   ...props
 }: ItemProps) {
-  const marker = useContext(ListContext);
-  if (marker === null)
+  const context = useContext(ListContext);
+  if (context === null)
     throw Error('Native list items require an owning ordered or unordered list.');
+  const { marker, position } = context;
+  const text = isNativeTextContent(children);
   return (
     <View
       accessible={isNativeTextContent(children)}
@@ -89,12 +99,24 @@ export function NativeListItem({
       {...props}
       style={[{ flexDirection: 'row', alignItems: 'flex-start' }, style]}
     >
-      {marker !== 'none' && (
-        <LabelText accessible={false} style={{ minWidth: 20, marginStart: -20, paddingEnd: 4 }}>
-          {marker === 'decimal' ? `${listOrdinal}.` : '•'}
+      {position === 'inside' && text ? (
+        <LabelText>
+          {marker === 'decimal' ? `${listOrdinal}. ` : marker === 'disc' ? '• ' : ''}
+          {children}
         </LabelText>
+      ) : (
+        <>
+          {marker !== 'none' && (
+            <LabelText
+              accessible={false}
+              style={{ minWidth: 20, marginStart: position === 'outside' ? -20 : 0, paddingEnd: 4 }}
+            >
+              {marker === 'decimal' ? `${listOrdinal}.` : '•'}
+            </LabelText>
+          )}
+          <View style={{ flex: 1, minWidth: 0 }}>{content(children)}</View>
+        </>
       )}
-      <View style={{ flex: 1, minWidth: 0 }}>{content(children)}</View>
     </View>
   );
 }
