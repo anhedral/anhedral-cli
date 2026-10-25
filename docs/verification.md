@@ -1,3 +1,69 @@
+# Avatar source presets, authored examples and native image readiness — October 25, 2026
+
+Avatar retains six publications, thirty class slots and all eleven style families.
+Modern/New York V4 roots keep default/sm/lg sizes; Default/New York keep fixed
+40-point source roots. Fallback typography, image corners, badge glyphs, group
+rings/overlap and count precedence use reviewed source. Base/Radix retain their
+loading callbacks and distinct delay/delayMs props; Aria retains preceding-peer
+fallback visibility. Base clears status when its image unmounts. Caller styles,
+native refs, source replacement and unmount cleanup are tested. Source-owned colors
+now override inherited text tone; explicit glyph color classes retain ownership.
+
+All seven modern source sections are exercised across three families and eight
+styles, including 39 images and 48 fallbacks per example. All three frozen demos
+and both Empty avatar compositions render their actual sources. Native count sizing
+uses direct Avatar members; arbitrary browser data-has selectors, DOM render/host
+props and browser image preload/referrer/responsive policies have explicit native
+boundaries. Native filter rasterization is not a pixel-exact browser color-space claim.
+
+The actual Android OS case exposed a cached SVG readiness failure. The installed
+react-native-svg 15.15.4 Android implementation emits load events from its async
+fetch callback, while its memory-cache drawing branch does not. RN 0.86 supports
+color-only matrix View layers without the API-31 restriction used for blur effects.
+Android Avatar and registry images now use that native layer and the bitmap load
+event; iOS keeps independent bitmap/SVG readiness and a bounded filter deadline.
+Both paths preserve source crop, grayscale/brightness and decorative-image hiding.
+No dependency version changed or third-party source patch was introduced.
+
+Final full native regression passes 78 suites /2,025 tests on each platform, with
+unchanged coverage gates. All 742 registry modules compile as iOS/Android Hermes
+bytecode: 477 component examples, 231 chart modules and 34 form modules, including
+four support modules. The catalog has 738 authored roots. Generated TypeScript,
+source/style/API guards, lint and static security pass. CLI tests pass 686 with one
+existing optional skip (687 total). Packed-consumer and packlist checks remain
+required; final outputs are retained with this change's terminal evidence.
+
+Both focused OS cases pass all eleven root/badge dimensions, native group/count
+layout, cached-image filtering, errors and recovery. The required suite now has
+25 cases; these are focused one-case runs, not full 25-case device acceptance.
+
+- Android API 36 (Google APIs arm64): `.artifacts/native-ui-android/2026-10-25T22-01-16-013Z/`.
+  App SHA-256 `7fb35926b71bdfb40f805ef275c8dd365414b7cb36109f37fbe06fdc61aa6e4e`;
+  test APK `5bc2df320a34b54801b026fb6dbaab096ad97d2f6491b1b7d539a7d69ec8209a`.
+  The rerun installs the unchanged, hash-verified binaries from the retained
+  `2026-10-25T21-54-13-045Z` build after restarting the owned emulator profile.
+- iOS 26.5: `.artifacts/native-ui-ios/2026-10-25T21-57-28-561Z/`.
+- `.artifacts/native-ui/2026-10-25-avatar/final-device-source-equivalence.json`
+  matches all 162 native TypeScript modules, 742 recipe modules, the generated app
+  and both compiled test sources against the tested binary source manifests.
+  Final Android/iOS dark screenshots were inspected. Android screenshot pixels
+  independently confirm both authored red/blue halves become neutral grayscale:
+  `(72,72,72)` and `(67,67,67)`.
+
+Retained failures include the original Android cached-SVG case
+(`2026-10-25T21-45-32-428Z`), the iOS disk-full installation
+(`2026-10-25T21-48-20-681Z`), and the subsequent Android missing-emulator install.
+Diagnostics now have bounded timeouts so a missing device cannot leave log capture
+waiting indefinitely. The earlier focused coverage failure, old display/Badge
+assumptions, decorative-alt and inherited-tone regressions, and stale generated-doc
+failure remain in the terminal evidence. Full coverage thresholds/package budgets
+were not weakened. Physical-device/screen-reader acceptance and the previously
+recorded iOS 27 scene-host issue remain separate.
+
+The checklist records 215 ported groups plus one web-specific group, with 403 still
+unfinished. Work continues through the remaining registry. No merge, publication,
+release or deployment occurred.
+
 # Empty source variants, native composition and gradients — October 25, 2026
 
 Empty retains six upstream publications, thirty-six class slots, both media

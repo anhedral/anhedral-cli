@@ -220,6 +220,29 @@ boundaries. Native surfaces retain source alpha, native shadows and direct state
 The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
 it does not install the browser primitive libraries or emulate DOM objects.
 
+Avatar retains six source publications, thirty class slots and eleven style families.
+Modern and New York V4 roots retain default/sm/lg sizes; Default and New York retain
+fixed 40-point source roots. Fallback text, media corner treatment, direct badge glyph
+sizes, eight-point group overlap, two-point background rings and group-count size
+precedence come from reviewed source. Native count sizing follows direct Avatar members;
+arbitrary browser data-has selectors across unrelated native hosts remain web-specific.
+A noninteractive native border overlay retains
+modern darken/lighten blend modes. Caller geometry/text styles and native refs remain
+owned by their native View/Image hosts. Badge/group additions absent from the two
+frozen three-export sources use the maintained New York V4 extension.
+
+Native OS image events own loading/error/loaded state. Base and Radix preserve
+loading fallbacks and their distinct delay/delayMs props; Aria preserves preceding
+image-peer fallback visibility. Base resets status on image unmount. Native callbacks
+compose with internal loading state instead of replacing it. Source replacement and
+unmount cleanup reject stale completions. Android filtered images use the native bitmap load event and RN color-matrix View
+layers, avoiding SVG cache-hit load-event gaps. iOS waits for both bitmap and SVG
+readiness. Native clipping and composed grayscale/brightness retain source crop/shape;
+a stalled iOS filter returns to fallback after 30 seconds. Decorative
+images omit native alt-driven accessibility activation. Browser image preloading,
+DOM host/render props, cross-origin/referrer policy, CSS peers and responsive loading
+are explicit native API boundaries; no browser primitive package runs in Expo.
+
 Empty retains six source publications, thirty-six class slots, both media variants
 and all eleven style families. Native containers preserve source padding, header/content
 gaps, compact typography and heading-font roles. Media defaults retain intrinsic sizing;
@@ -238,7 +261,7 @@ spaces. Unsupported hosts and combined scrolling/background surfaces fail explic
 and require a reviewed adapter. Native grid cells neutralize source flex-item hints;
 one-column grids keep vertical flow, and multi-column cells retain their source widths.
 The broader browser grid feature set is reviewed per item rather than inferred from
-these supported source patterns. Empty's avatar examples still require Avatar review.
+these supported source patterns. Empty's avatar examples compose the source-owned Avatar implementation.
 
 Alert retains all six source implementations, twenty-one class slots, both variants and
 all eleven style families. Modern native rows preserve direct glyph columns, title/body
@@ -320,7 +343,7 @@ a custom accessibilityLabel names the containing paragraph rather than that frag
 Composed Pressable links keep their custom accessible names. Native
 keyboard/screen-reader and device navigation acceptance remains separate.
 
-Authored image recipes use native image caching and SVG grayscale/brightness filters.
+Authored image recipes use native image caching, Android color-matrix layers and iOS SVG grayscale/brightness filters.
 They retain source HTTPS URLs, alt text, crop, dimensions and aspect ratios, with visible
 loading, failure and retry. Next server optimization, browser srcset and preload are
 web-specific. Unported local image paths fail explicitly; remote media availability is

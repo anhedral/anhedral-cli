@@ -20,7 +20,7 @@ import {
   nativeQAStoryCountSource,
 } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeAndroidTestCount = 24;
+export const nativeAndroidTestCount = 25;
 const start = '// BEGIN ANHEDRAL NATIVE REGISTRY QA',
   end = '// END ANHEDRAL NATIVE REGISTRY QA';
 export function nativeAndroidTestGradle(source) {
@@ -268,6 +268,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const remote = '/sdcard/Android/data/dev.anhedral.registryqa/files/native-qa/' + stamp;
     const pulled = spawnSync(adb, ['-s', device, 'pull', remote, path.join(evidence, 'device')], {
       encoding: 'utf8',
+      timeout: 15_000,
     });
     writeFileSync(
       path.join(evidence, 'pull.log'),
@@ -288,7 +289,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         'ReactNative:V',
         '*:S',
       ],
-      { encoding: 'utf8', maxBuffer: 2 * 1024 * 1024 },
+      { encoding: 'utf8', maxBuffer: 2 * 1024 * 1024, timeout: 15_000 },
     );
     writeFileSync(
       path.join(evidence, 'logcat.log'),

@@ -524,6 +524,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       }
       if (forwarded.color === undefined)
         forwarded.color =
+          translated.text.color ??
           (kind === 'icon' &&
           !(typeof inputClassName === 'string' && inputClassName.includes('text-'))
             ? descendantPaint.iconColor

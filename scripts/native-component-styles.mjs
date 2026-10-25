@@ -454,6 +454,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeEmptyPresets(inventory),
     source: await nativeEmptyPresetSource(inventory),
   });
+  const { nativeAvatarPresets, nativeAvatarPresetSource } =
+    await import('./native-avatar-presets.mjs');
+  outputs.push({
+    component: 'avatar',
+    target: target('avatar'),
+    data: nativeAvatarPresets(inventory),
+    source: await nativeAvatarPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({

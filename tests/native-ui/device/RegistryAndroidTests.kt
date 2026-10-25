@@ -62,6 +62,33 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun avatarPresetsRetainNativeGeometryImageFallbackAndFilters() = uiAutomator {
+    openStory("native/avatar-contract")
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
+    for ((index,preset) in presets.withIndex()) {
+      label("Avatar geometry: "+preset+":"+(if(index==8||index==9)"40x40:40x40:40x40" else "32x32:24x24:40x40"))
+      label("Avatar badges: "+preset+":10x10:8x8:12x12")
+      label("Avatar group: "+preset+":24x24:-8:-8")
+      label("Avatar image: loaded")
+      label("Next avatar preset").apply {waitForStable();click()}
+    }
+    label("Toggle avatar filter").apply {waitForStable();click()}
+    label("Avatar filter: true")
+    label("Avatar image: loaded")
+    onElement {viewIdResourceName=="native-avatar-image" && named("Native profile portrait") && isVisibleToUser}
+    onElement {named("Dark")}.apply {waitForStable();click()}
+    label("Avatar appearance: dark:dark").waitForStable()
+    label("Native profile portrait").waitForStable()
+    val evidenceRun=InstrumentationRegistry.getArguments().getString("evidenceRun") ?: "local"
+    require(evidenceRun.matches(Regex("[A-Za-z0-9_-]+")))
+    val directory=File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),"native-qa/"+evidenceRun)
+    directory.mkdirs();assertTrue(device.takeScreenshot(File(directory,"avatar-dark-native-filter.png")))
+    label("Toggle avatar image").apply {waitForStable();click()}
+    label("Avatar image: error");label("NP")
+    label("Toggle avatar image").apply {waitForStable();click()}
+    label("Avatar image: loaded");label("Native profile portrait")
+    onElement {named("System")}.click()
+  }
   @Test fun emptyPresetsRetainNativeLayoutGridGradientAndActions() = uiAutomator {
     openStory("native/empty-contract")
     val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")

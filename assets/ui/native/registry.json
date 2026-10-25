@@ -1276,7 +1276,11 @@
     "_empty-presets.tsx",
     "_preset-empty-style.tsx",
     "_empty.tsx",
-    "_gradient.tsx"
+    "_gradient.tsx",
+    "_avatar-presets.tsx",
+    "_preset-avatar-style.tsx",
+    "_avatar.tsx",
+    "_image-filter.tsx"
   ],
   "supportModules": [
     {

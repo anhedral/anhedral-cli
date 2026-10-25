@@ -24,6 +24,135 @@ import SourceEmptyBackground from './.generated/src/examples/new-york-v4/empty-b
 /* REGISTRY_STORIES */
 const NativeSourceGlyph = withRegistryStyles(IconPlaceholder, 'icon');
 const GridEmpty = withRegistryStyles(UI.Empty, 'view');
+const nativeAvatarFixture =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAcElEQVR4nO3QMQ0AIAwAsNngQQQO8P/txsuQsSzpUQONt091WjdbhQABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIEDA/4AOOOLH/K1dokQAAAABJRU5ErkJggg==';
+function NativeAvatarMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  const [index, setIndex] = useState(0),
+    [broken, setBroken] = useState(false),
+    [gray, setGray] = useState(false),
+    [status, setStatus] = useState('idle');
+  const appearance = useTheme(),
+    preset = presets[index]!;
+  const [layout, setLayout] = useState<
+    Record<string, { width: number; height: number; x: number }>
+  >({});
+  const record = (name: string) => (event: LayoutChangeEvent) => {
+    const { width, height, x } = event.nativeEvent.layout;
+    setLayout((previous) =>
+      previous[name]?.width === width &&
+      previous[name]?.height === height &&
+      previous[name]?.x === x
+        ? previous
+        : { ...previous, [name]: { width, height, x } },
+    );
+  };
+  const size = (name: string) =>
+    Math.round(layout[name]?.width ?? 0) + 'x' + Math.round(layout[name]?.height ?? 0);
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Avatar preset: ' + preset}</UI.Text>
+      <UI.Text>
+        {'Avatar geometry: ' + preset + ':' + size('default') + ':' + size('sm') + ':' + size('lg')}
+      </UI.Text>
+      <UI.Text>
+        {'Avatar badges: ' +
+          preset +
+          ':' +
+          size('default-badge') +
+          ':' +
+          size('sm-badge') +
+          ':' +
+          size('lg-badge')}
+      </UI.Text>
+      <UI.Text>{'Avatar image: ' + status}</UI.Text>
+      <UI.Text>{'Avatar filter: ' + gray}</UI.Text>
+      <UI.Text>{'Avatar appearance: ' + appearance.preference + ':' + appearance.mode}</UI.Text>
+      <UI.Button onPress={() => setIndex((index + 1) % presets.length)}>
+        Next avatar preset
+      </UI.Button>
+      <NativeRegistryPalette
+        source={
+          preset === 'default' || preset === 'new-york' || preset === 'new-york-v4'
+            ? preset
+            : 'base'
+        }
+        generation={preset === 'default' || preset === 'new-york' ? 'legacy' : 'modern'}
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <View key={preset} style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+            <UI.Avatar testID="native-avatar-default" onLayout={record('default')}>
+              <UI.AvatarImage
+                testID="native-avatar-image"
+                source={{
+                  uri: broken ? 'file:///anhedral-absent-profile.png' : nativeAvatarFixture,
+                }}
+                grayscale={gray}
+                alt="Native profile portrait"
+                onLoadingStatusChange={setStatus}
+              />
+              <UI.AvatarFallback>NP</UI.AvatarFallback>
+              <UI.AvatarBadge onLayout={record('default-badge')}>
+                <NativeSourceGlyph lucide="CheckIcon" />
+              </UI.AvatarBadge>
+            </UI.Avatar>
+            <UI.Avatar size="sm" onLayout={record('sm')}>
+              <UI.AvatarFallback>SM</UI.AvatarFallback>
+              <UI.AvatarBadge onLayout={record('sm-badge')}>
+                <NativeSourceGlyph lucide="CheckIcon" />
+              </UI.AvatarBadge>
+            </UI.Avatar>
+            <UI.Avatar size="lg" onLayout={record('lg')}>
+              <UI.AvatarFallback>LG</UI.AvatarFallback>
+              <UI.AvatarBadge onLayout={record('lg-badge')}>
+                <NativeSourceGlyph lucide="CheckIcon" />
+              </UI.AvatarBadge>
+            </UI.Avatar>
+          </View>
+          <UI.AvatarGroup style={{ alignSelf: 'flex-start' }}>
+            <UI.Avatar size="lg" onLayout={record('first')}>
+              <UI.AvatarFallback>AA</UI.AvatarFallback>
+            </UI.Avatar>
+            <UI.Avatar size="sm" onLayout={record('second')}>
+              <UI.AvatarFallback>BB</UI.AvatarFallback>
+            </UI.Avatar>
+            <UI.AvatarGroupCount onLayout={record('count')}>
+              <NativeSourceGlyph lucide="PlusIcon" />
+            </UI.AvatarGroupCount>
+          </UI.AvatarGroup>
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+      <UI.Text>
+        {'Avatar group: ' +
+          preset +
+          ':' +
+          size('count') +
+          ':' +
+          Math.round(
+            (layout.second?.x ?? 0) - (layout.first?.x ?? 0) - (layout.first?.width ?? 0),
+          ) +
+          ':' +
+          Math.round(
+            (layout.count?.x ?? 0) - (layout.second?.x ?? 0) - (layout.second?.width ?? 0),
+          )}
+      </UI.Text>
+      <UI.Button onPress={() => setGray((value) => !value)}>Toggle avatar filter</UI.Button>
+      <UI.Button onPress={() => setBroken((value) => !value)}>Toggle avatar image</UI.Button>
+    </View>
+  );
+}
 function NativeEmptyMatrix() {
   const appearance = useTheme();
   const presets = [

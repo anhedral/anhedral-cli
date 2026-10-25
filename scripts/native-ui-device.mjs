@@ -105,6 +105,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/progress-contract",Component:NativeProgressMatrix}',
           '{id: "native/alert-contract",Component:NativeAlertMatrix}',
           '{id: "native/empty-contract",Component:NativeEmptyMatrix}',
+          '{id: "native/avatar-contract",Component:NativeAvatarMatrix}',
         ].join(',\n') +
         '];',
     );

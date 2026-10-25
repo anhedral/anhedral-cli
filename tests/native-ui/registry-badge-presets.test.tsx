@@ -156,8 +156,9 @@ test('Badge native font scaling, icon placement and consumer style overrides ret
   expect(badge.borderRadius).toBe(4);
   expect(badge.paddingLeft).toBe(6);
   const avatar = StyleSheet.flatten(screen.getByTestId('avatar').props.style);
-  expect(avatar.height).toBeUndefined();
-  expect(avatar.borderRadius).toBe(12);
+  expect(avatar.height).toBe(10);
+  expect(avatar.paddingHorizontal).toBeUndefined();
+  expect(avatar.borderRadius).toBe(9999);
 });
 
 test('shared CVA evaluation preserves finite compound conditions and rejects unknown bindings and slots', () => {

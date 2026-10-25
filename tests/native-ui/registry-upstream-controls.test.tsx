@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Platform } from 'react-native';
 import { render, screen, fireEvent, act } from '@testing-library/react-native';
 import * as UI from './.generated';
 import { withRegistryStyles } from './.generated/src/native/registry-styles';
@@ -233,14 +233,23 @@ test('grayscale avatars wait for their filtered image and restore the fallback o
   await fireEvent(probe, 'load', {
     nativeEvent: { source: { width: 32, height: 32, uri: 'https://example.invalid/portrait.png' } },
   });
-  expect(screen.getByText('AB')).toBeOnTheScreen();
-  await fireEvent(
-    screen.getByTestId('portrait-svg-source', { includeHiddenElements: true }),
-    'load',
-    { nativeEvent: { source: { width: 32, height: 32 } } },
-  );
+  if (Platform.OS !== 'android') {
+    expect(screen.getByText('AB')).toBeOnTheScreen();
+    await fireEvent(
+      screen.getByTestId('portrait-svg-source', { includeHiddenElements: true }),
+      'load',
+      { nativeEvent: { source: { width: 32, height: 32 } } },
+    );
+  } else
+    expect(screen.getByTestId('portrait-native-filter')).toHaveStyle({
+      filter: [{ grayscale: 1 }, { brightness: 1 }],
+    });
   expect(screen.queryByText('AB')).toBeNull();
-  expect(screen.getAllByTestId('portrait-grayscale')[0]!).toBeOnTheScreen();
+  expect(
+    screen.getAllByTestId(
+      Platform.OS === 'android' ? 'portrait-native-filter' : 'portrait-grayscale',
+    )[0]!,
+  ).toBeOnTheScreen();
   await fireEvent(probe, 'error', { nativeEvent: { error: 'Image unavailable' } });
   expect(screen.getByText('AB')).toBeOnTheScreen();
   expect(screen.queryAllByTestId('portrait-grayscale')).toHaveLength(0);

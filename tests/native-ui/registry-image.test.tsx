@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { ThemeProvider } from './.generated';
 import { RegistryImage } from './.generated/src/native/registry-styles';
 import { NativeRegistryImage } from './.generated/src/native/registry-image';
@@ -50,20 +50,29 @@ test('native source image composes grayscale and brightness in one SVG matrix an
     </ThemeProvider>,
   );
   const tree = JSON.stringify(screen.toJSON());
-  expect(tree).toContain('0.04252');
-  expect(tree).toContain('0.14304');
+  if (Platform.OS === 'android')
+    expect(screen.getByTestId('photo-native-filter')).toHaveStyle({
+      filter: [{ grayscale: 1 }, { brightness: 0.2 }],
+    });
+  else {
+    expect(tree).toContain('0.04252');
+    expect(tree).toContain('0.14304');
+  }
   expect(StyleSheet.flatten(screen.getByTestId('photo').props.style)).toMatchObject({
     position: 'absolute',
     width: '100%',
     height: '100%',
   });
   await fireEvent(bitmap(), 'load', loaded);
-  expect(screen.queryByRole('image', { name: 'Filtered photo' })).toBeNull();
-  await fireEvent(
-    screen.getAllByTestId('photo-svg-source', { includeHiddenElements: true })[0]!,
-    'load',
-    loaded,
-  );
+  if (Platform.OS !== 'android') {
+    expect(screen.queryByRole('image', { name: 'Filtered photo' })).toBeNull();
+    await fireEvent(
+      screen.getAllByTestId('photo-svg-source', { includeHiddenElements: true })[0]!,
+      'load',
+      loaded,
+    );
+  } else
+    expect(screen.queryByTestId('photo-svg-source', { includeHiddenElements: true })).toBeNull();
   expect(screen.getByRole('image', { name: 'Filtered photo' })).toBeTruthy();
   expect(screen.queryByRole('progressbar')).toBeNull();
 });
@@ -108,7 +117,7 @@ test('image failure is visible and retries the same authored URL; callbacks from
   await fireEvent(bitmap(), 'load', loaded);
   expect(onLoad).toHaveBeenCalledTimes(1);
 });
-test('a stalled filtered native renderer times out visibly instead of hiding the image indefinitely', async () => {
+test('filtered native image readiness uses Android bitmap completion or the iOS SVG deadline', async () => {
   jest.useFakeTimers();
   try {
     await render(
@@ -118,16 +127,21 @@ test('a stalled filtered native renderer times out visibly instead of hiding the
     );
     await fireEvent(bitmap(), 'load', loaded);
     await act(() => jest.advanceTimersByTime(30_000));
-    expect(screen.getByRole('alert')).toHaveTextContent('Unable to load Slow');
-    await fireEvent.press(screen.getByRole('button', { name: 'Retry image' }));
-    await fireEvent(bitmap(), 'load', loaded);
-    await fireEvent(
-      screen.getAllByTestId('photo-svg-source', { includeHiddenElements: true })[0]!,
-      'load',
-      loaded,
-    );
-    await act(() => jest.advanceTimersByTime(30_000));
-    expect(screen.queryByRole('alert')).toBeNull();
+    if (Platform.OS === 'android') {
+      expect(screen.getByRole('image', { name: 'Slow' })).toBeTruthy();
+      expect(screen.queryByRole('alert')).toBeNull();
+    } else {
+      expect(screen.getByRole('alert')).toHaveTextContent('Unable to load Slow');
+      await fireEvent.press(screen.getByRole('button', { name: 'Retry image' }));
+      await fireEvent(bitmap(), 'load', loaded);
+      await fireEvent(
+        screen.getAllByTestId('photo-svg-source', { includeHiddenElements: true })[0]!,
+        'load',
+        loaded,
+      );
+      await act(() => jest.advanceTimersByTime(30_000));
+      expect(screen.queryByRole('alert')).toBeNull();
+    }
   } finally {
     jest.useRealTimers();
   }

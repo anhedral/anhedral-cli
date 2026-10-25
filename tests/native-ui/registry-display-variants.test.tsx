@@ -17,7 +17,7 @@ test.each([
   expect(screen.getByTestId('avatar')).toHaveStyle({
     width: extent,
     height: extent,
-    borderRadius: extent / 2,
+    borderRadius: 9999,
   });
 });
 test.each([

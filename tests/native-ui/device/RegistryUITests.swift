@@ -1,6 +1,39 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testAvatarPresetsRetainNativeGeometryImageFallbackAndFilters() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch();openStory("native/avatar-contract",in:app)
+    let scroll=storyScroll(app)
+    func target(_ name:String)->XCUIElement {app.descendants(matching:.any).matching(identifier:name).firstMatch}
+    func reveal(_ name:String)->XCUIElement {
+      let element=target(name)
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeUp()}
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeDown()}
+      XCTAssertTrue(element.isHittable,name);return element
+    }
+    let presets=["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"]
+    for (index,preset) in presets.enumerated() {
+      XCTAssertTrue(target("Avatar geometry: "+preset+":"+((index==8||index==9) ? "40x40:40x40:40x40" : "32x32:24x24:40x40")).waitForExistence(timeout:10))
+      XCTAssertTrue(target("Avatar badges: "+preset+":10x10:8x8:12x12").exists)
+      XCTAssertTrue(target("Avatar group: "+preset+":24x24:-8:-8").waitForExistence(timeout:10))
+      XCTAssertTrue(target("Avatar image: loaded").waitForExistence(timeout:10))
+      reveal("Next avatar preset").tap()
+    }
+    reveal("Toggle avatar filter").tap()
+    XCTAssertTrue(target("Avatar filter: true").waitForExistence(timeout:10))
+    XCTAssertTrue(target("Avatar image: loaded").waitForExistence(timeout:10))
+    XCTAssertTrue(app.images["native-avatar-image-grayscale"].waitForExistence(timeout:10))
+    app.buttons["Dark"].tap()
+    XCTAssertTrue(target("Avatar appearance: dark:dark").waitForExistence(timeout:10))
+    _=reveal("Native profile portrait")
+    let image=XCTAttachment(screenshot:app.screenshot());image.name="Native Avatar source rings, badges and filtered bitmap";image.lifetime = .keepAlways;add(image)
+    reveal("Toggle avatar image").tap()
+    XCTAssertTrue(target("Avatar image: error").waitForExistence(timeout:10));XCTAssertTrue(target("NP").exists)
+    reveal("Toggle avatar image").tap()
+    XCTAssertTrue(target("Avatar image: loaded").waitForExistence(timeout:10));XCTAssertTrue(target("Native profile portrait").exists)
+    app.buttons["System"].tap()
+  }
   func testEmptyPresetsRetainNativeLayoutGridGradientAndActions() {
     let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
     app.launch();openStory("native/empty-contract",in:app)

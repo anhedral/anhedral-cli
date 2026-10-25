@@ -1,29 +1,22 @@
 import {
   cloneElement,
-  useId,
   createContext,
   useContext,
-  useState,
   useEffect,
-  useLayoutEffect,
-  useRef,
   type ReactNode,
   type ReactElement,
   type Ref,
 } from 'react';
 import {
   View,
-  Image,
   Animated,
   AccessibilityInfo,
-  type ImageProps,
   type ViewProps,
   type PressableProps,
   Pressable,
   type TextProps,
 } from 'react-native';
 import { useTheme } from '../theme';
-import { Badge, type BadgeProps } from './_badge';
 export { Badge } from './_badge';
 import {
   NativeButtonGroupContext,
@@ -48,7 +41,6 @@ import {
 import { Button, LinkButton, type NativeControlButtonProps as ButtonProps } from './button';
 import { NativeSlot } from './_slot';
 import { NativeLayout, type NativeLayoutProps } from './_layout';
-import Svg, { Defs, Filter, FeColorMatrix, Image as SvgImage } from 'react-native-svg';
 
 export { Alert, AlertTitle, AlertDescription, AlertAction } from './_alert';
 /** Generic display aliases do not inherit Alert-specific typography or ownership. */
@@ -71,144 +63,15 @@ export function AspectRatio({ ratio = 1, style, ...props }: AspectRatioProps) {
     />
   );
 }
-const AvatarContext = createContext({
-  loaded: false,
-  grayscale: false,
-  setLoaded: (_value: boolean) => {},
-});
-export function Avatar({
-  children,
-  style,
-  size = 'default',
-  grayscale = false,
-  ...props
-}: ViewProps & { size?: 'default' | 'lg' | 'sm'; grayscale?: boolean }) {
-  const extent = size === 'lg' ? 40 : size === 'sm' ? 24 : 32;
-  const [loaded, setLoaded] = useState(false);
-  const { colors } = useTheme();
-  return (
-    <AvatarContext.Provider value={{ loaded, setLoaded, grayscale }}>
-      <View
-        {...props}
-        style={[
-          {
-            width: extent,
-            height: extent,
-            borderRadius: extent / 2,
-            overflow: 'hidden',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: colors.muted,
-          },
-          style,
-        ]}
-      >
-        {children}
-      </View>
-    </AvatarContext.Provider>
-  );
-}
-Avatar.nativeRegistryImage = true;
-export function AvatarImage({
-  onLoad,
-  onError,
-  source,
-  style,
-  grayscale: ownGrayscale,
-  ...props
-}: ImageProps & { grayscale?: boolean }) {
-  const avatar = useContext(AvatarContext),
-    grayscale = ownGrayscale ?? avatar.grayscale,
-    { setLoaded } = avatar,
-    filter = useId();
-  const identity = JSON.stringify([source, props.src, props.srcSet]),
-    latest = useRef(identity);
-  latest.current = identity;
-  const [ready, setReady] = useState({ identity, bitmap: false, filtered: false });
-  const current =
-    ready.identity === identity ? ready : { identity, bitmap: false, filtered: false };
-  const visible = grayscale ? current.filtered : current.bitmap;
-  useLayoutEffect(() => setLoaded(visible), [visible, setLoaded]);
-  const mark = (kind: 'bitmap' | 'filtered' | 'error') => {
-    if (latest.current !== identity) return;
-    setReady((previous) => {
-      const value =
-        previous.identity === identity ? previous : { identity, bitmap: false, filtered: false };
-      if (kind === 'error') return { identity, bitmap: false, filtered: false };
-      return value[kind] ? value : { ...value, [kind]: true };
-    });
-  };
-  const image = (
-    <Image
-      {...props}
-      source={source}
-      accessible={grayscale ? false : props.accessible}
-      onLoad={(event) => {
-        if (latest.current !== identity) return;
-        mark('bitmap');
-        onLoad?.(event);
-      }}
-      onError={(event) => {
-        if (latest.current !== identity) return;
-        mark('error');
-        onError?.(event);
-      }}
-      accessibilityElementsHidden={!current.bitmap || grayscale}
-      style={[
-        {
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          opacity: current.bitmap && !grayscale ? 1 : 0,
-        },
-        style,
-      ]}
-    />
-  );
-  return (
-    <>
-      {image}
-      {grayscale && (
-        <Svg
-          width="100%"
-          height="100%"
-          style={{ position: 'absolute', inset: 0, opacity: visible ? 1 : 0 }}
-          accessibilityElementsHidden={!visible}
-          testID={props.testID ? props.testID + '-grayscale' : undefined}
-          accessible={visible}
-          accessibilityRole="image"
-          accessibilityLabel={props.accessibilityLabel ?? props.alt}
-        >
-          <Defs>
-            <Filter id={filter}>
-              <FeColorMatrix type="saturate" values={0} />
-            </Filter>
-          </Defs>
-          <SvgImage
-            width="100%"
-            height="100%"
-            href={props.src ?? source}
-            testID={props.testID ? props.testID + '-svg-source' : undefined}
-            onLoad={() => mark('filtered')}
-            preserveAspectRatio={
-              props.resizeMode === 'contain' ? 'xMidYMid meet' : 'xMidYMid slice'
-            }
-            filter={'url(#' + filter + ')'}
-          />
-        </Svg>
-      )}
-    </>
-  );
-}
-AvatarImage.nativeRegistryImage = true;
-export function AvatarFallback(props: TextProps) {
-  return useContext(AvatarContext).loaded ? null : <LabelText {...props} />;
-}
-export const AvatarBadge = (props: BadgeProps) => <Badge {...props} nativePreset={false} />;
-export const AvatarGroup = ({ style, ...props }: ViewProps) => (
-  <Box {...props} style={row(style)} />
-);
-export const AvatarGroupCount = AvatarBadge;
+import { Avatar } from './_avatar';
+export {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  AvatarBadge,
+  AvatarGroup,
+  AvatarGroupCount,
+} from './_avatar';
 export type SeparatorProps = NativeLayoutProps & {
   orientation?: 'horizontal' | 'vertical';
   decorative?: boolean;

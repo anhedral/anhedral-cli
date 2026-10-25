@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Svg, { Defs, Filter, FeColorMatrix, Image as SvgImage } from 'react-native-svg';
 import { LabelText } from './_core';
+import { nativeBitmapLayerFilter, nativeBitmapFilterStyle } from './_image-filter';
 
 export type RegistryImageProps = Omit<ImageProps, 'source' | 'style' | 'width' | 'height'> & {
   src: string;
@@ -51,7 +52,8 @@ export function NativeRegistryImage({
     state =
       loaded.identity === identity ? loaded : { bitmap: false, filtered: false, error: false },
     filtered = grayscale || brightness !== 1,
-    ready = state.bitmap && (!filtered || state.filtered),
+    nativeFilter = filtered && nativeBitmapLayerFilter,
+    ready = state.bitmap && (!filtered || nativeFilter || state.filtered),
     mark = (key: 'bitmap' | 'filtered' | 'error') => {
       if (latest.current !== identity) return false;
       setLoaded((previous) => ({
@@ -93,6 +95,32 @@ export function NativeRegistryImage({
       1,
       0,
     ];
+  const bitmap = (
+    <Image
+      {...props}
+      key={identity}
+      testID={testID ? testID + '-bitmap' : undefined}
+      source={{ uri: src }}
+      accessible={(!filtered || nativeFilter) && !!accessibilityLabel && ready && !state.error}
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityElementsHidden={(filtered && !nativeFilter) || !ready || state.error}
+      importantForAccessibility={
+        (filtered && !nativeFilter) || !ready || state.error ? 'no-hide-descendants' : 'auto'
+      }
+      resizeMode={objectFit === 'fill' ? 'stretch' : objectFit}
+      onLoad={(event) => {
+        if (mark('bitmap')) onLoad?.(event);
+      }}
+      onError={(event) => {
+        if (mark('error')) onError?.(event);
+      }}
+      style={[
+        imageStyle,
+        { opacity: ready && (!filtered || nativeFilter) && !state.error ? 1 : 0 },
+      ]}
+    />
+  );
   return (
     <View
       testID={testID}
@@ -102,28 +130,18 @@ export function NativeRegistryImage({
         style,
       ]}
     >
-      <Image
-        {...props}
-        key={identity}
-        testID={testID ? testID + '-bitmap' : undefined}
-        source={{ uri: src }}
-        accessible={!filtered && !!accessibilityLabel && ready && !state.error}
-        accessibilityRole="image"
-        accessibilityLabel={accessibilityLabel}
-        accessibilityElementsHidden={filtered || !ready || state.error}
-        importantForAccessibility={
-          filtered || !ready || state.error ? 'no-hide-descendants' : 'auto'
-        }
-        resizeMode={objectFit === 'fill' ? 'stretch' : objectFit}
-        onLoad={(event) => {
-          if (mark('bitmap')) onLoad?.(event);
-        }}
-        onError={(event) => {
-          if (mark('error')) onError?.(event);
-        }}
-        style={[imageStyle, { opacity: ready && !filtered && !state.error ? 1 : 0 }]}
-      />
-      {filtered && (
+      {nativeFilter ? (
+        <View
+          testID={testID ? testID + '-native-filter' : undefined}
+          accessible={false}
+          style={[imageStyle, nativeBitmapFilterStyle(grayscale, brightness)]}
+        >
+          {bitmap}
+        </View>
+      ) : (
+        bitmap
+      )}
+      {filtered && !nativeFilter && (
         <Svg
           width="100%"
           height="100%"

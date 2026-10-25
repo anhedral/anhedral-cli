@@ -4042,16 +4042,27 @@
       }
     },
     "registry:example/avatar-example": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Avatar publications retain thirty source class slots, eleven styles and every authored size, fallback, badge, direct group/ring and count composition. Base/Radix loading callbacks and delay/delayMs behavior remain distinct from Aria preceding-peer fallback visibility. All seven modern example sections, thirty-nine images and forty-eight fallbacks have loading/error/filter coverage across all three families and eight styles; all three frozen demos and both Empty avatar compositions are tested. Native Image/View refs, OS load/error events, stale callback cleanup, Android color-matrix layers and iOS SVG readiness replace DOM image/peer/render behavior. Native count sizing follows direct Avatar members; arbitrary browser data-has selectors across unrelated hosts, DOM host/render props, responsive/preload/referrer policies and pixel-exact color-space rasterization remain explicit platform boundaries. Both OS cases verify every preset, native cached-image filtering, failure and recovery.",
       "nativeFiles": [
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/_avatar-presets.tsx",
+        "assets/ui/native/_preset-avatar-style.tsx",
+        "assets/ui/native/_image-filter.tsx",
+        "assets/ui/native/registry-image.tsx",
+        "assets/ui/native/registry-styles.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_empty.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-avatar.test.tsx",
+        "tests/native-ui/registry-avatar-presets.test.tsx",
+        "tests/native-ui/registry-avatar-examples.test.tsx",
+        "tests/native-ui/registry-avatar-tone.test.tsx",
+        "tests/native-ui/registry-image.test.tsx",
+        "tests/test-native-avatar-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "aria-luma": "509052fb571bc21f7ce53ea76e9902a777b1cda2456ee3d4c9fb337edb21658e",
@@ -5144,16 +5155,27 @@
       }
     },
     "registry:example/avatar-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Six Avatar publications retain thirty source class slots, eleven styles and every authored size, fallback, badge, direct group/ring and count composition. Base/Radix loading callbacks and delay/delayMs behavior remain distinct from Aria preceding-peer fallback visibility. All seven modern example sections, thirty-nine images and forty-eight fallbacks have loading/error/filter coverage across all three families and eight styles; all three frozen demos and both Empty avatar compositions are tested. Native Image/View refs, OS load/error events, stale callback cleanup, Android color-matrix layers and iOS SVG readiness replace DOM image/peer/render behavior. Native count sizing follows direct Avatar members; arbitrary browser data-has selectors across unrelated hosts, DOM host/render props, responsive/preload/referrer policies and pixel-exact color-space rasterization remain explicit platform boundaries. Both OS cases verify every preset, native cached-image filtering, failure and recovery.",
       "nativeFiles": [
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/_avatar-presets.tsx",
+        "assets/ui/native/_preset-avatar-style.tsx",
+        "assets/ui/native/_image-filter.tsx",
+        "assets/ui/native/registry-image.tsx",
+        "assets/ui/native/registry-styles.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_empty.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-avatar.test.tsx",
+        "tests/native-ui/registry-avatar-presets.test.tsx",
+        "tests/native-ui/registry-avatar-examples.test.tsx",
+        "tests/native-ui/registry-avatar-tone.test.tsx",
+        "tests/native-ui/registry-image.test.tsx",
+        "tests/test-native-avatar-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "default": "6cbe4e74f82f548bdf2a4df6c3ee2b2c6f53d967dd21cd545fabc064ee581e6f",
@@ -5430,32 +5452,54 @@
       }
     },
     "registry:example/empty-avatar": {
-      "status": "partial",
-      "reason": "Authored source is translated and rendered with source-owned Empty geometry, media, typography and native links. Avatar/AvatarGroup source presets, loading and group semantics remain incomplete; this composition stays partial until that owner is verified.",
+      "status": "ported",
+      "reason": "Six Avatar publications retain thirty source class slots, eleven styles and every authored size, fallback, badge, direct group/ring and count composition. Base/Radix loading callbacks and delay/delayMs behavior remain distinct from Aria preceding-peer fallback visibility. All seven modern example sections, thirty-nine images and forty-eight fallbacks have loading/error/filter coverage across all three families and eight styles; all three frozen demos and both Empty avatar compositions are tested. Native Image/View refs, OS load/error events, stale callback cleanup, Android color-matrix layers and iOS SVG readiness replace DOM image/peer/render behavior. Native count sizing follows direct Avatar members; arbitrary browser data-has selectors across unrelated hosts, DOM host/render props, responsive/preload/referrer policies and pixel-exact color-space rasterization remain explicit platform boundaries. Both OS cases verify every preset, native cached-image filtering, failure and recovery.",
       "nativeFiles": [
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/_avatar-presets.tsx",
+        "assets/ui/native/_preset-avatar-style.tsx",
+        "assets/ui/native/_image-filter.tsx",
+        "assets/ui/native/registry-image.tsx",
+        "assets/ui/native/registry-styles.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_empty.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-avatar.test.tsx",
+        "tests/native-ui/registry-avatar-presets.test.tsx",
+        "tests/native-ui/registry-avatar-examples.test.tsx",
+        "tests/native-ui/registry-avatar-tone.test.tsx",
+        "tests/native-ui/registry-image.test.tsx",
+        "tests/test-native-avatar-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "f5d1a5f5077225ecd23315671d936f729df8ef90ee1e522187e6ac0cc25a96c2"
       }
     },
     "registry:example/empty-avatar-group": {
-      "status": "partial",
-      "reason": "Authored source is translated and rendered with source-owned Empty geometry, media, typography and native links. Avatar/AvatarGroup source presets, loading and group semantics remain incomplete; this composition stays partial until that owner is verified.",
+      "status": "ported",
+      "reason": "Six Avatar publications retain thirty source class slots, eleven styles and every authored size, fallback, badge, direct group/ring and count composition. Base/Radix loading callbacks and delay/delayMs behavior remain distinct from Aria preceding-peer fallback visibility. All seven modern example sections, thirty-nine images and forty-eight fallbacks have loading/error/filter coverage across all three families and eight styles; all three frozen demos and both Empty avatar compositions are tested. Native Image/View refs, OS load/error events, stale callback cleanup, Android color-matrix layers and iOS SVG readiness replace DOM image/peer/render behavior. Native count sizing follows direct Avatar members; arbitrary browser data-has selectors across unrelated hosts, DOM host/render props, responsive/preload/referrer policies and pixel-exact color-space rasterization remain explicit platform boundaries. Both OS cases verify every preset, native cached-image filtering, failure and recovery.",
       "nativeFiles": [
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/_avatar-presets.tsx",
+        "assets/ui/native/_preset-avatar-style.tsx",
+        "assets/ui/native/_image-filter.tsx",
+        "assets/ui/native/registry-image.tsx",
+        "assets/ui/native/registry-styles.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_empty.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-avatar.test.tsx",
+        "tests/native-ui/registry-avatar-presets.test.tsx",
+        "tests/native-ui/registry-avatar-examples.test.tsx",
+        "tests/native-ui/registry-avatar-tone.test.tsx",
+        "tests/native-ui/registry-image.test.tsx",
+        "tests/test-native-avatar-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "2f63b12d4a0f4fe1deef8c8f46a602cd01b82023dfb73db9e6e6218b0e719d01"
@@ -10346,6 +10390,57 @@
       "reviewedInputs": {
         "new-york-v4": "d68b53dd19cb6d023c2ec5a050631ec30091f70fcf318c1ab3c05ce774cabc82"
       }
+    },
+    "registry:ui/avatar": {
+      "status": "ported",
+      "reason": "Six Avatar publications retain thirty source class slots, eleven styles and every authored size, fallback, badge, direct group/ring and count composition. Base/Radix loading callbacks and delay/delayMs behavior remain distinct from Aria preceding-peer fallback visibility. All seven modern example sections, thirty-nine images and forty-eight fallbacks have loading/error/filter coverage across all three families and eight styles; all three frozen demos and both Empty avatar compositions are tested. Native Image/View refs, OS load/error events, stale callback cleanup, Android color-matrix layers and iOS SVG readiness replace DOM image/peer/render behavior. Native count sizing follows direct Avatar members; arbitrary browser data-has selectors across unrelated hosts, DOM host/render props, responsive/preload/referrer policies and pixel-exact color-space rasterization remain explicit platform boundaries. Both OS cases verify every preset, native cached-image filtering, failure and recovery.",
+      "nativeFiles": [
+        "assets/ui/native/_avatar.tsx",
+        "assets/ui/native/_avatar-presets.tsx",
+        "assets/ui/native/_preset-avatar-style.tsx",
+        "assets/ui/native/_image-filter.tsx",
+        "assets/ui/native/registry-image.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-avatar.test.tsx",
+        "tests/native-ui/registry-avatar-presets.test.tsx",
+        "tests/native-ui/registry-avatar-examples.test.tsx",
+        "tests/native-ui/registry-avatar-tone.test.tsx",
+        "tests/native-ui/registry-image.test.tsx",
+        "tests/test-native-avatar-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "8d9f15d2e0f1e2d8c08430716bfd1212772b96a79242e9e62eaadf9ac20feddc",
+        "aria-lyra": "3145576e314d6ab704ced5910fe62abb409470f847a20eaf8893c8dc5c19909e",
+        "aria-maia": "7628f0e7d9dd316c0123ba31f8ddcfec4614a6ad6e1704ac48fe20abe95ea9f5",
+        "aria-mira": "1ca7196ac29f91f5164baeae05ea4ce75436048c407be29e634498368cbaf4f0",
+        "aria-nova": "853498fac3408fab530cd687423f7261a09f298848460348f4269562fcb45806",
+        "aria-rhea": "3f0f3d49f9df01f3a282b81688b01906a65c15c11ef45cf47118e4c437b73f28",
+        "aria-sera": "746ec7a6be8c68f0995d8f69001b5144ef6855c46645f1f7cd5c531ba9cd1843",
+        "aria-vega": "05c81d578903378d13cc9216aafe46abbb98fd7e057f398e8bf030fd2ea67b22",
+        "base-luma": "734ab530540a7d29296eaf3ed81ec0e4b982087937c968491af8478788a2e4a0",
+        "base-lyra": "fcc93126821956bdd19877be2a2675c0d0c7c6eb6537f5571f89e58559c5627a",
+        "base-maia": "236c3fab488cbd7db14c40004cea93aa0c7806a79f8b1897ef57c66209277949",
+        "base-mira": "1aecaa077ff57427e1fa098d552e499668feed05aa16ef75bbdcec98d9157185",
+        "base-nova": "5e58e9604544cbf433e2e7b8bd54c1789ec2e44b3406a5422e3a45fe01034491",
+        "base-rhea": "2fb4b1d6d1e2b9bf5339e0c2aa5bc05c00436c66ec683d9c05c8b98f3ba7e579",
+        "base-sera": "10b95e5a3b73876efcda39630f38d07632d87237e5a2ddffda93ec55297b55f7",
+        "base-vega": "b04f085044623735db96e03939dc0be7859107d35ebf2ddd5ec3059b61ac5ba9",
+        "default": "671abaaf327dcefb8e77f3acca927a6c4d0036f232e82eeb65a3c376329a619e",
+        "new-york": "9a3bcf4421d92803fd3f567092e81e7777e425b7a399135f955131ba8c96783c",
+        "new-york-v4": "c3ac786e5b758766a79b5f0e653295cfffcee67c4831f00b7c594a283ce874d0",
+        "radix-luma": "8c9078bc363c8dc37d393d40d970d3806bde1e10fad63eec274a0f58628ee153",
+        "radix-lyra": "d17c54194a21729a223509be91d78dae07f053b2106b0a6011fa56db69d4712a",
+        "radix-maia": "6a06864e17b8079646f486c0cfb1e756767e3682875ac07bb21330d6de94dc80",
+        "radix-mira": "1141f7e961b14bc0164567282059918b4813d4ddfa41512e1489ecb92f9065df",
+        "radix-nova": "bb12226a88e0f5bec2967904c6fba1763942158a50042854deb36692134fe905",
+        "radix-rhea": "bc536e87ee7366fc1b42ad9648d84aef91ba76b05ca574c1ddde3b4fc4858eeb",
+        "radix-sera": "a1a3ff400dfd77faa914197c242343bfb24001c28050e08be3d59770e8cb4933",
+        "radix-vega": "2f3f95261970d60c6086dee1252d9bf626062f7bfc0b6dc70bfd61086f634e95"
+      }
     }
   },
   "webSpecific": [
@@ -10463,6 +10558,11 @@
       "feature": "Empty browser text layout, direct anchors and gradients",
       "adaptation": "Native View/Text paragraphs and direct native link styling; native SVG gradient background with source colors, alpha and percentage stops.",
       "status": "Browser text balancing, DOM refs/events, exact underline offset and browser gradient color interpolation do not have identical native rendering semantics. Native behavior is tested explicitly; unsupported gradient hosts and scrolling/background combinations fail rather than dropping the paint."
+    },
+    {
+      "feature": "Avatar image DOM/peer state, group selectors and filtered rasterization",
+      "adaptation": "Source-owned native root/fallback/media/badge/group slots replace DOM hosts. Base/Radix callbacks and delay props remain distinct; Aria uses preceding direct image-peer metadata. Native callbacks compose with state, stale completions are ignored, decorative images remain hidden, direct member sizes drive counts, and native View/Image refs replace DOM refs/render hosts. Android uses RN color-matrix layers and one bitmap load event; iOS retains bitmap/SVG readiness and a bounded filter deadline. Native filter color spaces/rasterization, arbitrary data-has selectors across unrelated hosts, browser preload/referrer/cross-origin and responsive source policies remain explicit boundaries.",
+      "status": "All six publications, thirty class slots and eleven styles have source/style and renderer coverage. Actual source examples cover every section and native filter/error transition. Android and iOS focused OS cases pass all eleven preset sizes, badges, group overlap, cached-image filtering, errors and recovery. Native dark screenshots were inspected; Android fixture pixels independently confirm neutral grayscale. Physical screen-reader/device acceptance remains separate."
     }
   ]
 }
