@@ -23,7 +23,7 @@ const requiredFiles = new Set([
   'README.md',
   'assets/patches/braces@3.0.3.patch',
   'assets/patches/LICENSE.braces',
-  'assets/patches/node-forge@1.4.0.patch',
+  'assets/patches/node-forge@1.4.0.patch.br',
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
   'assets/ui/native/registry.json',
@@ -119,6 +119,10 @@ try {
     'The full upstream review mirror stays outside the shipped starter artifact',
   );
 
+  assert.ok(
+    !files.includes('assets/patches/node-forge@1.4.0.patch'),
+    'Raw forge patch is generated into applications from its bounded compressed asset',
+  );
   assert.equal(new Set(files).size, files.length, 'packlist should not contain duplicate paths');
   for (const file of files) {
     assert.doesNotMatch(
@@ -135,7 +139,7 @@ try {
     `packed artifact should remain below 1.25 MB; received ${packed.size}`,
   );
   assert.ok(
-    // The reviewed forge patch includes its two minified browser distributions.
+    // The full reviewed forge patch is stored losslessly; generated apps receive its source.
     packed.unpackedSize < 3_000_000,
     `unpacked artifact should remain below 3 MB; received ${packed.unpackedSize}`,
   );
@@ -198,7 +202,7 @@ try {
     const allowedPatch = [
       'assets/patches/braces@3.0.3.patch',
       'assets/patches/LICENSE.braces',
-      'assets/patches/node-forge@1.4.0.patch',
+      'assets/patches/node-forge@1.4.0.patch.br',
       'assets/patches/LICENSE.node-forge',
       'assets/patches/audit-deps.mjs',
     ].includes(file.path);

@@ -664,3 +664,12 @@ test('empty adjacent example assignments do not exempt populated or multiline se
     );
   }
 });
+
+test('the reviewed compressed patch coordinate is allowed without exempting unreviewed email-shaped names', () => {
+  assert.deepEqual(
+    scanText('package.json', Buffer.from('assets/patches/node-forge@1.4.0.patch.br')),
+    [],
+  );
+  const unreviewed = ['unreviewed', '1.4.0.patch.br'].join('@');
+  assert.equal(scanText('package.json', Buffer.from(unreviewed))[0]?.pattern, 'email-address');
+});

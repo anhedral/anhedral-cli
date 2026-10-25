@@ -99,6 +99,7 @@ function isAllowedMatch(id, relativePath, match, text) {
   )
     return true;
   if (id === 'email-address' && /^[a-z0-9._-]+@\d+\.\d+\.\d+\.patch$/i.test(match[0])) return true;
+  if (id === 'email-address' && /^node-forge@1\.4\.0\.patch\.br$/i.test(match[0])) return true;
   if (
     id === 'email-address' &&
     /@(?:users\.noreply\.github\.com|(?:[A-Z0-9-]+\.)*example\.(?:com|net|org))$/i.test(match[0])

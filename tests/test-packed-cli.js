@@ -204,9 +204,23 @@ try {
     writeDependencyAudit(root);
     assert.deepEqual(fs.readFileSync(path.join(root, 'scripts/audit-deps.mjs')), fs.readFileSync(path.join(installed, 'assets/patches/audit-deps.mjs')));
     assert.equal(configureDependencyPatches(root), true);
-    for (const name of ['braces@3.0.3.patch', 'LICENSE.braces', 'node-forge@1.4.0.patch', 'LICENSE.node-forge'])
-      assert.deepEqual(fs.readFileSync(path.join(root, 'patches', name)), fs.readFileSync(path.join(installed, 'assets/patches', name)));
+    const {brotliDecompressSync,brotliCompressSync}=await import('node:zlib');
+    for (const name of ['braces@3.0.3.patch', 'LICENSE.braces', 'node-forge@1.4.0.patch', 'LICENSE.node-forge']) {
+      const asset=path.join(installed,'assets/patches',name);
+      const expected=name==='node-forge@1.4.0.patch'?brotliDecompressSync(fs.readFileSync(asset+'.br')):fs.readFileSync(asset);
+      assert.deepEqual(fs.readFileSync(path.join(root,'patches',name)),expected);
+    }
     assert.equal(configureDependencyPatches(root), false);
+    const archive=path.join(installed,'assets/patches/node-forge@1.4.0.patch.br');
+    const original=fs.readFileSync(archive),workspace=fs.readFileSync(path.join(root,'pnpm-workspace.yaml'));
+    try {
+      for(const invalid of [Buffer.from('corrupt'),brotliCompressSync(Buffer.alloc(2*1024*1024+1))]) {
+        fs.writeFileSync(archive,invalid);
+        assert.throws(()=>configureDependencyPatches(root),/Bundled dependency patch is corrupt or exceeds its size limit/);
+        assert.deepEqual(fs.readFileSync(path.join(root,'pnpm-workspace.yaml')),workspace);
+      }
+    } finally {fs.writeFileSync(archive,original);}
+    assert.equal(configureDependencyPatches(root),false);
   `,
     ],
     installRoot,

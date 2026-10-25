@@ -18,7 +18,7 @@
     "dist",
     "assets/patches/braces@3.0.3.patch",
     "assets/patches/LICENSE.braces",
-    "assets/patches/node-forge@1.4.0.patch",
+    "assets/patches/node-forge@1.4.0.patch.br",
     "assets/patches/LICENSE.node-forge",
     "assets/patches/audit-deps.mjs",
     "LICENSE",

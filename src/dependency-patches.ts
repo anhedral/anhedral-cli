@@ -1,5 +1,6 @@
 import { existsSync, lstatSync, mkdirSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { brotliDecompressSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { readBoundedFile } from './bounded-file.js';
 import { pnpmPatchPolicy } from './pnpm-policy.js';
@@ -19,6 +20,19 @@ const lockMaximum = 16 * 1024 * 1024;
 const policyMaximum = 2 * 1024 * 1024;
 const patchMaximum = 256 * 1024;
 const patchAssetMaximum = 2 * 1024 * 1024;
+
+/** Retain canonical source in development and bounded, lossless assets in npm. */
+function readPatchAsset(name: string, maximum: number): Buffer {
+  const raw = fileURLToPath(new URL(`../assets/patches/${name}`, import.meta.url));
+  if (name !== 'node-forge@1.4.0.patch' || existsSync(raw)) return readBoundedFile(raw, maximum);
+  try {
+    return brotliDecompressSync(readBoundedFile(raw + '.br', patchAssetMaximum), {
+      maxOutputLength: maximum,
+    });
+  } catch {
+    throw new Error('Bundled dependency patch is corrupt or exceeds its size limit.');
+  }
+}
 
 function patchAttributes(source: string, selected: readonly ReviewedPatch[]): string {
   const rules = selected.flatMap(({ coordinate, license }) => [
@@ -89,10 +103,7 @@ export function configureDependencyPatches(root: string): boolean {
       label,
       packageName,
       maximum: name.endsWith('.patch') ? patchAssetMaximum : patchMaximum,
-      bytes: readBoundedFile(
-        fileURLToPath(new URL(`../assets/patches/${name}`, import.meta.url)),
-        name.endsWith('.patch') ? patchAssetMaximum : patchMaximum,
-      ),
+      bytes: readPatchAsset(name, name.endsWith('.patch') ? patchAssetMaximum : patchMaximum),
     }));
   const missing: typeof artifacts = [];
   // Validate every destination before writing any artifact or the YAML map.

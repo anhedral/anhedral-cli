@@ -41,3 +41,6 @@ yarn-error.log*
 
 # Rebuilt lossless native template payload for npm.
 /assets/ui/native-overlay.json.br
+
+# Rebuilt lossless copy; canonical editable patch stays tracked.
+/assets/patches/node-forge@1.4.0.patch.br

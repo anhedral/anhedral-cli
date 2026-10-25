@@ -1,3 +1,22 @@
+# Lossless dependency patch packaging — October 24, 2026
+
+The maintained node-forge security patch now ships as bounded Brotli data. Source
+checkouts retain the canonical raw patch; installed CLIs expand the exact same
+bytes into generated applications. Canonical patch and license content did not
+change. Corrupt data and expansion beyond 2 MiB fail before workspace writes.
+
+- Packlist policy passed: 249 files and 941,083 compressed bytes, within the
+  unchanged 1.25 MB compressed / 3 MB unpacked limits. Installed CLI smoke passed,
+  including exact expanded-byte comparisons, corrupt data and oversized output.
+- Node/browser signature regressions passed against a frozen patched node-forge
+  installation. Root suite: 595 passed, one existing optional skip. Eleven focused
+  patch/security contracts passed; lint and static security policy passed.
+- The first security check mistook the generated patch coordinate for an email
+  address. An exact filename exemption and a regression preserving detection of
+  unreviewed coordinates corrected that finding; generic email scanning remains.
+- Native registry coverage is unchanged. This packaging work makes space for the
+  remaining port; it does not establish parity, publication or deployment.
+
 # Native label association and control focus — October 24, 2026
 
 The source compiler now resolves HTML label targets before removing DOM props.
