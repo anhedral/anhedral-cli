@@ -13,6 +13,7 @@ type NativeProps = PressableProps & {
   children?: ReactNode;
   variant?: string;
   size?: string;
+  inline?: boolean;
 };
 function prevented(event: unknown) {
   return (
@@ -107,5 +108,13 @@ export function NativeSlot({
     merged.variant = own.variant ?? slotVariant;
     merged.size = own.size ?? slotSize;
   }
+  if (
+    component &&
+    (typeof component === 'function' || typeof component === 'object') &&
+    'nativeLinkSlot' in component &&
+    component.nativeLinkSlot === true &&
+    slotVariant !== undefined
+  )
+    merged.inline = false;
   return cloneElement(element, merged);
 }

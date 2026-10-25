@@ -1,7 +1,6 @@
 import {
   Pressable,
   StyleSheet,
-  Linking,
   useWindowDimensions,
   type View,
   type PressableProps,
@@ -31,7 +30,14 @@ import {
 import { nativePresetButtonStyle } from './_preset-button-style';
 import { useNativeFormAction } from './native-form';
 import { NativeSlot } from './_slot';
-import { LabelText as Text, TextToneProvider, withAlpha, plainText } from './_core';
+import { NativeLink } from './navigation';
+import {
+  LabelText as Text,
+  TextToneProvider,
+  NativeTextStyleProvider,
+  withAlpha,
+  plainText,
+} from './_core';
 export type ButtonProps = Omit<PressableProps, 'children'> & {
   children?: ReactNode;
   textColor?: string;
@@ -197,76 +203,78 @@ export function Button({
   return (
     <NativeRecipeState.Provider value={{ ...accessibilityState, disabled: !!blocked }}>
       <TextToneProvider value={foreground}>
-        <NativeButtonIconSize.Provider value={adapted?.iconSize}>
-          <Host
-            {...props}
-            {...(asChild || render ? { slotVariant: variant, slotSize: size } : {})}
-            hitSlop={
-              props.hitSlop ??
-              (adapted
-                ? {
-                    top: Math.max(0, 44 - Number(adapted.view.height ?? 44)) / 2,
-                    bottom: Math.max(0, 44 - Number(adapted.view.height ?? 44)) / 2,
-                    left: Math.max(0, 44 - Number(adapted.view.width ?? 44)) / 2,
-                    right: Math.max(0, 44 - Number(adapted.view.width ?? 44)) / 2,
-                  }
-                : undefined)
-            }
-            onHoverIn={(event) => {
-              setHovered(true);
-              props.onHoverIn?.(event);
-            }}
-            onHoverOut={(event) => {
-              setHovered(false);
-              props.onHoverOut?.(event);
-            }}
-            onFocus={(event) => {
-              setFocused(true);
-              props.onFocus?.(event);
-            }}
-            onBlur={(event) => {
-              setFocused(false);
-              props.onBlur?.(event);
-            }}
-            pointerEvents={blocked ? 'none' : props.pointerEvents}
-            accessibilityRole={accessibilityRole}
-            accessibilityLabel={props.accessibilityLabel ?? (plainText(children) || undefined)}
-            onPress={(event) => {
-              props.onPress?.(event);
-              if (blocked || event.isDefaultPrevented()) return;
-              if (type === 'submit') void action.submit();
-              else if (type === 'reset') void action.reset();
-            }}
-            accessibilityState={{
-              ...accessibilityState,
-              disabled: !!blocked,
-              ...(type !== 'button' && action.pending ? { busy: true } : {}),
-            }}
-            disabled={blocked}
-            style={(state) => [
-              styles.button,
-              sizes[size],
-              surface,
-              adapted && {
-                minHeight: 0,
-                minWidth: 0,
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                borderWidth: 0,
-                borderColor: 'transparent',
-                borderRadius: 0,
-                backgroundColor: 'transparent',
-                gap: 0,
-              },
-              resolvePreset(state.pressed)?.view,
-              blocked && styles.disabled,
-              !adapted && state.pressed && styles.pressed,
-              typeof style === 'function' ? style(state) : style,
-            ]}
-          >
-            {asChild || render ? slotChild : renderLabels(children)}
-          </Host>
-        </NativeButtonIconSize.Provider>
+        <NativeTextStyleProvider value={{ style: [adapted?.text, textStyle] }}>
+          <NativeButtonIconSize.Provider value={adapted?.iconSize}>
+            <Host
+              {...props}
+              {...(asChild || render ? { slotVariant: variant, slotSize: size } : {})}
+              hitSlop={
+                props.hitSlop ??
+                (adapted
+                  ? {
+                      top: Math.max(0, 44 - Number(adapted.view.height ?? 44)) / 2,
+                      bottom: Math.max(0, 44 - Number(adapted.view.height ?? 44)) / 2,
+                      left: Math.max(0, 44 - Number(adapted.view.width ?? 44)) / 2,
+                      right: Math.max(0, 44 - Number(adapted.view.width ?? 44)) / 2,
+                    }
+                  : undefined)
+              }
+              onHoverIn={(event) => {
+                setHovered(true);
+                props.onHoverIn?.(event);
+              }}
+              onHoverOut={(event) => {
+                setHovered(false);
+                props.onHoverOut?.(event);
+              }}
+              onFocus={(event) => {
+                setFocused(true);
+                props.onFocus?.(event);
+              }}
+              onBlur={(event) => {
+                setFocused(false);
+                props.onBlur?.(event);
+              }}
+              pointerEvents={blocked ? 'none' : props.pointerEvents}
+              accessibilityRole={accessibilityRole}
+              accessibilityLabel={props.accessibilityLabel ?? (plainText(children) || undefined)}
+              onPress={(event) => {
+                props.onPress?.(event);
+                if (blocked || event.isDefaultPrevented()) return;
+                if (type === 'submit') void action.submit();
+                else if (type === 'reset') void action.reset();
+              }}
+              accessibilityState={{
+                ...accessibilityState,
+                disabled: !!blocked,
+                ...(type !== 'button' && action.pending ? { busy: true } : {}),
+              }}
+              disabled={blocked}
+              style={(state) => [
+                styles.button,
+                sizes[size],
+                surface,
+                adapted && {
+                  minHeight: 0,
+                  minWidth: 0,
+                  paddingVertical: 0,
+                  paddingHorizontal: 0,
+                  borderWidth: 0,
+                  borderColor: 'transparent',
+                  borderRadius: 0,
+                  backgroundColor: 'transparent',
+                  gap: 0,
+                },
+                resolvePreset(state.pressed)?.view,
+                blocked && styles.disabled,
+                !adapted && state.pressed && styles.pressed,
+                typeof style === 'function' ? style(state) : style,
+              ]}
+            >
+              {asChild || render ? slotChild : renderLabels(children)}
+            </Host>
+          </NativeButtonIconSize.Provider>
+        </NativeTextStyleProvider>
       </TextToneProvider>
     </NativeRecipeState.Provider>
   );
@@ -287,12 +295,11 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.75 },
 });
 
-/** Application routes use onNavigate; external links use the native OS URL bridge. */
+/** Button geometry and native link navigation share one composed native surface. */
 export function LinkButton({
   href,
   onNavigate,
   onError,
-  onPress,
   children,
   ...props
 }: ButtonProps & {
@@ -300,39 +307,16 @@ export function LinkButton({
   onNavigate?: (href: string) => void | Promise<void>;
   onError?: (error: unknown) => void;
 }) {
-  const [failed, setFailed] = useState(false);
-  const { colors } = useTheme();
   return (
-    <>
-      <Button
-        {...props}
-        accessibilityRole="link"
-        onPress={async (event) => {
-          onPress?.(event);
-          if (event.isDefaultPrevented()) return;
-          setFailed(false);
-          try {
-            if (onNavigate) await onNavigate(href);
-            else {
-              const parsed = new URL(href);
-              if (!['http:', 'https:', 'mailto:', 'tel:', 'sms:'].includes(parsed.protocol))
-                throw Error('A native navigation handler is required.');
-              await Linking.openURL(href);
-            }
-          } catch (error) {
-            setFailed(true);
-            onError?.(error);
-          }
-        }}
+    <Button {...props} asChild>
+      <NativeLink
+        href={href}
+        onNavigate={onNavigate ? (href) => onNavigate(href) : undefined}
+        onError={onError}
       >
         {children}
-      </Button>
-      {failed && (
-        <Text accessibilityRole="alert" style={{ color: colors.destructive }}>
-          Unable to open link.
-        </Text>
-      )}
-    </>
+      </NativeLink>
+    </Button>
   );
 }
 

@@ -3820,41 +3820,41 @@
     },
     "registry:example/button-example": {
       "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/navigation.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/test-native-example-recipes.test.mjs"
       ],
       "reviewedInputs": {
-        "aria-luma": "bf4ac998f7d2dacbdf2d449ad014f1a903fb9283cab695205be0a7cfd8df0c30",
-        "aria-lyra": "512883385d80eebe29d30c45dd9ff97530605e681346f3f4559cf99457f712c3",
-        "aria-maia": "bb317e7052c704239e6892828f9087cf238524cd4de2e34c97d88878ec6eaa12",
-        "aria-mira": "843edbada11d40a8af633a43cf92ac476d65a9b76838bb9feb966de988b0b07f",
-        "aria-nova": "25070078b14f8da91966438e771e645ffb9bf76539aeb65cde26d2b0c6ab0273",
-        "aria-rhea": "9ae5733b4f85be61c274e32e6e3a4197bc6f760e637bf3f871ee95576bfa93bb",
-        "aria-sera": "401656bf225dc80dd4b8d88b6ef6004a8e59b45c29d458c22d73468659c1434e",
-        "aria-vega": "26b6cb520052022e1f3a845e81e219250b3f298ee74e8725514a21a718f4bb84",
-        "base-luma": "54aa4299783cb793fbef55f1782e34e964dfc635a28ed98639c0967b3409cc6c",
-        "base-lyra": "3fdadd8a71256c37ff38c5fd7887d1b31902019f673338c35b65b00c55523c31",
-        "base-maia": "7aecc8398f40fc59ab6bdfc971885e8af50ddc5ea7ff7a190735b4a1bcc6294c",
-        "base-mira": "055a01ddcf79e2095937d67a2c4847347637d3d99ae83c9c6d7b329fe8d623e5",
-        "base-nova": "6e35daf42dd5967218d42e2cad9b02970a0ae7550bea1e24e0ba5af044de3a41",
-        "base-rhea": "65f7bfd5c019f5e4fce64dcf18d57a38788b9a5f05b04b5bc91894671e779e80",
-        "base-sera": "63b85e3fa0dec72d8dff42d14e9faafe37ec68b47d5ef6f3b23169f498cdc71c",
-        "base-vega": "b6c2612242401ec151191e83d23ee99693d36f2daa2afbecb845c47b96e410cb",
-        "radix-luma": "63f5f2f648fe0ac2604a06dc22518bab13f4b11154fceee3d64d401d6495b6a5",
-        "radix-lyra": "526260d971fd1363cb7785436a071c9d5ebc7e3613cb6f3ae64e851e60ba5fa6",
-        "radix-maia": "253cc1e00eaab795badd2feb59bd94d94b8674bbc948fbb08838d156b8c41a79",
-        "radix-mira": "59054f72db328a6eccc1aa7dfc1c0cbcb284d04faefd64bc991eabc2c066f5cf",
-        "radix-nova": "44489b25e5d5929da6cd95bef2c8611282602fc0461af7e03d79664530db9db9",
-        "radix-rhea": "1e8b0846222bbb8fe0606388b050ed09aadb4627e2d9c44047acd5554c54a537",
-        "radix-sera": "cb2eb088ad0e2ef8917267bbfe8acef7a87e9361e781fea0297b024f776c3035",
-        "radix-vega": "f088daf687842f88dd889c647a22f25ca083e80c2d67eb9671f8ff9c46c33ff3"
+        "aria-luma": "553cc6410eea9253ac9f5a3f2c85bbffdc95d647f2d637be06d0fe54442775c5",
+        "aria-lyra": "52ef90461ad4661c1c6edc06d0b14bafa55dee357dddefe7f0c9c5d0de3268c7",
+        "aria-maia": "ec67bd3dfa545d98eb6e9b40e2b7e394180dc36810df2639e3dc82824bd97bee",
+        "aria-mira": "d149ea1a4f78f722bc4483b496a1f83bf82bd73e03ef45856a4a40da263ea81f",
+        "aria-nova": "4ec98554d5c4c40d81d5bd05b94915833c7b06625d19003f7064bbcddec8561e",
+        "aria-rhea": "d76ba26464df4f7ccf7d70d4aae399ed5b5324d9565acc33255dd70ed62ecb7f",
+        "aria-sera": "e14138a12fb74758273947064f56aa6bae7a5e9e61d2489caed23b7877fa44d0",
+        "aria-vega": "ba9adbf6e3a5f47dc0811ef89a3f2845918b888489e415e48100599b9e58c3d2",
+        "base-luma": "df8a84b43e8ba3778b08d896d22666823b3f4a2e882a1f06d8065129100d64d5",
+        "base-lyra": "cfbf6f1671c3ac687c6edce85c3e6f66f51b4d1e7eb26fc15fcb7dd761ebfebe",
+        "base-maia": "ac8c8f63855f5fb04666d71246c0a1b0642a688b83f0722afd0f51faad81c2a7",
+        "base-mira": "7e2fcc57fefc482f6e218cbd788d818701efbc16053f3c4cfccbafddf953476c",
+        "base-nova": "e6c99307da48a4d69e08c140e22bacadb55f514f9ad140539967bf81d1f189dc",
+        "base-rhea": "f8088380332deb47b2821732c6f7d4dca67678d73a9fd3c3338345e0de383ba6",
+        "base-sera": "1235a50fbca32cc64e454a5b5e6fa89b3316c1b9ceca1095a22c221cae93c841",
+        "base-vega": "33bef5748459bbdb940564a2d9219f523b3668b1083ed038e6383df8032fb8ae",
+        "radix-luma": "05d3072ce2ee315f707f07b421e34e54993a84d4416b3db77b7a5d5a3fca3406",
+        "radix-lyra": "40f61ef544b1d9cc5bf14cc4fc6088639c5867035345c242956115be4ecf7071",
+        "radix-maia": "60a5b9d349c3f0048879c2c4d28573d04ad8bc467af902d53360b9f6307368f5",
+        "radix-mira": "e5f54a1458086b7a9d41bf0e4963861e4922440f6ebf45398bad4d8ac5f2b114",
+        "radix-nova": "2bbaa20fa2dc19a11ffd71771ccb0f4d95ecf7a1b9fe568d1d079a384e7c38b9",
+        "radix-rhea": "4d2ada4f1657198366d1bec1e41c6dccce422ea41eab038c26908b602f89f91c",
+        "radix-sera": "4601d6b96b6db037b37594228c9a26e6aa2d635e0041c46674a706da3fffe438",
+        "radix-vega": "baa7b608ae9c4fa8919a6f098713ddd8b87d4c777179cb4c011533f6f1baaf05"
       }
     },
     "registry:example/carousel-example": {
@@ -5956,15 +5956,17 @@
     },
     "registry:ui/button": {
       "status": "partial",
-      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Default, New York and New York v4 retain their pinned CVA geometry and paint; all eleven style families are tested. Link composition, browser paint/transition differences and expanded native device acceptance remain separately accounted for; complete component parity is not asserted.",
+      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Default, New York and New York v4 retain their pinned CVA geometry and paint; all eleven style families are tested. Native link composition is tested. Browser paint/transition differences and expanded native device acceptance remain separately accounted for; complete component parity is not asserted.",
       "nativeFiles": [
         "assets/ui/native/button.tsx",
         "assets/ui/native/_preset-button-style.tsx",
-        "assets/ui/native/_button-presets.tsx"
+        "assets/ui/native/_button-presets.tsx",
+        "assets/ui/native/navigation.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-button-presets.test.tsx",
-        "tests/test-native-component-styles.test.mjs"
+        "tests/test-native-component-styles.test.mjs",
+        "tests/native-ui/registry-navigation.test.tsx"
       ],
       "reviewedInputs": {
         "aria-luma": "f3e3e068260f1953194f09b896f0f140432213f1a8aa58e3626ab91c2a00cb59",
@@ -6051,6 +6053,153 @@
         "radix-rhea": "f8bc7becc96737aad8bb72b830ed9a7a7e6d9c145d4ce283eefdf2c0bbc47d55",
         "radix-sera": "8d9e16ae1c7e08aaf075c7a6e8fc6a67d91f14260d5abba5c1ce23e7c7e76911",
         "radix-vega": "1a78fcc961446fe9dd66bb34f63ed57092454a9fd59cb1da7da72d51c84b608a"
+      }
+    },
+    "registry:example/button-as-child": {
+      "status": "partial",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "5e9b0a0b6348459b41b4a70065143b1d1603166e961994b85faec2db60869a17",
+        "new-york": "e7ee92fbe908bbb28acc5b30b34d874f3a7c48d14cacd53e5ca43b67ce03bfc9",
+        "new-york-v4": "419e4d771b1eca5c822bc652a7e863e02e49cf618da71df59c158f0653b8582e"
+      }
+    },
+    "registry:example/breadcrumb-demo": {
+      "status": "partial",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "85a218e4b2a67ffc2bfba733476ae703b3a9a57a64f16498be4d5dc65b9e889e",
+        "new-york": "e2785324677663fd8cc9b7332d5b4c3600c4ecb13de7d9677cafb5a3cd00525e",
+        "new-york-v4": "6f874169c72eaf157dc06c1a5c31adfbcc90a9fcb7ccaf3f3edf78a3543a158d"
+      }
+    },
+    "registry:example/breadcrumb-separator": {
+      "status": "partial",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "5ab6904256734cc8b98db64b4a76b704b4d99da6bfea4b246f74c567c54a4712",
+        "new-york": "b57bbe30b72108be7bd017f43b99fd2e05a9713f8be05ec53a2c96e62960c345",
+        "new-york-v4": "91a1209e1ea144f89ee2a61c09386416beab951772a95f8862d58a6d1ae64be3"
+      }
+    },
+    "registry:example/breadcrumb-dropdown": {
+      "status": "partial",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "051a82aaa5f12c866617140caabc5b8dc3992e09c6b5b94b6fe141d10b382d1c",
+        "new-york": "923e994cdb248774e64af69d4d7101b6fb4b09250562449ecaba3f4f2c064ca7",
+        "new-york-v4": "9f9845a5023e6e87ddcf24bd2a00f467aef2e908c7086641df2411c672e4551d"
+      }
+    },
+    "registry:example/breadcrumb-ellipsis": {
+      "status": "partial",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "6f812a22469db882475e2bed4c661580dfa91df7b6a80ed273464078b0f98503",
+        "new-york": "e64c364263112ddcd4f45c6d10fe39b8ca9033af878c61f73a1f06721d0e6cb3",
+        "new-york-v4": "c4661353dc01880b9c6af0b78a71f6fd4acfc6f3c839d694a4dda38a712a22e0"
+      }
+    },
+    "registry:example/breadcrumb-link": {
+      "status": "partial",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "a65a9079900e18f096cba06029c23b769c1e5c6bf4a06ac381a4907e2a7b7ffb",
+        "new-york": "2b844fb95446e0ccf732b380ce5c68d7e3c6fefeb4f1c7978c19d21ed1b0cf34",
+        "new-york-v4": "7d4c912f8bfb445f9daa8646f69d230edbfe66d52186314c5f5241408993a8e0"
+      }
+    },
+    "registry:example/breadcrumb-example": {
+      "status": "partial",
+      "reason": "Authored modern and available published legacy sources retain their original destinations, variants and content. Native inline/composed links dispatch through explicit route/anchor handlers or the OS URL bridge; actual source interactions and failures are tested. Complete component preset/API and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/navigation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "85dcc0bd3a4af7c368328d1fb39fd713e334cc9a133d06e6ae781b2305720797",
+        "aria-lyra": "174267eb03ec3a9d2b78db0e43fce15c4d8b1cd5eb955bf7f0826f09128bebb3",
+        "aria-maia": "cbe885de2e1323939d99b0e3c60a92e23e37f12abcb661a2ff9bce6e1af26856",
+        "aria-mira": "1022838e47a4800f0b19e027f183dea7eb46436f61068061a3feaecb3db7eb3f",
+        "aria-nova": "73b0240aec06d1e4cc174c2cd5d517cfa7ec23f9eb252e69308164ff2f69125d",
+        "aria-rhea": "a60d3130a9627e199efc061e19e11bf6a1ed1f32daf62ac6acea66aaa4741f7f",
+        "aria-sera": "d3bb8f7eaf115ad12d0fcda8152a5161c361a175cf641e1abe69b409eb97da4a",
+        "aria-vega": "8ddb59675bd21c52c58ead55a68fa3ebc740cf53995229aad981a8aba54072fb",
+        "base-luma": "a1db268dc712b74ab1d398b909b856130fceaa010c481e506cd8697c2b836a32",
+        "base-lyra": "9fbebb769e1ce98b45146662ef25625b084d475e091dab70c6fca3eb2bbfb219",
+        "base-maia": "28b8627e8750ae2373d2478feaa5d2c81b9805d95a1a17de967d0cf3f4b38fc5",
+        "base-mira": "50a5ac337f0e7f7dbaeec1b05850b093082118de9cc3ce9fd53f250f9b65113c",
+        "base-nova": "dca5d499bd6610f3d88214ac53f7254e0af53f0229206f6b74a84d951aac5ce7",
+        "base-rhea": "7026c76db16519b3da3a613ac2393932169fb157febf2524e2fca7af32480aeb",
+        "base-sera": "04886e42b89c19960a9255bf51704babed8fb979ff7637edf4bf6ed312bd81bc",
+        "base-vega": "70a5ac33fff1de96608d18811a44ce069b29c0a3ee3bedf634da03aa19d6f58c",
+        "radix-luma": "d4210aaa6e7e5911c4bdecee147472ac47c3831e30b27b549515f2f1fec6e677",
+        "radix-lyra": "4bd2b8033608fa4703742ff2e16ff18e7680203c9ba83e9e84af2ff485123504",
+        "radix-maia": "b89cf071be024b542a4ab75c75603202e6b5b99f1b6a6691cc4c7226451c42a2",
+        "radix-mira": "1853e3243ae2a164039fc4da4f383fbaed2429bf6d14aa5a40295135d18d491c",
+        "radix-nova": "5b8562d699a84f2948ea78754ca04eb91b511a2e39756287d9c362704276ba4d",
+        "radix-rhea": "c6741994e2cd8fa2cd74c552b2848ccddb0e22756243b06c81df310fce26a199",
+        "radix-sera": "043b2426c2114eb747355da1c33c27af68826507feab49c46bdaaaa7928ef318",
+        "radix-vega": "8362baa102d44aac5aec6568cf29ab5fe0cd832e059aff7d0260ee7ff28487fa"
       }
     }
   },

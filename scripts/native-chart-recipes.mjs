@@ -109,6 +109,33 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     );
   const f = ts.factory,
     file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const linkNames = new Set([
+    'a',
+    ...file.statements
+      .filter(
+        (node) =>
+          ts.isImportDeclaration(node) &&
+          node.moduleSpecifier.text === 'next/link' &&
+          node.importClause?.name,
+      )
+      .map((node) => node.importClause.name.text),
+  ]);
+  const buttonLink = (node) => {
+    const open = ts.isJsxClosingElement(node) ? node.parent.openingElement : node;
+    return (
+      linkNames.has(open.tagName?.getText(file)) &&
+      open.attributes?.properties.some(
+        (attr) =>
+          ts.isJsxAttribute(attr) &&
+          attr.name.getText(file) === 'className' &&
+          attr.initializer &&
+          ts.isJsxExpression(attr.initializer) &&
+          attr.initializer.expression &&
+          ts.isCallExpression(attr.initializer.expression) &&
+          attr.initializer.expression.expression.getText(file) === 'buttonVariants',
+      )
+    );
+  };
   const boundary = nativeRecipeBoundaries(file, filename);
   const fieldLabels = nativeLabelBindings(file);
   const fieldRanges = nativeForms ? nativeFieldAssociations(file) : new Map(),
@@ -130,6 +157,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     figure: 'RegistryView',
     figcaption: 'RegistryText',
     img: 'RegistryImage',
+    a: 'RegistryLink',
     button: 'RegistryButton',
     defs: 'Defs',
     linearGradient: 'LinearGradient',
@@ -231,9 +259,9 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       if (ts.isImportDeclaration(node)) {
         const module = node.moduleSpecifier.text;
         if (module === 'react') return node;
-        if (module === 'next/image') {
+        if (module === 'next/image' || module === 'next/link') {
           if (!node.importClause?.name || node.importClause.namedBindings)
-            throw Error('Only the reviewed default Next image import is supported.');
+            throw Error('Only the reviewed default Next media/navigation import is supported.');
           return f.createImportDeclaration(
             undefined,
             f.createImportClause(
@@ -242,7 +270,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
               f.createNamedImports([
                 f.createImportSpecifier(
                   false,
-                  f.createIdentifier('RegistryImage'),
+                  f.createIdentifier(module === 'next/link' ? 'RegistryLink' : 'RegistryImage'),
                   node.importClause.name,
                 ),
               ]),
@@ -615,9 +643,11 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           node.initializer.expression.expression.getText(file) === 'buttonVariants'
         ) {
           const args = node.initializer.expression.arguments;
-          if (args.length !== 1 || !ts.isObjectLiteralExpression(args[0]))
+          if (args.length > 1 || (args.length === 1 && !ts.isObjectLiteralExpression(args[0])))
             throw Error('Unreviewed native button variant composition.');
-          return f.createJsxSpreadAttribute(ts.visitNode(args[0], visit));
+          return f.createJsxSpreadAttribute(
+            args.length ? ts.visitNode(args[0], visit) : f.createObjectLiteralExpression(),
+          );
         }
         if (
           name === 'nativeButton' ||
@@ -782,10 +812,10 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           ts.isJsxSelfClosingElement(node) ||
           ts.isJsxClosingElement(node)) &&
         ts.isIdentifier(node.tagName) &&
-        hosts[node.tagName.text]
+        (hosts[node.tagName.text] || buttonLink(node))
       ) {
         const original = node.tagName.text,
-          name = hosts[original];
+          name = buttonLink(node) ? 'RegistryButtonLink' : hosts[original];
         hostNames.add(name);
         const tag = f.createIdentifier(name);
         if (ts.isJsxClosingElement(node)) return f.updateJsxClosingElement(node, tag);

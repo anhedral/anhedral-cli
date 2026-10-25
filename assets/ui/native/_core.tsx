@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type Ref,
 } from 'react';
 import {
   View,
@@ -112,11 +113,13 @@ export const NativeTextStyleContext = createContext<{
   textBreakStrategy?: TextProps['textBreakStrategy'];
 }>({});
 export const NativeTextStyleProvider = NativeTextStyleContext.Provider;
+/** RN 0.86 Text's runtime supports pointer enter/leave; its legacy public TextProps omit them. */
+export type NativeTextPointerProps = Pick<ViewProps, 'onPointerEnter' | 'onPointerLeave'>;
 export function LabelText({
   style,
   fontRole,
   ...props
-}: TextProps & { fontRole?: NativeFontRole }) {
+}: TextProps & NativeTextPointerProps & { fontRole?: NativeFontRole; ref?: Ref<NativeText> }) {
   const { colors } = useTheme();
   const tone = useTextTone();
   const inherited = useContext(NativeTextStyleContext);

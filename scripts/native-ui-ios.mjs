@@ -69,9 +69,11 @@ export function nativeQAApp(catalog, sourceFor) {
     .replace(
       '/* REGISTRY_STORIES */',
       'const stories=[' +
-        [...stories, '{id: "native/button-preset-matrix",Component:NativeButtonPresetMatrix}'].join(
-          ',\n',
-        ) +
+        [
+          ...stories,
+          '{id: "native/button-preset-matrix",Component:NativeButtonPresetMatrix}',
+          '{id: "native/navigation-contract",Component:NativeNavigationMatrix}',
+        ].join(',\n') +
         '];',
     );
 }
@@ -140,7 +142,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(
     'Prepared and typechecked ' +
       catalog.recipes.filter((r) => r.kind !== 'support').length +
-      ' authored native QA stories plus the preset matrix at ' +
+      ' authored native QA stories plus native interaction fixtures at ' +
       qa,
   );
   if (process.argv.includes('--prepare-only')) process.exit(0);

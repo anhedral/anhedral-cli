@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { validateNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
-test('409 authored component examples retain native source and complete source/style/dependency provenance', () => {
+test('431 authored component examples retain native source and complete source/style/dependency provenance', () => {
   const catalog = loadNativeExampleRecipes();
   validateNativeChartRecipes(loadOfficialRegistry(), catalog);
-  assert.equal(catalog.recipes.length, 409);
+  assert.equal(catalog.recipes.length, 431);
   for (const recipe of catalog.recipes)
     assert.doesNotMatch(recipe.source, /<(?:div|span|button|input|form|svg)\b|onClick=/);
   const pagination = catalog.recipes.find((recipe) => recipe.name === 'pagination-demo');
@@ -68,7 +68,7 @@ test('legacy published examples retain their own source hashes and scoped color 
   const recipes = loadNativeExampleRecipes().recipes;
   for (const style of ['default', 'new-york']) {
     const legacy = recipes.filter((recipe) => recipe.style === style);
-    assert.equal(legacy.length, 91);
+    assert.equal(legacy.length, 97);
     for (const recipe of legacy) {
       assert.match(recipe.origin, /public\/r\/styles\/[^/]+\/[^#]+#registry\//);
       assert.match(recipe.source, /generation="legacy"/);
@@ -89,4 +89,34 @@ test('legacy Lucide type imports stay types and never become component wrappers'
   );
   assert.match(translated, /type RegistryIcon as IconType/);
   assert.doesNotMatch(translated, /const IconType =/);
+});
+
+test('native anchor and Next Link compilation preserve destinations and semantic Button recipes', async () => {
+  const { portNativeRegistryRecipe, validateNativeRecipeSyntax } =
+    await import('../scripts/native-chart-recipes.mjs');
+  const source = `import Link from 'next/link'; import {buttonVariants} from '@/registry/bases/base/ui/button';
+  export default function Demo(){return <div><p>Read <a href="https://example.test">this</a>.</p><a href="#" className={buttonVariants()}>Top</a><Link href="/login" className={buttonVariants({variant:'outline',size:'sm'})}>Login</Link></div>}`;
+  const output = portNativeRegistryRecipe(
+    source,
+    'apps/v4/registry/bases/base/examples/fixture.tsx',
+  );
+  validateNativeRecipeSyntax(output, 'fixture.tsx');
+  assert.match(output, /RegistryLink as Link/);
+  assert.match(output, /RegistryLink href="https:\/\/example.test"/);
+  assert.match(output, /RegistryButtonLink href="#"/);
+  assert.match(output, /RegistryButtonLink href="\/login"/);
+  assert.match(output, /variant: 'outline', size: 'sm'/);
+  assert.doesNotMatch(output, /buttonVariants\(/);
+  assert.throws(
+    () => portNativeRegistryRecipe('import {bad} from "next/link";', 'fixture.tsx'),
+    /reviewed default/,
+  );
+  assert.throws(
+    () =>
+      portNativeRegistryRecipe(
+        `import {buttonVariants} from '@/registry/bases/base/ui/button'; export default()=> <a href="#" className={buttonVariants(dynamic)}>Top</a>`,
+        'fixture.tsx',
+      ),
+    /Unreviewed native button variant/,
+  );
 });

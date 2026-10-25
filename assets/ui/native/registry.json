@@ -1226,7 +1226,8 @@
     "registry-aria-overlay.tsx",
     "registry-image.tsx",
     "_button-presets.tsx",
-    "_preset-button-style.tsx"
+    "_preset-button-style.tsx",
+    "navigation.tsx"
   ],
   "supportModules": [
     {
@@ -1315,6 +1316,10 @@
     {
       "file": "_registry-context",
       "exports": ["NativeComponentStyleProvider"]
+    },
+    {
+      "file": "navigation",
+      "exports": ["NativeLink", "NativeNavigationProvider", "useNativeNavigation"]
     }
   ],
   "recipeCatalogs": [

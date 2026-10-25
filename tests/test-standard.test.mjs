@@ -36,6 +36,10 @@ for (const additions of [[], ['stripe'], ['revenuecat'], ['stripe', 'revenuecat'
         'packages/contracts/src/index.ts',
       ])
         assert.ok(existsSync(path.join(root, file)), file);
+      const nativeLayout = read(root, 'apps/mobile/app/_layout.tsx');
+      assert.match(nativeLayout, /NativeNavigationProvider onNavigate=/);
+      assert.match(nativeLayout, /router\.replace\(href as Href\)/);
+      assert.match(nativeLayout, /router\.navigate\(href as Href\)/);
       const worker = JSON.parse(read(root, 'apps/api/wrangler.jsonc'));
       assert.equal(worker.d1_databases[0].binding, 'DB');
       assert.equal(worker.r2_buckets[0].binding, 'FILES');

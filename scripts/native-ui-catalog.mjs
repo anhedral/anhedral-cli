@@ -61,15 +61,27 @@ paint/animation parity. Native device/keyboard/visual acceptance remains separat
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 409 reviewed source modules,
+The authored component example overlay currently includes 431 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 \`node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`
 and \`node scripts/native-icons.mjs --check\`. Their coverage remains partial while
-component preset/API parity is unfinished. The overlay includes 91 distinct published
+component preset/API parity is unfinished. The overlay includes 97 distinct published
 examples from each of the legacy Default and New York registries. Their original
 source files, color generation, controlled callbacks and hashes are retained;
 matching names never substitute the modern source. Filled legacy destructive buttons
 and badges remain distinct from modern translucent variants.
+
+NativeLink renders inline Text or a composed Pressable. NativeNavigationProvider
+supplies app routing and anchor callbacks; generated Expo roots connect application
+routes to Expo Router navigate/replace. OS links use HTTP(S), mail, telephone or SMS
+bridges. Screen handles the empty hash by scrolling to the top; named anchors require
+an explicit scroll destination handler. Missing routes/anchors and OS failures expose
+visible retryable errors. LinkButton retains its existing one-argument onNavigate API.
+Button composition preserves source styling, focus refs and child-first callbacks.
+Next prefetch/SSR, DOM history and browser targets have no claimed native equivalence;
+unreviewed browser props fail generated type checks. Product routes and named anchor
+destinations still belong to the consuming application. Native keyboard/screen-reader
+and device navigation acceptance remains separate.
 
 Authored image recipes use native image caching and SVG grayscale/brightness filters.
 They retain source HTTPS URLs, alt text, crop, dimensions and aspect ratios, with visible

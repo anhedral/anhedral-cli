@@ -59,4 +59,16 @@ final class RegistryUITests: XCTestCase {
     }
   }
 
+  func testInlineAndComposedNativeLinksReachTheirDestinations() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/navigation-contract", in: app)
+    for (label, result) in [("Inline native route", "Visited route: /native"), ("Composed native route", "Visited route: /login"), ("Native section anchor", "Visited anchor: section")] {
+      let link = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch
+      XCTAssertTrue(link.waitForExistence(timeout: 10))
+      link.tap()
+      XCTAssertTrue(app.staticTexts[result].waitForExistence(timeout: 3))
+    }
+  }
+
 }

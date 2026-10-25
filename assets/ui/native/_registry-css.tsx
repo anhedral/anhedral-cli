@@ -105,6 +105,15 @@ export function registryStyle(
       result.children.push(token.slice(2));
       continue;
     }
+    if (/^\[&_svg\]:(pointer-events-none|shrink-0)$/.test(token)) {
+      result.descendants.push('svg:' + token.slice('[&_svg]:'.length));
+      continue;
+    }
+    const defaultSvg = /^\[&_svg:not\(\[class\*=['"]size-['"]\]\)\]:(size-[\d.]+)$/.exec(token);
+    if (defaultSvg) {
+      result.descendants.push('svg-default:' + defaultSvg[1]);
+      continue;
+    }
     if (token === '[&_span]:flex') {
       result.descendants.push('span:flex');
       continue;
@@ -203,7 +212,9 @@ export function registryStyle(
       paint.webBlendMode = token.slice(16);
       continue;
     }
-    if (token === 'hidden') view.display = 'none';
+    if (token === 'pointer-events-none') paint.pointerEvents = 'none';
+    else if (token === 'pointer-events-auto') paint.pointerEvents = 'auto';
+    else if (token === 'hidden') view.display = 'none';
     else if (token === 'flex' || token === 'block') view.display = 'flex';
     else if (token === 'grid') {
       view.display = 'flex';

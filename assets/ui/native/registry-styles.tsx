@@ -50,6 +50,8 @@ import {
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
 import { NativeRegistryImage } from './registry-image';
+import { NativeLink } from './navigation';
+import { LinkButton } from './button';
 
 const RegistryLocalPaint = createContext<Record<string, string | number>>({});
 export const RegistryPaintContext = createContext<Record<string, string | number>>({});
@@ -179,7 +181,23 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
     const recipeState = useNativeRecipeState();
     const overlay = useOptionalOverlay();
     const translated = registryStyle(
-      [className, kind === 'span' && descendant.includes('span:flex') ? 'flex' : '']
+      [
+        ...(kind === 'icon' || kind === 'svg-root'
+          ? descendant.flatMap((rule) =>
+              rule.startsWith('svg:')
+                ? [rule.slice(4)]
+                : rule.startsWith('svg-default:') &&
+                    !className?.includes('size-') &&
+                    props.size === undefined &&
+                    props.width === undefined &&
+                    props.height === undefined
+                  ? [rule.slice(12)]
+                  : [],
+            )
+          : []),
+        className,
+        kind === 'span' && descendant.includes('span:flex') ? 'flex' : '',
+      ]
         .filter(Boolean)
         .join(' '),
       {
@@ -305,6 +323,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         props[nativeLayoutProp]?.(event);
       };
     delete forwarded['data-active'];
+    if (translated.paint.pointerEvents && props.pointerEvents === undefined)
+      forwarded.pointerEvents = translated.paint.pointerEvents;
     if (translated.paint.brightness !== undefined || translated.paint.objectFit !== undefined) {
       if (!('nativeRegistryMedia' in Component))
         throw Error('Native image paint requires a supported media component.');
@@ -351,7 +371,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       } else delete forwarded.style;
     } else {
       forwarded.style =
-        kind === 'text'
+        kind === 'text' || kind === 'link'
           ? [translated.view, translated.text, nativeInline]
           : [translated.view, nativeInline];
       if (kind === 'button') {
@@ -368,6 +388,9 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         const base = forwarded.style;
         forwarded.style = (state: { pressed: boolean }) => [
           base,
+          kind === 'link' &&
+            (interaction.hovered || state.pressed) &&
+            translated.paint.hoverForeground && { color: translated.paint.hoverForeground },
           (interaction.hovered || state.pressed) &&
             translated.paint.hoverBackground && {
               backgroundColor: translated.paint.hoverBackground,
@@ -542,6 +565,8 @@ function RecipeButton({ children, ...props }: PressableProps) {
     </Pressable>
   );
 }
+export const RegistryButtonLink = withRegistryStyles(LinkButton, 'button');
+export const RegistryLink = withRegistryStyles(NativeLink, 'link');
 export const RegistryImage = withRegistryStyles(NativeRegistryImage);
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');

@@ -7,6 +7,8 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  type ReactNode,
+  type ReactElement,
 } from 'react';
 import {
   View,
@@ -24,7 +26,7 @@ import { useTheme } from '../theme';
 import { useRegistryPalette, NativeButtonGroupContext } from './_registry-context';
 import { useNativeFontStyle } from './fonts';
 import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
-import { Button, type ButtonProps } from './button';
+import { Button, LinkButton, type ButtonProps } from './button';
 import { NativeSlot } from './_slot';
 import Svg, { Defs, Filter, FeColorMatrix, Image as SvgImage } from 'react-native-svg';
 
@@ -583,9 +585,55 @@ export const Breadcrumb = ({ style, ...props }: ViewProps) => (
 );
 export const BreadcrumbList = ItemActions;
 export const BreadcrumbItem = Box;
-export const BreadcrumbLink = (props: ButtonProps) => (
-  <Button nativePreset={false} variant="link" {...props} accessibilityRole="link" />
-);
+export function BreadcrumbLink({
+  href,
+  onNavigate,
+  onError,
+  render,
+  children,
+  ...props
+}: Omit<ButtonProps, 'render'> & {
+  href?: string;
+  onNavigate?: (href: string) => void | Promise<void>;
+  onError?: (error: unknown) => void;
+  render?:
+    | ReactElement<{ children?: ReactNode }>
+    | ((
+        props: { href: string; children?: ReactNode } | { children?: ReactNode },
+      ) => ReactElement<{ children?: ReactNode }>);
+}) {
+  if (typeof render === 'function') {
+    const element = render(href && !props.disabled ? { href, children } : { children });
+    return href ? (
+      <Button
+        nativePreset={false}
+        variant="link"
+        {...props}
+        render={element}
+        accessibilityRole="link"
+      />
+    ) : (
+      element
+    );
+  }
+  return href && !render ? (
+    <LinkButton
+      nativePreset={false}
+      variant="link"
+      {...props}
+      href={href}
+      onNavigate={onNavigate}
+      onError={onError}
+    >
+      {children}
+    </LinkButton>
+  ) : (
+    <Button nativePreset={false} variant="link" {...props} render={render} accessibilityRole="link">
+      {children}
+    </Button>
+  );
+}
+
 export const BreadcrumbPage = ({ style, ...props }: TextProps) => (
   <LabelText
     {...props}
@@ -593,7 +641,11 @@ export const BreadcrumbPage = ({ style, ...props }: TextProps) => (
     style={[{ fontWeight: '600' }, style]}
   />
 );
-export const BreadcrumbSeparator = () => <Muted accessibilityElementsHidden>›</Muted>;
+export const BreadcrumbSeparator = ({ children, ...props }: ViewProps) => (
+  <Box {...props} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    {children ?? <Muted>›</Muted>}
+  </Box>
+);
 export const BreadcrumbEllipsis = () => <Muted accessibilityLabel="More breadcrumb items">…</Muted>;
 export function Marker({
   variant = 'default',

@@ -23,6 +23,36 @@ function NativeButtonPresetMatrix() {
     </View>
   );
 }
+function NativeNavigationMatrix() {
+  const [route, setRoute] = useState('none'),
+    [anchor, setAnchor] = useState('none');
+  return (
+    <UI.NativeNavigationProvider
+      onNavigate={(href) => setRoute(href)}
+      onAnchor={(anchor) => setAnchor(anchor)}
+    >
+      <View style={{ gap: 24 }}>
+        <UI.Text>
+          Read{' '}
+          <UI.NativeLink href="/native" accessibilityLabel="Inline native route">
+            the native route
+          </UI.NativeLink>{' '}
+          inline.
+        </UI.Text>
+        <UI.Button asChild>
+          <UI.NativeLink href="/login" accessibilityLabel="Composed native route">
+            Login
+          </UI.NativeLink>
+        </UI.Button>
+        <UI.NativeLink href="#section" accessibilityLabel="Native section anchor">
+          Jump to section
+        </UI.NativeLink>
+        <UI.Text>{'Visited route: ' + route}</UI.Text>
+        <UI.Text>{'Visited anchor: ' + anchor}</UI.Text>
+      </View>
+    </UI.NativeNavigationProvider>
+  );
+}
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: string | null }> {
   state = { error: null };
   static getDerivedStateFromError(error: Error) {

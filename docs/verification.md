@@ -1,3 +1,38 @@
+# Native registry navigation and authored link recipes — October 24, 2026
+
+Added native inline Text links, composed pressable links, explicit route/anchor
+handlers and OS URL dispatch. Generated Expo roots connect routes to navigate/replace.
+Screen owns top scrolling for the empty hash; named anchors require an application
+destination handler. Missing handlers, invalid protocols and OS failures remain visible
+and retryable. The existing LinkButton navigation callback still receives one argument.
+
+- Added 22 actual source modules, including Base's full Button composition example,
+  modern breadcrumb recipes and six additional published examples per legacy style.
+  The maintained overlay now contains 431 component examples and 696 registry modules.
+  All authored examples render without browser hosts or warnings. Source callbacks,
+  destination strings and independent source hashes remain retained.
+- Full native suites passed 1,220 tests per platform in 40 suites. Generated strict
+  types and production iOS/Android Hermes bundles passed after the narrow Text pointer
+  event type correction described below. Root tests passed 614 with one existing
+  optional skip. Sixteen focused source/generator/style/OS-harness checks also passed.
+  Lint, static security, installed packed CLI smoke and packlist passed: 249 files,
+  984,025 compressed bytes. Packaging limits are unchanged.
+- Ten navigation contracts cover route/anchor options, OS schemes, cancellation,
+  disabled controls, inline layout, composed geometry/ref/text ownership, hover/press,
+  visible retries, stale/unmounted failures and actual authored source interactions.
+  Descendant SVG defaults cross native wrappers without overriding authored icon sizes.
+- The first new test run omitted the required ThemeProvider and used asynchronous
+  test events without awaiting their act scopes. Corrected fixtures pass. Subsequent
+  generated typechecking caught pointer enter/leave missing from React Native 0.86's
+  legacy public TextProps even though its installed Text runtime and generated types
+  declare these events. A narrow typed pointer contract now preserves those actual
+  native events. No broad type escape or validation threshold change was introduced.
+- The maintained iOS harness now includes inline/composed route and anchor taps;
+  the real OS run is in progress and is not included in the passing results above.
+  Browser prefetch/SSR, history/target behavior and app-specific destinations remain
+  explicit boundaries. Complete component styles and whole-registry acceptance are
+  unfinished; strict completion still rejects 552 distinct items. No release occurred.
+
 # Frozen Button recipes and exported recipe scopes — October 24, 2026
 
 Default, New York and New York v4 now use their actual pinned CVA classes for

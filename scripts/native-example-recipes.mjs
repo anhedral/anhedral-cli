@@ -252,6 +252,18 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'apps/v4/registry/bases/aria/examples/resizable-example.tsx',
     );
     origins.push('apps/v4/registry/new-york-v4/examples/aspect-ratio-demo.tsx');
+    origins.push('apps/v4/registry/bases/base/examples/button-example.tsx');
+    for (const name of [
+      'button-as-child',
+      'breadcrumb-demo',
+      'breadcrumb-separator',
+      'breadcrumb-dropdown',
+      'breadcrumb-ellipsis',
+      'breadcrumb-link',
+    ])
+      origins.push(`apps/v4/registry/new-york-v4/examples/${name}.tsx`);
+    for (const base of ['base', 'radix', 'aria'])
+      origins.push(`apps/v4/registry/bases/${base}/examples/breadcrumb-example.tsx`);
     for (const base of ['base', 'radix', 'aria'])
       origins.push(`apps/v4/registry/bases/${base}/examples/aspect-ratio-example.tsx`);
     // Published legacy examples are separate authored inputs, even when their names

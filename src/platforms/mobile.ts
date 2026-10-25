@@ -111,12 +111,15 @@ export async function scaffoldExpo(context: RecipeContext): Promise<void> {
   writeFile(
     path.join(dir, 'app/_layout.tsx'),
     `import '@/lib/development-client';
-import { ThemeProvider } from '@workspace/native-ui';
+import { ThemeProvider, NativeNavigationProvider } from '@workspace/native-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import { Stack, router, type Href } from 'expo-router';
 
 export default function RootLayout() {
-  return <SafeAreaProvider><ThemeProvider><Stack /></ThemeProvider></SafeAreaProvider>;
+  return <SafeAreaProvider><ThemeProvider><NativeNavigationProvider onNavigate={(href, options) => {
+    if (options.replace) router.replace(href as Href);
+    else router.navigate(href as Href);
+  }}><Stack /></NativeNavigationProvider></ThemeProvider></SafeAreaProvider>;
 }
 `,
   );
