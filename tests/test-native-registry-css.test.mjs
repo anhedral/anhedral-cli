@@ -262,3 +262,27 @@ test('authored flex boxes retain browser row defaults while explicit directions 
     'column',
   );
 });
+
+test('native Card length variables preserve reviewed spacing formulas, negative margins and strict scope', () => {
+  const result = registryStyle(
+    '[--card-spacing:--spacing(5)] px-(--card-spacing) -mb-(--card-spacing)',
+    options,
+  );
+  assert.equal(result.paint.cardSpacing, 20);
+  assert.equal(result.view.paddingLeft, 20);
+  assert.equal(result.view.paddingRight, 20);
+  assert.equal(result.view.marginBottom, -20);
+  assert.equal(
+    registryStyle('py-(--card-spacing)', { ...options, cardSpacing: 12 }).view.paddingTop,
+    12,
+  );
+  assert.throws(() => registryStyle('p-(--card-spacing)', options), /Unbound native Card spacing/);
+  assert.throws(
+    () => registryStyle('p-(--card-spacing)', { ...options, cardSpacing: Infinity }),
+    /Invalid native Card spacing/,
+  );
+  assert.throws(
+    () => registryStyle('p-(--card-spacing)', { ...options, cardSpacing: -1 }),
+    /Invalid native Card spacing/,
+  );
+});

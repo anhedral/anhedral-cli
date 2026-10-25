@@ -1,3 +1,46 @@
+# Native Card source styles and measured geometry — October 25, 2026
+
+Card now retains the eight modern presets and three frozen source definitions for
+all seven slots. The source generator verifies exact component hashes, 48 ordinary
+CSS slot rules, both spacing formulas and Vega's additional direct-Choices selector.
+It rejects new selectors or changed source definitions until renewed review.
+Native header rows replace browser grid placement; source footer conditions,
+direct image corners, rings, shadows, typography and casing are preserved.
+
+- Custom modern spacing has a native numeric prop and a scoped translation of the
+  authored card-spacing formula, including nested padding and negative margins.
+  Footer membership handles opaque/dynamic children and cleanup. Keyed fragments
+  preserve child state when reordered. Explicit native text/view overrides win;
+  relative letter spacing uses the final font size. Wide/wider values were checked
+  against the retained Tailwind 4.3.0 theme source.
+- Full native suites passed 1,422 tests per platform in 46 suites with unchanged
+  coverage gates. Final generated typecheck and all 33 focused Card cases passed
+  on both targets after narrowing internal text-paint props to the root slot.
+  All 702 maintained native modules compile into iOS/Android Hermes bundles.
+- Android API 36 arm64: all nine physical acceptance cases passed. Card checks
+  measured all sixteen modern preset/size combinations and the 105-point bordered
+  footer. Evidence: .artifacts/native-ui-android/2026-10-25T07-12-31-641Z/.
+- iOS 26.5: all nine cases passed, including every Card measurement. The finalized
+  xcresult summary was independently checked for nine passed, zero failed/skipped
+  or expected failures, on the exact owned simulator. Evidence:
+  .artifacts/native-ui-ios/2026-10-25T07-21-50-115Z/. Xcode's post-test automatic
+  diagnostic collection stalled; only its owned simctl-diagnose child was stopped.
+  Xcode then finalized successfully. The action, command, sources, summary and
+  screenshots are retained. Both platforms' final Card screenshots were reviewed.
+- Earlier failed/interrupted device runs remain retained. They exposed duplicate
+  UIKit text snapshot matches, high-inertia XCTest swipes, stale Android scroll
+  nodes and a footer expectation missing the source border's one point. Corrected
+  checks use actual visible bounds, fresh native nodes and measured drags; they do
+  not accept offscreen labels or relax the expected component dimensions.
+- CLI build/lint/static security, 633 root tests (one existing optional skip),
+  focused source/coverage/runner contracts, packed consumer and packlist checks
+  passed before this dated evidence entry. The preceding pack measured 249 files
+  and 1,004,145 bytes. Detailed logs are retained with the native Card evidence.
+- Card and the composed modern Skeleton example are now accounted for: 81 groups
+  covered, 535 pending. Dependent Card examples, other unfinished component styles,
+  screen-reader/store/physical-device acceptance and the Expo 57 / iOS 27 lifecycle
+  gap remain explicit. No publication or deployment occurred.
+
 # Native OS registry acceptance runners — October 24, 2026
 
 Added an explicit-device Android instrumentation runner and shared owned QA app

@@ -6,18 +6,18 @@ import {
   nativeAndroidTestCount,
   nativeAndroidTestGradle,
 } from '../scripts/native-ui-android.mjs';
-const result = (count = 8) =>
+const result = (count = 9) =>
   Array.from(
     { length: count },
     () => 'INSTRUMENTATION_STATUS_CODE: 1\nINSTRUMENTATION_STATUS_CODE: 0\n',
   ).join('') + `OK (${count} tests)\nINSTRUMENTATION_CODE: -1\n`;
 test('Android native acceptance requires every expected instrumentation case and rejects skips, crashes and incomplete output', () => {
-  assert.deepEqual(assertNativeAndroidResult(result()), { tests: 8, failures: 0 });
+  assert.deepEqual(assertNativeAndroidResult(result()), { tests: 9, failures: 0 });
   for (const output of [
     '',
     result(0),
     result(7),
-    result(9),
+    result(8),
     result().replace('STATUS_CODE: 0', 'STATUS_CODE: -2'),
     result().replace('STATUS_CODE: 0', 'STATUS_CODE: -3'),
     result() + 'INSTRUMENTATION_CODE: 0\n',
@@ -45,6 +45,7 @@ test('the native Android suite owns every required case and retains device artif
   assert.equal((source.match(/@Test fun /g) ?? []).length, nativeAndroidTestCount);
   for (const name of [
     'nativeLayoutPrimitivesMeasureAuthoredGeometry',
+    'nativeCardPresetsRetainMeasuredSpacing',
     'allButtonPresetsRetainGeometryAndActions',
     'inlineAndComposedLinksReachNativeDestinations',
     'composedNativeHostsDeliverExactlyOneAction',

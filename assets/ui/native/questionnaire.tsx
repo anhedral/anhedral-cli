@@ -420,7 +420,10 @@ export const QuestionnaireTitle = ({ style, ...props }: TextProps) => (
   />
 );
 export const QuestionnaireDescription = Muted;
-export const QuestionnaireChoices = Box;
+export function QuestionnaireChoices(props: React.ComponentProps<typeof Box>) {
+  return <Box {...props} />;
+}
+QuestionnaireChoices.nativeCardChoices = true;
 export const QuestionnaireChoiceDescription = Muted;
 export const QuestionnaireChoiceLabel = LabelText;
 export function QuestionnaireProgress({ children, ...props }: ViewProps) {

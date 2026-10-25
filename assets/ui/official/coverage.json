@@ -4230,42 +4230,46 @@
       }
     },
     "registry:example/skeleton-example": {
-      "status": "partial",
-      "reason": "All authored sections render under each newer preset and Skeleton source styles are complete. Card/CardHeader/CardContent source styles remain partial; the composed example cannot inherit completion until those dependencies are reviewed. Device acceptance remains separate.",
+      "status": "ported",
+      "reason": "All five authored Skeleton sections and their Card/CardHeader/CardContent dependencies retain source style slots across the three component bases and all eight modern presets. Native layout, reduced-motion pulses, original text/shape content and composition are tested. Browser CSS grid/pulse mechanics use their reviewed native equivalents; device/store acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/card.tsx",
+        "assets/ui/native/_preset-card-style.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-skeleton-presets.test.tsx",
+        "tests/native-ui/registry-card-presets.test.tsx"
       ],
       "reviewedInputs": {
-        "aria-luma": "061c6ba9fbafb9f3ace299f43ddb332e53fb8eece0790e0f6e2e31f836c804e7",
-        "aria-lyra": "cb4a9b265dc58bde8be921785eb64b28c5fa471d8f1bd81c6dfd9330075b05f2",
-        "aria-maia": "fab12bc16fc73c0fd07327cae380ecb8d58e7a6368409d4512b2ba5b9b7395f5",
-        "aria-mira": "b0b2e5d90fa8efe4f2d08f2a9d198042567586e3a88a01be9b87cf01c2a0205d",
-        "aria-nova": "6af6d0334236f4d4ee425f8626e24bedeffc45552fd66eab7f409572d8a08bba",
-        "aria-rhea": "7ba10f715246d854a0d0365ed3f8db2d9fce1d94b9f36d45ec805e4e803f5575",
-        "aria-sera": "525691d2e180e95d744c90c0668b734d5df316a3b6c1ed15262457074040cb3b",
-        "aria-vega": "a66472bf5f6c2ee80422b01596ebb8acf13468aa03a9119cd2f761af6e5d661c",
-        "base-luma": "af3a700284b4e3036b0920c0e1408716c2f2c2c4d5e6290682f5ac4ee3cd6d4c",
-        "base-lyra": "c1f2f56c8ca1042d6d8663f2338d3f08942b6eb9cbee22eef2511c79fc1c1399",
-        "base-maia": "c50c36ecb8cb083c9991c42f11e3670563267ed6bedeae537688a407cdbea4db",
-        "base-mira": "0d8d90bae4ed2ebdde0bdf9babc8faeaadfcad68bdcb2ec4242f1991aa0e39ce",
-        "base-nova": "18f398a1f66b6ec67f35f9a97246195406468e9782e27c2f2764b31e1285bbc7",
-        "base-rhea": "c5000433abee30905d74b3870b87ebd7dc9a4200b8de464c637a9e0c6bc31647",
-        "base-sera": "f89132ddfddc730e126e4cae50adcbd18706244057cfc1dfee7c54836c64aaec",
-        "base-vega": "45a54c5a38928c881f9770195e4ab2a49ec3a50d725c7c35f0731069862bc807",
-        "radix-luma": "95212afd4254b60c6ae489ec725695b1ab8c0c07e895d474ab6f408afa60d555",
-        "radix-lyra": "45e6a1c8ebeb5f840e7757802c5645d7f1e013596e0d7e826ce77c8a6e7896af",
-        "radix-maia": "2b719df5d671fe5f98213b93df55c800aedd778d7a2bc07e16f7592756305264",
-        "radix-mira": "46a3a0c5cda208bd10245da1696f81001c3eaed05643a67bd4988d7319e53908",
-        "radix-nova": "2eb16b76abcba1a9f4f960f05e01a78193c73c8ce33556e9ed9648f9a1cd0820",
-        "radix-rhea": "59808604b366b3ece2c5d2baf90429f9235963640f090b0c5f4f34fd83da1a53",
-        "radix-sera": "8fe33dd21d19ecb4a9b009548d3bc678947e8b5e8edb517666b5675a510f059c",
-        "radix-vega": "c2d71edb5bbad8779e86c96e6ef7aba2bf10b4f22a9cbb46ee29d04c15500dc4"
+        "aria-luma": "c342397a7f4eff96d38e4a63b325e7265a395497ec9d216ae8faa5348b3f057b",
+        "aria-lyra": "61e062a8bc40b5fd0218d5129400badf99456c8d59c45a6b78fed0543918f9f8",
+        "aria-maia": "1295f6b21c5033dcc52bd2a778229cd9263dfb8bdf8f1d31420c515b1c00229a",
+        "aria-mira": "988ccc97403d3818c76a66266898bc80e5650d468fa72ed38e1da7849d23e014",
+        "aria-nova": "2916fbdb02bb93f1d894315eeb524b6cce83238c5c0bbdddefcbcdbd11c4615a",
+        "aria-rhea": "f995b1dbf710305e293f391080b98f52a05dd58cdec01a808490500857aebcc2",
+        "aria-sera": "438cf478a50e093d645885741aac770ca4dbbf069115f60f37af0605878476b9",
+        "aria-vega": "9c166c1b24b925856b1e135fe5a21a38bc4354aaaa16836ba3893784fa2fbb21",
+        "base-luma": "bbb5c85e952881a0d5d24a8bab2b23ce8f442bca635d8acb6e427302f2fb1a49",
+        "base-lyra": "6dd014275907e4c10cc224290239eada74b0271e5db9f2b2d28b5e1915325e62",
+        "base-maia": "2abbee955bdc5c702545f9fdfc357e05e95b66bba61fb68eb93f5155241d8040",
+        "base-mira": "045f99a8100a46bc4983cda0be79b997984197df6fe8a38d160c0e1dd0312d17",
+        "base-nova": "40b9b0a9cbb84fa808b3325f12b86587863ae455e7149ae315e870aaf41c8756",
+        "base-rhea": "26501b1208b7869673e992c4e4bffec297fe1d7a6d83b2bcdb3de4a60a53dc77",
+        "base-sera": "12aa25fa54105f7fd264dd5c88de67203751c47bfd9e20aca80dce246804e4d6",
+        "base-vega": "7b4367bf6cec62b6b191c6ca73e5b084ff9ab16c4bced1b8324a253fbc8cb43d",
+        "radix-luma": "eede0ff0ca5f2853ce56644746a8a99286cfe9f2fbb24902e6d8dca66a6da36e",
+        "radix-lyra": "7e22200de209cb5861a49e418d124ef9fee46aea0558f7fd3989913150eca253",
+        "radix-maia": "7f0f8240aaa2afe276574434784431e81787d544d5821561a99e9e47d65dccf1",
+        "radix-mira": "9706f44359d445853b253bfdd6292d7f436269893280d23567b1b93be0fa4f3d",
+        "radix-nova": "a4abb095a6c4bd0166c483b440da0d5d915b6ab4ea49ac2aa91808a1e9fc5321",
+        "radix-rhea": "c5b418a75a86a42707e101a238a948a12ba4b0591363528f5e176d8bae8ea599",
+        "radix-sera": "673ffbe92483e0471afed91e7a28ca2ca971c3625cb98c2163e244e1c375f199",
+        "radix-vega": "0944ff7bf4002c37980f0cd280c221af64c1143e5ebe01311c09ecc54f439a6b"
       }
     },
     "registry:example/slider-example": {
@@ -6472,6 +6476,50 @@
         "radix-sera": "170bceec302c7f0949a169ddd2ee5b4f2d0f970959f7117b7092d78cb4c63123",
         "radix-vega": "40b8651d2a89cfe865c3be65ad571a0dafa6dc3d23413021c77f3bb6c4362035"
       }
+    },
+    "registry:ui/card": {
+      "status": "ported",
+      "reason": "All eleven source style families retain every root/header/title/description/action/content/footer slot and both modern sizes. Native rows replace browser grid placement; source spacing, footer conditions, direct image corners, frozen typography, source heading metrics/casing, rings/shadows, native refs, explicit consumer overrides and keyed fragment identity are tested. Modern custom spacing has a native numeric prop and scoped authored length formulas. Native application text metrics replace ambient browser inheritance. Device/store and screen-reader acceptance remain separate.",
+      "nativeFiles": [
+        "assets/ui/native/card.tsx",
+        "assets/ui/native/_card-presets.tsx",
+        "assets/ui/native/_preset-card-style.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-card-presets.test.tsx",
+        "tests/test-native-component-styles.test.mjs",
+        "tests/test-native-registry-css.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "40811e17fdc2a3769b6cec8ae0a916fedc3f34fc63e213accd65b5a6ef5da334",
+        "aria-lyra": "2c3e832cb3c0959ccc050ff31bd8830a30a4dab742c8c5ac9358e5c347f058dc",
+        "aria-maia": "a9b06e4a7190216bf97a4a0ff990b0c61e39996f89b655844ac0ca2d67e342e9",
+        "aria-mira": "c873f4a911803fd1ea08f4e92f7e70b2ae92884e49a3573c1270c3ddcd46d4eb",
+        "aria-nova": "4f9e64fc0ef8a3a3edfa7cf67b505375020245a1cbd101e6e28ccaa10c7fbbb5",
+        "aria-rhea": "0372f81d4aaef83f7b36785ad8034fceceb5be5bd2c9a5d1f5bac59983171ed6",
+        "aria-sera": "3c034c4778732c877453b0e3ede7eab93e12b3cc57b5e57feb31498439004dd6",
+        "aria-vega": "75a76b85dca5d1d15f25549bfae3ee8ab2917eac3ea5e1e1b8c4b82485bb128a",
+        "base-luma": "e226555b435b625449ce042b325ff07857581ed242ff95116627f5a4ed140fab",
+        "base-lyra": "bfca9a180d711ccbd45afc9acd2800dd83bccb9cfbe7c20992dd172068feb9ad",
+        "base-maia": "e601b5d83b29a67ab16e24eaf7b36c5a5963efdeaa1ae0db109034e15a739947",
+        "base-mira": "99e3c888bddb31d79cbd6f6fb600c303def956ccdb3752dd91cdc3b82861d450",
+        "base-nova": "e3d2a18d51ec2d22b03675d27beda72e9d365009a7c3056b978634eccdfe4733",
+        "base-rhea": "644d14a48080b40017c1bc8a3a1d0fd37b4e8fb310ba769ba36f3885824786c7",
+        "base-sera": "bc222f08f2e66a4d45395c4821b541f260b23bb119ca037d1d8b14101bce8b7a",
+        "base-vega": "895cc687ae4f59af5c04c301c3670c78b0d883e8b59534d911161c2c5a293ebc",
+        "default": "8e3118c4ec9df297e0418fa03b0dfe0a391260ecd034919a6517605a28813872",
+        "new-york": "54afc023f06d803de8cd8beaf0432fe6647f2d957358097db1766e15fc9eab05",
+        "new-york-v4": "ffa1c5b58151084c72691864f5f8c2633985152f57ea7b1942bf5ce1773058d0",
+        "radix-luma": "1528b13a02a377ffd79d1671d76f05d9937b0e8dc141f4a3df73c1da4df2c994",
+        "radix-lyra": "aeb693830020f84f37e274fac96de52e444cf23831c2cdcb2bfff64076f17032",
+        "radix-maia": "4ddba946628402b36186d7d4ce70e8d764c58be84185baeddc83350e42e52d66",
+        "radix-mira": "2b730c02406e2fd7691aa9fca537298b15317d5a7945e4cd3c37ae71b2c22333",
+        "radix-nova": "b83c87861b3760fd25ab302bea7add82e1506a0b13c2f45270bbc069a7fcb8f6",
+        "radix-rhea": "45e371ed3c2c193328c326d444dfffe75fc6a5f7c3ea5789fb64676aa01267c7",
+        "radix-sera": "f683ce2e71572966ba33e19845a892120250e4996d331df83c5d964c73025b1a",
+        "radix-vega": "09bc2b4f1992d73b090505271c94cd4554751ba1a96bc0d8b292c74b86dd9092"
+      }
     }
   },
   "webSpecific": [
@@ -6519,6 +6567,11 @@
       "feature": "HTML description lists",
       "adaptation": "Use scoped native term/definition roles and combined term/value accessibility labels. Preserve native IDs and refs; embedded links, inputs and buttons remain independently exposed. A labelled-by reference to only the term must not erase the definition value.",
       "status": "All authored Separator examples and nested/dynamic description-list contracts tested. Device screen-reader and visual matrix acceptance remain separate."
+    },
+    {
+      "feature": "Card CSS grid/container placement, slot descendants and custom spacing",
+      "adaptation": "Native header/action rows, owning-Card footer membership, direct native image corners and scoped numeric spacing replace browser grid selectors and CSS custom properties. Explicit CardAction parts and registry styling wrappers preserve source slot identity. Frozen titles inherit native application typography where their source declares no size.",
+      "status": "All eleven source styles, both modern sizes, spacing overrides, source typography and keyed/dynamic composition tested. Unfinished dependent Card examples remain pending separately; device screen-reader/store acceptance remains separate."
     }
   ]
 }

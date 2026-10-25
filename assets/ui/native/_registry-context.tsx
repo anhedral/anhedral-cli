@@ -67,3 +67,5 @@ export function NativeComponentStyleProvider({
 }
 export const NativeButtonGroupContext = createContext(false);
 export const NativeButtonIconSize = createContext<number | undefined>(undefined);
+
+export const NativeCardSpacingContext = createContext<number | undefined>(undefined);

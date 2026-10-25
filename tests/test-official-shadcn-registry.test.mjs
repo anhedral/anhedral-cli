@@ -203,7 +203,7 @@ test('browser-only API classifications require a real upstream export and native
 });
 test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
   const pending = incompleteNativeItems(inventory, coverage);
-  assert.equal(pending.length, 537);
+  assert.equal(pending.length, 535);
   assert.ok(pending.includes('registry:ui/form'));
   assert.ok(pending.includes('registry:block/dashboard-01'));
   assert.ok(pending.includes('registry:ui/button'));
@@ -212,7 +212,9 @@ test('export presence and browser-only policy cannot promote incomplete items to
   assert.ok(!pending.includes('registry:ui/aspect-ratio'));
   assert.ok(!pending.includes('registry:ui/separator'));
   assert.ok(!pending.includes('registry:example/separator-example'));
-  assert.ok(pending.includes('registry:example/skeleton-example'));
+  assert.ok(!pending.includes('registry:example/skeleton-example'));
+  assert.ok(!pending.includes('registry:ui/card'));
+  assert.ok(pending.includes('registry:example/card-example'));
   assert.ok(!pending.includes('registry:example/badge-example'));
   assert.ok(!pending.includes('registry:font/font-inter'));
   assert.ok(!pending.includes('registry:theme/theme-neutral'));

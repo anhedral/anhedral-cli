@@ -1,10 +1,37 @@
-import { readFileSync, writeFileSync, mkdirSync, openSync, closeSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, openSync, closeSync, copyFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { prepareNativeQAApp } from './native-ui-device.mjs';
+import { prepareNativeQAApp, nativeQASourceManifest } from './native-ui-device.mjs';
 export { nativeQAApp, nativeQAExport } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
+export const nativeIOSTestCount = 9;
+export function assertNativeIOSResult(summary, expected = nativeIOSTestCount, device) {
+  if (
+    !Number.isSafeInteger(expected) ||
+    expected <= 0 ||
+    summary.result !== 'Passed' ||
+    summary.totalTestCount !== expected ||
+    summary.passedTests !== expected ||
+    summary.failedTests !== 0 ||
+    summary.skippedTests !== 0 ||
+    summary.expectedFailures !== 0 ||
+    !Array.isArray(summary.testFailures) ||
+    summary.testFailures.length !== 0 ||
+    !Array.isArray(summary.devicesAndConfigurations) ||
+    summary.devicesAndConfigurations.length !== 1 ||
+    summary.devicesAndConfigurations.some(
+      (entry) =>
+        entry.passedTests !== expected ||
+        entry.failedTests !== 0 ||
+        entry.skippedTests !== 0 ||
+        entry.expectedFailures !== 0 ||
+        (device && entry.device?.deviceId !== device),
+    )
+  )
+    throw Error('Native XCTest did not pass every expected case on the requested simulator.');
+  return { tests: expected, failures: 0 };
+}
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const qa = path.join(root, '.artifacts/native-ui-ios/app');
   const { require, run } = await prepareNativeQAApp(qa);
@@ -50,6 +77,12 @@ scheme.test_action.build_configuration='Release';scheme.save_as(p,'AnhedralRegis
     new Date().toISOString().replace(/[:.]/g, '-'),
   );
   mkdirSync(evidence, { recursive: true });
+  writeFileSync(
+    path.join(evidence, 'source-manifest.json'),
+    JSON.stringify(nativeQASourceManifest(qa), null, 2) + '\n',
+  );
+  writeFileSync(path.join(evidence, 'test-source.swift'), source);
+  copyFileSync(fileURLToPath(import.meta.url), path.join(evidence, 'runner-source.mjs'));
   const log = openSync(path.join(evidence, 'xcode.log'), 'w');
   const result = spawnSync(
     'xcodebuild',
@@ -82,4 +115,24 @@ scheme.test_action.build_configuration='Release';scheme.save_as(p,'AnhedralRegis
   console.log('Native XCTest evidence: ' + evidence);
   if (result.error) throw result.error;
   if (result.status !== 0) throw Error('Native XCTest failed; inspect retained evidence.');
+  const report = spawnSync(
+    'xcrun',
+    [
+      'xcresulttool',
+      'get',
+      'test-results',
+      'summary',
+      '--path',
+      path.join(evidence, 'results.xcresult'),
+    ],
+    { encoding: 'utf8' },
+  );
+  if (report.error) throw report.error;
+  if (report.status !== 0) throw Error('Native XCTest summary could not be read.');
+  writeFileSync(path.join(evidence, 'summary.json'), report.stdout);
+  const passed = assertNativeIOSResult(JSON.parse(report.stdout), nativeIOSTestCount, device);
+  writeFileSync(
+    path.join(evidence, 'result.json'),
+    JSON.stringify({ phase: 'passed', device, ...passed }, null, 2) + '\n',
+  );
 }

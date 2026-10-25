@@ -114,6 +114,45 @@ function NativeLayoutMatrix() {
     </UI.NativeComponentStyleProvider>
   );
 }
+function NativeCardMatrix() {
+  const [metrics, setMetrics] = useState<Record<string, string>>({});
+  const measure = (name: string) => (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    const next = Math.round(width) + 'x' + Math.round(height);
+    setMetrics((previous) => (previous[name] === next ? previous : { ...previous, [name]: next }));
+  };
+  return (
+    <View style={{ gap: 12 }}>
+      {(['vega', 'nova', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea'] as const).flatMap(
+        (style) =>
+          (['default', 'sm'] as const).map((size) => {
+            const name = style + ' ' + size;
+            return (
+              <UI.NativeComponentStyleProvider key={name} style={style}>
+                <UI.Card size={size} style={{ width: 160 }} onLayout={measure(name)}>
+                  <UI.CardContent>
+                    <View style={{ height: 20 }} />
+                  </UI.CardContent>
+                </UI.Card>
+                <UI.Text>{'Card ' + name + ' geometry: ' + (metrics[name] ?? 'pending')}</UI.Text>
+              </UI.NativeComponentStyleProvider>
+            );
+          }),
+      )}
+      <UI.NativeComponentStyleProvider style="nova">
+        <UI.Card style={{ width: 160 }} onLayout={measure('footer')}>
+          <UI.CardContent>
+            <View style={{ height: 20 }} />
+          </UI.CardContent>
+          <UI.CardFooter>
+            <View style={{ height: 20 }} />
+          </UI.CardFooter>
+        </UI.Card>
+        <UI.Text>{'Card footer geometry: ' + (metrics.footer ?? 'pending')}</UI.Text>
+      </UI.NativeComponentStyleProvider>
+    </View>
+  );
+}
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: string | null }> {
   state = { error: null };
   static getDerivedStateFromError(error: Error) {

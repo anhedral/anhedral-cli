@@ -15,6 +15,7 @@ export function registryStyle(
   options: {
     width: number;
     height?: number;
+    cardSpacing?: number;
     mode?: 'light' | 'dark';
     styleName?: string;
     generation?: 'legacy' | 'modern';
@@ -44,7 +45,15 @@ export function registryStyle(
   const localRadius = radiusMatch
     ? Number(radiusMatch[1]) * (radiusMatch[2] === 'rem' ? 16 : 1)
     : options.radius;
+  const spacingMatch = /(?:^| )\[--card-spacing:--spacing\(([\d.]+)\)\](?= |$)/.exec(classes ?? '');
+  const cardSpacing = spacingMatch ? Number(spacingMatch[1]) * 4 : options.cardSpacing;
+  if (cardSpacing !== undefined && (!Number.isFinite(cardSpacing) || cardSpacing < 0))
+    throw Error('Invalid native Card spacing.');
   const number = (value: string): number => {
+    if (value === '(--card-spacing)' || value === '[var(--card-spacing)]') {
+      if (cardSpacing === undefined) throw Error('Unbound native Card spacing.');
+      return cardSpacing;
+    }
     if (value.startsWith('[') && value.endsWith(']')) {
       const raw = value.slice(1, -1);
       if (/^-?\d+(\.\d+)?(px|rem)?$/.test(raw))
@@ -182,6 +191,10 @@ export function registryStyle(
     }
     if (/^\[--radius:-?\d+(?:\.\d+)?(?:rem|px)\]$/.test(token)) {
       paint.radius = number('[' + token.slice(10, -1) + ']');
+      continue;
+    }
+    if (/^\[--card-spacing:--spacing\([\d.]+\)\]$/.test(token)) {
+      paint.cardSpacing = Number(token.slice('[--card-spacing:--spacing('.length, -2)) * 4;
       continue;
     }
     if (/^scroll-m-\d+$/.test(token)) {
@@ -350,6 +363,17 @@ export function registryStyle(
       const [a, b] = token.slice(6).split('/').map(Number);
       view.flexBasis = ((100 * a!) / b! + '%') as `${number}%`;
     } else if (token.startsWith('gap-')) view.gap = number(token.slice(4));
+    else if (/^self-(auto|start|end|center|stretch|baseline)$/.test(token))
+      view.alignSelf = (
+        {
+          auto: 'auto',
+          start: 'flex-start',
+          end: 'flex-end',
+          center: 'center',
+          stretch: 'stretch',
+          baseline: 'baseline',
+        } as const
+      )[token.slice(5) as 'auto' | 'start' | 'end' | 'center' | 'stretch' | 'baseline'];
     else if (token.startsWith('items-')) {
       const value = token.slice(6);
       const align = {
@@ -612,7 +636,8 @@ export function registryStyle(
     else if (token.startsWith('leading-')) applyLeading(token.slice(8), 2 + important);
     else if (token === 'tracking-normal') text.letterSpacing = 0;
     else if (token === 'tracking-tight') paint.letterSpacingEm = -0.025;
-    else if (token === 'tracking-wide') paint.letterSpacingEm = 0.05;
+    else if (token === 'tracking-wide') paint.letterSpacingEm = 0.025;
+    else if (token === 'tracking-wider') paint.letterSpacingEm = 0.05;
     else if (token === 'tracking-widest') paint.letterSpacingEm = 0.1;
     else if (token === 'underline') text.textDecorationLine = 'underline';
     else if (token === 'shadow-xs') {

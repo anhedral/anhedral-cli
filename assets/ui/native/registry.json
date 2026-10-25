@@ -1237,7 +1237,9 @@
     "_description-list.tsx",
     "_skeleton-presets.tsx",
     "_preset-skeleton-style.tsx",
-    "_badge.tsx"
+    "_badge.tsx",
+    "_card-presets.tsx",
+    "_preset-card-style.tsx"
   ],
   "supportModules": [
     {

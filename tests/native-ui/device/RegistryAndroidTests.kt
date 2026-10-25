@@ -37,18 +37,24 @@ class RegistryAndroidTests {
     onElement { textAsString() == name }
   }
   private fun UiAutomatorTestScope.label(name: String): UiObject2 {
-    val container = onElementOrNull(timeoutMs = 500) { isScrollable }
-    val viewport = container?.visibleBounds ?: Rect(0, 0, device.displayWidth, device.displayHeight)
-    val visible: AccessibilityNodeInfo.() -> Boolean = {
-      val bounds = Rect().also { getBoundsInScreen(it) }
-      named(name) && isVisibleToUser && !bounds.isEmpty && viewport.contains(bounds.centerX(), bounds.centerY())
+    for (direction in listOf(Direction.DOWN, Direction.UP)) {
+      for (attempt in 0..24) {
+        try {
+          val container = onElementOrNull(timeoutMs = 200) { isScrollable }
+          val viewport = container?.visibleBounds ?: Rect(0, 0, device.displayWidth, device.displayHeight)
+          val visible: AccessibilityNodeInfo.() -> Boolean = {
+            val bounds = Rect().also { getBoundsInScreen(it) }
+            named(name) && isVisibleToUser && !bounds.isEmpty && viewport.contains(bounds.centerX(), bounds.centerY())
+          }
+          onElementOrNull(timeoutMs = 250, block = visible)?.let { return it }
+          if (container == null || !container.scroll(direction, 0.6f)) break
+        } catch (_: StaleObjectException) {
+          // Layout state and navigation can replace nodes. Resolve fresh native objects
+          // before the next assertion or gesture instead of retaining a stale container.
+        }
+      }
     }
-    onElementOrNull(timeoutMs = 500, block = visible)?.let { return it }
-    if (container != null) {
-      try { container.scrollToElementOrNull(Direction.DOWN, timeoutMs = 5_000, block = visible)?.let { return it } } catch (_: ElementNotFoundException) {}
-      try { container.scrollToElementOrNull(Direction.UP, timeoutMs = 5_000, block = visible)?.let { return it } } catch (_: ElementNotFoundException) {}
-    }
-    return onElement(block = visible)
+    throw AssertionError("Missing visible native label: " + name)
   }
   @After fun captureNativeEvidence() {
     val instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -123,4 +129,11 @@ class RegistryAndroidTests {
     openStory("base/separator-example")
     for (index in 1..3) label("Item " + index + ": Value " + index)
   }
+  @Test fun nativeCardPresetsRetainMeasuredSpacing() = uiAutomator {
+    openStory("native/card-metrics")
+    val heights = mapOf("vega" to listOf(68,52), "nova" to listOf(52,44), "maia" to listOf(68,52), "lyra" to listOf(52,44), "mira" to listOf(52,44), "luma" to listOf(68,52), "sera" to listOf(84,60), "rhea" to listOf(60,52))
+    for ((style, values) in heights) for ((index,size) in listOf("default","sm").withIndex()) label("Card " + style + " " + size + " geometry: 160x" + values[index])
+    label("Card footer geometry: 160x105")
+  }
+
 }

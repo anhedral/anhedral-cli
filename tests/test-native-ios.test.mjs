@@ -2,7 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import { nativeQAApp, nativeQAExport } from '../scripts/native-ui-ios.mjs';
+import {
+  nativeQAApp,
+  nativeQAExport,
+  assertNativeIOSResult,
+  nativeIOSTestCount,
+} from '../scripts/native-ui-ios.mjs';
 import { loadNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadNativeFormRecipes } from '../scripts/native-form-recipes.mjs';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
@@ -75,4 +80,46 @@ test('the maintained OS gallery renders every recipe component and uses only act
   assert.doesNotMatch(source, /UI\.Row/);
   assert.match(source, /native\/button-preset-matrix/);
   assert.match(source, /Component:NativeButtonPresetMatrix/);
+});
+
+test('native XCTest acceptance requires every expected case on the exact requested simulator without skips or expected failures', () => {
+  const entry = {
+    passedTests: 9,
+    failedTests: 0,
+    skippedTests: 0,
+    expectedFailures: 0,
+    device: { deviceId: 'owned' },
+  };
+  const result = {
+    result: 'Passed',
+    totalTestCount: 9,
+    passedTests: 9,
+    failedTests: 0,
+    skippedTests: 0,
+    expectedFailures: 0,
+    testFailures: [],
+    devicesAndConfigurations: [entry],
+  };
+  assert.deepEqual(assertNativeIOSResult(result, nativeIOSTestCount, 'owned'), {
+    tests: 9,
+    failures: 0,
+  });
+  for (const change of [
+    { totalTestCount: 8 },
+    { passedTests: 8 },
+    { failedTests: 1 },
+    { skippedTests: 1 },
+    { expectedFailures: 1 },
+    { testFailures: [{}] },
+    { devicesAndConfigurations: [] },
+    { devicesAndConfigurations: [entry, entry] },
+    { devicesAndConfigurations: [{ ...entry, device: { deviceId: 'other' } }] },
+  ])
+    assert.throws(
+      () => assertNativeIOSResult({ ...result, ...change }, 9, 'owned'),
+      /did not pass every expected case/,
+    );
+  const source = readFileSync('tests/native-ui/device/RegistryUITests.swift', 'utf8');
+  assert.equal((source.match(/func test[A-Z]/g) ?? []).length, nativeIOSTestCount);
+  assert.match(source, /testNativeCardPresetsRetainMeasuredSpacing/);
 });

@@ -1,4 +1,5 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import * as UI from './.generated';
 const mount = (children: React.ReactNode) =>
@@ -32,9 +33,16 @@ test.each([
       <UI.CardFooter testID="footer">Footer</UI.CardFooter>
     </UI.Card>,
   );
-  expect(screen.getByTestId('card')).toHaveStyle({ paddingVertical: padding, gap: padding });
-  for (const id of ['header', 'content', 'footer'])
-    expect(screen.getByTestId(id)).toHaveStyle({ paddingHorizontal: padding });
+  expect(screen.getByTestId('card')).toHaveStyle({
+    paddingTop: padding,
+    paddingBottom: 0,
+    gap: padding,
+  });
+  for (const id of ['header', 'content', 'footer']) {
+    const section = StyleSheet.flatten(screen.getByTestId(id).props.style);
+    expect(section.paddingLeft ?? section.paddingHorizontal ?? section.padding).toBe(padding);
+    expect(section.paddingRight ?? section.paddingHorizontal ?? section.padding).toBe(padding);
+  }
 });
 test.each(['default', 'icon'] as const)(
   'empty media variant %s preserves media presentation',

@@ -117,4 +117,41 @@ final class RegistryUITests: XCTestCase {
     add(screenshot)
   }
 
+  func testNativeCardPresetsRetainMeasuredSpacing() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/card-metrics", in:app)
+    let scroll = app.scrollViews.firstMatch
+    // Passive measurement labels require a nonempty frame entirely within the native
+    // viewport. Touch activation is exercised separately by the action cases.
+    func visible(_ value: XCUIElement) -> Bool {
+      let frame = value.frame
+      print("Measurement viewport: " + value.label + " frame=" + String(describing:frame) + " viewport=" + String(describing:scroll.frame))
+      return value.exists && !frame.isEmpty && scroll.frame.contains(frame)
+    }
+    func reveal(_ value: XCUIElement) {
+      for _ in 0..<24 {
+        if visible(value) { break }
+        let down = value.exists && value.frame.midY < scroll.frame.minY
+        let start = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.5,dy:down ? 0.3 : 0.7))
+        let end = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.5,dy:down ? 0.7 : 0.3))
+        start.press(forDuration:0.1,thenDragTo:end,withVelocity:.slow,thenHoldForDuration:0.1)
+      }
+      XCTAssertTrue(value.exists, value.label)
+      XCTAssertTrue(visible(value), value.label + " frame: " + String(describing:value.frame))
+      print("Verified visible native label: " + value.label)
+    }
+    let heights = [("vega",68,52),("nova",52,44),("maia",68,52),("lyra",52,44),("mira",52,44),("luma",68,52),("sera",84,60),("rhea",60,52)]
+    for (style, regular, small) in heights {
+      for (size,height) in [("default",regular),("sm",small)] {
+        reveal(app.staticTexts.matching(identifier:"Card " + style + " " + size + " geometry: 160x" + String(height)).firstMatch)
+      }
+    }
+    reveal(app.staticTexts.matching(identifier:"Card footer geometry: 160x105").firstMatch)
+    let screenshot = XCTAttachment(screenshot: app.screenshot())
+    screenshot.name = "Native Card source spacing"
+    screenshot.lifetime = .keepAlways
+    add(screenshot)
+  }
+
 }

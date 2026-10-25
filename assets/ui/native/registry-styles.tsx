@@ -40,6 +40,7 @@ import {
   useTextTone,
   withAlpha,
 } from './_core';
+import { NativeCardSpacingContext } from './_registry-context';
 import { useNativeFontStyle } from './fonts';
 import { tokenizeCode } from './code-block';
 import { useOptionalOverlay } from './_overlay';
@@ -134,6 +135,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       width = measuredWidth ?? window.width,
       chart = useContext(ChartContext),
       variables = useContext(RegistryVariables),
+      cardSpacing = useContext(NativeCardSpacingContext),
       inherited = useContext(NativeTextStyleContext),
       inheritedPaint = useContext(RegistryPaintContext),
       descendant = useContext(DescendantStyle),
@@ -211,6 +213,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         .join(' '),
       {
         styleName,
+        cardSpacing,
         generation,
         radiusScale: nativePresetMetrics.globals.radius,
         svg: kind === 'icon' || kind === 'svg-root',
@@ -384,6 +387,19 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         kind === 'text' || kind === 'link'
           ? [translated.view, translated.text, nativeInline]
           : [translated.view, nativeInline];
+      if (
+        ('nativeCardTextSlot' in Component && Component.nativeCardTextSlot === true) ||
+        ('nativeCardSlot' in Component && Component.nativeCardSlot === true)
+      )
+        forwarded.nativeTextPaint = {
+          ...translated.paint,
+          ...(nativeInline.letterSpacing !== undefined ? { letterSpacingEm: undefined } : {}),
+          ...(nativeInline.lineHeight !== undefined ? { lineHeightMultiplier: undefined } : {}),
+        };
+      if ('nativeCardSlot' in Component && Component.nativeCardSlot === true) {
+        forwarded.textStyle = [translated.text, props.textStyle];
+        forwarded.spacing = props.spacing ?? translated.paint.cardSpacing;
+      }
       if ('nativeBadgeSlot' in Component && Component.nativeBadgeSlot === true) {
         forwarded.textStyle = [translated.text, props.textStyle];
         forwarded.textColor =

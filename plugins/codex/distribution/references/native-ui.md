@@ -61,6 +61,16 @@ asChild/render elements and typed native render callbacks. Authored text colors 
 explicit consumer text styles win over source defaults. Avatar badges retain their
 separate baseline until their own preset slots are reviewed. Interactive badges keep
 expanded native touch bounds without changing authored visual geometry.
+Card retains all eleven source style families and both modern sizes, including the
+original section spacing, footer treatments, image corners, shadows, rings, heading
+metrics and Sera casing. Modern custom spacing uses the native spacing prop; reviewed
+registry --card-spacing formulas and nested length references share that scope. Native
+header rows place explicit CardAction parts beside the title/description column; the
+browser grid/container-query implementation stays web-specific. Fragments and native
+registry styling wrappers preserve part identity. Dynamically mounted footers register
+with their owning Card and release membership. Native text inherits application metrics
+where the frozen source has no explicit size. Card examples that depend on other
+unfinished components remain pending independently of these reviewed source slots.
 Skeleton retains all eleven source style families, including frozen New York primary
 transparency and New York v4 accent paint. Its native pulse follows the source two-second
 cubic easing cycle and half-opacity midpoint, responds to live reduced-motion changes,

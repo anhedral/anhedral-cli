@@ -5,6 +5,8 @@ import { loadOfficialRegistry, sha256 } from '../scripts/shadcn-registry.mjs';
 import {
   nativePresetMetricsSource,
   nativeGlobalMetrics,
+  nativeCardPresets,
+  nativeCardPresetSource,
   nativeSkeletonPresets,
   nativeSkeletonPresetSource,
   nativeBadgePresets,
@@ -152,4 +154,38 @@ test('Skeleton retains all source generations and exact preset selectors while s
   const corrupt = structuredClone(inventory);
   corrupt.styleSheets['style-nova.css'].sha256 = '0'.repeat(64);
   assert.throws(() => nativeSkeletonPresets(corrupt), /preset integrity/);
+});
+
+test('Card retains all source slots, both size formulas and its conditional questionnaire selector', async () => {
+  const data = nativeCardPresets(inventory);
+  assert.equal(Object.keys(data.presets).length, 8);
+  assert.equal(Object.keys(data.definitions).length, 6);
+  assert.equal(
+    Object.values(data.presets).reduce((sum, preset) => sum + Object.keys(preset.rules).length, 0),
+    48,
+  );
+  assert.deepEqual(data.presets.sera.spacing, { default: 32, sm: 20 });
+  assert.equal(data.presets.vega.choices, 'flex flex-col gap-3');
+  assert.equal(
+    readFileSync('assets/ui/native/_card-presets.tsx', 'utf8'),
+    await nativeCardPresetSource(inventory),
+  );
+  const changed = structuredClone(inventory);
+  changed.sources[data.definitions.base.origin].sha256 = '0'.repeat(64);
+  assert.throws(() => nativeCardPresets(changed), /Card source changed/);
+  for (const added of [
+    '.cn-card:hover { @apply bg-muted; }',
+    '.cn-card-content:has(> [data-slot=unknown]) { @apply gap-3; }',
+  ]) {
+    const selector = structuredClone(inventory);
+    const sheet = selector.styleSheets['style-vega.css'];
+    sheet.content += added;
+    sheet.sha256 = sha256(sheet.content);
+    assert.throws(() => nativeCardPresets(selector), /Card selectors/);
+  }
+  const conditional = structuredClone(inventory);
+  const sheet = conditional.styleSheets['style-vega.css'];
+  sheet.content = sheet.content.replace('flex flex-col gap-3;', 'flex flex-col gap-4;');
+  sheet.sha256 = sha256(sheet.content);
+  assert.throws(() => nativeCardPresets(conditional), /Card content condition/);
 });
