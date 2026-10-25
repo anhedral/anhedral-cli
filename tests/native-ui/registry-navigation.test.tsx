@@ -299,3 +299,37 @@ test('descendant SVG rules cross wrappers without overriding authored icon sizes
   expect(screen.getAllByTestId('class-icon')[0]?.props.width).toBe(24);
   expect(screen.getAllByTestId('prop-icon')[0]?.props.width).toBe(32);
 });
+
+test('inline links normalize native press retention bounds and honor nullable composed event callbacks', async () => {
+  const long = jest.fn();
+  await mount(
+    <UI.NativeLink
+      href="/bounds"
+      pressRetentionOffset={12}
+      onLongPress={long}
+      onPressIn={null}
+      onPressOut={null}
+    >
+      Bounds
+    </UI.NativeLink>,
+  );
+  expect(screen.getByRole('link').props.pressRetentionOffset).toEqual({
+    top: 12,
+    left: 12,
+    bottom: 12,
+    right: 12,
+  });
+  await fireEvent(screen.getByRole('link'), 'longPress', {});
+  expect(long).toHaveBeenCalledTimes(1);
+  await screen.rerender(
+    <UI.NativeLink href="/bounds" pressRetentionOffset={{ top: 3 }} onLongPress={null}>
+      Bounds
+    </UI.NativeLink>,
+  );
+  expect(screen.getByRole('link').props.pressRetentionOffset).toEqual({
+    top: 3,
+    left: 0,
+    bottom: 0,
+    right: 0,
+  });
+});

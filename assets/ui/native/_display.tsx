@@ -23,7 +23,9 @@ import {
   type TextProps,
 } from 'react-native';
 import { useTheme } from '../theme';
-import { useRegistryPalette, NativeButtonGroupContext } from './_registry-context';
+import { Badge, type BadgeProps } from './_badge';
+export { Badge } from './_badge';
+import { NativeButtonGroupContext } from './_registry-context';
 import { useNativeFontStyle } from './fonts';
 import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
 import { Button, LinkButton, type ButtonProps } from './button';
@@ -89,79 +91,6 @@ export function AspectRatio({ ratio = 1, style, ...props }: ViewProps & { ratio?
         style,
       ]}
     />
-  );
-}
-export function Badge({
-  variant = 'default',
-  children,
-  style,
-  onPress,
-  ...props
-}: ViewProps & {
-  onPress?: PressableProps['onPress'];
-  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
-}) {
-  const { colors, mode } = useTheme();
-  const legacy = useRegistryPalette() === 'legacy';
-  const filled =
-    ['default', 'secondary'].includes(variant) || (legacy && variant === 'destructive');
-  const backgroundColor =
-    variant === 'destructive'
-      ? colors.destructive
-      : variant === 'secondary'
-        ? colors.secondary
-        : colors.primary;
-  const Host = onPress ? Pressable : View;
-  return (
-    <Host
-      {...props}
-      onPress={onPress}
-      accessibilityRole={
-        onPress ? (variant === 'link' ? 'link' : 'button') : props.accessibilityRole
-      }
-      hitSlop={onPress ? 14 : undefined}
-      style={[
-        {
-          alignSelf: 'flex-start',
-          paddingHorizontal: 8,
-          paddingVertical: 2,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: filled
-            ? backgroundColor
-            : variant === 'outline'
-              ? colors.border
-              : 'transparent',
-          backgroundColor:
-            variant === 'destructive' && !legacy
-              ? withAlpha(colors.destructive ?? colors.foreground, mode === 'dark' ? 0.2 : 0.1)
-              : filled
-                ? backgroundColor
-                : 'transparent',
-        },
-        style,
-      ]}
-    >
-      <LabelText
-        style={{
-          color:
-            variant === 'destructive'
-              ? legacy
-                ? colors['destructive-foreground']
-                : colors.destructive
-              : variant === 'link'
-                ? colors.primary
-                : variant === 'secondary'
-                  ? colors['secondary-foreground']
-                  : filled
-                    ? colors['primary-foreground']
-                    : colors.foreground,
-          fontSize: 12,
-        }}
-      >
-        {children}
-      </LabelText>
-    </Host>
   );
 }
 const AvatarContext = createContext({
@@ -297,11 +226,11 @@ AvatarImage.nativeRegistryImage = true;
 export function AvatarFallback(props: TextProps) {
   return useContext(AvatarContext).loaded ? null : <LabelText {...props} />;
 }
-export const AvatarBadge = Badge;
+export const AvatarBadge = (props: BadgeProps) => <Badge {...props} nativePreset={false} />;
 export const AvatarGroup = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={row(style)} />
 );
-export const AvatarGroupCount = Badge;
+export const AvatarGroupCount = AvatarBadge;
 export function Separator({
   orientation = 'horizontal',
   decorative = true,

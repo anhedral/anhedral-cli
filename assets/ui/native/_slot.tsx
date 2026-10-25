@@ -96,7 +96,8 @@ export function NativeSlot({
       Object.assign(merged, {
         [key]: (event: unknown) => {
           if (typeof first === 'function') first(event as never);
-          if (!prevented(event) && typeof second === 'function') second(event as never);
+          if (!prevented(event) && typeof second === 'function' && second !== first)
+            second(event as never);
         },
       });
   }

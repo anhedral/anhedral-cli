@@ -62,22 +62,34 @@ export async function openNativeLink(
   await handlers.onNavigate(href, options);
 }
 
-type NativeLinkProps = Omit<TextProps, 'style' | 'children' | 'onPress'> &
+type NativeLinkProps = Omit<
+  TextProps,
+  | 'style'
+  | 'children'
+  | 'onPress'
+  | 'onPressIn'
+  | 'onPressOut'
+  | 'onLongPress'
+  | 'pressRetentionOffset'
+  | 'disabled'
+> &
   NativeTextPointerProps & {
     href: string;
     children?: ReactNode;
     inline?: boolean;
-    disabled?: boolean;
+    disabled?: boolean | null;
     replace?: boolean;
     scroll?: boolean;
     onNavigate?: NativeNavigationHandlers['onNavigate'];
     onError?: (error: unknown) => void;
     onPress?: PressableProps['onPress'];
+    onLongPress?: PressableProps['onLongPress'];
     onHoverIn?: PressableProps['onHoverIn'];
     onHoverOut?: PressableProps['onHoverOut'];
     onPressIn?: PressableProps['onPressIn'];
     onPressOut?: PressableProps['onPressOut'];
     hitSlop?: PressableProps['hitSlop'];
+    pressRetentionOffset?: PressableProps['pressRetentionOffset'];
     style?:
       | StyleProp<TextStyle | ViewStyle>
       | ((state: { pressed: boolean }) => StyleProp<TextStyle | ViewStyle>);
@@ -94,6 +106,8 @@ export function NativeLink({
   onNavigate,
   onError,
   onPress,
+  onLongPress,
+  pressRetentionOffset,
   style,
   ref,
   accessibilityState,
@@ -118,7 +132,7 @@ export function NativeLink({
       state.operation++;
     };
   }, [href]);
-  const blocked = disabled || accessibilityState?.disabled;
+  const blocked = !!(disabled || accessibilityState?.disabled);
   const activate: NonNullable<PressableProps['onPress']> = async (event) => {
     if (blocked) return;
     onPress?.(event);
@@ -148,6 +162,8 @@ export function NativeLink({
   const common = {
     ...props,
     accessibilityRole: 'link' as const,
+    disabled: blocked,
+    onLongPress: blocked ? undefined : (onLongPress ?? undefined),
     accessibilityState: { ...accessibilityState, disabled: !!blocked },
     onPress: activate,
     onPressIn: (event: Parameters<NonNullable<PressableProps['onPressIn']>>[0]) => {
@@ -173,6 +189,23 @@ export function NativeLink({
         props.onPointerLeave?.(event);
         onHoverOut?.(event as never);
       }}
+      pressRetentionOffset={
+        pressRetentionOffset == null
+          ? undefined
+          : typeof pressRetentionOffset === 'number'
+            ? {
+                top: pressRetentionOffset,
+                left: pressRetentionOffset,
+                bottom: pressRetentionOffset,
+                right: pressRetentionOffset,
+              }
+            : {
+                top: pressRetentionOffset.top ?? 0,
+                left: pressRetentionOffset.left ?? 0,
+                bottom: pressRetentionOffset.bottom ?? 0,
+                right: pressRetentionOffset.right ?? 0,
+              }
+      }
       suppressHighlighting={blocked || props.suppressHighlighting}
       style={typeof style === 'function' ? style({ pressed }) : style}
     >
@@ -183,6 +216,7 @@ export function NativeLink({
       {...common}
       ref={ref as Ref<View>}
       disabled={blocked}
+      pressRetentionOffset={pressRetentionOffset}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       style={(state) => (typeof style === 'function' ? style(state) : style)}

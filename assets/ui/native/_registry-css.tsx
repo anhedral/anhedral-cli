@@ -397,7 +397,8 @@ export function registryStyle(
       view.borderColor = options.color('border');
     } else if (token.startsWith('border-')) {
       const value = token.slice(7);
-      if (/^\[\d+(\.\d+)?px\]$/.test(value)) view.borderWidth = number(value);
+      if (/^\d+$/.test(value)) view.borderWidth = Number(value);
+      else if (/^\[\d+(\.\d+)?px\]$/.test(value)) view.borderWidth = number(value);
       else view.borderColor = options.color(value);
     } else if (token === 'shadow-none') {
       view.boxShadow = [];
@@ -545,6 +546,8 @@ export function registryStyle(
     else if (token.startsWith('-space-x-')) paint.childMarginStart = -number(token.slice(9));
     else if (token.startsWith('space-x-')) view.columnGap = number(token.slice(8));
     else if (token.startsWith('space-y-')) view.rowGap = number(token.slice(8));
+    else if (token === 'overflow-hidden' || token === 'overflow-visible')
+      view.overflow = token === 'overflow-hidden' ? 'hidden' : 'visible';
     else if (token === 'overflow-x-auto') paint.scrollHorizontal = 1;
     else if (token === 'resize-none') paint.nativeResize = 'none';
     else throw Error(`Unreviewed native registry utility: ${original}`);

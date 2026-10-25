@@ -6201,6 +6201,93 @@
         "radix-sera": "043b2426c2114eb747355da1c33c27af68826507feab49c46bdaaaa7928ef318",
         "radix-vega": "8362baa102d44aac5aec6568cf29ab5fe0cd832e059aff7d0260ee7ff28487fa"
       }
+    },
+    "registry:ui/badge": {
+      "status": "partial",
+      "reason": "All eleven Badge style families retain their pinned CVA recipes, modern and legacy variants, native focus/invalid/link-hover states, glyph placement, source typography and explicit consumer colors. All three authored modern examples render under every newer preset. Native pressable render composition is covered; general static render-host composition and expanded native device/API acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_badge-presets.tsx",
+        "assets/ui/native/_preset-badge-style.tsx",
+        "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-component-styles.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "7fbe10fda65982b8aa378ee1137d4ef1490cabf382fc349ccb697af27d5fbba3",
+        "aria-lyra": "826a053890cda7f98bfe220ec47cc628f5c159033bab825a0bad4ac67faf2634",
+        "aria-maia": "6a39f6d106024d90fc130b97d148a36b6f6cd7b8289982e040987ac9de0d9820",
+        "aria-mira": "626ff7517a53e0d075ea072b88a01e81c795522fad9f2019a266ef0077fb9cbc",
+        "aria-nova": "45d3c41757fabe65efd24fc23c2041684112540b00546b82be4412ba21b3e188",
+        "aria-rhea": "823e5440e45550f2b0f99eddce7ca20554a1b80464dc9b5e8b1ee2cd7c2a8991",
+        "aria-sera": "0f40fe1f04d6b0a50c82e5257b2c73c363661e2111f2b72087a4478f29f43772",
+        "aria-vega": "51875f320b8abf6077e757637c27807e89bb61513cc96c4d93036b47313a2061",
+        "base-luma": "39d2fa15bdb48607bbf14bd397585eec4854e7a54505abdcde5bc35af21effc7",
+        "base-lyra": "62e35e5b1c826b65aa77785a5a3c7d4bef061ae601c3e330a3c8f6b6d16e5179",
+        "base-maia": "33e50840f054270df743844b7cd6fddde235d088e2fb3b6ae3f9027c940ecde7",
+        "base-mira": "cdfea045c1bab7209530527b80217c574d15eb3795e115684cce81fdccb8ab7b",
+        "base-nova": "75419bafd846f50e408dfaa492a0f5cf6573c98d39e20167ab72e1f9deb9cc56",
+        "base-rhea": "d35c78be88f99d56adb664b5119b9a2b6d6080a2077719b6d426841ef88289a4",
+        "base-sera": "d6d0a0434529df628607384a276c10285e223af146862834d093026c183d2e45",
+        "base-vega": "a1c3b442808e8405db142389e1f8443aca76e6f709d7b002b35f480baec7143a",
+        "default": "3a22e1a695d661dad473813996280c8c276e98cb1f5b415498b20e335a42ab05",
+        "new-york": "a038b306fb750fe804d3f6beeb0acb7195c3ee92ecf7fe70cf5a30851c51007f",
+        "new-york-v4": "662df8c72daab0b0e8fd460d3c41625fe8dd070d7b4c33e72c96c92be7ec213c",
+        "radix-luma": "76638f4b577d33cadd48fbd362ac735eeb48121040c3afdd5ac8b92625b74260",
+        "radix-lyra": "80eb3c56e6828a45fd8be14e7e9f55377bf91114d437d05fa7e9af187eaac092",
+        "radix-maia": "2059f2ee5ce024bd41c754e33f648dceab9e492aa3dbe6452e57b7860e392764",
+        "radix-mira": "5834c40af7ab579dac29f97430449fc157b6fe3f1971e1ab620cdbde387bf822",
+        "radix-nova": "b046464344c20084b54448b45db3fcbe3835bccfb65de54c343ed38a10e17030",
+        "radix-rhea": "dcaf9bfea9de3172b780e5fa6bda00d6d2d07e36b808d2eb2c2182f3ca4cbe96",
+        "radix-sera": "a5601f69e4f07ead107993a13acbc7bf3b4e12cae47d05e6236a303514b1cdb6",
+        "radix-vega": "1f8fce3c9d76f2026511e915c4e8ea6dd37142bb3a7adae7ae0427f367c91245"
+      }
+    },
+    "registry:example/badge-example": {
+      "status": "partial",
+      "reason": "All eleven Badge style families retain their pinned CVA recipes, modern and legacy variants, native focus/invalid/link-hover states, glyph placement, source typography and explicit consumer colors. All three authored modern examples render under every newer preset. Native pressable render composition is covered; general static render-host composition and expanded native device/API acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_badge-presets.tsx",
+        "assets/ui/native/_preset-badge-style.tsx",
+        "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-component-styles.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "9a95163ec7e95f36710029974bf523d7742dff71d2655668d53e1f2207017dee",
+        "aria-lyra": "651045bff6bc664e9bb6d387f4f3e84bd03af32ebda93650ff8401b1baaaa802",
+        "aria-maia": "fa4e236683775b63cf49ffdb4f295330f8621304c70a9ed9424404b4977ec74c",
+        "aria-mira": "dda47a21591bef4876207e8ae0c4985dcaf89b11466ff8c52f68dbc2c3440bd7",
+        "aria-nova": "e33006afeb16334e384ebadc833a800636d927301a7a940790d7819b083ddadb",
+        "aria-rhea": "bb466224f783464fa92d93bc805b2dc51d9f04ac6d5a36ce788686dcc522e63c",
+        "aria-sera": "84bb17171a8a1e98a780f26dc80b37b49a7c756008f8b9aade68ce7492106e46",
+        "aria-vega": "e6ee300839f914c036edd72dab347b8cda3dded1fcc3a34906cb518197eeb936",
+        "base-luma": "6c0f0c790d5d0130f74882879b5e141fb868072bb2351f9290e0f6c63ec5f4cd",
+        "base-lyra": "1c90c9d8032f5f85ba2c168bbb302ced3d905ecb8b84093b1e5a7fa1a01c6e27",
+        "base-maia": "fff017711584f1f7e9257392651b64e445c5f57b05ed632b870eccdd37fceff6",
+        "base-mira": "b631a88e970e509e448fa0c75ea5cdba993b2a9ac0284e3cf4b52019da6ad51d",
+        "base-nova": "f5acee0d711eae20d0bec246268efccf30a36237af3dc3279ea45d6f6247e298",
+        "base-rhea": "48b4b814560305e447cb8e1eaff478ed24a4c80b2ad9c1f2af8d7bca22c91311",
+        "base-sera": "b2d7f3f94a58b2e2ee7c5203dfc838abe7f6abec9195deb49fb90fa95cd0e898",
+        "base-vega": "009b46ef41392dcb61c5cf6c1bdcf00dde2d3239b7ae5b7be461d19e354ab770",
+        "radix-luma": "adb256612792afe8e7608968b35d48287d65c933e46d344bf6b6ef9e86b4a61e",
+        "radix-lyra": "ff3b5949655895e646d465d1a00bbf3aab3192a350aaee2eb684becb418fc2b5",
+        "radix-maia": "4b5a9e31849ed33a7874d2e2e432645a4a72e8f24be8228db621226ba19e944f",
+        "radix-mira": "32fed10b45e949408f78e86993e6fcd2c5bfccaa1e29e469016b2ade86f0813e",
+        "radix-nova": "502cf4a17ae0c32f83cb8d6f94ee1202d27843df91ebd045ffe4677d05af5fde",
+        "radix-rhea": "0a50a8974b65049730d0e4685c2e379dfd0f2e80390f04b286087d69bc7561e0",
+        "radix-sera": "9008d48e8a3a319fe90cb69b175416ed7fbb4b0a8793e30bd66a1338a6314e39",
+        "radix-vega": "afb37f4a516e33c937f2acfe9c1b11b0c49e29a574d9950b087249221c998a15"
+      }
     }
   },
   "webSpecific": [

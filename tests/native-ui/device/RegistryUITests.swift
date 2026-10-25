@@ -63,8 +63,8 @@ final class RegistryUITests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()
     openStory("native/navigation-contract", in: app)
-    for (label, result) in [("Inline native route", "Visited route: /native"), ("Composed native route", "Visited route: /login"), ("Native section anchor", "Visited anchor: section")] {
-      let link = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch
+    for (label, result) in [("the native route", "Visited route: /native"), ("Composed native route", "Visited route: /login"), ("Jump to section", "Visited anchor: section")] {
+      let link = app.links[label]
       XCTAssertTrue(link.waitForExistence(timeout: 10))
       link.tap()
       XCTAssertTrue(app.staticTexts[result].waitForExistence(timeout: 3))

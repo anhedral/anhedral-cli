@@ -262,8 +262,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'breadcrumb-link',
     ])
       origins.push(`apps/v4/registry/new-york-v4/examples/${name}.tsx`);
-    for (const base of ['base', 'radix', 'aria'])
+    for (const base of ['base', 'radix', 'aria']) {
       origins.push(`apps/v4/registry/bases/${base}/examples/breadcrumb-example.tsx`);
+      origins.push(`apps/v4/registry/bases/${base}/examples/badge-example.tsx`);
+    }
     for (const base of ['base', 'radix', 'aria'])
       origins.push(`apps/v4/registry/bases/${base}/examples/aspect-ratio-example.tsx`);
     // Published legacy examples are separate authored inputs, even when their names
@@ -277,6 +279,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       )
         origins.push(origin);
     }
+    if (new Set(origins).size !== origins.length)
+      throw Error(
+        'Duplicate authored component example origin; review the maintained source list.',
+      );
     for (const origin of origins) {
       const name = path.basename(origin, '.tsx');
       const input = inventory.sources[origin];

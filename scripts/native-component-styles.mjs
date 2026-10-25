@@ -2,8 +2,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { format, resolveConfig } from 'prettier';
 import { loadOfficialRegistry, sha256, validateStyleGlobals } from './shadcn-registry.mjs';
-const target = fileURLToPath(new URL('../assets/ui/native/_button-presets.tsx', import.meta.url));
-export function nativeButtonPresets(inventory) {
+const target = (component) =>
+  fileURLToPath(new URL('../assets/ui/native/_' + component + '-presets.tsx', import.meta.url));
+const variants = ['default', 'outline', 'secondary', 'ghost', 'destructive', 'link'];
+const sizes = ['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg'];
+function nativeComponentPresets(inventory, component) {
   validateStyleGlobals(inventory);
   const global = inventory.styleGlobals['apps/v4/app/globals.css'];
   const radius = Object.fromEntries(
@@ -15,38 +18,46 @@ export function nativeButtonPresets(inventory) {
   );
   if (Object.keys(radius).length !== 7) throw Error('Upstream radius formulas need native review.');
   const presets = {};
+  const expected = [
+    'base',
+    ...variants.map((name) => 'variant-' + name),
+    ...(component === 'button' ? sizes.map((name) => 'size-' + name) : []),
+  ].sort();
   for (const style of ['vega', 'nova', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea']) {
     const sheet = inventory.styleSheets['style-' + style + '.css'];
     if (!sheet || sha256(sheet.content) !== sheet.sha256)
       throw Error('Upstream preset integrity failed: ' + style);
-    const selectors = [...sheet.content.matchAll(/\.cn-button[^\s{,]*(?=\s*\{)/g)]
+    const selectors = [
+      ...sheet.content.matchAll(new RegExp('\\.cn-' + component + '[^\\s{,]*(?=\\s*\\{)', 'g')),
+    ]
       .map((match) => match[0])
-      .filter((selector) => !/^\.cn-button-group(?:-|$)/.test(selector));
+      .filter((selector) => component !== 'button' || !/^\.cn-button-group(?:-|$)/.test(selector));
     if (
-      selectors.length !== 15 ||
-      selectors.some((selector) => !/^\.cn-button(?:-variant-[\w-]+|-size-[\w-]+)?$/.test(selector))
+      selectors.length !== expected.length ||
+      selectors.some(
+        (selector) =>
+          !new RegExp('^\\.cn-' + component + '(?:-variant-[\\w-]+|-size-[\\w-]+)?$').test(
+            selector,
+          ),
+      )
     )
-      throw Error('Upstream button selectors need native review: ' + style);
+      throw Error('Upstream ' + component + ' selectors need native review: ' + style);
     const entries = [
       ...sheet.content.matchAll(
-        /\.cn-button((?:-variant-[\w-]+|-size-[\w-]+)?)\s*\{\s*@apply\s+([^;]+);\s*\}/g,
+        new RegExp(
+          '\\.cn-' +
+            component +
+            '((?:-variant-[\\w-]+|-size-[\\w-]+)?)\\s*\\{\\s*@apply\\s+([^;]+);\\s*\\}',
+          'g',
+        ),
       ),
     ].map((match) => [match[1]?.slice(1) || 'base', match[2].trim().replace(/\s+/g, ' ')]);
     const rules = Object.fromEntries(entries);
-    const expected = [
-      'base',
-      ...['default', 'outline', 'secondary', 'ghost', 'destructive', 'link'].map(
-        (name) => 'variant-' + name,
-      ),
-      ...['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg'].map(
-        (name) => 'size-' + name,
-      ),
-    ].sort();
     if (
-      entries.length !== 15 ||
+      entries.length !== expected.length ||
       JSON.stringify(Object.keys(rules).sort()) !== JSON.stringify(expected)
     )
-      throw Error('Upstream button rules need native review: ' + style);
+      throw Error('Upstream ' + component + ' rules need native review: ' + style);
     presets[style] = { sha256: sheet.sha256, rules };
   }
   const classRecipes = {};
@@ -59,18 +70,39 @@ export function nativeButtonPresets(inventory) {
     'new-york-v4': 'new-york-v4',
   })) {
     const item = inventory.registries[registry]?.items.find(
-      (item) => item.type === 'registry:ui' && item.name === 'button',
+      (item) => item.type === 'registry:ui' && item.name === component,
     );
     const origin = item?.files?.[0]?.source,
       input = inventory.sources[origin],
-      recipe = input?.classRecipes?.buttonVariants;
+      recipe = input?.classRecipes?.[component + 'Variants'];
+    const slotNames = component === 'button' ? 'size,variant' : 'variant';
     if (
       !recipe ||
       recipe.unsupported?.length ||
       typeof recipe.base !== 'string' ||
-      Object.keys(recipe.variants).sort().join(',') !== 'size,variant'
+      Object.keys(recipe.variants).sort().join(',') !== slotNames
     )
-      throw Error('Upstream button class recipe needs native review: ' + name);
+      throw Error('Upstream ' + component + ' class recipe needs native review: ' + name);
+    const frozenLegacy = name === 'default' || name === 'new-york';
+    for (const [slot, options] of Object.entries(recipe.variants)) {
+      const wanted =
+        slot === 'size'
+          ? frozenLegacy
+            ? ['default', 'sm', 'lg', 'icon']
+            : sizes
+          : component === 'badge' && frozenLegacy
+            ? ['default', 'secondary', 'destructive', 'outline']
+            : variants;
+      if (JSON.stringify(Object.keys(options).sort()) !== JSON.stringify([...wanted].sort()))
+        throw Error(
+          'Upstream ' +
+            component +
+            ' class recipe slot values need native review: ' +
+            name +
+            '/' +
+            slot,
+        );
+    }
     classRecipes[name] = { origin, sha256: input.sha256, recipe };
   }
   if (
@@ -79,7 +111,11 @@ export function nativeButtonPresets(inventory) {
         JSON.stringify(classRecipes[base].recipe) !== JSON.stringify(classRecipes.base.recipe),
     )
   )
-    throw Error('Button class recipes diverged across component bases; native review is required.');
+    throw Error(
+      component[0].toUpperCase() +
+        component.slice(1) +
+        ' class recipes diverged across component bases; native review is required.',
+    );
   return {
     upstream: inventory.source,
     globals: { sha256: global.sha256, radius },
@@ -87,20 +123,43 @@ export function nativeButtonPresets(inventory) {
     classRecipes,
   };
 }
-export async function nativeButtonPresetSource(inventory) {
+export const nativeButtonPresets = (inventory) => nativeComponentPresets(inventory, 'button');
+export const nativeBadgePresets = (inventory) => nativeComponentPresets(inventory, 'badge');
+async function source(inventory, component) {
   return format(
-    '// Adapted from shadcn/ui (MIT). Source CSS and global formulas remain pinned in the official inventory.\nexport const nativeButtonPresetSource = ' +
-      JSON.stringify(nativeButtonPresets(inventory)) +
+    '// Adapted from shadcn/ui (MIT). Source CSS and global formulas remain pinned in the official inventory.\nexport const native' +
+      component[0].toUpperCase() +
+      component.slice(1) +
+      'PresetSource = ' +
+      JSON.stringify(nativeComponentPresets(inventory, component)) +
       ' as const;\n',
-    { ...(await resolveConfig(target)), filepath: target },
+    { ...(await resolveConfig(target(component))), filepath: target(component) },
   );
 }
+export const nativeButtonPresetSource = (inventory) => source(inventory, 'button');
+export const nativeBadgePresetSource = (inventory) => source(inventory, 'badge');
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const inventory = loadOfficialRegistry();
-  const source = await nativeButtonPresetSource(inventory);
+  const outputs = await Promise.all(
+    ['button', 'badge'].map(async (component) => ({
+      component,
+      data: nativeComponentPresets(inventory, component),
+      source: await source(inventory, component),
+    })),
+  );
   if (process.argv.includes('--report'))
-    console.log(JSON.stringify(nativeButtonPresets(inventory), null, 2));
-  if (process.argv.includes('--write')) writeFileSync(target, source);
-  else if (readFileSync(target, 'utf8') !== source)
-    throw Error('Native button preset evidence is stale; review upstream styles.');
+    console.log(
+      JSON.stringify(
+        Object.fromEntries(outputs.map(({ component, data }) => [component, data])),
+        null,
+        2,
+      ),
+    );
+  for (const output of outputs) {
+    if (process.argv.includes('--write')) writeFileSync(target(output.component), output.source);
+    else if (readFileSync(target(output.component), 'utf8') !== output.source)
+      throw Error(
+        'Native ' + output.component + ' preset evidence is stale; review upstream styles.',
+      );
+  }
 }

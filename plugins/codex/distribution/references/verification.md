@@ -1,3 +1,46 @@
+# Native Badge source styles and shared CVA evaluation — October 24, 2026
+
+Badge now retains all eleven source families: the eight newer component presets
+and the pinned Default, New York and New York v4 CVA definitions. All 56 newer
+Badge rules are checked alongside Button's 120 rules. The shared native evaluator
+preserves source state precedence, radii, shadows, finite compound conditions and
+explicit failures for unknown slots/bindings. Avatar badges retain their own baseline.
+
+- Added the three actual Base/Radix/Aria Badge example modules. The overlay now
+  contains 434 distinct component example modules and 699 registry modules overall.
+  A duplicate source-list entry was caught by provenance validation and removed;
+  the generator now rejects duplicates before writing the catalog.
+- Fifty-two Badge contracts cover every authored variant/mode/state family, glyphs,
+  native font scaling, link-only hover, invalid/focus paint, explicit colors/styles,
+  callback ownership and rendered child ownership. All three modern source examples
+  render under each of the eight newer presets. Static render-host composition
+  remains an explicit partial-coverage gap rather than inheriting completion.
+- Full native suites passed all 1,276 tests on each platform (41 suites), strict
+  generated types passed, and iOS/Android Hermes bundles contain all 699 modules.
+  Root tests passed 615 with one existing optional skip; 18 focused source/style/
+  overlay/harness contracts passed. Full native thresholds remain unchanged.
+- The first full native run caught an existing link-role contract for action Badges.
+  That behavior is restored. Earlier focused failures exposed missing overflow and
+  zero-border utilities, plus nullable native press props and press-retention bounds
+  crossing a composed link. Explicit native handling now passes generated types;
+  authored text colors and consumer text styles override the source default paint.
+- Real iOS 26.5 XCTest passed all five cases in 104.6 seconds, including actual inline
+  and composed link destinations and a named anchor, alongside pagination, label
+  focus and eight Button geometries/actions. Evidence:
+  .artifacts/native-ui-ios/2026-10-25T04-42-04-622Z/results.xcresult.
+  The two earlier failed navigation runs retain their result bundles and exported
+  accessibility trees. They showed that iOS Text links expose their visible fragment
+  as the Link name; custom labels name the paragraph container. Pressable link names
+  retain the custom label. Tests now address the actual native Link elements and
+  assert destination state after tapping, rather than substituting coordinates.
+- React review checked hook ownership, async cleanup, native accessibility boundaries
+  and component separation. Tests, native source hashes and initial failed logs are
+  retained under .artifacts/native-ui/2026-10-25-badge-styles/. The post-XCTest simulator
+  screenshot shows the home screen and does not establish app visual acceptance.
+  Full Badge device/keyboard/screen-reader/visual acceptance and the remaining registry
+  work are still open; strict whole-registry completion continues to reject 552 items.
+  No publication or deployment occurred.
+
 # Native registry navigation and authored link recipes — October 24, 2026
 
 Added native inline Text links, composed pressable links, explicit route/anchor
@@ -14,7 +57,7 @@ and retryable. The existing LinkButton navigation callback still receives one ar
 - Full native suites passed 1,220 tests per platform in 40 suites. Generated strict
   types and production iOS/Android Hermes bundles passed after the narrow Text pointer
   event type correction described below. Root tests passed 614 with one existing
-  optional skip. Sixteen focused source/generator/style/OS-harness checks also passed.
+  optional skip. Twenty focused source/generator/style/OS-harness checks also passed.
   Lint, static security, installed packed CLI smoke and packlist passed: 249 files,
   984,025 compressed bytes. Packaging limits are unchanged.
 - Ten navigation contracts cover route/anchor options, OS schemes, cancellation,

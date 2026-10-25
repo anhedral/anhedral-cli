@@ -374,6 +374,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         kind === 'text' || kind === 'link'
           ? [translated.view, translated.text, nativeInline]
           : [translated.view, nativeInline];
+      if ('nativeBadgeSlot' in Component && Component.nativeBadgeSlot === true) {
+        forwarded.textStyle = [translated.text, props.textStyle];
+        forwarded.textColor =
+          props.textColor ??
+          (StyleSheet.flatten(props.textStyle)?.color === undefined
+            ? (interacting && translated.paint.hoverForeground) || translated.text.color
+            : undefined);
+      }
       if (kind === 'button') {
         forwarded.textStyle = translated.text;
         if (translated.text.color) forwarded.textColor = translated.text.color;

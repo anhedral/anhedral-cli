@@ -45,11 +45,20 @@ pinned upstream radius formulas and OKLCH secondary hover mix. Explicit native s
 and icon sizes take precedence. Text-bearing buttons grow for native font scaling and
 explicit text metrics; icon-only slots keep their square geometry. Compound controls
 own their own preset slots and do not inherit Button typography or dimensions.
+Badge also retains all eight newer presets and the three frozen CVA definitions,
+including Sera's text-only treatment, legacy filled destructive paint, all six modern
+variants, focus/invalid state, link-only hover, glyph placement and source typography.
+Default and New York retain their four authored variants. Badge supports native
+asChild/render elements and typed native render callbacks. Authored text colors and
+explicit consumer text styles win over source defaults. Avatar badges retain their
+separate baseline until their own preset slots are reviewed. Interactive badges keep
+expanded native touch bounds without changing authored visual geometry.
+
 Small visual buttons retain expanded touch targets
 through hitSlop; parent layout must allow those touch bounds.
 
-Run \`pnpm native-ui:presets\` to check all 120 Button CSS rules, six component
-class definitions and their global inputs. The frozen source generations can also
+Run \`pnpm native-ui:presets\` to check all 120 Button and 56 Badge CSS rules,
+their component class definitions and global inputs. The frozen source generations can also
 be selected with \`style="default"\`, \`style="new-york"\` or \`style="new-york-v4"\`.
 Default and New York retain their four authored sizes; the other families support
 eight. Authored recipes carry their original generation automatically, including
@@ -61,7 +70,7 @@ paint/animation parity. Native device/keyboard/visual acceptance remains separat
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 431 reviewed source modules,
+The authored component example overlay currently includes 434 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 \`node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`
 and \`node scripts/native-icons.mjs --check\`. Their coverage remains partial while
@@ -80,8 +89,10 @@ visible retryable errors. LinkButton retains its existing one-argument onNavigat
 Button composition preserves source styling, focus refs and child-first callbacks.
 Next prefetch/SSR, DOM history and browser targets have no claimed native equivalence;
 unreviewed browser props fail generated type checks. Product routes and named anchor
-destinations still belong to the consuming application. Native keyboard/screen-reader
-and device navigation acceptance remains separate.
+destinations still belong to the consuming application. On iOS, Text links are exposed as accessible fragments using their visible text;
+a custom accessibilityLabel names the containing paragraph rather than that fragment.
+Composed Pressable links keep their custom accessible names. Native
+keyboard/screen-reader and device navigation acceptance remains separate.
 
 Authored image recipes use native image caching and SVG grayscale/brightness filters.
 They retain source HTTPS URLs, alt text, crop, dimensions and aspect ratios, with visible

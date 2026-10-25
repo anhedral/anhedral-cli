@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { loadOfficialRegistry, sha256 } from '../scripts/shadcn-registry.mjs';
 import {
+  nativeBadgePresets,
+  nativeBadgePresetSource,
   nativeButtonPresets,
   nativeButtonPresetSource,
 } from '../scripts/native-component-styles.mjs';
@@ -81,4 +83,37 @@ test('native Button definitions retain all three component bases and all three f
     { field: 'base', expression: 'dynamic()' },
   ];
   assert.throws(() => nativeButtonPresets(unsupported), /class recipe needs native review/);
+});
+
+test('eight Badge presets retain every source rule and all six component definitions', async () => {
+  const data = nativeBadgePresets(inventory);
+  assert.equal(Object.keys(data.presets).length, 8);
+  assert.equal(
+    Object.values(data.presets).reduce((count, item) => count + Object.keys(item.rules).length, 0),
+    56,
+  );
+  assert.deepEqual(Object.keys(data.classRecipes), [
+    'base',
+    'radix',
+    'aria',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ]);
+  assert.equal(
+    readFileSync('assets/ui/native/_badge-presets.tsx', 'utf8'),
+    await nativeBadgePresetSource(inventory),
+  );
+  const changed = structuredClone(inventory);
+  changed.styleSheets['style-sera.css'].content += '\n.cn-badge-new { @apply h-10; }';
+  changed.styleSheets['style-sera.css'].sha256 = sha256(
+    changed.styleSheets['style-sera.css'].content,
+  );
+  assert.throws(() => nativeBadgePresets(changed), /badge selectors/);
+  const recipe = structuredClone(inventory);
+  const file = recipe.registries['base-nova'].items.find(
+    (item) => item.type === 'registry:ui' && item.name === 'badge',
+  ).files[0].source;
+  recipe.sources[file].classRecipes.badgeVariants.variants.variant.future = 'bg-primary';
+  assert.throws(() => nativeBadgePresets(recipe), /badge class recipe slot values/);
 });

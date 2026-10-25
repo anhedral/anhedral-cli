@@ -1227,7 +1227,11 @@
     "registry-image.tsx",
     "_button-presets.tsx",
     "_preset-button-style.tsx",
-    "navigation.tsx"
+    "navigation.tsx",
+    "_preset-style.tsx",
+    "_preset-badge-style.tsx",
+    "_badge-presets.tsx",
+    "_badge.tsx"
   ],
   "supportModules": [
     {
