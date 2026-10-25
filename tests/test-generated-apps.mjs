@@ -5,9 +5,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { STACK_PROFILES } from './support/stack-profiles.mjs';
 import { execFile } from '../dist/util.js';
-import { inspectProject } from '../dist/readiness.js';
 import { verifyTypecheckCache } from './support/typecheck-cache.mjs';
-import { verifyUniversalDevelopment } from './support/universal-dev-smoke.mjs';
+import { verifyFoundationDevelopment } from './support/foundation-dev-smoke.mjs';
 const selected = process.argv[2] ? [process.argv[2]] : Object.keys(STACK_PROFILES);
 const cli = path.resolve(import.meta.dirname, '../dist/bin.js');
 process.env.WRANGLER_SEND_METRICS = 'false';
@@ -23,7 +22,6 @@ for (const profile of selected) {
       [cli, 'init', root, ...STACK_PROFILES[profile], '--no-git'],
       temporary,
     );
-    assert.equal(inspectProject(root).localReady, true);
     execFile('pnpm', ['db:generate'], root);
     execFile('pnpm', ['check'], root);
     verifyTypecheckCache(root);
@@ -44,23 +42,7 @@ for (const profile of selected) {
       [path.resolve(import.meta.dirname, 'test-generated-expo-schema.mjs'), root],
       temporary,
     );
-    await verifyUniversalDevelopment(root);
-    execFile(
-      process.execPath,
-      [path.resolve(import.meta.dirname, 'test-generated-auth.mjs'), root],
-      temporary,
-    );
-    execFile(
-      process.execPath,
-      [path.resolve(import.meta.dirname, 'test-generated-managed-email.mjs'), root],
-      temporary,
-    );
-    if (profile === 'billing')
-      execFile(
-        process.execPath,
-        [path.resolve(import.meta.dirname, 'test-generated-billing.mjs'), root],
-        temporary,
-      );
+    await verifyFoundationDevelopment(root);
     console.log(
       'PASS generated ' +
         profile +

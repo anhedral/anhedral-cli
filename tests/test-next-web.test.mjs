@@ -151,7 +151,7 @@ test('default workspace separates full Next web, native owned UI and privileged 
   const read = (file) => readFileSync(path.join(root, file), 'utf8');
   try {
     await scaffoldStandardProject(
-      parseStandardOptions([root, '--stripe', '--revenuecat', '--skip-install', '--no-git']),
+      parseStandardOptions([root, '--skip-install', '--no-git']),
       () => {
         throw Error('offline generation');
       },
@@ -182,11 +182,11 @@ test('default workspace separates full Next web, native owned UI and privileged 
     assert.match(web.scripts.build, /opennextjs-cloudflare build/);
     assert.doesNotMatch(read('apps/web/next.config.ts'), /output:.*export/);
     assert.match(read('apps/web/app/page.tsx'), /await headers\(\)/);
-    assert.match(read('apps/web/app/account/page.tsx'), /sessionSchema.parse/);
+    assert.equal(existsSync(path.join(root, 'apps/web/app/account/page.tsx')), false);
     assert.match(read('apps/web/components/ui/button.tsx'), /@base-ui\/react\/button/);
     assert.match(read('apps/web/components/ui/input.tsx'), /@base-ui\/react\/input/);
     assert.doesNotMatch(read('apps/web/components/ui/input.tsx'), /focus-visible:(?:ring|border)/);
-    assert.match(read('apps/web/app/sign-in/page.tsx'), /<Label>Email<Input/);
+    assert.equal(existsSync(path.join(root, 'apps/web/app/sign-in/page.tsx')), false);
     assert.match(read('apps/web/UPSTREAM.json'), /shadcn/);
     assert.match(read('packages/native-ui/src/native/button.tsx'), /Pressable/);
     // Native dialog behavior is exercised by the real generated-source native suite.

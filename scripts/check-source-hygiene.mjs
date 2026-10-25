@@ -7,7 +7,6 @@ const directories = [
   '.github',
   'assets/patches',
   'docs',
-  'plugins/codex/inspector',
   'plugins/codex/distribution',
   'scripts',
   'src',

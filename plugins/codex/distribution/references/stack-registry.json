@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "name": "anhedral",
-  "cliVersion": "0.15.0",
+  "cliVersion": "0.16.0",
   "items": [
     {
       "name": "workspace",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [],
       "environment": [],
@@ -20,7 +20,7 @@
     },
     {
       "name": "typescript",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -35,7 +35,7 @@
     },
     {
       "name": "eslint",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -50,7 +50,7 @@
     },
     {
       "name": "next",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -83,13 +83,13 @@
           "Next.js Worker, assets and scoped ANHEDRAL_API binding"
         ],
         "verify": [
-          "Request-rendered HTML, RSC, cookies and authenticated API routes"
+          "Request-rendered HTML, RSC, API transport"
         ]
       }
     },
     {
       "name": "expo",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -128,7 +128,7 @@
     },
     {
       "name": "hono",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -155,13 +155,13 @@
           "API Worker; application routes and authorization"
         ],
         "verify": [
-          "Contract validation, unauthenticated rejection and resource ownership"
+          "Health contract and application-owned authorization"
         ]
       }
     },
     {
       "name": "d1",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -196,75 +196,21 @@
       "runtime": "worker"
     },
     {
-      "name": "better-auth",
-      "version": "0.15.0",
-      "selection": {
-        "requiresAll": [
-          "d1",
-          "hono",
-          "expo"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "d1",
-        "expo",
-        "next"
-      ],
-      "environment": [
-        "BETTER_AUTH_SECRET",
-        "BETTER_AUTH_URL"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Database-backed identity schema and runtime routes",
-      "targets": [
-        "packages/auth",
-        "packages/managed-email",
-        "packages/db",
-        "apps/api",
-        "apps/mobile",
-        "apps/web"
-      ],
-      "setup": {
-        "purpose": "Application-managed identity",
-        "tools": [
-          "Selected database tooling"
-        ],
-        "access": [
-          "Selected database migration/runtime access"
-        ],
-        "credentials": [
-          "BETTER_AUTH_SECRET; BETTER_AUTH_URL"
-        ],
-        "resources": [
-          "D1 database, auth schema, trusted origins and application routes"
-        ],
-        "verify": [
-          "Sign-in/out, session expiry, sign-up policy and resource authorization"
-        ]
-      },
-      "runtime": "server"
-    },
-    {
       "name": "r2",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
         "typescript",
         "eslint",
-        "better-auth",
         "hono"
       ],
       "environment": [],
       "installer": "recipe",
       "type": "integration",
-      "description": "Private authenticated file upload, download and deletion",
+      "description": "Server-only private R2 storage foundation",
       "targets": [
-        "apps/api/src/private-files.ts"
+        "apps/api/src/private-storage.ts"
       ],
       "setup": {
         "purpose": "Private remote files",
@@ -276,139 +222,17 @@
         ],
         "credentials": [],
         "resources": [
-          "Private R2 bucket and FILES binding; authorized upload/download endpoints"
+          "Private R2 bucket and FILES binding; no public object routes"
         ],
         "verify": [
-          "Public bucket access disabled; file ownership enforced; clients receive no storage credentials"
+          "Keep public access disabled; implement application authorization before adding object routes"
         ]
       },
       "runtime": "worker"
     },
     {
-      "name": "stripe",
-      "version": "0.15.0",
-      "selection": {
-        "requiresAll": [
-          "hono",
-          "better-auth",
-          "d1"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "hono",
-        "d1",
-        "better-auth",
-        "expo",
-        "next"
-      ],
-      "environment": [
-        "BILLING_ORIGIN",
-        "BILLING_ENVIRONMENT",
-        "BILLING_PLANS_JSON",
-        "BILLING_ENTITLEMENTS_JSON",
-        "BILLING_PREMIUM_ENTITLEMENT",
-        "STRIPE_SECRET_KEY",
-        "STRIPE_WEBHOOK_SECRET"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Authenticated Stripe checkout, portal and server entitlement projection",
-      "targets": [
-        "packages/billing",
-        "packages/contracts",
-        "apps/api",
-        "apps/mobile",
-        "apps/web"
-      ],
-      "setup": {
-        "purpose": "Web payments and subscriptions",
-        "tools": [
-          "Stripe integration or CLI"
-        ],
-        "access": [
-          "Client-owned Stripe account; test/live access as required"
-        ],
-        "credentials": [
-          "STRIPE_SECRET_KEY; STRIPE_WEBHOOK_SECRET"
-        ],
-        "resources": [
-          "Products/prices, signed webhooks and entitlement implementation"
-        ],
-        "verify": [
-          "Test purchase/cancellation, webhook replay and transactional idempotency"
-        ]
-      }
-    },
-    {
-      "name": "revenuecat",
-      "version": "0.15.0",
-      "selection": {
-        "requiresAll": [
-          "hono",
-          "better-auth",
-          "d1"
-        ]
-      },
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "hono",
-        "d1",
-        "better-auth",
-        "expo",
-        "next"
-      ],
-      "environment": [
-        "BILLING_ORIGIN",
-        "BILLING_ENVIRONMENT",
-        "BILLING_PLANS_JSON",
-        "BILLING_ENTITLEMENTS_JSON",
-        "BILLING_PREMIUM_ENTITLEMENT",
-        "REVENUECAT_SECRET_KEY",
-        "REVENUECAT_WEBHOOK_AUTHORIZATION",
-        "REVENUECAT_WEBHOOK_SIGNING_SECRET",
-        "REVENUECAT_APP_IDS_JSON",
-        "REVENUECAT_PROJECT_ID",
-        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY",
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY"
-      ],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Native purchases, restore and server-enforced cross-store entitlements",
-      "targets": [
-        "packages/billing",
-        "packages/contracts",
-        "apps/api",
-        "apps/mobile",
-        "apps/web"
-      ],
-      "setup": {
-        "purpose": "Cross-store subscription entitlements; Stripe is optional",
-        "tools": [
-          "RevenueCat integration or API",
-          "Selected mobile store tooling"
-        ],
-        "access": [
-          "RevenueCat project; App Store/Play Store product access"
-        ],
-        "credentials": [
-          "Platform public SDK keys; server API/webhook credentials as required"
-        ],
-        "resources": [
-          "Native purchase SDK and authenticated entitlement APIs; configure offerings/store products before acceptance"
-        ],
-        "verify": [
-          "Sandbox purchase/restore, verified webhooks and entitlement reconciliation"
-        ]
-      }
-    },
-    {
       "name": "styling",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "selection": {},
       "registryDependencies": [
         "workspace",

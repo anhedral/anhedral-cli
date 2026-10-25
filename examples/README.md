@@ -1,10 +1,3 @@
-# Application examples
+# Foundation example
 
-Generate an exact current core reference instead of maintaining divergent source snapshots:
-
-```sh
-node dist/bin.js init /tmp/anhedral-core-reference --skip-install --no-git
-node dist/bin.js init /tmp/anhedral-billing-reference --stripe --revenuecat --skip-install --no-git
-```
-
-These commands write source without provider activation, migration or deployment. Use a new destination. Tests generate isolated references from the maintained emitter; old alternative-stack examples remain in Git history.
+Run `anhedral init my-app`, then `cd my-app && pnpm dev`. The generated source is the example: Next.js web, Expo native, shadcn, Hono/workerd, Drizzle/D1 and private R2 with shared contracts/tokens. Consumers add application features and choose their own identity, integrations and hosting. See the generated README and AGENTS instructions.

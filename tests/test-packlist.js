@@ -5,7 +5,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
 import { parseNpmPackJson } from './support/npm-pack.js';
-import { renderStack, stackSize } from '../docs/assets/render-stack.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -39,17 +38,12 @@ const requiredFiles = new Set([
   'dist/index.js',
   'package.json',
   'docs/anhedral-stack.md',
-  'docs/assets/anhedral-stack.png',
-  'docs/assets/anhedral-stack-light.png',
   'docs/stack-standard.md',
   'docs/software-factory.md',
   'docs/verification.md',
 ]);
 const allowedRootFiles = new Set(['LICENSE', 'README.md', 'package.json']);
-const allowedArtwork = new Set([
-  'docs/assets/anhedral-stack.png',
-  'docs/assets/anhedral-stack-light.png',
-]);
+const allowedArtwork = new Set([]);
 
 function assertPackedMarkdownLinks(sourcePath, markdown, packedFiles) {
   const references = [
@@ -136,11 +130,8 @@ try {
   }
 
   const readme = readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
-  assert.match(readme, /open source under the \[Apache License 2\.0\]\(LICENSE\)/i);
-  assert.match(
-    readme,
-    /Generated applications[\s\S]+developers can customize and license for their products/i,
-  );
+  assert.match(readme, /Apache-2\.0/);
+  assert.match(readme, /Generated applications are editable source/);
   assert.doesNotMatch(readme, /does not grant permission to install|separate written agreement/i);
   assertPackedMarkdownLinks('README.md', readme, files);
   assertPackedMarkdownLinks(
@@ -148,18 +139,6 @@ try {
     readFileSync(path.join(repoRoot, 'docs/anhedral-stack.md'), 'utf8'),
     files,
   );
-  for (const light of [false, true]) {
-    const name = `anhedral-stack${light ? '-light' : ''}`;
-    assert.equal(
-      readFileSync(path.join(repoRoot, `docs/assets/${name}.svg`), 'utf8'),
-      renderStack(light),
-      'committed artwork must match the canonical renderer',
-    );
-    const png = readFileSync(path.join(repoRoot, `docs/assets/${name}.png`));
-    assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
-    assert.equal(png.readUInt32BE(16), stackSize.width);
-    assert.equal(png.readUInt32BE(20), stackSize.height);
-  }
   assertPackedMarkdownLinks(
     'docs/stack-standard.md',
     readFileSync(path.join(repoRoot, 'docs/stack-standard.md'), 'utf8'),
@@ -174,13 +153,14 @@ try {
   for (const file of packed.files) {
     const allowedNativeUI =
       nativeFiles.includes(file.path) ||
-      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json)$/.test(
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM(?:-LOCK)?\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
       file.path === 'docs/anhedral-stack.md' ||
       file.path === 'docs/native-ui.md' ||
+      file.path === 'docs/native-registry.md' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
       file.path === 'docs/verification.md';

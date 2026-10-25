@@ -67,28 +67,11 @@ function zip(files) {
 function fixture() {
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-source-publisher-')));
   const version = '1.2.3';
-  const runtime = {
-    'server.mjs': Buffer.from('export const server = true;\n'),
-    'dashboard.html': Buffer.from('<main>Projects</main>'),
-    'THIRD_PARTY_NOTICES.txt': Buffer.from('Licensed dependencies\n'),
-  };
   const files = Object.entries({
     'plugin.json': JSON.stringify({ name: 'anhedral', version }),
-    'mcp.json': '{}',
-    'references/capabilities.json': JSON.stringify({ cliVersion: version }),
-    'references/stack-registry.json': JSON.stringify({
-      cliVersion: version,
-      items: [{ version }],
-    }),
-    'runtime/build.json': JSON.stringify({
-      version,
-      files: Object.fromEntries(
-        Object.entries(runtime).map(([name, bytes]) => [name, hash(bytes)]),
-      ),
-    }),
-    ...Object.fromEntries(
-      Object.entries(runtime).map(([name, bytes]) => [`runtime/${name}`, bytes]),
-    ),
+    'references/stack-registry.json': JSON.stringify({ cliVersion: version, items: [{ version }] }),
+    'skills/anhedral-init/SKILL.md': 'Initialize the foundation.',
+    'skills/anhedral-design/SKILL.md': 'Use shared tokens.',
     LICENSE: 'Apache-2.0',
   }).map(([name, contents]) => ({ name, contents: Buffer.from(contents) }));
   const metadataPath = path.join(root, 'metadata.json');
@@ -307,13 +290,10 @@ for (const drift of ['version', 'integrity', 'runtime'])
     const f = fixture();
     try {
       if (drift === 'runtime')
-        f.save(
-          f.files.map((file) =>
-            file.name === 'runtime/server.mjs'
-              ? { ...file, contents: Buffer.from('changed runtime') }
-              : file,
-          ),
-        );
+        f.save([
+          ...f.files,
+          { name: 'runtime/server.mjs', contents: Buffer.from('unexpected runtime') },
+        ]);
       else {
         const metadata = JSON.parse(readFileSync(f.metadataPath));
         if (drift === 'version') metadata.plugin.version = '9.9.9';
@@ -326,7 +306,7 @@ for (const drift of ['version', 'integrity', 'runtime'])
           calls++;
           throw new Error('unexpected');
         }),
-        /identity|integrity/,
+        /identity|integrity|runtime/,
       );
       assert.equal(calls, 0);
     } finally {

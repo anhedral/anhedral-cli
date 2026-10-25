@@ -606,27 +606,14 @@ test('secret scanning distinguishes dynamic URI builders from literal credential
   );
 });
 
-test('Node type update policies follow each package runtime without cross-package restrictions', () => {
+test('Node type update policy follows the maintained CLI runtime', () => {
   const renovate = JSON.parse(readFileSync(path.join(repoRoot, 'renovate.json'), 'utf8'));
   const rules = renovate.packageRules.filter((rule) =>
     rule.matchPackageNames?.includes('@types/node'),
   );
-  assert.equal(rules.length, 2);
-  const rootRule = rules.find((rule) => rule.matchFileNames?.includes('package.json'));
-  const inspectorRule = rules.find((rule) =>
-    rule.matchFileNames?.includes('plugins/codex/inspector/package.json'),
-  );
-  assert.deepEqual(rootRule.matchFileNames, ['package.json']);
-  assert.equal(rootRule.allowedVersions, '<21');
-  assert.deepEqual(inspectorRule.matchFileNames, ['plugins/codex/inspector/package.json']);
-  assert.equal(inspectorRule.allowedVersions, '>=24 <25');
-  for (const [file, major] of [
-    ['package.json', 20],
-    ['plugins/codex/inspector/package.json', 24],
-  ]) {
-    const manifest = JSON.parse(readFileSync(path.join(repoRoot, file), 'utf8'));
-    assert.equal(Number(manifest.devDependencies['@types/node'].split('.')[0]), major);
-  }
+  assert.equal(rules.length, 1);
+  assert.deepEqual(rules[0].matchFileNames, ['package.json']);
+  assert.equal(rules[0].allowedVersions, '<21');
 });
 
 test('empty adjacent example assignments do not exempt populated or multiline secrets', () => {

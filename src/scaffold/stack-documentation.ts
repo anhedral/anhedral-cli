@@ -8,7 +8,7 @@ export function writeStackDocumentation(root: string, registry: ResolvedStackReg
   put(
     root,
     'docs/stack.md',
-    '# Application stack\n\nEvery application uses Next.js App Router/OpenNext for web, Expo for iOS/Android, Hono, Drizzle/D1 and private R2. Better Auth and shared styling are included supporting foundations. Stripe and RevenueCat are optional additions.\n\nInit generates source and configuration only. Cloud provisioning, secrets, database migrations and deployment are explicit operations.\n\n' +
+    '# Application stack\n\nEvery application uses Next.js App Router/OpenNext for web, Expo for iOS/Android, Hono, Drizzle/D1 and private R2. Shared contracts, styling and native shadcn UI are included. Consumers implement application features, identity and integrations.\n\nInit generates source and configuration only. Consumers own cloud provisioning, secrets, migrations and deployment.\n\n' +
       sections.join('\n'),
   );
 }

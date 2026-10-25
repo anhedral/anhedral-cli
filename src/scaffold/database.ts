@@ -55,5 +55,13 @@ process.exitCode = result.status ?? 1;
   });
   patchPackage(root, 'apps/api/package.json', { dependencies: { '@workspace/db': 'workspace:*' } });
   const source = readFileSync(path.join(root, 'apps/api/src/index.ts'), 'utf8');
-  put(root, 'apps/api/src/index.ts', "import { createDatabase } from '@workspace/db';\n" + source);
+  put(
+    root,
+    'apps/api/src/index.ts',
+    "import { createDatabase } from '@workspace/db';\n" +
+      source.replace(
+        'const app = new OpenAPIHono<{ Bindings: Env }>();',
+        "const app = new OpenAPIHono<{ Bindings: Env; Variables: { database: () => ReturnType<typeof createDatabase> } }>();\napp.use('*', async (c, next) => { c.set('database', () => createDatabase(c.env.DB)); await next(); });",
+      ),
+  );
 }

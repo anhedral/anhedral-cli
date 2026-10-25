@@ -1,4 +1,4 @@
-import { readProjectSection, writeProjectSection, hasProjectSection } from '../project-config.js';
+import { writeProjectSection } from '../project-config.js';
 import {
   OPENNEXT_GLOB_VERSION,
   STACK_DEPENDENCIES,
@@ -15,7 +15,6 @@ import { json, put, patchPackage } from './files.js';
 import { writeSetupDocumentation } from './documentation.js';
 import { writeStackDocumentation } from './stack-documentation.js';
 import { writeEnvironmentExample } from './environment.js';
-import { providerConfigurationTemplate, type ProviderConfiguration } from '../providers/config.js';
 
 export function writeStandardRoot(
   root: string,
@@ -141,14 +140,5 @@ process.exitCode = result.status ?? 1;
     resourcesProvisioned: false,
   });
   writeProjectSection(root, 'setup', createSetupPlan({ ...options, dryRun: false }, registry));
-  const providers = providerConfigurationTemplate(options.products, options.name);
-  const prior =
-    updating && hasProjectSection(root, 'providers')
-      ? (readProjectSection(root, 'providers') as unknown as ProviderConfiguration)
-      : undefined;
-  writeProjectSection(root, 'providers', {
-    ...providers,
-    providers: { ...providers.providers, ...prior?.providers },
-  });
   if (!updating) writeSetupDocumentation(root, options);
 }

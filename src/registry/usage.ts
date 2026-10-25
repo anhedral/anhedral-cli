@@ -1,27 +1,13 @@
 import { COMMANDS, GLOBAL_OPTIONS, optionHelp } from '../command-schema.js';
-
-// Preserve the presentation API for consumers; all option text comes from typed definitions.
 export const COMMAND_HELP = Object.fromEntries(
   Object.entries(COMMANDS).map(([name, entry]) => [
     name,
-    { ...entry, options: entry.options.filter((option) => !option.hidden).map(optionHelp) },
+    { ...entry, options: entry.options.map(optionHelp) },
   ]),
 );
-
-const primary = ['init', 'auth', 'ship', 'add', 'registry', 'inspect', 'doctor', 'connect'];
-const common = GLOBAL_OPTIONS.map(optionHelp);
-
 export function commandHelp(command: string): string | undefined {
   const entry = COMMAND_HELP[command];
   if (!entry) return undefined;
-  return `${entry.description}\n\nUsage: anhedral ${entry.usage}\n\nOptions:\n${[...entry.options, ...common].map((option) => `  ${option}`).join('\n')}\n\nExamples:\n${entry.examples.map((example) => `  anhedral ${example}`).join('\n')}${entry.note ? `\n\n${entry.note}` : ''}\n`;
+  return `${entry.description}\n\nUsage: anhedral ${entry.usage}\n\nOptions:\n${[...entry.options, ...GLOBAL_OPTIONS.map(optionHelp)].map((option) => `  ${option}`).join('\n')}\n\n${entry.note}\n`;
 }
-
-export const STANDARD_USAGE = `Anhedral\nCreate and ship applications with one consistent core stack.\n\nUsage: anhedral <command> [options]\n\nStart here:\n${primary.map((name) => `  ${name.padEnd(12)}${COMMAND_HELP[name].description}`).join('\n')}\n\nDelivery tools:\n${Object.entries(
-  COMMAND_HELP,
-)
-  .filter(([name]) => !primary.includes(name))
-  .map(([name, entry]) => `  ${name.padEnd(12)}${entry.description}`)
-  .join(
-    '\n',
-  )}\n\nDefault: Next.js web + native Expo + Hono + Drizzle/D1 + private R2, with Better Auth and shared styling. Stripe and RevenueCat are the only optional additions.\nExamples:\n  anhedral init client-app\n  anhedral init client-app --stripe --revenuecat\n  anhedral auth client-app\n  anhedral ship client-app --dry-run\n\nUse anhedral <command> --help for options and examples.\nUse anhedral help <command> for the same focused help.\nGlobal options:\n${common.map((option) => `  ${option}`).join('\n')}\n  -v, --version  Show the CLI version.\n`;
+export const STANDARD_USAGE = `Anhedral — an open-source stack foundation\n\n${commandHelp('init')}\n  -v, --version  Show the CLI version.\n`;

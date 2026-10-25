@@ -14,10 +14,9 @@ export const CORE_PRODUCTS: readonly StandardProduct[] = [
   'hono',
   'd1',
   'r2',
-  'better-auth',
   'styling',
 ];
-/** Every initialization uses one foundation; only payment additions are optional. */
+/** Every initialization uses the same foundation. */
 export function resolveStandardProducts(selected: Set<StandardProduct>, hosting: Hosting): void {
   if (hosting !== 'cloudflare') throw new Error('Anhedral applications use Cloudflare Workers.');
   for (const id of selected) getStackDefinition(id);
