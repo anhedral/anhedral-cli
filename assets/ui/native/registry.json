@@ -1231,6 +1231,7 @@
     "_preset-style.tsx",
     "_preset-badge-style.tsx",
     "_badge-presets.tsx",
+    "_preset-metrics.ts",
     "_badge.tsx"
   ],
   "supportModules": [

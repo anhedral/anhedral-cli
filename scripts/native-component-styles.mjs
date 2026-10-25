@@ -6,7 +6,7 @@ const target = (component) =>
   fileURLToPath(new URL('../assets/ui/native/_' + component + '-presets.tsx', import.meta.url));
 const variants = ['default', 'outline', 'secondary', 'ghost', 'destructive', 'link'];
 const sizes = ['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg'];
-function nativeComponentPresets(inventory, component) {
+export function nativeGlobalMetrics(inventory) {
   validateStyleGlobals(inventory);
   const global = inventory.styleGlobals['apps/v4/app/globals.css'];
   const radius = Object.fromEntries(
@@ -17,6 +17,10 @@ function nativeComponentPresets(inventory, component) {
     ].map((match) => [match[1], Number(match[2] ?? 1)]),
   );
   if (Object.keys(radius).length !== 7) throw Error('Upstream radius formulas need native review.');
+  return { upstream: inventory.source, globals: { sha256: global.sha256, radius } };
+}
+function nativeComponentPresets(inventory, component) {
+  const { globals } = nativeGlobalMetrics(inventory);
   const presets = {};
   const expected = [
     'base',
@@ -118,7 +122,7 @@ function nativeComponentPresets(inventory, component) {
     );
   return {
     upstream: inventory.source,
-    globals: { sha256: global.sha256, radius },
+    globals,
     presets,
     classRecipes,
   };
@@ -138,15 +142,33 @@ async function source(inventory, component) {
 }
 export const nativeButtonPresetSource = (inventory) => source(inventory, 'button');
 export const nativeBadgePresetSource = (inventory) => source(inventory, 'badge');
+const metricsTarget = fileURLToPath(
+  new URL('../assets/ui/native/_preset-metrics.ts', import.meta.url),
+);
+export async function nativePresetMetricsSource(inventory) {
+  return format(
+    '// Adapted from shadcn/ui (MIT). Pinned global metric formulas; generated with the component styles.\nexport const nativePresetMetrics = ' +
+      JSON.stringify(nativeGlobalMetrics(inventory)) +
+      ' as const;\n',
+    { ...(await resolveConfig(metricsTarget)), filepath: metricsTarget },
+  );
+}
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const inventory = loadOfficialRegistry();
   const outputs = await Promise.all(
     ['button', 'badge'].map(async (component) => ({
       component,
+      target: target(component),
       data: nativeComponentPresets(inventory, component),
       source: await source(inventory, component),
     })),
   );
+  outputs.push({
+    component: 'metrics',
+    target: metricsTarget,
+    data: nativeGlobalMetrics(inventory),
+    source: await nativePresetMetricsSource(inventory),
+  });
   if (process.argv.includes('--report'))
     console.log(
       JSON.stringify(
@@ -156,8 +178,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       ),
     );
   for (const output of outputs) {
-    if (process.argv.includes('--write')) writeFileSync(target(output.component), output.source);
-    else if (readFileSync(target(output.component), 'utf8') !== output.source)
+    if (process.argv.includes('--write')) writeFileSync(output.target, output.source);
+    else if (readFileSync(output.target, 'utf8') !== output.source)
       throw Error(
         'Native ' + output.component + ' preset evidence is stale; review upstream styles.',
       );

@@ -18,6 +18,7 @@ export function registryStyle(
     mode?: 'light' | 'dark';
     styleName?: string;
     generation?: 'legacy' | 'modern';
+    radiusScale?: Readonly<Record<string, number>>;
     color: (value: string) => string;
     radius: number;
     index?: number;
@@ -50,6 +51,80 @@ export function registryStyle(
         return parseFloat(raw) * (raw.endsWith('rem') ? 16 : 1);
     } else if (/^\d+(\.\d+)?$/.test(value)) return Number(value) * 4;
     throw Error(`Unsupported native registry length: ${value}`);
+  };
+  const radiusValue = (value: string): number => {
+    const legacy: Readonly<Record<string, number>> = {
+      xs: 2,
+      sm: Math.max(0, localRadius - 4),
+      md: Math.max(0, localRadius - 2),
+      lg: localRadius,
+      xl: localRadius + 4,
+      '2xl': 16,
+      '3xl': 24,
+    };
+    const named = (name: string): number => {
+      if (name === 'none') return 0;
+      if (name === 'full') return 9999;
+      if (name === 'xs') return 2;
+      if (options.generation === 'modern') {
+        const scale = options.radiusScale?.[name];
+        if (typeof scale !== 'number') throw Error('Missing native global radius metric: ' + name);
+        return Math.max(0, localRadius * scale);
+      }
+      const found = legacy[name];
+      if (typeof found !== 'number') throw Error('Unknown native legacy radius metric: ' + name);
+      return found;
+    };
+    const operand = (input: string): number | undefined => {
+      const variable = /^var\(--radius(?:-([a-z0-9-]+))?\)$/.exec(input);
+      if (variable) return variable[1] ? named(variable[1]) : Math.max(0, localRadius);
+      if (/^-?\d+(?:\.\d+)?(?:px|rem)?$/.test(input))
+        return parseFloat(input) * (input.endsWith('rem') ? 16 : 1);
+      return undefined;
+    };
+    const expression = (input: string, depth = 0): number | undefined => {
+      if (depth > 8) throw Error('Native radius expression nesting exceeds the reviewed limit.');
+      const direct = operand(input);
+      if (direct !== undefined) return direct;
+      const calc =
+        /^calc\((var\(--radius(?:-[a-z0-9-]+)?\))([+-])(-?\d+(?:\.\d+)?(?:px|rem)?)\)$/.exec(input);
+      if (calc) {
+        const left = operand(calc[1]!);
+        const right = operand(calc[3]!);
+        if (left !== undefined && right !== undefined)
+          return calc[2] === '+' ? left + right : left - right;
+      }
+      const bounded = /^(min|max)\((.+)\)$/.exec(input);
+      if (bounded) {
+        const operands: string[] = [];
+        let level = 0,
+          start = 0;
+        for (let index = 0; index < bounded[2]!.length; index++) {
+          const character = bounded[2]![index];
+          if (character === '(') level++;
+          if (character === ')') level--;
+          if (level < 0) return undefined;
+          if (character === ',' && level === 0) {
+            operands.push(bounded[2]!.slice(start, index));
+            start = index + 1;
+          }
+        }
+        operands.push(bounded[2]!.slice(start));
+        if (level !== 0 || operands.length < 2) return undefined;
+        const values = operands.map((value) => expression(value, depth + 1));
+        if (values.every((value): value is number => value !== undefined))
+          return bounded[1] === 'min' ? Math.min(...values) : Math.max(...values);
+      }
+      return undefined;
+    };
+    if (/^(none|full|xs|sm|md|lg|xl|2xl|3xl|4xl)$/.test(value)) return named(value);
+    const variable = /^\(--radius(?:-([a-z0-9-]+))?\)$/.exec(value);
+    if (variable) return variable[1] ? named(variable[1]) : Math.max(0, localRadius);
+    if (value.startsWith('[') && value.endsWith(']')) {
+      const resolved = expression(value.slice(1, -1).replaceAll('_', '').replaceAll(' ', ''));
+      if (resolved !== undefined) return Math.max(0, resolved);
+    }
+    return Math.max(0, number(value));
   };
   for (const original of (classes?.split(/\s+/).filter(Boolean) ?? []).sort(
     (a, b) => Number(/(?:^|:)!|!$/.test(a)) - Number(/(?:^|:)!|!$/.test(b)),
@@ -355,16 +430,30 @@ export function registryStyle(
     else if (token.startsWith('opacity-')) view.opacity = Number(token.slice(8)) / 100;
     else if (token === 'rounded') view.borderRadius = 4;
     else if (token.startsWith('rounded-')) {
-      const value = token.slice(8),
-        fixed = {
-          full: 9999,
-          xs: 2,
-          sm: Math.max(0, localRadius - 4),
-          md: Math.max(0, localRadius - 2),
-          lg: localRadius,
-          xl: localRadius + 4,
+      const corner = /^rounded-(tl|tr|br|bl|ss|se|es|ee|t|r|b|l|s|e)(?:-(.+))?$/.exec(token);
+      if (corner) {
+        const fields: Readonly<Record<string, readonly string[]>> = {
+          t: ['borderTopLeftRadius', 'borderTopRightRadius'],
+          r: ['borderTopRightRadius', 'borderBottomRightRadius'],
+          b: ['borderBottomLeftRadius', 'borderBottomRightRadius'],
+          l: ['borderTopLeftRadius', 'borderBottomLeftRadius'],
+          tl: ['borderTopLeftRadius'],
+          tr: ['borderTopRightRadius'],
+          br: ['borderBottomRightRadius'],
+          bl: ['borderBottomLeftRadius'],
+          s: ['borderTopStartRadius', 'borderBottomStartRadius'],
+          e: ['borderTopEndRadius', 'borderBottomEndRadius'],
+          ss: ['borderTopStartRadius'],
+          se: ['borderTopEndRadius'],
+          es: ['borderBottomStartRadius'],
+          ee: ['borderBottomEndRadius'],
         };
-      view.borderRadius = value in fixed ? fixed[value as keyof typeof fixed] : number(value);
+        const radius = corner[2] ? radiusValue(corner[2]) : 4;
+        Object.assign(
+          view,
+          Object.fromEntries(fields[corner[1]!]!.map((field) => [field, radius])),
+        );
+      } else view.borderRadius = radiusValue(token.slice(8));
     } else if (
       token === 'border-t' ||
       token === 'border-b' ||

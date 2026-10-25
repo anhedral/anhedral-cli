@@ -99,3 +99,27 @@ test('registry views remain native pressable render hosts for source Button comp
   await fireEvent.press(screen.getByRole('button'));
   expect(press).toHaveBeenCalledTimes(1);
 });
+
+test('authored layout radii follow modern global metrics and preserve nested legacy scopes', async () => {
+  const { NativeRegistryPalette } = require('./.generated/src/native/_registry-context');
+  await mount(
+    <>
+      <RegistryView className="[--radius:20px]">
+        <RegistryView testID="modern-radius" className="rounded-xl rounded-br-none" />
+        <NativeRegistryPalette generation="legacy">
+          <RegistryView testID="legacy-radius" className="rounded-xl" />
+        </NativeRegistryPalette>
+      </RegistryView>
+      <RegistryView testID="outer-radius" className="rounded-xl" />
+    </>,
+  );
+  expect(screen.getByTestId('modern-radius')).toHaveStyle({
+    borderRadius: 28,
+    borderBottomRightRadius: 0,
+  });
+  expect(screen.getByTestId('legacy-radius')).toHaveStyle({ borderRadius: 24 });
+  // A local authored variable cannot leak to siblings outside its native theme scope.
+  expect(StyleSheet.flatten(screen.getByTestId('outer-radius').props.style).borderRadius).not.toBe(
+    28,
+  );
+});

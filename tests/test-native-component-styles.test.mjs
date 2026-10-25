@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { loadOfficialRegistry, sha256 } from '../scripts/shadcn-registry.mjs';
 import {
+  nativePresetMetricsSource,
+  nativeGlobalMetrics,
   nativeBadgePresets,
   nativeBadgePresetSource,
   nativeButtonPresets,
@@ -116,4 +118,12 @@ test('eight Badge presets retain every source rule and all six component definit
   ).files[0].source;
   recipe.sources[file].classRecipes.badgeVariants.variants.variant.future = 'bg-primary';
   assert.throws(() => nativeBadgePresets(recipe), /badge class recipe slot values/);
+});
+
+test('global native metrics retain the pinned source fingerprint independently of component slots', async () => {
+  assert.deepEqual(nativeGlobalMetrics(inventory).globals, nativeButtonPresets(inventory).globals);
+  assert.equal(
+    readFileSync('assets/ui/native/_preset-metrics.ts', 'utf8'),
+    await nativePresetMetricsSource(inventory),
+  );
 });

@@ -201,6 +201,7 @@ export function nativePresetStyle(
       width: 0,
       mode: state.mode,
       radius: state.radius,
+      radiusScale,
       color,
       generation: legacy ? 'legacy' : 'modern',
     },

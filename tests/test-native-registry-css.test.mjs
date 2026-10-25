@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
+import { nativeGlobalMetrics } from '../scripts/native-component-styles.mjs';
+import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
 const source = readFileSync(
   new URL('../assets/ui/native/_registry-css.tsx', import.meta.url),
   'utf8',
@@ -113,4 +115,104 @@ test('SVG child restrictions resolve paint on the actual icon while keeping non-
   const view = registryStyle('[svg]:fill-blue-500', { ...options, svg: false });
   assert.deepEqual(view.svgChildren, ['fill-blue-500']);
   assert.equal(view.paint.fill, undefined);
+});
+
+const radiusScale = nativeGlobalMetrics(loadOfficialRegistry()).globals.radius;
+test('raw layouts use pinned modern radius multipliers and retain frozen legacy geometry', () => {
+  for (const [name, multiplier] of Object.entries(radiusScale)) {
+    assert.equal(
+      registryStyle('rounded-' + name, { ...options, generation: 'modern', radiusScale }).view
+        .borderRadius,
+      8 * multiplier,
+    );
+  }
+  for (const [name, value] of Object.entries({
+    xs: 2,
+    sm: 4,
+    md: 6,
+    lg: 8,
+    xl: 12,
+    '2xl': 16,
+    '3xl': 24,
+    full: 9999,
+    none: 0,
+  })) {
+    assert.equal(
+      registryStyle('rounded-' + name, { ...options, generation: 'legacy' }).view.borderRadius,
+      value,
+    );
+  }
+  assert.equal(
+    registryStyle('[--radius:2rem] rounded-xl', { ...options, generation: 'modern', radiusScale })
+      .view.borderRadius,
+    44.8,
+  );
+  assert.equal(registryStyle('rounded-sm', { ...options, radius: 2 }).view.borderRadius, 0);
+  assert.equal(
+    registryStyle('rounded-xs', { ...options, generation: 'modern', radiusScale }).view
+      .borderRadius,
+    2,
+  );
+  assert.throws(
+    () => registryStyle('rounded-md', { ...options, generation: 'modern' }),
+    /Missing native global radius metric/,
+  );
+});
+test('radius variables and bounded source formulas remain native values with explicit rejection of unsupported math', () => {
+  const modern = { ...options, generation: 'modern', radiusScale };
+  for (const [utility, expected] of Object.entries({
+    'rounded-(--radius)': 8,
+    'rounded-(--radius-xl)': 11.2,
+    'rounded-[var(--radius-sm)]': 4.8,
+    'rounded-[calc(var(--radius)-2px)]': 6,
+    'rounded-[calc(var(--radius)+0.5rem)]': 16,
+    'rounded-[calc(var(--radius)-20px)]': 0,
+    'rounded-[min(var(--radius-xl),10px)]': 10,
+    'rounded-[max(2px,min(var(--radius-xl),10px),3px)]': 10,
+    'rounded-[1.5rem]': 24,
+  }))
+    assert.equal(registryStyle(utility, modern).view.borderRadius, expected, utility);
+  for (const utility of [
+    'rounded-[calc(var(--radius)*2)]',
+    'rounded-[min(2px)]',
+    'rounded-[var(--invented)]',
+    'rounded-[min(2px,garbage)]',
+  ])
+    assert.throws(() => registryStyle(utility, modern), /Unsupported native registry length/);
+  assert.throws(
+    () => registryStyle('rounded-(--radius-missing)', modern),
+    /Missing native global radius metric/,
+  );
+  const deep = 'rounded-[' + 'min(2px,'.repeat(10) + '3px' + ')'.repeat(10) + ']';
+  assert.throws(() => registryStyle(deep, modern), /nesting exceeds/);
+});
+test('physical and logical corners retain their independent native fields', () => {
+  const style = registryStyle('rounded-t-xl rounded-br-none rounded-ss-sm rounded-ee-[3px]', {
+    ...options,
+    generation: 'modern',
+    radiusScale,
+  });
+  assert.deepEqual(style.view, {
+    borderTopLeftRadius: 11.2,
+    borderTopRightRadius: 11.2,
+    borderBottomRightRadius: 0,
+    borderTopStartRadius: 4.8,
+    borderBottomEndRadius: 3,
+  });
+  assert.deepEqual(
+    registryStyle(
+      'rounded-s-md rounded-e-md rounded-b-md rounded-l-md rounded-r-md rounded-tr-md rounded-bl-md rounded-se-md rounded-es-md',
+      options,
+    ).view,
+    {
+      borderTopStartRadius: 6,
+      borderBottomStartRadius: 6,
+      borderTopEndRadius: 6,
+      borderBottomEndRadius: 6,
+      borderBottomLeftRadius: 6,
+      borderBottomRightRadius: 6,
+      borderTopLeftRadius: 6,
+      borderTopRightRadius: 6,
+    },
+  );
 });

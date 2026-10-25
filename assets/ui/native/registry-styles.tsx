@@ -50,6 +50,7 @@ import {
   NativeButtonIconSize,
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
+import { nativePresetMetrics } from './_preset-metrics';
 import { NativeRegistryImage } from './registry-image';
 import { NativeLink } from './navigation';
 import { LinkButton } from './button';
@@ -205,6 +206,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       {
         styleName,
         generation,
+        radiusScale: nativePresetMetrics.globals.radius,
         svg: kind === 'icon' || kind === 'svg-root',
         slot: Component.name?.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),
         selected:

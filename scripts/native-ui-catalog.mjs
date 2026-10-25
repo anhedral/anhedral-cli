@@ -41,7 +41,10 @@ recipe boundaries retain their own presentation. The source-driven Button adapte
 includes all eight newer presets plus the published Default, New York and New York v4
 CVA definitions, with every authored variant/size and native hover/focus,
 invalid/expanded/disabled states, group corners and icon placement. It uses the
-pinned upstream radius formulas and OKLCH secondary hover mix. Explicit native styles
+pinned upstream radius formulas and OKLCH secondary hover mix. Raw authored native
+layouts also use the pinned global radius multipliers, including directional corners,
+local radius scopes and bounded native radius expressions. Frozen Default/New York
+layouts retain their additive metrics; unsupported formulas require explicit review. Explicit native styles
 and icon sizes take precedence. Text-bearing buttons grow for native font scaling and
 explicit text metrics; icon-only slots keep their square geometry. Compound controls
 own their own preset slots and do not inherit Button typography or dimensions.

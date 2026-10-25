@@ -1,3 +1,24 @@
+# Native global radius metrics — October 24, 2026
+
+Raw authored layouts now use the pinned modern global radius multipliers instead of
+legacy additive metrics. Generated global metrics retain their source fingerprint,
+independent of Button/Badge slots. Frozen Default and New York layouts preserve their
+original metrics; local radius scopes do not leak to siblings.
+
+- Reviewed physical/logical corners, explicit sizes, CSS radius variables, bounded
+  min/max formulas and native calc offsets. Unknown formulas fail explicitly; native
+  translation does not evaluate arbitrary CSS or JavaScript.
+- Focused source/global/utility contracts passed. Generated native types passed;
+  full suites passed 1,289 tests on each platform across 42 suites with existing
+  coverage thresholds unchanged. Both Hermes bundles contain all 699 registry modules.
+  Packed CLI installation and package policy passed (995,639 compressed bytes).
+  The first root run overlapped a clean build and four test files failed to import
+  temporarily absent dist modules. That failed log is preserved; the four affected
+  files were rerun after the build completed. Builds and dist-consuming tests must
+  remain serial. Evidence logs: .artifacts/native-ui/2026-10-25-native-radius/.
+- This shared layout correction does not promote unrelated component coverage.
+  Whole-registry completion still rejects 546 pending items. No publication occurred.
+
 # Native render-host composition and Badge coverage — October 24, 2026
 
 Native slots now resolve static Text/View styles, preserve child callbacks and refs,
