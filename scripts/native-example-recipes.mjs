@@ -274,6 +274,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       origins.push(`apps/v4/registry/bases/${base}/examples/separator-example.tsx`);
       origins.push(`apps/v4/registry/bases/${base}/examples/card-example.tsx`);
       origins.push(`apps/v4/registry/bases/${base}/examples/input-example.tsx`);
+      origins.push(`apps/v4/registry/bases/${base}/examples/kbd-example.tsx`);
     }
     // Published legacy examples are separate authored inputs, even when their names
     // match a maintained modern recipe. Never substitute modern source for them.

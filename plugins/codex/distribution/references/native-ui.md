@@ -118,6 +118,15 @@ input properties/events; browser date/time formatting, second/fractional step co
 and HTML autofill behavior stay web-specific. These fields have no implicit server,
 file upload or application submission handler.
 
+Kbd and KbdGroup retain all eleven source families and sixteen newer theme slots,
+including source Sans typography, compact geometry, scoped tooltip/input-group paint,
+font scaling and caller overrides. Native modal boundaries reset ancestor selectors.
+The source SVG size is a default; explicit icon dimensions win. Authored samp output
+uses native monospace text, while inline code retains its independent styling.
+Keyboard hints remain read-only content; application shortcut registration belongs to
+the application. DOM kbd/samp semantics, refs and CSS ancestry become typed native
+View/Text hosts and explicit native contexts.
+
 Skeleton retains all eleven source style families, including frozen New York primary
 transparency and New York v4 accent paint. Its native pulse follows the source two-second
 cubic easing cycle and half-opacity midpoint, responds to live reduced-motion changes,
@@ -172,7 +181,7 @@ paint/animation parity. Native device/keyboard/visual acceptance remains separat
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 452 reviewed source modules,
+The authored component example overlay currently includes 455 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 `node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`
 and `node scripts/native-icons.mjs --check`. Their coverage remains partial while

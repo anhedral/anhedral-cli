@@ -1,4 +1,16 @@
+# Source keyboard hints and sample output — October 25, 2026
+
+Kbd/KbdGroup retain all six source implementations and sixteen newer theme slots: source Sans typography, compact heights, spacing, radius, light/dark paint, tooltip/input-group ancestry and explicit text/icon overrides. Native modal boundaries reset physical ancestor selectors. Source sample-output elements use native monospace text; inline code keeps its independent styling. Three modern authored Kbd examples were added, bringing the catalog to 455 component examples and 720 total authored modules. Shortcut registration remains application-owned. InputGroup/Tooltip full preset parity and keyboard device/screen-reader acceptance remain separate.
+
+Validation: all 56 native suites passed on each platform target (1,648 assertions each) with existing coverage thresholds; the subsequent final icon-sizing regression passed in the focused 37-case suite on both targets. Native typecheck passed. Metro/Hermes compiled all 720 modules for both platforms. Source evidence tests reject changed source/CSS bytes and additional direct or descendant selectors. The official registry checklist now accounts for Kbd and its three isolated frozen examples; modern composite Kbd examples remain partial until their dependencies are complete. CLI unit checks passed with one existing optional install skip; lint, static security, packed-consumer smoke and packlist policy passed. Detailed logs are retained as `/private/tmp/anhedral-kbd-*` and native bundle/coverage artifacts under `.artifacts/`.
+
 # Source text fields and native system pickers — October 25, 2026
+
+## 2026-10-25 — Published registry endpoints outside indexes
+
+The pinned upstream tree also publishes four block endpoints omitted by its registry indexes: default/new-york `v0-sidebar-16`, new-york `app-01`, and new-york `button-01`. All four returned HTTP 200 with bodies matching their pinned Git artifacts. The inventory now retains 6,441 style/item entries, 619 item groups and 2,085 referenced source files. The native checklist keeps the three added groups pending; existing review fingerprints are unchanged. Discovery reads tracked Git publication bytes, includes discovered style directories, ignores preview images and rejects unexpected JSON layouts. Cached index provenance remains separate from the snapshot assembly date.
+
+Validation: all 18 official registry contract tests passed, including committed-byte discovery, untracked-file exclusion, endpoint identity/path rejection and native evidence invalidation. The inventory diff contains exactly four additions and no removals or changed existing items. Detailed HTTP/hash and diff evidence is retained under `.artifacts/shadcn-registry/`. This discovery does not establish native completion for the added blocks.
 
 Input and Textarea retain all eleven source families and sixteen newer CSS rules,
 with responsive typography, native font scaling, placeholder/selection colors,

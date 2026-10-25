@@ -1248,7 +1248,11 @@
     "file-input.tsx",
     "_input-appearance.tsx",
     "temporal-input.tsx",
-    "_input-border.tsx"
+    "_input-border.tsx",
+    "_kbd.tsx",
+    "_kbd-presets.tsx",
+    "_preset-kbd-style.tsx",
+    "_kbd-context.tsx"
   ],
   "supportModules": [
     {

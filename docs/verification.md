@@ -1,3 +1,9 @@
+# Source keyboard hints and sample output — October 25, 2026
+
+Kbd/KbdGroup retain all six source implementations and sixteen newer theme slots: source Sans typography, compact heights, spacing, radius, light/dark paint, tooltip/input-group ancestry and explicit text/icon overrides. Native modal boundaries reset physical ancestor selectors. Source sample-output elements use native monospace text; inline code keeps its independent styling. Three modern authored Kbd examples were added, bringing the catalog to 455 component examples and 720 total authored modules. Shortcut registration remains application-owned. InputGroup/Tooltip full preset parity and keyboard device/screen-reader acceptance remain separate.
+
+Validation: all 56 native suites passed on each platform target (1,648 assertions each) with existing coverage thresholds; the subsequent final icon-sizing regression passed in the focused 37-case suite on both targets. Native typecheck passed. Metro/Hermes compiled all 720 modules for both platforms. Source evidence tests reject changed source/CSS bytes and additional direct or descendant selectors. The official registry checklist now accounts for Kbd and its three isolated frozen examples; modern composite Kbd examples remain partial until their dependencies are complete. CLI unit checks passed with one existing optional install skip; lint, static security, packed-consumer smoke and packlist policy passed. Detailed logs are retained as `/private/tmp/anhedral-kbd-*` and native bundle/coverage artifacts under `.artifacts/`.
+
 # Source text fields and native system pickers — October 25, 2026
 
 ## 2026-10-25 — Published registry endpoints outside indexes

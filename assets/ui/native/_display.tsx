@@ -437,7 +437,7 @@ export function ItemMedia({
 export const ItemHeader = Box;
 export const ItemFooter = ItemActions;
 export const ItemSeparator = Separator;
-export const Kbd = ({ style, ...props }: TextProps) => {
+const InlineCode = ({ style, ...props }: TextProps) => {
   const { colors } = useTheme();
   const font = useNativeFontStyle('mono');
   return (
@@ -455,7 +455,7 @@ export const Kbd = ({ style, ...props }: TextProps) => {
     />
   );
 };
-export const KbdGroup = ItemActions;
+export { Kbd, KbdGroup } from './_kbd';
 export const Typography = LabelText;
 export const TypographyH1 = ({ style, ...props }: TextProps) => (
   <LabelText
@@ -495,7 +495,7 @@ export const TypographyBlockquote = ({ style, ...props }: TextProps) => {
     />
   );
 };
-export const TypographyInlineCode = Kbd;
+export const TypographyInlineCode = InlineCode;
 export const TypographyList = Box;
 export { Spinner } from './_spinner';
 export function Skeleton({ style, children, ...props }: ViewProps & { ref?: Ref<View> }) {

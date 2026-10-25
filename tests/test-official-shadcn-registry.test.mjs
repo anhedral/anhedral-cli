@@ -205,7 +205,7 @@ test('browser-only API classifications require a real upstream export and native
 });
 test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
   const pending = incompleteNativeItems(inventory, coverage);
-  assert.equal(pending.length, 522);
+  assert.equal(pending.length, 518);
   assert.ok(pending.includes('registry:ui/form'));
   assert.ok(pending.includes('registry:block/dashboard-01'));
   assert.ok(!pending.includes('registry:ui/button'));
@@ -456,7 +456,7 @@ test('published endpoint discovery uses committed bytes and ignores untracked fi
         '-c',
         'user.name=Fixture',
         '-c',
-        'user.email=fixture@example.test',
+        'user.email=fixture@example.com',
         'commit',
         '-qm',
         'fixture',

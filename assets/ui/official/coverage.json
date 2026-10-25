@@ -3206,15 +3206,23 @@
       }
     },
     "registry:example/kbd-button": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored keyboard/group/Button composition is compiled from its own frozen source with retained structure and source metrics. Native tree rendering, keyboard styles and dependency behavior are tested on both platform targets. Device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/kbd.tsx",
+        "assets/ui/native/_kbd.tsx",
+        "assets/ui/native/_kbd-presets.tsx",
+        "assets/ui/native/_preset-kbd-style.tsx",
+        "assets/ui/native/_kbd-context.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/input-group.tsx",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-kbd-presets.test.tsx",
+        "tests/test-native-kbd-presets.test.mjs",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/test-native-example-recipes.test.mjs"
       ],
       "reviewedInputs": {
@@ -3222,15 +3230,23 @@
       }
     },
     "registry:example/kbd-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored keyboard/group/Button composition is compiled from its own frozen source with retained structure and source metrics. Native tree rendering, keyboard styles and dependency behavior are tested on both platform targets. Device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/kbd.tsx",
+        "assets/ui/native/_kbd.tsx",
+        "assets/ui/native/_kbd-presets.tsx",
+        "assets/ui/native/_preset-kbd-style.tsx",
+        "assets/ui/native/_kbd-context.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/input-group.tsx",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-kbd-presets.test.tsx",
+        "tests/test-native-kbd-presets.test.mjs",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/test-native-example-recipes.test.mjs"
       ],
       "reviewedInputs": {
@@ -5514,15 +5530,23 @@
       }
     },
     "registry:example/kbd-group": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored keyboard/group/Button composition is compiled from its own frozen source with retained structure and source metrics. Native tree rendering, keyboard styles and dependency behavior are tested on both platform targets. Device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/kbd.tsx",
+        "assets/ui/native/_kbd.tsx",
+        "assets/ui/native/_kbd-presets.tsx",
+        "assets/ui/native/_preset-kbd-style.tsx",
+        "assets/ui/native/_kbd-context.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/input-group.tsx",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-kbd-presets.test.tsx",
+        "tests/test-native-kbd-presets.test.mjs",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
         "tests/test-native-example-recipes.test.mjs"
       ],
       "reviewedInputs": {
@@ -6999,6 +7023,99 @@
         "new-york": "d100fb9932e18630c48f518e37aa7c23ba02bb5b3b40b1799fd52a87a1f610a3",
         "new-york-v4": "a1d6aca7eea30860de1790073af611d6488bc6ae861f1427f7e9c6676818f3a8"
       }
+    },
+    "registry:ui/kbd": {
+      "status": "ported",
+      "reason": "All six source implementations and sixteen newer theme slots retain native source metrics, Sans typography, dark/light tooltip and input-group ancestry, font scaling, explicit typography/icon overrides and physical modal boundaries. Native View/Text refs and contexts replace HTML kbd/CSS ancestry. Hints are read-only; application shortcut registration and device/screen-reader acceptance are separate.",
+      "nativeFiles": [
+        "assets/ui/native/kbd.tsx",
+        "assets/ui/native/_kbd.tsx",
+        "assets/ui/native/_kbd-presets.tsx",
+        "assets/ui/native/_preset-kbd-style.tsx",
+        "assets/ui/native/_kbd-context.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-kbd-presets.test.tsx",
+        "tests/test-native-kbd-presets.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "48061b42a86d0a8ce19ee9367774422b38cbae052816714c87d824786df16d7b",
+        "aria-lyra": "28f7de970ac7189324d9e7ad52fc394c21272dac6d9885b3399fd24cd4d1488b",
+        "aria-maia": "3486198e79535d0c824f4858fcc680e6f461b39f4d67077a7617a14342abe9f2",
+        "aria-mira": "5a87b33182e7e127a2c06d6c5fddd80ea08242785fc1912e6f3c16b8c2762b31",
+        "aria-nova": "a7a1e85f3a7fb46cfd556f8284c19f10dfeac44fc62af2e23ca7960c2c129899",
+        "aria-rhea": "9b799a1bc9e608424ab40c38efa4e189bcdf9db636304d9a8a18d82324fcbad8",
+        "aria-sera": "c4d8bac819308f8799269f3e905c2a23ee338721b7ae06de21ee3409901b47f4",
+        "aria-vega": "515354d1c983abf6099552793e82ade048183380c3b2661609bac09bbc6a6e69",
+        "base-luma": "66f0d6f9bb37b835c975550d3919e68eebd3c35093d82a692a40f868e95b3a00",
+        "base-lyra": "2c15e578a6f9d4a3b2cffa2842a7d25353610962e90d66ec94c2d726587addb6",
+        "base-maia": "b76692f29046314a0df410cdcee437a97be6db0e70b48cabda07f6887147570f",
+        "base-mira": "96a37664933f040ac1cd9cf9e6020f010d2d0b11e0376bac3f0ff8add4b88351",
+        "base-nova": "f76475dc975fdef6f5d4b62bb73c62bfadda39249e25207a3630ea3a22bcf8e2",
+        "base-rhea": "c16f37ef4909980a86450ebfb40d56364a9c5eb985a6590f61983c39ebb1535e",
+        "base-sera": "8a26f4b5f2a94680e25be73b5675b7f8310ca9014f3427570e4dd7a859ed9fbd",
+        "base-vega": "7891768bf12c7238dd792f518ff5080ce9e98cb742ae8b807dc382ada3f62797",
+        "default": "6e4adc731dcbface3f6a5f6f761471a19b57e1daa7aed8d295fab56f095e311e",
+        "new-york": "136eb85e6abc2cf12e03e775dcfdbb17998f4a691003f6932035933e559c7913",
+        "new-york-v4": "25b21192237696b618aa41b90a7cfa22495a99bb51f99118b02e793f6e67bdce",
+        "radix-luma": "f10fa75de5b39dc30d2dacb64b5b73279043eabc9c188c0804a5862224abbb80",
+        "radix-lyra": "250908e240271432e9ab5cb312e499ebee4de8612e2496a4efc3f6ecafd453e1",
+        "radix-maia": "297aff42028a40f1c0e1322012674ec090372808fea48957a46e1242b8312120",
+        "radix-mira": "ec9d1ecb548c2c50bb3fbc19aace26f3f34881f7295d8cc13101a313c50000f9",
+        "radix-nova": "d83d563e173258041a927ee82d941996689c5ffb7fad9cbefd428e105b2b04b7",
+        "radix-rhea": "fe06b931ab689583be6e365ef945ad203373ad74d184aeb48672c17e6e50a796",
+        "radix-sera": "256f99322ab5d69d57afd81b97e39033930d6a1254d63a7f3210ae41dff30968",
+        "radix-vega": "6e27528236c28972eef76cb357ad9ac516cc9318777ee4021fb85fb489a53371"
+      }
+    },
+    "registry:example/kbd-example": {
+      "status": "partial",
+      "reason": "All three authored modern examples now compile with real keyboard metrics, icons, groups and native monospace samp output. InputGroup and Tooltip full source presets remain pending separately.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/kbd.tsx",
+        "assets/ui/native/_kbd.tsx",
+        "assets/ui/native/_kbd-presets.tsx",
+        "assets/ui/native/_preset-kbd-style.tsx",
+        "assets/ui/native/_kbd-context.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-kbd-presets.test.tsx",
+        "tests/test-native-kbd-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "77049f2e03a44ea71170a929050b646d49b6563fdbe87a55726873f8e41590d3",
+        "aria-lyra": "1d30dea5a0d8fe798a5fb8bc3716d64776d09eb4a8d4b6b17d5194b38d6a0f05",
+        "aria-maia": "1dd8d929bde7980a69385fa9af8de4cda37192c0b4b796c7d52302e301f68360",
+        "aria-mira": "4b7cd991ea9f6cac3f901825d737af4fdee4052b1822caa481970b0318e433e9",
+        "aria-nova": "a6985004ce1239d79b8b30a1ccb1ac7fe7f6b919265967a798ec96a9b75a081c",
+        "aria-rhea": "4668118d1ea1276dd214e3ed53f1315bf5f7a5400a3f0ebc229a68729ea8d896",
+        "aria-sera": "7cae1319282766c4835bfd63da75b6a2e7876c598e78216c18c66db69bb7004b",
+        "aria-vega": "26402d8db3e457b40fd0d461e93994662b91f2c1a48ae8ad5532929611371a4b",
+        "base-luma": "26cd49138f36245e42ffe2600b7bbc6f813b79e1fd50e3e5afb97a61b75c6d7f",
+        "base-lyra": "aec1753de40f8495dde79b08b10dc6569c86594464293f62e6d90248619c3e55",
+        "base-maia": "23e78e1f3f52303ecba6a85c3a5a049f6ff6fb77e19131b2a9a9bdeff26b0f57",
+        "base-mira": "c36de0d6153487fc852f2ff6fa6810690a346f971f5c26537161d542a9781ebf",
+        "base-nova": "65ddc448c03bf45113d45ead353394d9e2dbc19a83fdc4dec267277987a545dd",
+        "base-rhea": "3561e2667ab930acb6f4ad613d6cb9f63789366fc19fe04d4cd85190387f8a59",
+        "base-sera": "1a3b290d943691124a1d633d133ad9190f8a91e9d4126a09165dcc0c2213c44f",
+        "base-vega": "3d46403445afa0b0676f2e3613854477a74fc4f8621887716462a95b6d588953",
+        "radix-luma": "120f0e05fea508f0c90af91c4dd9da4a6a71019bcbf04002a88e7e466b92d4b2",
+        "radix-lyra": "9c76c2a0a1fc89b4b7d67ffd80a69cc8f72b3281b7192223498e27f1cf826092",
+        "radix-maia": "97fd13de907ec43b0a1a66b997695699f6c01ae46b68e12085259a2570e7986c",
+        "radix-mira": "57e6b981a4fb792ea0d1273f7396c30743a74f07862ffb82af1bfc4d7d8531a0",
+        "radix-nova": "54db65cd6a8c8c8ae60d031170eb8e0e9091992652bfd554021ce91e2b7c2293",
+        "radix-rhea": "4cc6abedf0d93c84bfb73904fe18170af273686ba36708c2e43cb5a52fb12c3c",
+        "radix-sera": "445686385e8c3c8b702073091ceb0652bff74c24c14b730b4cf3d2dfb58e00cd",
+        "radix-vega": "19f048b94cbafa5bebf332444ef81089bc115e5fa155b021e3c3332493714c72"
+      }
     }
   },
   "webSpecific": [
@@ -7081,6 +7198,11 @@
       "feature": "HTML FileList/multipart submission and date/time input hosts",
       "adaptation": "Expo DocumentPicker returns typed cache-backed URI metadata, MIME filters, multiple selection and cancellation/error callbacks. Uploads and multipart encoding require an application handler. Native date/clock pickers use local ISO date/minute values, bounds and overnight time ranges. iOS wheel drafts are staged without round-tripping intermediate values until Apply; external controlled updates retain ownership. Browser DOM/SVG refs/events, file drag/drop, directory selection, native-calendar range/locale differences and seconds/fractional step controls remain explicit integration or per-item boundaries.",
       "status": "Provider errors, invalid/stale/disabled results, validation, controlled state and callback ownership are tested. Both final Android and iOS builds pass every one of fifteen required OS cases, including system document selection/cancel and date/time selection/cancel. Other drag/drop/attachment items remain pending independently."
+    },
+    {
+      "feature": "HTML kbd/samp, CSS keyboard ancestry and shortcut hints",
+      "adaptation": "Render read-only native View/Text groups with source Sans key typography and monospace sample output. Explicit native contexts model tooltip/input-group ancestry and reset at physical modal boundaries. Native font scaling grows compact source boxes; explicit text/icon styles win. Application shortcut binding is application-owned.",
+      "status": "All eleven source families, light/dark modes and scoped ancestor combinations are covered by native tests. All authored keyboard examples compile. InputGroup/Tooltip preset parity and native device/screen-reader acceptance remain separate."
     }
   ]
 }

@@ -423,7 +423,10 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         kind === 'text' || kind === 'link'
           ? [translated.view, translated.text, nativeInline]
           : [translated.view, nativeInline];
-      if ('nativeInputSlot' in Component && Component.nativeInputSlot === true)
+      if (
+        ('nativeInputSlot' in Component && Component.nativeInputSlot === true) ||
+        ('nativeTextSlot' in Component && Component.nativeTextSlot === true)
+      )
         forwarded.style = [translated.view, translated.text, nativeInline];
       if (
         ('nativeCardTextSlot' in Component && Component.nativeCardTextSlot === true) ||
@@ -769,6 +772,13 @@ export const RegistryLink = withRegistryStyles(NativeLink, 'link');
 export const RegistryImage = withRegistryStyles(NativeRegistryImage);
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
+/** HTML samp is read-only sample output with a monospace face. */
+export const RegistrySample = withRegistryStyles(
+  ({ style, ...props }: ComponentProps<typeof LabelText>) => (
+    <LabelText {...props} fontRole="mono" style={style} />
+  ),
+  'text',
+);
 export const RegistryOrderedList = withRegistryStyles(NativeOrderedList);
 export const RegistryUnorderedList = withRegistryStyles(NativeUnorderedList);
 export const RegistryListItem = withRegistryStyles(NativeListItem);

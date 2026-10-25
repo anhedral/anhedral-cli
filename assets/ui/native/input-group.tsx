@@ -17,6 +17,7 @@ import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
 import { composeNativeRefs } from './_slot';
 import { useNativeField } from './_field-context';
+import { NativeKbdSurfaceContext } from './_kbd-context';
 type Align = 'inline-start' | 'inline-end' | 'block-start' | 'block-end';
 type Group = {
   input: RefObject<TextInput | null>;
@@ -38,6 +39,7 @@ export function InputGroup({
   invalid = false,
   ...props
 }: ViewProps & { disabled?: boolean; invalid?: boolean }) {
+  const keyboardSurface = useContext(NativeKbdSurfaceContext);
   const input = useRef<TextInput>(null),
     [controlDisabled, setDisabled] = useState(false),
     [controlInvalid, setInvalid] = useState(false),
@@ -54,38 +56,40 @@ export function InputGroup({
       (node) => !isValidElement(node) || nativeComponent(node.type) !== InputGroupAddon,
     );
   return (
-    <Context.Provider
-      value={{
-        input,
-        disabled: disabled || controlDisabled,
-        setDisabled,
-        invalid: invalid || controlInvalid,
-        setInvalid,
-      }}
-    >
-      <Box
-        {...props}
-        style={[
-          {
-            borderWidth: 1,
-            borderColor: invalid || controlInvalid ? colors.destructive : colors.input,
-            borderRadius: radius,
-            backgroundColor: colors.background,
-            gap: 0,
-            opacity: disabled || controlDisabled ? 0.5 : 1,
-          },
-          style,
-        ]}
+    <NativeKbdSurfaceContext.Provider value={{ ...keyboardSurface, inputGroup: true }}>
+      <Context.Provider
+        value={{
+          input,
+          disabled: disabled || controlDisabled,
+          setDisabled,
+          invalid: invalid || controlInvalid,
+          setInvalid,
+        }}
       >
-        {addons('block-start')}
-        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
-          {addons('inline-start')}
-          {content(controls)}
-          {addons('inline-end')}
+        <Box
+          {...props}
+          style={[
+            {
+              borderWidth: 1,
+              borderColor: invalid || controlInvalid ? colors.destructive : colors.input,
+              borderRadius: radius,
+              backgroundColor: colors.background,
+              gap: 0,
+              opacity: disabled || controlDisabled ? 0.5 : 1,
+            },
+            style,
+          ]}
+        >
+          {addons('block-start')}
+          <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
+            {addons('inline-start')}
+            {content(controls)}
+            {addons('inline-end')}
+          </Box>
+          {addons('block-end')}
         </Box>
-        {addons('block-end')}
-      </Box>
-    </Context.Provider>
+      </Context.Provider>
+    </NativeKbdSurfaceContext.Provider>
   );
 }
 export function InputGroupAddon({

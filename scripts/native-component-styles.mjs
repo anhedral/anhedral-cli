@@ -383,6 +383,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       data: nativeInputPresets(inventory, component),
       source: await nativeInputPresetSource(inventory, component),
     });
+  const { nativeKbdPresets, nativeKbdPresetSource } = await import('./native-kbd-presets.mjs');
+  outputs.push({
+    component: 'kbd',
+    target: target('kbd'),
+    data: nativeKbdPresets(inventory),
+    source: await nativeKbdPresetSource(inventory),
+  });
   outputs.push({
     component: 'metrics',
     target: metricsTarget,

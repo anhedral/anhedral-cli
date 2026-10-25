@@ -152,6 +152,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     dt: 'RegistryDescriptionTerm',
     dd: 'RegistryDescriptionDetails',
     span: 'RegistryText',
+    samp: 'RegistrySample',
     p: 'RegistryText',
     h1: 'RegistryH1',
     h2: 'RegistryH2',
