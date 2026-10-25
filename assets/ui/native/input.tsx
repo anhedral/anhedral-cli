@@ -2,8 +2,10 @@ import { TextInput, type TextInputProps } from 'react-native';
 import type { Ref } from 'react';
 import { useTheme } from '../theme';
 import { useNativeFontStyle } from './fonts';
+import { useNativeFieldInput } from './_field-context';
 export type InputProps = TextInputProps & { invalid?: boolean; ref?: Ref<TextInput> };
-export function Input({ style, invalid, ...props }: InputProps) {
+export function Input(input: InputProps) {
+  const { style, invalid, ...props } = useNativeFieldInput(input);
   const { colors, radius } = useTheme();
   const font = useNativeFontStyle();
   return (

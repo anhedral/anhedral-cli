@@ -5,14 +5,25 @@ import {
   isValidElement,
   useContext,
   useEffect,
+  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
-import { View, ScrollView, StyleSheet, PanResponder, type ViewProps } from 'react-native';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  PanResponder,
+  AccessibilityInfo,
+  findNodeHandle,
+  type ViewProps,
+} from 'react-native';
 import { Box, clamp, useControllable, useDirection, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
+import { useNativeField } from './_field-context';
 export function Slider({
   value,
   defaultValue = [0],
@@ -23,7 +34,7 @@ export function Slider({
   step = 1,
   disabled = false,
   minStepsBetweenThumbs = 0,
-  accessibilityLabel = 'Value',
+  accessibilityLabel,
   orientation = 'horizontal',
   style,
   onLayout,
@@ -45,6 +56,31 @@ export function Slider({
   const increment = Number.isFinite(step) && step > 0 ? step : 1;
   const [values, set] = useControllable(value, defaultValue, onValueChange);
   const { colors } = useTheme();
+  const field = useNativeField(),
+    firstThumb = useRef<View | null>(null),
+    control = useMemo(
+      () => ({
+        focus: () => {
+          const handle = firstThumb.current && findNodeHandle(firstThumb.current);
+          if (handle) AccessibilityInfo.setAccessibilityFocus(handle);
+        },
+      }),
+      [],
+    );
+  const target = field?.control,
+    targets = field?.controls,
+    id = props.nativeID;
+  useLayoutEffect(() => {
+    if (target) target.current = control;
+    if (id) targets?.current.set(id, control);
+    return () => {
+      if (target?.current === control) target.current = null;
+      if (id && targets?.current.get(id) === control) targets.current.delete(id);
+    };
+  }, [target, targets, id, control]);
+  const label = accessibilityLabel ?? (field?.labelFor(id) || 'Value');
+  const hint =
+    props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ');
   const direction = useDirection();
   const gap =
     Math.max(0, Number.isFinite(minStepsBetweenThumbs) ? minStepsBetweenThumbs : 0) * increment;
@@ -161,12 +197,12 @@ export function Slider({
       {current.map((item, index) => (
         <View
           key={index}
+          ref={index === 0 ? firstThumb : undefined}
           accessible
           accessibilityRole="adjustable"
-          accessibilityLabel={
-            current.length === 1 ? accessibilityLabel : `${accessibilityLabel} ${index + 1}`
-          }
+          accessibilityLabel={current.length === 1 ? label : `${label} ${index + 1}`}
           accessibilityState={{ disabled }}
+          accessibilityHint={hint}
           accessibilityValue={{
             min: index ? current[index - 1]! + gap : lower,
             max: index < current.length - 1 ? current[index + 1]! - gap : upper,

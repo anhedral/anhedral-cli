@@ -36,7 +36,6 @@ import { Input } from './input';
 import {
   NativeFieldProvider,
   useNativeFieldPart,
-  useNativeFieldInput,
   useNativeField,
   NativeChoiceLabelContext,
   useNativeFieldActivation,
@@ -65,16 +64,26 @@ export function Checkbox({
   );
   const { colors } = useTheme();
   const field = useNativeField();
-  const inChoice = useNativeFieldActivation(() => set(value !== true), !!disabled, value === true);
+  const inChoice = useNativeFieldActivation(
+    () => set(value !== true),
+    !!disabled,
+    value === true,
+    props.nativeID,
+  );
   return (
     <Pressable
       {...props}
       accessibilityRole="checkbox"
-      accessibilityLabel={accessibilityLabel ?? (plainText(children) || field?.label || undefined)}
+      accessibilityLabel={
+        accessibilityLabel ?? (plainText(children) || field?.labelFor(props.nativeID) || undefined)
+      }
       accessibilityLabelledBy={
         accessibilityLabel !== undefined
           ? props.accessibilityLabelledBy
-          : (props.accessibilityLabelledBy ?? (field?.labelIDs.length ? field.labelIDs : undefined))
+          : (props.accessibilityLabelledBy ??
+            (field?.labelIDsFor(props.nativeID).length
+              ? field.labelIDsFor(props.nativeID)
+              : undefined))
       }
       accessibilityHint={
         props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
@@ -131,17 +140,22 @@ export function Switch({
   const [value, set] = useControllable(checked, defaultChecked, onCheckedChange);
   const { colors } = useTheme();
   const field = useNativeField();
-  useNativeFieldActivation(() => set(!value), !!props.disabled, value);
+  useNativeFieldActivation(() => set(!value), !!props.disabled, value, props.nativeID);
   return (
     <NativeSwitch
       accessible
       trackColor={{ false: colors.input, true: colors.primary }}
       {...props}
-      accessibilityLabel={props.accessibilityLabel ?? (field?.label || undefined)}
+      accessibilityLabel={
+        props.accessibilityLabel ?? (field?.labelFor(props.nativeID) || undefined)
+      }
       accessibilityLabelledBy={
         props.accessibilityLabel !== undefined
           ? props.accessibilityLabelledBy
-          : (props.accessibilityLabelledBy ?? (field?.labelIDs.length ? field.labelIDs : undefined))
+          : (props.accessibilityLabelledBy ??
+            (field?.labelIDsFor(props.nativeID).length
+              ? field.labelIDsFor(props.nativeID)
+              : undefined))
       }
       accessibilityHint={
         props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
@@ -294,7 +308,9 @@ export function RadioGroup({
       <Box
         accessibilityRole="radiogroup"
         {...props}
-        accessibilityLabel={props.accessibilityLabel ?? (field?.label || undefined)}
+        accessibilityLabel={
+          props.accessibilityLabel ?? (field?.labelFor(props.nativeID) || undefined)
+        }
         accessibilityHint={
           props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
         }
@@ -317,6 +333,7 @@ export function RadioGroupItem({
     () => group.set(value),
     !!(disabled || group.disabled),
     group.value === value,
+    props.nativeID,
   );
   return (
     <Button
@@ -325,7 +342,8 @@ export function RadioGroupItem({
       variant="outline"
       accessibilityRole="radio"
       accessibilityLabel={
-        props.accessibilityLabel ?? (plainText(children) || field?.label || undefined)
+        props.accessibilityLabel ??
+        (plainText(children) || field?.labelFor(props.nativeID) || undefined)
       }
       accessibilityHint={
         props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
@@ -721,8 +739,7 @@ export function FieldError({
   ) : null;
 }
 export function FieldInput(props: React.ComponentProps<typeof Input>) {
-  const input = useNativeFieldInput(props);
-  return <Input {...input} />;
+  return <Input {...props} />;
 }
 export const FieldSeparator = ({ children }: { children?: ReactNode }) => <Muted>{children}</Muted>;
 export const Textarea = ({ style, ...props }: TextInputProps) => (

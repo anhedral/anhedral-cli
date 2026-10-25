@@ -487,3 +487,131 @@ test('carousel default selection survives the initial empty collection commit', 
   expect(screen.getByRole('button', { name: 'Next slide' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Previous slide' })).not.toBeDisabled();
 });
+
+test('authored native labels name their actual fields and activate the associated checkbox', async () => {
+  const Component = require('./.generated/src/examples/base/label-example').default;
+  await mount(<Component />);
+  const checkbox = screen.getByRole('checkbox', { name: 'Accept terms and conditions' });
+  expect(checkbox.props.accessibilityState.checked).toBe(false);
+  expect(screen.getByLabelText('Username')).toBeOnTheScreen();
+  expect(screen.getByLabelText('Disabled')).toBeDisabled();
+  expect(screen.getByLabelText('Message')).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText('Accept terms and conditions'));
+  expect(
+    screen.getByRole('checkbox', { name: 'Accept terms and conditions' }).props.accessibilityState
+      .checked,
+  ).toBe(true);
+});
+test('the authored bookmark toggle applies its selected native SVG paint', async () => {
+  const Component = require('./.generated/src/examples/new-york-v4/toggle-demo').default;
+  const { styling } = require('@workspace/styling');
+  await mount(<Component />);
+  const color = styling.utilityColors['blue-500'];
+  expect(JSON.stringify(screen.toJSON())).not.toContain(color);
+  await fireEvent.press(screen.getByRole('button', { name: 'Toggle bookmark' }));
+  expect(
+    screen.getByRole('button', { name: 'Toggle bookmark' }).props.accessibilityState.selected,
+  ).toBe(true);
+  expect(JSON.stringify(screen.toJSON())).toContain(color);
+});
+
+test('standalone authored labels activate only their own native control across repeated story IDs', async () => {
+  const Component = require('./.generated/src/examples/new-york-v4/label-demo').default;
+  await mount(
+    <>
+      <Component />
+      <Component />
+    </>,
+  );
+  const labels = screen.getAllByText('Accept terms and conditions');
+  await fireEvent.press(labels[0]!);
+  const controls = screen.getAllByRole('checkbox', { name: 'Accept terms and conditions' });
+  expect(controls[0]!.props.accessibilityState.checked).toBe(true);
+  expect(controls[1]!.props.accessibilityState.checked).toBe(false);
+});
+test('named labels in a shared field retain separate focus targets and accessible names', async () => {
+  let first: import('react-native').TextInput | null = null,
+    second: import('react-native').TextInput | null = null;
+  const view = (showFirst: boolean) => (
+    <UI.ThemeProvider>
+      <UI.Field>
+        <UI.Label controlID="one">First</UI.Label>
+        {showFirst && (
+          <UI.Input
+            nativeID="one"
+            testID="first"
+            ref={(node) => {
+              first = node;
+            }}
+          />
+        )}
+        <UI.Label controlID="two">Second</UI.Label>
+        <UI.Input
+          nativeID="two"
+          testID="second"
+          ref={(node) => {
+            second = node;
+          }}
+        />
+      </UI.Field>
+    </UI.ThemeProvider>
+  );
+  await render(view(true));
+  expect(screen.getByLabelText('First')).toBe(screen.getByTestId('first'));
+  expect(screen.getByLabelText('Second')).toBe(screen.getByTestId('second'));
+  expect(first).not.toBe(second);
+  const focusFirst = jest.fn(),
+    focusSecond = jest.fn();
+  first!.focus = focusFirst;
+  second!.focus = focusSecond;
+  await fireEvent.press(screen.getByText('First'));
+  expect(focusFirst).toHaveBeenCalledTimes(1);
+  expect(focusSecond).not.toHaveBeenCalled();
+  await screen.rerender(view(false));
+  await fireEvent.press(screen.getByText('First'));
+  expect(focusSecond).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByText('Second'));
+  expect(focusSecond).toHaveBeenCalledTimes(1);
+});
+test('transparent native field providers preserve grid placement and element sibling indices', async () => {
+  const { NativeFieldProvider } = require('./.generated/src/native/_field-context');
+  const { RegistryView } = require('./.generated/src/native/registry-styles');
+  await mount(
+    <RegistryView testID="grid" className="grid grid-cols-2 gap-2">
+      <NativeFieldProvider id="one" invalid={false}>
+        <RegistryView testID="a" className="first:mt-4" />
+        <RegistryView testID="b" className="first:mt-4" />
+      </NativeFieldProvider>
+    </RegistryView>,
+  );
+  await fireEvent(screen.getByTestId('grid'), 'layout', {
+    nativeEvent: { layout: { width: 400, height: 200, x: 0, y: 0 } },
+  });
+  expect(StyleSheet.flatten(screen.getByTestId('a').props.style)).toMatchObject({
+    width: 196,
+    marginTop: 16,
+  });
+  expect(StyleSheet.flatten(screen.getByTestId('b').props.style).width).toBe(196);
+  expect(StyleSheet.flatten(screen.getByTestId('b').props.style).marginTop).toBeUndefined();
+});
+test('the authored slider receives its native label and a label opens the associated native select', async () => {
+  const Component = require('./.generated/src/examples/base/slider-example').default;
+  await mount(<Component />);
+  expect(screen.getByRole('adjustable', { name: 'Temperature 1' })).toBeOnTheScreen();
+  await screen.unmount();
+  await mount(
+    <UI.Field>
+      <UI.Label controlID="plan">Plan</UI.Label>
+      <UI.Select>
+        <UI.SelectTrigger nativeID="plan">
+          <UI.SelectValue placeholder="Choose" />
+        </UI.SelectTrigger>
+        <UI.SelectContent>
+          <UI.SelectItem value="pro">Pro</UI.SelectItem>
+        </UI.SelectContent>
+      </UI.Select>
+    </UI.Field>,
+  );
+  await fireEvent.press(screen.getByText('Plan'));
+  expect(screen.getByRole('radio', { name: 'Pro' })).toBeOnTheScreen();
+});

@@ -1,3 +1,30 @@
+# Native label association and control focus — October 24, 2026
+
+The source compiler now resolves HTML label targets before removing DOM props.
+Twenty-six maintained files contain label associations; 22 need generated native
+field scopes. Existing native fields retain their ownership. Unknown, ambiguous,
+cross-function and cross-field targets fail generation. The reviewed button-group
+Amount example omitted its matching input ID upstream; its native translation adds
+that exact ID while retaining the original source fingerprint.
+
+- Native labels keep specific targets, accessible names and Android label IDs.
+  Named targets remain isolated when another field unmounts or story IDs repeat.
+  Transparent field scopes preserve grid placement and sibling selectors. Inputs,
+  input groups, sliders and selection controls retain real focus/activation bindings.
+- Selected bookmark icons now receive native fill/stroke paint. Current-color,
+  stroke widths and SVG child restrictions retain explicit native mappings.
+- Full suites: 955 tests on each of iOS and Android, 36 suites each. Root: 594
+  passed, one existing optional skip. Strict generated types, lint, package policy
+  and installed packed CLI smoke passed. Both production Hermes builds contain
+  all 488 maintained modules. Packlist: 249 files, 1,177,479 compressed bytes.
+- The maintained iOS command passed all three XCTest cases on iOS 26.5, including
+  a real label touch followed by typing into its native email input. Evidence:
+  `.artifacts/native-ui-ios/2026-10-25T02-55-25-192Z/results.xcresult`.
+- Unsupported recipe types, remaining APIs and all eight component style presets
+  remain unfinished. Whole-registry completion still rejects 551 distinct items.
+  Expo 57 / iOS 27 scene lifecycle compatibility and Android device acceptance
+  remain open. No release or full parity is asserted.
+
 # Reproducible native iOS acceptance harness — October 24, 2026
 
 The maintained command `pnpm test:native-ui:ios -- --device <dedicated UUID>`

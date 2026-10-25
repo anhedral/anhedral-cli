@@ -16,6 +16,7 @@ import { Input, type InputProps } from './input';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
 import { composeNativeRefs } from './_slot';
+import { useNativeField } from './_field-context';
 type Align = 'inline-start' | 'inline-end' | 'block-start' | 'block-end';
 type Group = {
   input: RefObject<TextInput | null>;
@@ -150,11 +151,13 @@ export function InputGroupButton({
 export function InputGroupInput({
   ref,
   style,
-  invalid,
+  invalid: ownInvalid,
   editable,
   onChangeText,
   ...props
 }: InputProps) {
+  const field = useNativeField();
+  const invalid = ownInvalid ?? field?.invalid;
   const group = useGroup(),
     setInvalid = group.setInvalid,
     setDisabled = group.setDisabled;

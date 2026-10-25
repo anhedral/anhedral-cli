@@ -3,7 +3,6 @@ import { type TextInputProps } from 'react-native';
 import { Input, type InputProps } from './input';
 import { Textarea } from './textarea';
 import { InputGroupInput, InputGroupTextarea } from './input-group';
-import { useNativeFieldInput } from './_field-context';
 import { useNativeFormAction } from './native-form';
 import { useNativeActionControl } from './registry-action-form';
 
@@ -64,7 +63,7 @@ function useRegistryInput({
     else if (onChangeText) onChangeText(text);
     else onChange?.(text);
   };
-  return useNativeFieldInput({
+  return {
     ...props,
     value: action.active
       ? String(action.value ?? '')
@@ -122,7 +121,7 @@ function useRegistryInput({
       onSubmitEditing?.(event);
       if (form.available && !props.multiline && !event.isDefaultPrevented()) void form.submit();
     },
-  });
+  };
 }
 function inputBinding(Component: (props: InputProps) => ReactNode, multiline = false) {
   return function RegistryInput(props: RegistryInputProps) {

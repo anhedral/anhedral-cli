@@ -65,6 +65,38 @@ type StyledProps<P> = P extends unknown
   ? Omit<P, Exclude<keyof RecipeProps, 'children'>> &
       Omit<RecipeProps, 'children'> & { children?: unknown }
   : never;
+function transparentRegistryNode(
+  child: ReactNode,
+): child is React.ReactElement<{ children?: ReactNode }> {
+  return (
+    isValidElement<{ children?: ReactNode }>(child) &&
+    (child.type === Fragment ||
+      ((typeof child.type === 'function' || typeof child.type === 'object') &&
+        'nativeRegistryTransparent' in child.type &&
+        child.type.nativeRegistryTransparent === true))
+  );
+}
+function registryChildCount(children: ReactNode): number {
+  return Children.toArray(children).reduce<number>(
+    (count, child) =>
+      count + (transparentRegistryNode(child) ? registryChildCount(child.props.children) : 1),
+    0,
+  );
+}
+function mapRegistryChildren(
+  children: ReactNode,
+  transform: (child: ReactNode, index: number, count: number) => ReactNode,
+): ReactNode {
+  const count = registryChildCount(children);
+  let index = 0;
+  const map = (nodes: ReactNode): ReactNode =>
+    Children.map(nodes, (child) =>
+      transparentRegistryNode(child)
+        ? cloneElement(child, { children: map(child.props.children) })
+        : transform(child, index++, count),
+    );
+  return map(children);
+}
 /** Keeps original component identity and discriminated prop unions for compound collectors. */
 export function withRegistryStyles<C extends ComponentType<any>>(Component: C, kind = 'view') {
   function Styled(input: StyledProps<ComponentProps<C>>) {
@@ -120,7 +152,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           : name === 'code-foreground'
             ? theme.colors.foreground
             : undefined) ??
-        (name === 'white' ? '#ffffff' : name === 'transparent' ? 'transparent' : undefined);
+        (name === 'white'
+          ? '#ffffff'
+          : name === 'transparent'
+            ? 'transparent'
+            : name === 'current'
+              ? (tone ??
+                String(StyleSheet.flatten(inherited.style)?.color ?? theme.colors.foreground))
+              : undefined);
       if (resolved)
         return opacity === undefined ? resolved : withAlpha(resolved, Number(opacity) / 100);
       if (/^(#|rgb|hsl|oklch)/.test(value)) return chart?.resolveColor(value) ?? value;
@@ -135,6 +174,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         .join(' '),
       {
         styleName,
+        svg: kind === 'icon' || kind === 'svg-root',
         slot: Component.name?.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),
         selected:
           props.pressed ??
@@ -164,7 +204,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
     const children =
       typeof props.children === 'function'
         ? props.children
-        : Children.map(props.children as ReactNode, (child, index) => {
+        : mapRegistryChildren(props.children as ReactNode, (child, index, count) => {
             if (!isValidElement<RecipeProps>(child)) return child;
             if (
               (typeof child.type !== 'function' && typeof child.type !== 'object') ||
@@ -229,7 +269,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
                 child.props.style,
               ],
               registryIndex: index,
-              registryCount: Children.count(props.children as ReactNode),
+              registryCount: count,
             });
           });
     const interacting = interaction.hovered || interaction.pressed;

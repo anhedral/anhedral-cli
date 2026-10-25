@@ -26,6 +26,7 @@ export function registryStyle(
     expanded?: boolean;
     checked?: boolean;
     slot?: string;
+    svg?: boolean;
   },
 ): RegistryStyle {
   const result: RegistryStyle = {
@@ -145,8 +146,11 @@ export function registryStyle(
       token = token.replace(/^group-data-\[(state=on|selected)\]\/toggle:/, '');
     }
     if (token.startsWith('[svg]:')) {
-      result.svgChildren.push(token.slice(6));
-      continue;
+      if (options.svg) token = token.slice(6);
+      else {
+        result.svgChildren.push(token.slice(6));
+        continue;
+      }
     }
     if (token.startsWith('group-aria-expanded:')) {
       if (!options.expanded) continue;
@@ -462,9 +466,12 @@ export function registryStyle(
         text.textAlign = value;
       else text.color = options.color(value);
     } else if (token.startsWith('bg-')) view.backgroundColor = options.color(token.slice(3));
+    else if (token === 'fill-none') paint.fill = 'none';
     else if (token.startsWith('fill-')) paint.fill = options.color(token.slice(5));
-    else if (token === 'stroke-2') paint.strokeWidth = 2;
+    else if (/^stroke-\d+(?:\.\d+)?$/.test(token)) paint.strokeWidth = Number(token.slice(7));
     else if (token === 'stroke-transparent') paint.stroke = 'transparent';
+    else if (token === 'stroke-none') paint.stroke = 'none';
+    else if (token.startsWith('stroke-')) paint.stroke = options.color(token.slice(7));
     else if (token === '-scale-x-100')
       view.transform = [...((view.transform as []) ?? []), { scaleX: -1 }];
     else if (token === '-translate-y-2')

@@ -33,4 +33,16 @@ final class RegistryUITests: XCTestCase {
     toggle.tap()
     XCTAssertTrue(toggle.isSelected)
   }
+  func testAuthoredLabelFocusesItsNativeInput() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("new-york-v4/input-with-label", in: app)
+    let input = app.textFields["Email"]
+    XCTAssertTrue(input.waitForExistence(timeout: 10))
+    // The source places its 20-point label above the input with a 12-point gap.
+    let label = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: input.frame.minX + 20, dy: input.frame.minY - 22))
+    label.tap()
+    app.typeText("native@example.com")
+    XCTAssertEqual(input.value as? String, "native@example.com")
+  }
 }

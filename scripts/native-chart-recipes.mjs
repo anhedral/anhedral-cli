@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { nativeFieldAssociations, nativeLabelBindings } from './native-field-associations.mjs';
 import { loadOfficialRegistry, reviewedInputs } from './shadcn-registry.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const hash = (value) => createHash('sha256').update(value).digest('hex');
@@ -95,8 +96,17 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       /useForm<z\.infer<typeof formSchema>>/g,
       'useForm<z.input<typeof formSchema>, unknown, z.output<typeof formSchema>>',
     );
+  // The reviewed amount label names an input whose upstream example omitted its ID.
+  if (filename.endsWith('/button-group-example.tsx'))
+    source = source.replace(
+      '<Input placeholder="Enter amount to send" />',
+      '<Input id="amount" placeholder="Enter amount to send" />',
+    );
   const f = ts.factory,
     file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const fieldLabels = nativeLabelBindings(file);
+  const fieldRanges = nativeForms ? nativeFieldAssociations(file) : new Map(),
+    fieldAlias = f.createUniqueName('NativeRegistryFieldScope');
   const declarations = [],
     imports = [],
     hostNames = new Set();
@@ -126,6 +136,43 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
   };
   const transformer = (context) => {
     const visit = (node) => {
+      const associations = fieldRanges.get(node);
+      if (associations) {
+        const updated = ts.visitEachChild(node, visit, context),
+          children = [];
+        let position = 0;
+        for (const range of associations) {
+          children.push(...updated.children.slice(position, range.start));
+          children.push(
+            f.createJsxElement(
+              f.createJsxOpeningElement(
+                fieldAlias,
+                undefined,
+                f.createJsxAttributes([
+                  f.createJsxAttribute(f.createIdentifier('id'), ts.visitNode(range.value, visit)),
+                  f.createJsxAttribute(
+                    f.createIdentifier('invalid'),
+                    f.createJsxExpression(undefined, f.createFalse()),
+                  ),
+                ]),
+              ),
+              updated.children.slice(range.start, range.end + 1),
+              f.createJsxClosingElement(fieldAlias),
+            ),
+          );
+          position = range.end + 1;
+        }
+        children.push(...updated.children.slice(position));
+        return ts.isJsxElement(updated)
+          ? f.updateJsxElement(updated, updated.openingElement, children, updated.closingElement)
+          : f.updateJsxFragment(
+              updated,
+              updated.openingFragment,
+              children,
+              updated.closingFragment,
+            );
+      }
+
       if (
         (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
         ts.isIdentifier(node.tagName) &&
@@ -319,7 +366,11 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       ) {
         let original = node.expression;
         while (ts.isParenthesizedExpression(original)) original = original.expression;
-        if (!ts.isJsxElement(original) && !ts.isJsxSelfClosingElement(original))
+        if (
+          !ts.isJsxElement(original) &&
+          !ts.isJsxSelfClosingElement(original) &&
+          !ts.isJsxFragment(original)
+        )
           return ts.visitEachChild(node, visit, context);
         let expression = ts.visitNode(original, visit);
         if (nativeForms)
@@ -572,6 +623,12 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           )
         )
           return undefined;
+        if (nativeForms && name === 'htmlFor' && fieldLabels.has(tag))
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier('controlID'),
+            ts.visitNode(node.initializer, visit),
+          );
         if (nativeForms && ['htmlFor', 'aria-describedby', 'aria-errormessage'].includes(name))
           return undefined;
         if (nativeForms && ['id', 'aria-invalid', 'data-invalid'].includes(name))
@@ -687,6 +744,21 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       ),
       f.createStringLiteral(target),
       undefined,
+    );
+  if (fieldRanges.size)
+    imports.push(
+      f.createImportDeclaration(
+        undefined,
+        f.createImportClause(
+          false,
+          undefined,
+          f.createNamedImports([
+            f.createImportSpecifier(false, f.createIdentifier('NativeFieldProvider'), fieldAlias),
+          ]),
+        ),
+        f.createStringLiteral('../../native/_field-context'),
+        undefined,
+      ),
     );
   imports.push(makeImport('withRegistryStyles', '../../native/registry-styles'));
   imports.push(makeImport('NativeRegistryPalette', '../../native/_registry-context'));

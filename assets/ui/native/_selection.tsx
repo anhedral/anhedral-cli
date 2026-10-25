@@ -11,7 +11,7 @@ import { Box, LabelText, Muted, row, useControllable, content, nativeComponent }
 import { Button, type ButtonProps } from './button';
 import { Input } from './input';
 import { useTheme } from '../theme';
-import { useNativeField } from './_field-context';
+import { useNativeField, useNativeFieldActivation } from './_field-context';
 import {
   OverlayRoot,
   OverlayTrigger,
@@ -161,6 +161,13 @@ export function SelectTrigger({
   const state = useSelect(),
     field = useNativeField(),
     { colors } = useTheme();
+  const overlay = useOverlay();
+  useNativeFieldActivation(
+    () => overlay.set(true),
+    state.disabled || !!props.disabled,
+    false,
+    props.nativeID,
+  );
   return (
     <OverlayTrigger
       variant="outline"
@@ -168,7 +175,9 @@ export function SelectTrigger({
       disabled={state.disabled || props.disabled}
       accessibilityRole="combobox"
       accessibilityLabel={
-        props.accessibilityLabel ?? state.accessibilityLabel ?? (field?.label || undefined)
+        props.accessibilityLabel ??
+        state.accessibilityLabel ??
+        (field?.labelFor(props.nativeID) || undefined)
       }
       accessibilityHint={
         props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')

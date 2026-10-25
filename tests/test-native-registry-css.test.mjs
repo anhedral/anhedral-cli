@@ -101,3 +101,16 @@ test('typography, child spacing and native border/shadow metrics preserve author
     'color:muted',
   );
 });
+
+test('SVG child restrictions resolve paint on the actual icon while keeping non-SVG descendants separate', () => {
+  const icon = registryStyle('[svg]:fill-blue-500 [svg]:stroke-blue-500', {
+    ...options,
+    svg: true,
+  });
+  assert.equal(icon.paint.fill, 'color:blue-500');
+  assert.equal(icon.paint.stroke, 'color:blue-500');
+  assert.deepEqual(icon.svgChildren, []);
+  const view = registryStyle('[svg]:fill-blue-500', { ...options, svg: false });
+  assert.deepEqual(view.svgChildren, ['fill-blue-500']);
+  assert.equal(view.paint.fill, undefined);
+});
