@@ -266,6 +266,7 @@ export function ToggleGroupItem({ value, disabled, ...props }: ButtonProps & { v
   );
 }
 const RadioContext = createContext<{
+  invalid?: boolean;
   value: string;
   set: (value: string) => void;
   disabled?: boolean;
@@ -287,7 +288,9 @@ export function RadioGroup({
   const field = useNativeField();
   const [selected, set] = useControllable(value, defaultValue, onValueChange);
   return (
-    <RadioContext.Provider value={{ value: selected, set, disabled }}>
+    <RadioContext.Provider
+      value={{ value: selected, set, disabled, invalid: invalid ?? field?.invalid }}
+    >
       <Box
         accessibilityRole="radiogroup"
         {...props}
@@ -328,7 +331,7 @@ export function RadioGroupItem({
         props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
       }
       style={(state) => [
-        (invalid ?? field?.invalid) && { borderColor: colors.destructive },
+        (invalid ?? group.invalid ?? field?.invalid) && { borderColor: colors.destructive },
         typeof props.style === 'function' ? props.style(state) : props.style,
       ]}
       accessibilityState={{

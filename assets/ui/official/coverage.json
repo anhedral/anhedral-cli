@@ -2341,7 +2341,7 @@
     },
     "registry:example/alert-destructive": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2359,7 +2359,7 @@
     },
     "registry:example/alert-dialog-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2377,7 +2377,7 @@
     },
     "registry:example/badge-destructive": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2395,7 +2395,7 @@
     },
     "registry:example/badge-outline": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2413,7 +2413,7 @@
     },
     "registry:example/badge-secondary": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2431,7 +2431,7 @@
     },
     "registry:example/button-default": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2447,7 +2447,7 @@
     },
     "registry:example/button-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2465,7 +2465,7 @@
     },
     "registry:example/button-destructive": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2483,7 +2483,7 @@
     },
     "registry:example/button-ghost": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2501,7 +2501,7 @@
     },
     "registry:example/button-group-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2517,7 +2517,7 @@
     },
     "registry:example/button-group-input": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2533,7 +2533,7 @@
     },
     "registry:example/button-group-nested": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2549,7 +2549,7 @@
     },
     "registry:example/button-group-select": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2565,7 +2565,7 @@
     },
     "registry:example/button-group-separator": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2581,7 +2581,7 @@
     },
     "registry:example/button-group-size": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2597,7 +2597,7 @@
     },
     "registry:example/button-icon": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2615,7 +2615,7 @@
     },
     "registry:example/button-link": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2633,7 +2633,7 @@
     },
     "registry:example/button-loading": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2651,7 +2651,7 @@
     },
     "registry:example/button-outline": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2669,7 +2669,7 @@
     },
     "registry:example/button-secondary": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2687,7 +2687,7 @@
     },
     "registry:example/button-size": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2703,7 +2703,7 @@
     },
     "registry:example/combobox-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2721,7 +2721,7 @@
     },
     "registry:example/context-menu-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2739,7 +2739,7 @@
     },
     "registry:example/dropdown-menu-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2757,7 +2757,7 @@
     },
     "registry:example/dropdown-menu-dialog": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2773,7 +2773,7 @@
     },
     "registry:example/dropdown-menu-radio-group": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2791,7 +2791,7 @@
     },
     "registry:example/field-checkbox": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2807,7 +2807,7 @@
     },
     "registry:example/field-choice-card": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2823,7 +2823,7 @@
     },
     "registry:example/field-fieldset": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2839,7 +2839,7 @@
     },
     "registry:example/field-input": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2855,7 +2855,7 @@
     },
     "registry:example/field-radio": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2871,7 +2871,7 @@
     },
     "registry:example/field-select": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2887,7 +2887,7 @@
     },
     "registry:example/field-slider": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2903,7 +2903,7 @@
     },
     "registry:example/field-switch": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2919,7 +2919,7 @@
     },
     "registry:example/field-textarea": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2935,7 +2935,7 @@
     },
     "registry:example/input-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2953,7 +2953,7 @@
     },
     "registry:example/input-disabled": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2971,7 +2971,7 @@
     },
     "registry:example/input-group-button-group": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -2987,7 +2987,7 @@
     },
     "registry:example/input-group-icon": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3003,7 +3003,7 @@
     },
     "registry:example/input-group-text": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3019,7 +3019,7 @@
     },
     "registry:example/input-otp-controlled": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3037,7 +3037,7 @@
     },
     "registry:example/input-otp-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3055,7 +3055,7 @@
     },
     "registry:example/input-otp-separator": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3073,7 +3073,7 @@
     },
     "registry:example/input-with-button": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3091,7 +3091,7 @@
     },
     "registry:example/input-with-label": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3109,7 +3109,7 @@
     },
     "registry:example/item-icon": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3125,7 +3125,7 @@
     },
     "registry:example/item-variant": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3141,7 +3141,7 @@
     },
     "registry:example/kbd-button": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3157,7 +3157,7 @@
     },
     "registry:example/kbd-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3173,7 +3173,7 @@
     },
     "registry:example/kbd-tooltip": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3189,7 +3189,7 @@
     },
     "registry:example/menubar-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3207,7 +3207,7 @@
     },
     "registry:example/native-select-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3223,7 +3223,7 @@
     },
     "registry:example/native-select-disabled": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3239,7 +3239,7 @@
     },
     "registry:example/native-select-groups": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3255,7 +3255,7 @@
     },
     "registry:example/native-select-invalid": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3271,7 +3271,7 @@
     },
     "registry:example/pagination-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3289,7 +3289,7 @@
     },
     "registry:example/radio-group-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3307,7 +3307,7 @@
     },
     "registry:example/select-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3325,7 +3325,7 @@
     },
     "registry:example/select-scrollable": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3343,7 +3343,7 @@
     },
     "registry:example/skeleton-card": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3361,7 +3361,7 @@
     },
     "registry:example/slider-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3379,7 +3379,7 @@
     },
     "registry:example/spinner-basic": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3395,7 +3395,7 @@
     },
     "registry:example/spinner-button": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3411,7 +3411,7 @@
     },
     "registry:example/spinner-color": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3427,7 +3427,7 @@
     },
     "registry:example/spinner-custom": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3443,7 +3443,7 @@
     },
     "registry:example/spinner-empty": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3459,7 +3459,7 @@
     },
     "registry:example/spinner-size": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3475,7 +3475,7 @@
     },
     "registry:example/table-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3493,7 +3493,7 @@
     },
     "registry:example/tabs-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3511,7 +3511,7 @@
     },
     "registry:example/textarea-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3529,7 +3529,7 @@
     },
     "registry:example/textarea-disabled": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3547,7 +3547,7 @@
     },
     "registry:example/textarea-with-button": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3565,7 +3565,7 @@
     },
     "registry:example/textarea-with-label": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3583,7 +3583,7 @@
     },
     "registry:example/toggle-disabled": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3601,7 +3601,7 @@
     },
     "registry:example/toggle-group-demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3619,7 +3619,7 @@
     },
     "registry:example/toggle-group-disabled": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3637,7 +3637,7 @@
     },
     "registry:example/toggle-group-lg": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3655,7 +3655,7 @@
     },
     "registry:example/toggle-group-outline": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3673,7 +3673,7 @@
     },
     "registry:example/toggle-group-single": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3691,7 +3691,7 @@
     },
     "registry:example/toggle-group-sm": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3709,7 +3709,7 @@
     },
     "registry:example/toggle-lg": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3727,7 +3727,7 @@
     },
     "registry:example/toggle-outline": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3745,7 +3745,7 @@
     },
     "registry:example/toggle-sm": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3763,7 +3763,7 @@
     },
     "registry:example/toggle-with-text": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3781,7 +3781,7 @@
     },
     "registry:example/avatar-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3820,7 +3820,7 @@
     },
     "registry:example/button-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3859,7 +3859,7 @@
     },
     "registry:example/carousel-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3898,7 +3898,7 @@
     },
     "registry:example/checkbox-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3937,7 +3937,7 @@
     },
     "registry:example/collapsible-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -3976,7 +3976,7 @@
     },
     "registry:example/command-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4015,7 +4015,7 @@
     },
     "registry:example/label-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4054,7 +4054,7 @@
     },
     "registry:example/native-select-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4093,7 +4093,7 @@
     },
     "registry:example/pagination-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4132,7 +4132,7 @@
     },
     "registry:example/progress-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4171,7 +4171,7 @@
     },
     "registry:example/radio-group-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4210,7 +4210,7 @@
     },
     "registry:example/skeleton-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4249,7 +4249,7 @@
     },
     "registry:example/slider-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4288,7 +4288,7 @@
     },
     "registry:example/spinner-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4327,7 +4327,7 @@
     },
     "registry:example/switch-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4366,7 +4366,7 @@
     },
     "registry:example/tabs-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4405,7 +4405,7 @@
     },
     "registry:example/textarea-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4444,7 +4444,7 @@
     },
     "registry:example/toggle-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4483,7 +4483,7 @@
     },
     "registry:example/demo": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4522,7 +4522,7 @@
     },
     "registry:example/button-group-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4561,7 +4561,7 @@
     },
     "registry:example/context-menu-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4600,7 +4600,7 @@
     },
     "registry:example/dropdown-menu-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4639,7 +4639,7 @@
     },
     "registry:example/menubar-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4670,7 +4670,7 @@
     },
     "registry:example/select-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4709,7 +4709,7 @@
     },
     "registry:example/table-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4748,7 +4748,7 @@
     },
     "registry:example/toast-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4771,7 +4771,7 @@
     },
     "registry:example/popover-example": {
       "status": "partial",
-      "reason": "Authored component examples retain source data and callbacks in the native recipe catalog. Rendered on iOS and Android with additional selection, overlay, pagination, numeric input, typography and image lifecycle behavior tests. Complete component preset/API parity and device acceptance remain pending.",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -4806,6 +4806,1047 @@
         "radix-rhea": "015aad0371bc3ffe43ccb6d24240d7620591f42ac30c7339211901092e9232cb",
         "radix-sera": "9eb52f867f3a7afb78b257afa7fdfc8a742483a47a12a141610f5915ddef9c24",
         "radix-vega": "96b1b029022482f680fdd2a28bdcb648a1dd1a5060b7ebf222c9c4d889e3b2cf"
+      }
+    },
+    "registry:example/sonner-example": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "d1297f7b21046f1d7691b93a46b2da9ec0ab5a00c8a74cdc34d25b3aafd7c319",
+        "aria-lyra": "6b25e0fdc9e10610485b174ca6908f25349778a105942777eba084b2f89db4bd",
+        "aria-maia": "000ead013216f204ffa4f1c9d028364db1d74ca51e9232c9f6715ad6fcd8ddb7",
+        "aria-mira": "c6bf341b1e35f5109b69dccb7cccb99ecaf37419b3668ed883edb41e1b9a98a4",
+        "aria-nova": "39ac59fd9d5006517325276297fa1a7605d2856ac21f3dfb1e8e51ca73ca9f11",
+        "aria-rhea": "94c194ccc96757ee9480c81b42b3a0012613acdbac0aef0342c06eec2753f936",
+        "aria-sera": "1fb96e3d5b4669941137a862289cd3c935d5e1f20dca29b76c879e0aa7c098c4",
+        "aria-vega": "e54d791399e2c4a16a3fff87e8ad95dcd17e85c2155da457ab9407952ecef7a8",
+        "base-luma": "6ce5bde1e850d85808ba4e66dbedda9c544b53d00daf723b3627be14669f1294",
+        "base-lyra": "330edbc674d1451b53b3d4dd088c5ad209bab4d4b81a090ebadf83455d3829f8",
+        "base-maia": "0cf99c0428fdb61249f2689892e568de7bc1dfdd70e6c12c9d1d540e936cc979",
+        "base-mira": "5fb3e23114a16b9ade472bcd524cb4c2e062164baed62bbc9541a8ef173b0644",
+        "base-nova": "1e95b0f664ac7a91564c2e0f95fb6bee2eefdaedbcfa47ed88abeb448f65c711",
+        "base-rhea": "e104bf807099efcff10d7c624b68286427c7ea3c14ba56752d67659edd80458d",
+        "base-sera": "d7721e3efa143dcf825539fab5af4e7b356f242a3ba304bfe10ceddb9980d812",
+        "base-vega": "88e50114264bbfc8cd17af1b438c2511de65ecef9a5f884082496149970135c3",
+        "radix-luma": "2ccf911920fda4786b6cc453ba94c971fa89d1478b92ef36ed2f78ea73b01241",
+        "radix-lyra": "d02cfdea4e12cf303a981b1ac3cc9a3e3342edccb2a216ce1747f4e210cb73cf",
+        "radix-maia": "d43ff89b932502b6cdef498b21d2f121dc2269f01edbb047682d203928599ba9",
+        "radix-mira": "860df862f9fc02956e55026bf693758d9de573c8d62ea0a48d5f9333db2f8410",
+        "radix-nova": "a90c32a652bdb3bc8b4b611748e476757c71f9780db0680c7f3a662cef31fd63",
+        "radix-rhea": "d984c59fe868e5d40691ee68e16825edbfe71899a47055140344a62a2e3e4219",
+        "radix-sera": "d448ab290f6fdda6f06adb8f7c80a13fecb70bc0528818072fad5a479aee6462",
+        "radix-vega": "d8229dd4e05d5898688d79bae6e5c3a644c89b7f6200e47442fcf47b3555b8c2"
+      }
+    },
+    "registry:example/accordion-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "2c2de62491f46f31c5b6071f6b292055fae2054cb15daf520510b4f4d8eb5dc5",
+        "new-york": "34fcbc6c122c1e3728cd33572778723db74100208534ec86c4614280ca4eb20e",
+        "new-york-v4": "dfc3ec5de411139484cace4fbe86917bc3b6fd917593f935239086cf968af086"
+      }
+    },
+    "registry:example/avatar-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "e8df674d8873a0c795901a4de1b4e8c30494446e555bf7c304db1dc9e759974e",
+        "new-york": "28c22a062a20e9265816653792d6961139cf412059534f4e14b1296e1bf4d345",
+        "new-york-v4": "d0d80043c57ec509079ceed51c4d2e0b469f8776c261e15a0454e38776149d53"
+      }
+    },
+    "registry:example/badge-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "0879f5566f61178a4d3337dc12a970aab19a52d0747e1a3f59f8e098a419fe56",
+        "new-york": "ed652025c781f9bb3149db3ed7b9ff32e0a0c2792504c4d7bf2930bf341b9fa1",
+        "new-york-v4": "592ba3457c73e1e07e05606650c88c82b6b2a64af67bdddb5061d891e91f57ab"
+      }
+    },
+    "registry:example/button-rounded": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "b76d72375fa8dae64e683ba3c19eca2539aa44767ba3c20e516c2890c9e76a7e"
+      }
+    },
+    "registry:example/button-group-dropdown": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "08714f783548dd7caf6e22a09f43d48eb83410ed8157ec2f1ff832c00c95d5c4"
+      }
+    },
+    "registry:example/button-group-popover": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "f7d035d84494f7693af8693e988bcf6fdf87ab8bb3819dc768e1e65f0d08fcb2"
+      }
+    },
+    "registry:example/button-group-input-group": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "6b133153af0a100054f60143c9da9384e08d18577fd743e583638b13879f828e"
+      }
+    },
+    "registry:example/button-group-orientation": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "3678b4081bf7f8f2dea5b5ccbb39310cca13ac1afadd623485a26d5dde23fed9"
+      }
+    },
+    "registry:example/carousel-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "2d7e58a8db240f159562b713e565974381ca17d859d48fbb549dbe4bbf2ac787",
+        "new-york": "a8f4aec5d77b127f89443175adb556dc4f3484af8a1c4e6584ea3cdf82e5bcd7",
+        "new-york-v4": "6fb0f5dc3e21088bc10da8b104788d5e4c29aefc720fb23cb5bf925e08952b3b"
+      }
+    },
+    "registry:example/carousel-size": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "1dba21501184b806041211905e45dad69f92105ef1856db05a68824f5dbec70e",
+        "new-york": "33d59a12ed48e738ac1983a2596627ba23d591c3f52c4a480f834d4a30904091",
+        "new-york-v4": "8fc388bd8d9d2f4760f2ddf46181df279841720ed4733fd63a1e54055a060ff9"
+      }
+    },
+    "registry:example/carousel-spacing": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "d8c3c27ac73d0f44652621e566287a3bd59b6c5e37b6e7539f0b91be1e533b47",
+        "new-york": "d3c34e5e2c74f80410907b6b8f4ea1f31f25ad8318927359ea3e2ba39739d6af",
+        "new-york-v4": "d4ee77950fa5a1605e8d82f3956f0428c77a574128f2088186b5253c06c4f544"
+      }
+    },
+    "registry:example/carousel-orientation": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "8333d3e335d14fbaf8b590a60029cb7ee3feb5780034ec1433a81323e5ed7d6b",
+        "new-york": "da1028153b8cc0434c2e43699243bdf2ea5644e5f8c7c09278e814ab5179baf5",
+        "new-york-v4": "a84b84d28e8512deceaaebb5ab2973a5d6a37d715327e338aa666f4b6a125fe9"
+      }
+    },
+    "registry:example/collapsible-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "ee3178d898048d810e727863267a94c5e36ea70a9c1def764a0f3141ee3dcdc3",
+        "new-york": "1eeab1c1f71228d0e18782ce363875080c7e1775bdd09cd7292331241564ddd4",
+        "new-york-v4": "b7a4967af61d3342cc3edf9a64b87e9ae958d54e0e2e3d8e2add43847e039bce"
+      }
+    },
+    "registry:example/combobox-dropdown-menu": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "a6e80250195cc6fb3f99635e85f25d7fcd18cc88877dd87dee88f5ae73e33d15",
+        "new-york": "ad67efcc3778bb9f75529971f12aff6cfd5f7803eebfccf056a2b40c577827da",
+        "new-york-v4": "0c5fd246a090f1398451aee5b2c08267555e51896b204595e46b46367becb7e1"
+      }
+    },
+    "registry:example/combobox-popover": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "f81ea2da98a77e54af6cf1cee93ecebe193beaad4b0c5042a05b96fde459244b",
+        "new-york": "ebc92e9245c0662d74a8a0ead688a5c6aef2ac130bc0fe6901bc2a131ba094c0",
+        "new-york-v4": "7efc01b6b6274baba73850b607cfc5b39de76f7eca30f400464cea97496189a6"
+      }
+    },
+    "registry:example/command-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "98f91b95cafd4a3b5e9f2fb66d9ac464bdfa1378a2e4b0421cd3dc4dcc27c7b9",
+        "new-york": "0cace06152d5f4bf256e0aeb647b4f488cffc49525bff36345ec7160e00d5fd1",
+        "new-york-v4": "8ca5e7a1ba63835cbda9d41758bcb94208cb4c5afd575a2866c8333c84299b09"
+      }
+    },
+    "registry:example/dialog-close-button": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "3c5143268e9a6bb25dce7a5a79346510fc0065e2e2b9e66ee2a08a33b3e7c1fa",
+        "new-york": "c905a60446e8a1dfc24e215fc25fca02aadc388bdeb8c0455022cc5a8303e955",
+        "new-york-v4": "1d02a1f53347b410f3097aa7cc1e6743dd8096c1263cabd7978f0865be29997c"
+      }
+    },
+    "registry:example/empty-avatar": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "b354a87438fdec602852a0f6f5b78d1b5971c04fb91852cff757fdb1e4f1a5b8"
+      }
+    },
+    "registry:example/empty-avatar-group": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "5887c8519e6c68260719e2c378ba258fddb157513b3bfb82a051604f36bf5f41"
+      }
+    },
+    "registry:example/hover-card-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "eaca61781a41f53646423012909837201057f184c76e55b4b0e53e5b79ee3230",
+        "new-york": "34a32e343b87fb3f6509b92f6d75b80166fa93be80b83dd68a659d4102811768",
+        "new-york-v4": "17a8570eeabab9ae36051964f67dd79c62eb0a94222d7ba9e5e324e63336ee1c"
+      }
+    },
+    "registry:example/input-with-text": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "5565483e3e2217e9b78f401bd1c741ab1b054a5a7f81946211b2d1ba7e3ae4ed",
+        "new-york": "dc923c628731a04775bab3586d75f41d79440dc1f70d30bddd2d2af771e7a1fa",
+        "new-york-v4": "8c74194b7e6b9e8d4b752aea45e8b4b8fb1fb71759b245a31df2a6fa88027780"
+      }
+    },
+    "registry:example/input-group-label": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "eddeb195e364c3547e7bff62201544d145e407cdc692d2db0e0d5b9d48adcf21"
+      }
+    },
+    "registry:example/input-group-tooltip": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "106825fe65d47f45ed2c130da5d0047eee0c77df0b2b521d6d785c01adb6fe77"
+      }
+    },
+    "registry:example/input-group-dropdown": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "139adeb01ea74cab60fec281fed695dde3daa41dde682d1ec54b88e95139af1d"
+      }
+    },
+    "registry:example/input-group-spinner": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "465e755ded60453a9fa40aad13cc12aabdbceda44820a45cad070dee65553bde"
+      }
+    },
+    "registry:example/item-avatar": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "2b446573ffc87ffe555b5b241cc305d3209d154efab0d9c515a22d6d26d7d3ad"
+      }
+    },
+    "registry:example/item-group": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "6a666f0e336abf74afbbfdb812be7dedf428d4489d9bbb24fe8546394f290c33"
+      }
+    },
+    "registry:example/item-dropdown": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "ae4c0444fc30a6d88a6ce9523a74bdefd3ce35dc39e80fd91063fd3dda1a8a2f"
+      }
+    },
+    "registry:example/kbd-input-group": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "f8d4d444d9b4c032eeb2cee9f7860f1f032a19438332a7693c7f0976204a293a"
+      }
+    },
+    "registry:example/kbd-group": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "c7e0b12adef2994ef765c32d78577530f435c26b0b4e398d38a74ec5c9044770"
+      }
+    },
+    "registry:example/label-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "741b954959ea64948ee5af513a4a3c50eca9c166a6b979ff8827e852380cc643",
+        "new-york": "322d8946e452b5e353baf8a79012a6ec729a7e4cdab0d45005c597172160d587",
+        "new-york-v4": "3e9444c98e1a593daf03e681cd8d54672546741dbbab2a385602e48bb8b24e90"
+      }
+    },
+    "registry:example/popover-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "88fe5f1d7e085895effde3efdea651371ce95265c79ab07859ec46bee80f70d2",
+        "new-york": "f573ea45ff12feec6671280a26820bb2e0370e7231333b613ceb22ab3cd160e6",
+        "new-york-v4": "1a643cfd47de45a1fb6de95177d3520b47cef60e78103b4179bbd867347fece9"
+      }
+    },
+    "registry:example/progress-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "64d701733fa37785fc3e5d9b8674590b6dc377558d6e80ab1cdebe244685e8b8",
+        "new-york": "d2d128562abb3a89906d0f1b380abcb54e295b794159b95a8c5682b82eb2d975",
+        "new-york-v4": "e9b71d73202b348286a017df1475790250adf92ca30f721c41147c860d9217ae"
+      }
+    },
+    "registry:example/scroll-area-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "a24eb58bb4e6772a0e92c19d052eff6fa580ac7fd1873ee531b053c0989c80f5",
+        "new-york": "97d6a63399629da8d31f840ca95cbf079c2148bafc4117c4cea253c368da845b",
+        "new-york-v4": "f2e11f3e5c5d72bf87e2fdd6013fdb5eac1e0c4ab0dd66e592b8e984695772cb"
+      }
+    },
+    "registry:example/separator-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "68486c2d15cbe18c11f41e7f6e0b4fb5a54a29e08382db04398ebe7e1a83e9b8",
+        "new-york": "97bbede974094b2be93343562be8bfb880342dbdd75accb9291c419c989d4c81",
+        "new-york-v4": "7054eceed14edd79f9b9d1a3fc1566c126a10d32838935729aa04f918f044735"
+      }
+    },
+    "registry:example/sheet-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "d8aead790dc9e4f14c77a819559324cadc66724db44eb00ba2d26919d3c1b9f7",
+        "new-york": "dea7489d57496dd06da90c588d3867e1e85083a1cc2f4b7dfc3e0afb2a5e3ab5",
+        "new-york-v4": "77183cc5c0ac88c0ac376de46c560ff57d7a8afdef7bb5f93e334beb55d44e60"
+      }
+    },
+    "registry:example/sheet-side": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "e9c137556982d80762d5e472296603745c2d7c324b9d2f2685be0ceac9ee4495",
+        "new-york": "b34dcfa4b3ef181948fbc9be320634022b6f835afa396761e16c2533395d0a52",
+        "new-york-v4": "4fc079fa8643736e13127c088d8ff08ff1ce953f5598a5e2dc6163e8d4a97537"
+      }
+    },
+    "registry:example/skeleton-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "d3f04f9fe24ee430f9e1b563df3390876e6d952022a409f76fdaeb86d316f876",
+        "new-york": "393f90793f70265ff5f464f45b4cca6e09f4f8fd977ace323e8b705f3f93d4dd",
+        "new-york-v4": "e7ab9d4314bcfd3482dbb0ecfb842a9299a936177ecbf52e503940caf7ea0d2b"
+      }
+    },
+    "registry:example/sonner-types": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "986a7af1dc5da874302a5b45fc802aade151f8806bcd1fc5577f27b3a8c59c28"
+      }
+    },
+    "registry:example/spinner-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "8a7bef8ff5635d5cd3175eb5e2def00ccd560f2b1d96cc9067328258fa7af1f0"
+      }
+    },
+    "registry:example/spinner-badge": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "cf26ca4f0d635d061c3c844293ed92e6426e9c1949a7571cab84718c4ab83404"
+      }
+    },
+    "registry:example/spinner-input-group": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "5baa1958cf1474174493080f504492b85ccd5414a783a2a55012867afd9dec85"
+      }
+    },
+    "registry:example/spinner-item": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "17afb99036ca1aa3390d9f947168ddf9276e242564f0953a626732907119e3a6"
+      }
+    },
+    "registry:example/switch-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c119dcf3e4eafc8c29ae3b2a44816e29413a71f636451aefcda3e6de54600fa1",
+        "new-york": "751defa815b78ac9f173a6aadd384fbebb0075357f3dc3c3bda74fa130c26c92",
+        "new-york-v4": "912ce6e11af2977eb2d6922022e6590441bb087f04603e4f73b868741a3923fa"
+      }
+    },
+    "registry:example/textarea-with-text": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c7a6eb9715f3317ca3fa3034a97747679017967ba8a40cddd32ccd4050469f68",
+        "new-york": "05450581a4f0d9f84f9c54fab9fdd993df729c502f4898e39bd33f9b06f97fa9",
+        "new-york-v4": "2c0c9b04230826cd3b02bef3760937d06e6f3a1e13774dfd01e24452ff409328"
+      }
+    },
+    "registry:example/toggle-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "a4a7dd2a15bdb49819f920f970a8967c9f9681acdf360c6f5c93038197ce04a5",
+        "new-york": "268a745b9725cc400d82e4f7ea4b99fac5fe687a0dc3d85dd2e787cc7633ed02",
+        "new-york-v4": "9854d3887875c4d244c7313d07efd9b5ed9f163c0c790a5326eee67c2f9ff19b"
+      }
+    },
+    "registry:example/tooltip-demo": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c255ce66b8055788db2ca1dc19b720275cb1fc9f9ab0ce3454b7c0d37aa32ef3",
+        "new-york": "3411cb77582f596b2d4ffae786b90dcc416a820c016bc93c0a7e6b9570c93221",
+        "new-york-v4": "bc8a5d342a915d3e743c2cfcc2ee605ed31f4780284c1e8e097578fddd3581de"
+      }
+    },
+    "registry:example/typography-blockquote": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "78754f3f2b1df3f5c7087f078fc79a4853e99ffd83ef0dc4443dea66612e4c0c",
+        "new-york": "10853916373a06447664558da06c9493e9db3f03b4fa97887cef20f844db5659",
+        "new-york-v4": "0715e0c30ad3033c6d8295d7bf4c6098ac3bb7831b1630b3858157631f35c538"
+      }
+    },
+    "registry:example/typography-h1": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "bbd1b8f697340386d5e0ee38ac3ca8ff5cebe1c12ddf6f661bf3097650638187",
+        "new-york": "c3f585bfb07d750988dc2ec2b2dd0135a43e6b32e1a59bf107ec7dc86aacceea",
+        "new-york-v4": "63a27aa4e004f2135b9296613d28014ae24b9e7223740127e9033e5a18522486"
+      }
+    },
+    "registry:example/typography-h2": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c8b374c63b0d4694f7caea3919b7954ab407f897ca4210f3e2efe4d08b91fdaa",
+        "new-york": "93b18b4940c9761758ed9e11284029dc0eaa4ed5b22de842b48d9e61aa436c5b",
+        "new-york-v4": "becd68fd6c885eef0f833825a8dced89abc301b9f29054574cebccab92246fa5"
+      }
+    },
+    "registry:example/typography-h3": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "747b91b18be90f6065b409136051cd56efcedcf6f366f42d94f5504462ba6799",
+        "new-york": "88312890b520d1c24b8beb86591ec340c736c55aae23b6935946fe13bf4b2a16",
+        "new-york-v4": "77ac59d4a9b2f598bbf92f39a767001c73451e94d8854bed065a965255959df7"
+      }
+    },
+    "registry:example/typography-h4": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "32349f57ab35255bf54fa67768510deee58a0afd4ceccecec70c267256e8dfba",
+        "new-york": "3a342036015c7932ea4c0e45cd2d45e9fd97d0566f8418e739e43b2ef68e5eca",
+        "new-york-v4": "2e4b0e1e914cc9aabfa99f91fdb4c402e827fcd3448ec80946e75c91fc220ebc"
+      }
+    },
+    "registry:example/typography-inline-code": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "e14e12e98e56d3398365479288a6467b5dd195b0ad326dcf02be8693776c99dd",
+        "new-york": "07096a1abb6ebfa5d7cf2247dad3eb9053581c3607cec436d9240bf457037674",
+        "new-york-v4": "777bf6d400c1e477ed2d4f20876f9f618decf0e45c4d044d00ad4cc34fb577c2"
+      }
+    },
+    "registry:example/typography-large": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "d97547cb699f9bb93f9a29cb785484109afef20cc161a0394ec7a3e2b4c4210c",
+        "new-york": "fe01d081e00fe360d99977920a90ec5c025bf83854390c29eed1da5e97ab86cb",
+        "new-york-v4": "c988621a6f4a4e164dd14a8e602d7512fb0014d3999784634b5c69c8e4fc6506"
+      }
+    },
+    "registry:example/typography-lead": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "c21f1516269e6b85099835fbd36d9727452e8910fcf2f81692a883e118558d11",
+        "new-york": "1936d0821ee49e4c01425bb46723f3f9d8da768a1cb024cedc91721cc96b6b3a",
+        "new-york-v4": "9d509a0b3361a7368efafeaa2f700a66a0ad5d029095031b937e626fe8c619f4"
+      }
+    },
+    "registry:example/typography-muted": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "f5f122194e7f5c113ed1d06edab645bf87ae2cfad9f15f3cd4c37652dcef1d84",
+        "new-york": "d4cd8f9d66cce968b12f227d31a99d438998a10dc126081b281de0cf52f9fac9",
+        "new-york-v4": "f71efd8da5f0d51673195f4e398f3c0122dd404cc2c8351d23ed96246b99ba9f"
+      }
+    },
+    "registry:example/typography-p": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "dc7fccdd1794f1fe5ce3314f98f1449e6c618103d070cebaef85f48277b3f3f9",
+        "new-york": "eca199787337e868b9183641332bcab90c15c4ebab6b8c4e5c2bd44f717868fa",
+        "new-york-v4": "62f32f72e4c0cb63c16255dcca6f0c99520e9352cae0c57c763460564a5cae71"
+      }
+    },
+    "registry:example/typography-small": {
+      "status": "partial",
+      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "330f6b65c538fdb9b5bfc99d2e2f21abee805b3ecf4bbdd1a33ea771f90446a8",
+        "new-york": "3082720cbdd8942a0a635e0b22728506ff9e150af1bf583d4848e072e5f4dadf",
+        "new-york-v4": "a2ebbd6c4bb3aedf69205f30c27df8313b3da57ba549f02990fa81c73df0230a"
       }
     }
   },

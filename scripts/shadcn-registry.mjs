@@ -374,10 +374,18 @@ export function registryChecklist(inventory, coverage) {
   }
   text +=
     '\n## Item checklist\n\nEvery row applies to all listed registries. The machine inventory retains each separate style/item, dependency, file, source hash, discovered variant, function/example and browser API. “Pending” means not yet completed; it is never an implicit web-only exemption.\n\n| Item | Type | Registries | Expo status | Evidence / web-specific adaptation |\n| --- | --- | --- | --- | --- |\n';
+  const styleSets = new Map();
+  for (const item of rows) {
+    const members = item.styles.slice().sort().join(', ');
+    if (!styleSets.has(members)) styleSets.set(members, 'S' + (styleSets.size + 1));
+  }
   for (const item of rows) {
     const entry = coverage.items[item.type + '/' + item.name];
-    text += `| ${item.name} | ${item.type.replace('registry:', '')} | ${item.styles.sort().join(', ')} | ${entry?.status ?? 'pending'} | ${entry?.reason ?? 'Needs item, variant and dependency review.'} |\n`;
+    text += `| ${item.name} | ${item.type.replace('registry:', '')} | ${styleSets.get(item.styles.slice().sort().join(', '))} | ${entry?.status ?? 'pending'} | ${entry?.reason ?? 'Needs item, variant and dependency review.'} |\n`;
   }
+  text +=
+    '\n## Registry sets\n\nEvery set expands to the exact registry members below; item rows retain all styles through their set.\n\n| Set | Registries |\n| --- | --- |\n';
+  for (const [members, label] of styleSets) text += `| ${label} | ${members} |\n`;
   text +=
     '\n## Unresolved upstream registry references\n\nThese upstream metadata gaps remain visible; they are not silently dropped or treated as Expo implementations.\n\n| Registry | Item | Missing registry dependency |\n| --- | --- | --- |\n';
   for (const entry of inventory.unresolvedDependencies ?? [])

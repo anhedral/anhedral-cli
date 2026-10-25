@@ -103,6 +103,15 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
   const hosts = {
     div: 'RegistryView',
     span: 'RegistryText',
+    p: 'RegistryText',
+    h1: 'RegistryH1',
+    h2: 'RegistryH2',
+    h3: 'RegistryH3',
+    h4: 'RegistryH4',
+    strong: 'RegistryStrong',
+    small: 'RegistrySmall',
+    blockquote: 'RegistryText',
+    figure: 'RegistryView',
     button: 'RegistryButton',
     defs: 'Defs',
     linearGradient: 'LinearGradient',
@@ -297,7 +306,6 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
         );
       }
       if (
-        nativeForms &&
         ts.isReturnStatement(node) &&
         node.expression &&
         ts.isFunctionDeclaration(node.parent?.parent) &&
@@ -309,10 +317,9 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
         while (ts.isParenthesizedExpression(original)) original = original.expression;
         if (!ts.isJsxElement(original) && !ts.isJsxSelfClosingElement(original))
           return ts.visitEachChild(node, visit, context);
-        const expression = ts.visitNode(original, visit);
-        return f.updateReturnStatement(
-          node,
-          f.createJsxElement(
+        let expression = ts.visitNode(original, visit);
+        if (nativeForms)
+          expression = f.createJsxElement(
             f.createJsxOpeningElement(
               f.createIdentifier('NativeFormScope'),
               undefined,
@@ -320,6 +327,24 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             ),
             [expression],
             f.createJsxClosingElement(f.createIdentifier('NativeFormScope')),
+          );
+        return f.updateReturnStatement(
+          node,
+          f.createJsxElement(
+            f.createJsxOpeningElement(
+              f.createIdentifier('NativeRegistryPalette'),
+              undefined,
+              f.createJsxAttributes([
+                f.createJsxAttribute(
+                  f.createIdentifier('generation'),
+                  f.createStringLiteral(
+                    /registry\/(?:default|new-york)\//.test(filename) ? 'legacy' : 'modern',
+                  ),
+                ),
+              ]),
+            ),
+            [expression],
+            f.createJsxClosingElement(f.createIdentifier('NativeRegistryPalette')),
           ),
         );
       }
@@ -660,6 +685,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       undefined,
     );
   imports.push(makeImport('withRegistryStyles', '../../native/registry-styles'));
+  imports.push(makeImport('NativeRegistryPalette', '../../native/_registry-context'));
   if (nativeForms) imports.push(makeImport('NativeFormScope', '../../native/native-form'));
   if (nativeActions && /\bNativeFormValues\b/.test(source))
     imports.push(makeImport('NativeFormValues', '../../native/registry-action-form'));

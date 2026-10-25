@@ -63,6 +63,7 @@ jobs:
           node scripts/native-example-recipes.mjs --check
           node scripts/native-icons.mjs
           node scripts/shadcn-colors.mjs
+          node scripts/native-utility-colors.mjs
       - name: Reject stale native parity evidence
         if: success() || failure()
         run: node scripts/shadcn-registry.mjs --write

@@ -65,3 +65,39 @@ test('native utility cascade keeps important classes, SVG child selectors, borde
   assert.equal(s.paint.hoverTranslateY, -2);
   assert.equal(s.view.boxShadow.length, 2);
 });
+
+test('typography, child spacing and native border/shadow metrics preserve authored utilities', () => {
+  const style = registryStyle(
+    'text-xl leading-7 italic border-l-2 rounded shadow-md space-x-4 -space-x-2 first:mt-0 scroll-m-20',
+    { ...options, index: 0 },
+  );
+  assert.deepEqual(style.text, { fontSize: 20, lineHeight: 28, fontStyle: 'italic' });
+  assert.equal(style.view.borderLeftWidth, 2);
+  assert.equal(style.view.borderRadius, 4);
+  assert.equal(style.view.columnGap, 16);
+  assert.equal(style.paint.childMarginStart, -8);
+  assert.equal(style.view.boxShadow.length, 2);
+  assert.equal(style.paint.webScrollMargin, 80);
+  assert.equal(registryStyle('first:mt-4', { ...options, index: 1 }).view.marginTop, undefined);
+  const radius = registryStyle('[--radius:1.2rem] rounded-lg', { ...options });
+  assert.equal(radius.view.borderRadius, 19.2);
+  assert.equal(radius.paint.radius, 19.2);
+  const avatar = registryStyle('data-[slot=avatar]:ring-2 data-[slot=avatar]:ring-background', {
+    ...options,
+    slot: 'avatar',
+  });
+  assert.equal(avatar.view.boxShadow[0].spreadDistance, 2);
+  assert.equal(avatar.view.boxShadow[0].color, 'color:background');
+  assert.deepEqual(
+    registryStyle('data-[slot=avatar]:ring-2', { ...options, slot: 'button' }).view,
+    {},
+  );
+  assert.equal(
+    registryStyle('data-[state=on]:bg-muted', { ...options, selected: false }).view.backgroundColor,
+    undefined,
+  );
+  assert.equal(
+    registryStyle('data-[state=on]:bg-muted', { ...options, selected: true }).view.backgroundColor,
+    'color:muted',
+  );
+});

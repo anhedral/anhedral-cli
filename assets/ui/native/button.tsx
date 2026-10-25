@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import {
   Children,
+  Fragment,
+  isValidElement,
   cloneElement,
   useState,
   type ReactNode,
@@ -93,6 +95,27 @@ export function Button({
   const slotChild = render
     ? cloneElement(render, { children: children ?? render.props.children })
     : children;
+  const renderLabels = (children: ReactNode): ReactNode =>
+    Children.map(children, (child) =>
+      typeof child === 'string' || typeof child === 'number' ? (
+        <Text
+          style={[
+            styles.label,
+            {
+              fontSize: size === 'xs' ? 12 : size === 'lg' ? 16 : 14,
+            },
+            textStyle,
+            { color: foreground },
+          ]}
+        >
+          {child}
+        </Text>
+      ) : isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment ? (
+        cloneElement(child, { children: renderLabels(child.props.children) })
+      ) : (
+        child
+      ),
+    );
   return (
     <NativeRecipeState.Provider value={{ ...accessibilityState, disabled: !!blocked }}>
       <TextToneProvider value={foreground}>
@@ -122,26 +145,7 @@ export function Button({
             typeof style === 'function' ? style(state) : style,
           ]}
         >
-          {asChild || render
-            ? slotChild
-            : Children.map(children, (child) =>
-                typeof child === 'string' || typeof child === 'number' ? (
-                  <Text
-                    style={[
-                      styles.label,
-                      {
-                        fontSize: size === 'xs' ? 12 : size === 'lg' ? 16 : 14,
-                      },
-                      textStyle,
-                      { color: foreground },
-                    ]}
-                  >
-                    {child}
-                  </Text>
-                ) : (
-                  child
-                ),
-              )}
+          {asChild || render ? slotChild : renderLabels(children)}
         </Host>
       </TextToneProvider>
     </NativeRecipeState.Provider>

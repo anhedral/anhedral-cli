@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ScrollView, type ViewProps } from 'react-native';
+import { ScrollView, StyleSheet, type ViewProps } from 'react-native';
 import { Box, LabelText, Muted, row, useControllable, plainText, nativeComponent } from './_core';
 import { Button, LinkButton, type ButtonProps } from './button';
 import { Input } from './input';
@@ -21,7 +21,19 @@ export const Table = ({ children, ...props }: React.ComponentProps<typeof Scroll
     <Box>{children}</Box>
   </ScrollView>
 );
-export const TableHeader = Box;
+export function TableHeader({ children, style, ...props }: ViewProps) {
+  const directColumns = Children.toArray(children).some(
+    (child) => isValidElement(child) && nativeComponent(child.type) === TableHead,
+  );
+  return (
+    <Box
+      {...props}
+      style={[directColumns && { flexDirection: 'row', alignItems: 'center' }, style]}
+    >
+      {children}
+    </Box>
+  );
+}
 export const TableBody = Box;
 export const TableFooter = Box;
 export const TableRow = ({ style, ...props }: ViewProps) => (
@@ -31,14 +43,25 @@ export const TableHead = ({ style, ...props }: React.ComponentProps<typeof Label
   <LabelText
     accessibilityRole="header"
     {...props}
-    style={[{ fontWeight: '600', minWidth: 120, padding: 8 }, style]}
+    style={[
+      {
+        fontWeight: '600',
+        minWidth: StyleSheet.flatten(style)?.width == null ? 120 : 0,
+        padding: 8,
+      },
+      style,
+    ]}
   />
 );
 export const TableCell = ({ colSpan = 1, style, ...props }: ViewProps & { colSpan?: number }) => (
   <Box
     {...props}
     style={[
-      { minWidth: 120 * Math.max(1, colSpan), padding: 8, flex: Math.max(1, colSpan) },
+      {
+        minWidth: StyleSheet.flatten(style)?.width == null ? 120 * Math.max(1, colSpan) : 0,
+        padding: 8,
+        ...(StyleSheet.flatten(style)?.width == null ? { flex: Math.max(1, colSpan) } : {}),
+      },
       style,
     ]}
   />

@@ -157,18 +157,23 @@ export function Badge({
     </Host>
   );
 }
-const AvatarContext = createContext({ loaded: false, setLoaded: (_value: boolean) => {} });
+const AvatarContext = createContext({
+  loaded: false,
+  grayscale: false,
+  setLoaded: (_value: boolean) => {},
+});
 export function Avatar({
   children,
   style,
   size = 'default',
+  grayscale = false,
   ...props
-}: ViewProps & { size?: 'default' | 'lg' | 'sm' }) {
+}: ViewProps & { size?: 'default' | 'lg' | 'sm'; grayscale?: boolean }) {
   const extent = size === 'lg' ? 40 : size === 'sm' ? 24 : 32;
   const [loaded, setLoaded] = useState(false);
   const { colors } = useTheme();
   return (
-    <AvatarContext.Provider value={{ loaded, setLoaded }}>
+    <AvatarContext.Provider value={{ loaded, setLoaded, grayscale }}>
       <View
         {...props}
         style={[
@@ -189,15 +194,18 @@ export function Avatar({
     </AvatarContext.Provider>
   );
 }
+Avatar.nativeRegistryImage = true;
 export function AvatarImage({
   onLoad,
   onError,
   source,
   style,
-  grayscale = false,
+  grayscale: ownGrayscale,
   ...props
 }: ImageProps & { grayscale?: boolean }) {
-  const { setLoaded } = useContext(AvatarContext),
+  const avatar = useContext(AvatarContext),
+    grayscale = ownGrayscale ?? avatar.grayscale,
+    { setLoaded } = avatar,
     filter = useId();
   const identity = JSON.stringify([source, props.src, props.srcSet]),
     latest = useRef(identity);

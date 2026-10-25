@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { validateNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
-test('152 authored component examples retain native source and complete source/style/dependency provenance', () => {
+test('215 authored component examples retain native source and complete source/style/dependency provenance', () => {
   const catalog = loadNativeExampleRecipes();
   validateNativeChartRecipes(loadOfficialRegistry(), catalog);
-  assert.equal(catalog.recipes.length, 152);
+  assert.equal(catalog.recipes.length, 215);
   for (const recipe of catalog.recipes)
     assert.doesNotMatch(recipe.source, /<(?:div|span|button|input|form|svg)\b|onClick=/);
   const pagination = catalog.recipes.find((recipe) => recipe.name === 'pagination-demo');

@@ -275,3 +275,117 @@ test('avatar source identity survives object recreation and ignores a previous i
   expect(screen.queryByText('Fallback')).toBeNull();
   expect(loaded).toHaveBeenCalledTimes(2);
 });
+
+test('table headers support direct Aria columns and authored widths without forcing a 120 point minimum', async () => {
+  await mount(
+    <UI.Table>
+      <UI.TableHeader testID="headers">
+        <UI.TableHead testID="invoice" style={{ width: 100 }}>
+          Invoice
+        </UI.TableHead>
+        <UI.TableHead>Status</UI.TableHead>
+      </UI.TableHeader>
+      <UI.TableBody>
+        <UI.TableRow>
+          <UI.TableCell testID="cell" style={{ width: 100 }}>
+            <Text>INV001</Text>
+          </UI.TableCell>
+        </UI.TableRow>
+      </UI.TableBody>
+    </UI.Table>,
+  );
+  expect(StyleSheet.flatten(screen.getByTestId('headers').props.style).flexDirection).toBe('row');
+  expect(StyleSheet.flatten(screen.getByTestId('invoice').props.style)).toMatchObject({
+    width: 100,
+    minWidth: 0,
+  });
+  expect(StyleSheet.flatten(screen.getByTestId('cell').props.style)).toMatchObject({
+    width: 100,
+    minWidth: 0,
+  });
+  await screen.rerender(
+    <UI.ThemeProvider>
+      <UI.TableHeader testID="headers">
+        <UI.TableRow>
+          <UI.TableHead>Wrapped</UI.TableHead>
+        </UI.TableRow>
+      </UI.TableHeader>
+    </UI.ThemeProvider>,
+  );
+  expect(StyleSheet.flatten(screen.getByTestId('headers').props.style)?.flexDirection).not.toBe(
+    'row',
+  );
+});
+test('radio group validation reaches every choice and explicit item state can override it', async () => {
+  await mount(
+    <UI.RadioGroup invalid defaultValue="a">
+      <UI.RadioGroupItem value="a">Alpha</UI.RadioGroupItem>
+      <UI.RadioGroupItem value="b" invalid={false}>
+        Beta
+      </UI.RadioGroupItem>
+    </UI.RadioGroup>,
+  );
+  const alpha = StyleSheet.flatten(screen.getByRole('radio', { name: 'Alpha' }).props.style);
+  const beta = StyleSheet.flatten(screen.getByRole('radio', { name: 'Beta' }).props.style);
+  expect(alpha.borderColor).not.toBe(beta.borderColor);
+  await fireEvent.press(screen.getByRole('radio', { name: 'Beta' }));
+  expect(screen.getByRole('radio', { name: 'Beta' }).props.accessibilityState.checked).toBe(true);
+});
+
+test('native recipes distinguish current Tailwind utilities from the published legacy palette', async () => {
+  const { RegistryView } = require('./.generated/src/native/registry-styles');
+  const { NativeRegistryPalette } = require('./.generated/src/native/_registry-context');
+  const { styling } = require('@workspace/styling');
+  const frame = (generation: 'legacy' | 'modern') => (
+    <UI.ThemeProvider>
+      <NativeRegistryPalette generation={generation}>
+        <RegistryView testID="color" className="bg-red-500" />
+      </NativeRegistryPalette>
+    </UI.ThemeProvider>
+  );
+  await render(frame('modern'));
+  expect(StyleSheet.flatten(screen.getByTestId('color').props.style).backgroundColor).toBe(
+    styling.utilityColors['red-500'],
+  );
+  await screen.rerender(frame('legacy'));
+  expect(StyleSheet.flatten(screen.getByTestId('color').props.style).backgroundColor).toBe(
+    '#ef4444',
+  );
+});
+
+test('button fragments retain native text labels and source callbacks', async () => {
+  await mount(
+    <UI.Button>
+      <>+ Set status</>
+    </UI.Button>,
+  );
+  expect(screen.getByRole('button', { name: '+ Set status' })).toHaveTextContent('+ Set status');
+});
+test('recipe-local radius and typography preserve heading semantics and selected toggle styling', async () => {
+  const { RegistryView, RegistryH1 } = require('./.generated/src/native/registry-styles');
+  const StyledToggle = withRegistryStyles(UI.Toggle, 'button');
+  const Radius = () => {
+    const { radius } = UI.useTheme();
+    return <Text testID="radius">{radius}</Text>;
+  };
+  await mount(
+    <RegistryView className="[--radius:1.2rem]">
+      <RegistryH1 className="text-4xl font-extrabold">The King</RegistryH1>
+      <Radius />
+      <StyledToggle accessibilityLabel="Bold" className="data-[state=on]:bg-red-500">
+        B
+      </StyledToggle>
+    </RegistryView>,
+  );
+  expect(screen.getByTestId('radius')).toHaveTextContent('19.2');
+  expect(screen.getByRole('header', { name: 'The King' })).toBeOnTheScreen();
+  const before = StyleSheet.flatten(
+    screen.getByRole('button', { name: 'Bold' }).props.style,
+  ).backgroundColor;
+  await fireEvent.press(screen.getByRole('button', { name: 'Bold' }));
+  expect(screen.getByRole('button', { name: 'Bold' }).props.accessibilityState.selected).toBe(true);
+  expect(
+    StyleSheet.flatten(screen.getByRole('button', { name: 'Bold' }).props.style).backgroundColor,
+  ).not.toBe(before);
+  expect(before).toBe('transparent');
+});

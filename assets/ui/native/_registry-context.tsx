@@ -21,3 +21,15 @@ export const NativeRecipeState = createContext<{
   disabled?: boolean;
 }>({});
 export const useNativeRecipeState = () => useContext(NativeRecipeState);
+
+const RegistryPalette = createContext<'legacy' | 'modern'>('modern');
+export const useRegistryPalette = () => useContext(RegistryPalette);
+export function NativeRegistryPalette({
+  generation,
+  children,
+}: {
+  generation: 'legacy' | 'modern';
+  children?: ReactNode;
+}) {
+  return <RegistryPalette.Provider value={generation}>{children}</RegistryPalette.Provider>;
+}

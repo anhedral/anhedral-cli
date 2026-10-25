@@ -28,6 +28,7 @@ const requiredFiles = new Set([
   'assets/patches/audit-deps.mjs',
   'assets/ui/native/registry.json',
   'assets/ui/native-overlay.json.br',
+  'assets/ui/utility-colors.json.gz',
   'docs/native-ui.md',
   'docs/native-registry.md',
   'assets/ui/web/input.tsx',
@@ -183,7 +184,7 @@ try {
     const allowedNativeUI =
       file.path === 'assets/ui/native/registry.json' ||
       file.path === 'assets/ui/native-overlay.json.br' ||
-      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|native-fonts\.json\.gz|(?:registry-themes|registry-colors)\.json\.gz|LICENSE\.shadcn|UPSTREAM\.json|UPSTREAM-LOCK\.json)$/.test(
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|native-fonts\.json\.gz|(?:registry-themes|registry-colors|utility-colors)\.json\.gz|LICENSE\.shadcn|UPSTREAM\.json|UPSTREAM-LOCK\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);

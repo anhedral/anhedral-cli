@@ -24,6 +24,8 @@ export function registryStyle(
     active?: boolean;
     selected?: boolean;
     expanded?: boolean;
+    checked?: boolean;
+    slot?: string;
   },
 ): RegistryStyle {
   const result: RegistryStyle = {
@@ -35,6 +37,10 @@ export function registryStyle(
     descendants: [],
   };
   const { view, text, paint } = result;
+  const radiusMatch = /\[--radius:(-?\d+(?:\.\d+)?)(rem|px)\]/.exec(classes ?? '');
+  const localRadius = radiusMatch
+    ? Number(radiusMatch[1]) * (radiusMatch[2] === 'rem' ? 16 : 1)
+    : options.radius;
   const number = (value: string): number => {
     if (value.startsWith('[') && value.endsWith(']')) {
       const raw = value.slice(1, -1);
@@ -64,6 +70,22 @@ export function registryStyle(
       )
         continue;
       token = responsive[2]!.replace(/^!|!$/g, '');
+    }
+    if (token.startsWith('[&:not(:first-child)]:')) {
+      if ((options.index ?? 0) === 0) continue;
+      token = token.slice('[&:not(:first-child)]:'.length);
+    }
+    if (token.startsWith('data-[state=on]:')) {
+      if (!options.selected) continue;
+      token = token.slice('data-[state=on]:'.length);
+    }
+    if (/^\[--radius:-?\d+(?:\.\d+)?(?:rem|px)\]$/.test(token)) {
+      paint.radius = number('[' + token.slice(10, -1) + ']');
+      continue;
+    }
+    if (/^scroll-m-\d+$/.test(token)) {
+      paint.webScrollMargin = number(token.slice(9));
+      continue;
     }
     if (token.startsWith('[&>div]:')) {
       result.children.push(token.slice('[&>div]:'.length));
@@ -104,6 +126,15 @@ export function registryStyle(
     if (token.startsWith('even:')) {
       if (((options.index ?? 0) + 1) % 2 !== 0) continue;
       token = token.slice(5);
+    }
+    const slot = /^data-\[slot=([^\]]+)\]:(.+)$/.exec(token);
+    if (slot) {
+      if (slot[1] !== options.slot) continue;
+      token = slot[2]!;
+    }
+    if (token.startsWith('first:')) {
+      if ((options.index ?? 0) !== 0) continue;
+      token = token.slice(6);
     }
     if (token.startsWith('data-[active=true]:')) {
       if (!options.active) continue;
@@ -152,7 +183,7 @@ export function registryStyle(
       continue;
     }
     if (token === 'after:rounded-lg') {
-      view.borderRadius = options.radius;
+      view.borderRadius = localRadius;
       continue;
     }
     if (token === 'after:border') {
@@ -299,15 +330,16 @@ export function registryStyle(
       Object.assign(view, { [token.slice(0, at)]: number(token.slice(at + 1)) });
     } else if (token.startsWith('z-')) view.zIndex = Number(token.slice(2));
     else if (token.startsWith('opacity-')) view.opacity = Number(token.slice(8)) / 100;
+    else if (token === 'rounded') view.borderRadius = 4;
     else if (token.startsWith('rounded-')) {
       const value = token.slice(8),
         fixed = {
           full: 9999,
           xs: 2,
-          sm: Math.max(0, options.radius - 4),
-          md: Math.max(0, options.radius - 2),
-          lg: options.radius,
-          xl: options.radius + 4,
+          sm: Math.max(0, localRadius - 4),
+          md: Math.max(0, localRadius - 2),
+          lg: localRadius,
+          xl: localRadius + 4,
         };
       view.borderRadius = value in fixed ? fixed[value as keyof typeof fixed] : number(value);
     } else if (
@@ -329,20 +361,40 @@ export function registryStyle(
       view.borderWidth = 1;
       view.borderColor = options.color('border');
     } else if (token === 'border-dashed') view.borderStyle = 'dashed';
-    else if (token.startsWith('border-')) {
+    else if (/^border-[tblr]-\d+$/.test(token)) {
+      const [, edge, amount] = token.split('-');
+      Object.assign(view, {
+        [{
+          t: 'borderTopWidth',
+          b: 'borderBottomWidth',
+          l: 'borderLeftWidth',
+          r: 'borderRightWidth',
+        }[edge!]!]: Number(amount),
+      });
+      view.borderColor = options.color('border');
+    } else if (token.startsWith('border-')) {
       const value = token.slice(7);
       if (/^\[\d+(\.\d+)?px\]$/.test(value)) view.borderWidth = number(value);
       else view.borderColor = options.color(value);
     } else if (token === 'shadow-none') {
       view.boxShadow = [];
       view.elevation = 0;
+    } else if (token === 'shadow-md') {
+      view.boxShadow = [
+        { offsetX: 0, offsetY: 4, blurRadius: 6, spreadDistance: -1, color: 'rgba(0,0,0,0.1)' },
+        { offsetX: 0, offsetY: 2, blurRadius: 4, spreadDistance: -2, color: 'rgba(0,0,0,0.1)' },
+      ];
+      view.elevation = 4;
     } else if (token === 'shadow-xl') {
       view.boxShadow = [
         { offsetX: 0, offsetY: 20, blurRadius: 25, spreadDistance: -5, color: 'rgba(0,0,0,0.1)' },
         { offsetX: 0, offsetY: 8, blurRadius: 10, spreadDistance: -6, color: 'rgba(0,0,0,0.1)' },
       ];
       view.elevation = 8;
-    } else if (token === 'grayscale') paint.grayscale = 1;
+    } else if (/^ring-\d+$/.test(token)) paint.ringWidth = Number(token.slice(5));
+    else if (token.startsWith('ring-')) paint.ringColor = options.color(token.slice(5));
+    else if (token === 'italic') text.fontStyle = 'italic';
+    else if (token === 'grayscale') paint.grayscale = 1;
     else if (token === 'animate-spin') paint.spin = 1;
     else if (token.startsWith('hover:bg-')) paint.hoverBackground = options.color(token.slice(9));
     else if (token.startsWith('hover:text-'))
@@ -358,19 +410,23 @@ export function registryStyle(
     else if (['font-mono', 'font-sans', 'font-serif', 'font-heading'].includes(token))
       result.fontRole = token.slice(5) as RegistryStyle['fontRole'];
     else if (
+      token === 'font-extrabold' ||
       token === 'font-bold' ||
       token === 'font-semibold' ||
       token === 'font-medium' ||
       token === 'font-normal'
     )
       text.fontWeight =
-        token === 'font-bold'
-          ? '700'
-          : token === 'font-semibold'
-            ? '600'
-            : token === 'font-medium'
-              ? '500'
-              : '400';
+        token === 'font-extrabold'
+          ? '800'
+          : token === 'font-bold'
+            ? '700'
+            : token === 'font-semibold'
+              ? '600'
+              : token === 'font-medium'
+                ? '500'
+                : '400';
+    else if (/^leading-\d+$/.test(token)) text.lineHeight = number(token.slice(8));
     else if (token === 'leading-none') paint.lineHeightMultiplier = 1;
     else if (token === 'leading-tight') paint.lineHeightMultiplier = 1.25;
     else if (token === 'leading-normal') paint.lineHeightMultiplier = 1.5;
@@ -390,6 +446,7 @@ export function registryStyle(
           xs: [12, 16],
           sm: [14, 20],
           lg: [18, 28],
+          xl: [20, 28],
           '2xl': [24, 32],
           '3xl': [30, 36],
           '4xl': [36, 40],
@@ -415,11 +472,24 @@ export function registryStyle(
     else if (token === 'rotate-[-40deg]')
       view.transform = [...((view.transform as []) ?? []), { rotate: '-40deg' }];
     else if (token === 'mix-blend-luminosity') view.mixBlendMode = 'luminosity';
+    else if (token.startsWith('-space-x-')) paint.childMarginStart = -number(token.slice(9));
+    else if (token.startsWith('space-x-')) view.columnGap = number(token.slice(8));
     else if (token.startsWith('space-y-')) view.rowGap = number(token.slice(8));
     else if (token === 'overflow-x-auto') paint.scrollHorizontal = 1;
     else if (token === 'resize-none') paint.nativeResize = 'none';
     else throw Error(`Unreviewed native registry utility: ${original}`);
   }
+  if (typeof paint.ringWidth === 'number')
+    view.boxShadow = [
+      ...((view.boxShadow as []) ?? []),
+      {
+        offsetX: 0,
+        offsetY: 0,
+        blurRadius: 0,
+        spreadDistance: paint.ringWidth,
+        color: String(paint.ringColor ?? options.color('ring')),
+      },
+    ];
   if (typeof paint.lineHeightMultiplier === 'number' && text.fontSize)
     text.lineHeight = text.fontSize * paint.lineHeightMultiplier;
   return result;

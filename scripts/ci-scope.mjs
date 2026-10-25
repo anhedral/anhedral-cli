@@ -23,7 +23,7 @@ export function needsNativeUI(files) {
   return (
     files.length === 0 ||
     files.some((file) =>
-      /^(?:assets\/ui\/(?:native(?:\/|-)|official\/|theme|registry-(?:themes|colors))|src\/(?:dependencies\.ts|scaffold\/(?:native-ui|styling)\.ts|platforms\/mobile\.ts)|tests\/(?:native-ui\/|test-(?:native-ui-catalog|native-chart-recipes|native-form-recipes|native-example-recipes|native-colors|native-icons|native-overlay|native-registry-css|native-fonts|native-themes|official-shadcn-registry)\.test\.mjs)|scripts\/(?:native-ui-|native-(?:chart|form|example)-recipes\.mjs|native-overlay\.mjs|native-icons\.mjs|shadcn-(?:registry|fonts|themes|colors)\.mjs)|\.github\/workflows\/ci\.yml)/.test(
+      /^(?:assets\/ui\/(?:native(?:\/|-)|official\/|theme|utility-colors|registry-(?:themes|colors))|src\/(?:dependencies\.ts|scaffold\/(?:native-ui|styling)\.ts|platforms\/mobile\.ts)|tests\/(?:native-ui\/|test-(?:native-ui-catalog|native-chart-recipes|native-form-recipes|native-example-recipes|native-colors|native-icons|native-overlay|native-registry-css|native-fonts|native-themes|official-shadcn-registry)\.test\.mjs)|scripts\/(?:native-ui-|native-(?:chart|form|example)-recipes\.mjs|native-overlay\.mjs|native-icons\.mjs|native-utility-colors\.mjs|shadcn-(?:registry|fonts|themes|colors)\.mjs)|\.github\/workflows\/ci\.yml)/.test(
         file,
       ),
     )

@@ -69,6 +69,18 @@ exports.spacing = { small: 4, medium: 8, large: 16 };
       JSON.stringify(registryColors.colors, null, 2) +
       ' as const;\n',
   );
+  const utilityColors = JSON.parse(
+    gunzipSync(
+      readFileSync(new URL('../../assets/ui/utility-colors.json.gz', import.meta.url)),
+    ).toString(),
+  ) as { colors: Record<string, string> };
+  put(
+    root,
+    'packages/styling/src/utility-colors.ts',
+    'export const utilityColors = ' +
+      JSON.stringify(utilityColors.colors, null, 2) +
+      ' as const;\n',
+  );
   const registryThemes = JSON.parse(
     gunzipSync(readFileSync(new URL('../../assets/ui/registry-themes.json.gz', import.meta.url)), {
       maxOutputLength: 1024 * 1024,

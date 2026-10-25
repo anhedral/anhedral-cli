@@ -24,7 +24,7 @@ import {
   type PressableProps,
   type TextStyle,
 } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, NativeThemeScope } from '../theme';
 import { styling } from '@workspace/styling';
 import { ChartContext } from './_chart-context';
 import {
@@ -41,7 +41,11 @@ import {
 import { useNativeFontStyle } from './fonts';
 import { tokenizeCode } from './code-block';
 import { useOptionalOverlay } from './_overlay';
-import { useNativeRecipeState, useNativeExampleStyle } from './_registry-context';
+import {
+  useNativeRecipeState,
+  useNativeExampleStyle,
+  useRegistryPalette,
+} from './_registry-context';
 import { registryStyle } from './_registry-css';
 
 const RegistryLocalPaint = createContext<Record<string, string | number>>({});
@@ -72,6 +76,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       window = useWindowDimensions(),
       [measuredWidth, setMeasuredWidth] = useState<number>(),
       [interaction, setInteraction] = useState({ hovered: false, pressed: false }),
+      [localSelected, setLocalSelected] = useState(Boolean(props.defaultPressed)),
       width = measuredWidth ?? window.width,
       chart = useContext(ChartContext),
       variables = useContext(RegistryVariables),
@@ -91,6 +96,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         localVariables[key] = value;
       } else nativeInline[key] = value;
     }
+    const palette =
+      useRegistryPalette() === 'legacy' ? styling.registryColors : styling.utilityColors;
     const color = (value: string, seen = new Set<string>()): string => {
       if (seen.has(value)) throw Error(`Cyclic native recipe color: ${value}`);
       seen.add(value);
@@ -106,7 +113,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       const [name, opacity] = value.split('/');
       const resolved =
         theme.colors[name!] ??
-        (styling.registryColors as Record<string, string>)[name!] ??
+        (palette as Record<string, string>)[name!] ??
         (name === 'code'
           ? theme.colors.muted
           : name === 'code-foreground'
@@ -127,7 +134,10 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         .join(' '),
       {
         styleName,
-        selected: recipeState.selected,
+        slot: Component.name?.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),
+        selected:
+          props.pressed ??
+          (className?.includes('data-[state=on]:') ? localSelected : recipeState.selected),
         expanded: recipeState.expanded,
         width: window.width,
         height: window.height,
@@ -209,7 +219,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
             return cloneElement(child, {
               ...gradientStop,
               className: [childClasses, child.props.className].filter(Boolean).join(' '),
-              style: [gridStyle, child.props.style],
+              style: [
+                gridStyle,
+                index > 0 &&
+                  typeof translated.paint.childMarginStart === 'number' && {
+                    marginStart: translated.paint.childMarginStart,
+                  },
+                child.props.style,
+              ],
               registryIndex: index,
               registryCount: Children.count(props.children as ReactNode),
             });
@@ -222,6 +239,11 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           ? children[0]
           : children,
     };
+    if (className?.includes('data-[state=on]:'))
+      forwarded.onPressedChange = (value: boolean) => {
+        setLocalSelected(value);
+        props.onPressedChange?.(value);
+      };
     if (kind !== 'svg' && kind !== 'svg-root' && kind !== 'icon')
       forwarded.onLayout = (event: { nativeEvent: { layout: { width: number } } }) => {
         const next = event.nativeEvent.layout.width;
@@ -331,17 +353,23 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         </RegistryLocalPaint.Provider>
       </RegistryVariables.Provider>
     );
+    const scoped =
+      typeof translated.paint.radius === 'number' ? (
+        <NativeThemeScope radius={translated.paint.radius}>{result}</NativeThemeScope>
+      ) : (
+        result
+      );
     return translated.paint.spin ? (
-      <RegistrySpin>{result}</RegistrySpin>
+      <RegistrySpin>{scoped}</RegistrySpin>
     ) : translated.paint.turnTransition ? (
       <RegistryTurn
         degrees={Number(translated.paint.turnAngle ?? 0)}
         duration={Number(translated.paint.transitionDuration ?? 150)}
       >
-        {result}
+        {scoped}
       </RegistryTurn>
     ) : (
-      result
+      scoped
     );
   }
   return Object.assign(Styled, { nativeRegistryComponent: Component, nativeRegistryKind: kind });
@@ -419,6 +447,25 @@ function RecipeButton({ children, ...props }: PressableProps) {
 }
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
+const Heading = ({ style, ...props }: ComponentProps<typeof LabelText>) => (
+  <LabelText accessibilityRole="header" {...props} style={[{ fontWeight: '700' }, style]} />
+);
+export const RegistryH1 = withRegistryStyles(Heading, 'text');
+export const RegistryH2 = withRegistryStyles(Heading, 'text');
+export const RegistryH3 = withRegistryStyles(Heading, 'text');
+export const RegistryH4 = withRegistryStyles(Heading, 'text');
+export const RegistryStrong = withRegistryStyles(
+  ({ style, ...props }: ComponentProps<typeof LabelText>) => (
+    <LabelText {...props} style={[{ fontWeight: '700' }, style]} />
+  ),
+  'text',
+);
+export const RegistrySmall = withRegistryStyles(
+  ({ style, ...props }: ComponentProps<typeof LabelText>) => (
+    <LabelText {...props} style={[{ fontSize: 12 }, style]} />
+  ),
+  'text',
+);
 export const RegistryButton = withRegistryStyles(RecipeButton, 'button');
 
 type RegistryClassName =

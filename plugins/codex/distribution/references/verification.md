@@ -1,3 +1,31 @@
+# Native typography, utility palettes and more authored examples — October 24, 2026
+
+Expanded the authored component example overlay from 152 to 215 source modules.
+Added native paragraph/heading semantics, scoped radius metrics, first-child and
+sibling spacing, shadows, avatar ring/filter inheritance and recursive button
+fragment labels. Table headers handle direct Aria columns; radio-group invalid
+state reaches its choices.
+
+- Tailwind 4.3.0 is pinned by upstream's lockfile. Its independently verified npm
+  archive supplies 288 converted utility colors, including mauve, olive, mist and
+  taupe. The 244-color published legacy registry palette remains separate. Recipe
+  boundaries select the original generation; theme tokens still belong to styling.
+- Full iOS and Android suites: 936 tests each, 36 suites each. Strict generated
+  typecheck passed. Root suite: 589 passed, one existing optional skip. Lint and
+  security policy passed. Both production Hermes builds include 480 native modules.
+- Packed CLI smoke passed. The first packlist check rejected 3,024,879 unpacked
+  bytes against the unchanged 3 MB limit. The generated registry checklist now
+  uses an explicit registry-set legend instead of repeating the same 27-member
+  lists on hundreds of rows. Every item and registry remains represented. The
+  revised artifact is 1,172,180 compressed / 2,958,476 unpacked bytes; the new
+  utility palette is explicitly allowlisted in the package contract.
+- Initial isolated XCTest build failed due to an unset test-target product name;
+  the test target was corrected and is rebuilding. OS interaction, typography and
+  assistive-technology acceptance remain open until actual tests pass.
+- Larger combobox collections, drawer/hover-card variants, required forms,
+  resizable layouts, all component style presets and remaining source modules
+  remain explicit unfinished work. This evidence does not certify full parity.
+
 # Authored component examples and icon sources — October 24, 2026
 
 Added 152 source-preserving component examples and 166 actual Lucide native icon

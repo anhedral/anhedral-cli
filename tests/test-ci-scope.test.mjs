@@ -188,6 +188,8 @@ test('native component CI covers owned source, consumers and its harness without
     'assets/ui/native-fonts.json.gz',
     'assets/ui/registry-themes.json.gz',
     'assets/ui/registry-colors.json.gz',
+    'assets/ui/utility-colors.json.gz',
+    'scripts/native-utility-colors.mjs',
     'assets/ui/native-form-recipes.json.gz',
     'assets/ui/native-example-recipes.json.gz',
     'assets/ui/native-icons.json.gz',

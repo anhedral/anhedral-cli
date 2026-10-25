@@ -106,3 +106,9 @@ export function useTheme() {
   if (!value) throw new Error('Mount ThemeProvider at the application root.');
   return value;
 }
+
+/** Override recipe-local CSS metrics without creating another preference store or OS theme subscription. */
+export function NativeThemeScope({ radius, children }: { radius: number; children: ReactNode }) {
+  const inherited = useTheme();
+  return <ThemeContext.Provider value={{ ...inherited, radius }}>{children}</ThemeContext.Provider>;
+}
