@@ -292,3 +292,25 @@ test('global stylesheet collection reads the exact Git object even when the work
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('the whole registry retains static CVA classes and their distinct legacy and modern variant definitions', () => {
+  const classes = Object.values(inventory.sources).flatMap((source) =>
+    Object.values(source.classRecipes ?? {}),
+  );
+  assert.equal(classes.length, 116);
+  assert.ok(classes.every((recipe) => !recipe.unsupported?.length));
+  const recipe = (style) => {
+    const item = inventory.registries[style].items.find(
+      (item) => item.type === 'registry:ui' && item.name === 'button',
+    );
+    return inventory.sources[item.files[0].source].classRecipes.buttonVariants;
+  };
+  assert.match(
+    recipe('default').variants.variant.destructive,
+    /bg-destructive text-destructive-foreground/,
+  );
+  assert.match(recipe('new-york-v4').variants.variant.destructive, /bg-destructive text-white/);
+  assert.equal(recipe('base-nova').variants.variant.destructive, 'cn-button-variant-destructive');
+  assert.equal(recipe('default').variants.size.default, 'h-10 px-4 py-2');
+  assert.equal(recipe('new-york').variants.size.default, 'h-9 px-4 py-2');
+});

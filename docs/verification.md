@@ -1,3 +1,24 @@
+# Complete static CVA recipe inventory — October 24, 2026
+
+The pinned official inventory now retains all 116 CVA class recipes, including
+base classes, every variant class value, defaults and finite compound predicates.
+The current source has no compound cases or unsupported CVA declarations. This
+captures the legacy and New York v4 component styles that are not defined by the
+eight newer preset CSS files. It does not promote their native implementation status.
+
+- Static analysis preserves imported aliases, literal class arrays, constant
+  references, boolean defaults and special property names. Dynamic expressions and
+  nested binding scopes stay explicitly unsupported; no upstream code is executed.
+  Synthetic tests cover finite compound conditions even though this pin has none.
+- Twenty parser/inventory/preset contracts, lint and static security passed. The
+  Button preset evidence and public API ledger remain current. Original source hashes
+  and every reviewed item fingerprint are unchanged, so no native source or native
+  runtime behavior changed in this inventory update.
+- The data explicitly distinguishes Default's 40-point and New York's 36-point
+  source Button height, plus New York v4's filled destructive surface from the newer
+  translucent presets. Their complete native styling remains in progress. No release,
+  deployment or whole-registry completion is claimed.
+
 # Eight native Button preset families — October 24, 2026
 
 Added source-driven native Button slots for Vega, Nova, Maia, Lyra, Mira, Luma,
