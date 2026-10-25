@@ -208,18 +208,14 @@ async function main() {
     compile('emitted-package', configFile);
 
     const prefix = "import { createApiClient } from '@workspace/contracts';\n";
-    const positive = `import { createApiClient, healthSchema, sessionSchema, type Session } from '@workspace/contracts';
+    const positive = `import { createApiClient, healthSchema } from '@workspace/contracts';
 const api = createApiClient('/api', { credentials: 'include', headers: async () => ({ 'x-request': 'synthetic' }) });
 export const health: Promise<{ ok: true }> = api.health();
-export const session: Promise<Session> = api.session({ signal: new AbortController().signal, headers: new Headers(), credentials: 'omit' });
-export const schemas = [healthSchema, sessionSchema];
+export const schemas = [healthSchema];
 export async function inferred() {
   const health = await api.health({ cache: 'no-store' });
-  const session = await api.session();
   const ok: true = health.ok;
-  const id: string = session.user.id;
-  const email: string = session.user.email;
-  return { ok, id, email };
+  return { ok };
 }
 `;
     const cases = [
@@ -252,28 +248,6 @@ export async function inferred() {
         code: 2322,
         token: 'badResult',
         source: prefix + 'const badResult: number = createApiClient().health();\nvoid badResult;\n',
-      },
-      {
-        name: 'session-id',
-        code: 2322,
-        token: 'badId',
-        source:
-          prefix +
-          "const badId: Awaited<ReturnType<ReturnType<typeof createApiClient>['session']>>['user']['id'] = 42;\nvoid badId;\n",
-      },
-      {
-        name: 'health-literal',
-        code: 2322,
-        token: 'badOk',
-        source:
-          prefix +
-          "const badOk: Awaited<ReturnType<ReturnType<typeof createApiClient>['health']>>['ok'] = false;\nvoid badOk;\n",
-      },
-      {
-        name: 'method',
-        code: 2339,
-        token: 'tickets',
-        source: prefix + 'createApiClient().tickets();\n',
       },
     ];
     function fixture(name, source) {

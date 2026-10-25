@@ -44,59 +44,30 @@ function runInstalledScaffold(installRoot) {
   const binRoot = path.join(installRoot, 'node_modules', '.bin');
   const binPath = path.join(binRoot, process.platform === 'win32' ? 'anhedral.cmd' : 'anhedral');
   const projectRoot = path.join(installRoot, 'packed-project');
-  const plan = run(
-    binPath,
-    ['init', projectRoot, '--stripe', '--revenuecat', '--dry-run', '--json'],
-    installRoot,
+  const plan = JSON.parse(
+    run(binPath, ['init', projectRoot, '--dry-run', '--json'], installRoot).stdout,
   );
-  const resolved = JSON.parse(plan.stdout);
-  assert.deepEqual(resolved.products, [
-    'better-auth',
-    'd1',
-    'expo',
-    'hono',
-    'next',
-    'r2',
-    'revenuecat',
-    'stripe',
-    'styling',
-  ]);
-  assert.ok(resolved.registry.items.some((item) => item.name === 'hono'));
-  const catalog = JSON.parse(run(binPath, ['registry', 'list', '--json'], installRoot).stdout);
-  assert.ok(catalog.items.some((item) => item.name === 'workspace'));
-  assert.equal(
-    JSON.parse(run(binPath, ['registry', 'view', 'd1', '--json'], installRoot).stdout).name,
-    'd1',
-  );
+  assert.deepEqual(plan.products, ['d1', 'expo', 'hono', 'next', 'r2', 'styling']);
   assert.equal(existsSync(projectRoot), false);
-  // Exercise the installed package's real staged resolution, patch policy and frozen install.
-  // Source-only scaffolding cannot certify that its shipped native assets or pins install.
   const created = JSON.parse(
-    run(
-      binPath,
-      ['init', projectRoot, '--stripe', '--revenuecat', '--no-git', '--json'],
-      installRoot,
-    ).stdout,
+    run(binPath, ['init', projectRoot, '--no-git', '--json'], installRoot).stdout,
   );
   assert.equal(created.generated, true);
   assert.ok(existsSync(path.join(projectRoot, 'pnpm-lock.yaml')));
   assert.ok(existsSync(path.join(projectRoot, 'apps/web/node_modules/next/package.json')));
   assert.ok(existsSync(path.join(projectRoot, 'packages/native-ui/src/native/dialog.tsx')));
-  const policy = readFileSync(path.join(projectRoot, 'pnpm-workspace.yaml'), 'utf8');
-  assert.match(policy, /node-forge@1\.4\.0/);
-  assert.match(policy, /@node-minify\/core>glob.*10\.5\.0/);
-  const inspection = JSON.parse(
-    run(binPath, ['doctor', projectRoot, '--json'], installRoot).stdout,
-  );
-  assert.equal(inspection.localReady, true);
-  assert.equal(inspection.productionReady, false);
-  const delivery = JSON.parse(
-    run(binPath, ['ship', projectRoot, '--dry-run', '--json'], installRoot).stdout,
-  );
-  assert.deepEqual(
-    delivery.deployments.map((target) => target.directory),
-    ['apps/api', 'apps/web'],
-  );
+  for (const name of ['auth', 'billing', 'managed-email'])
+    assert.equal(existsSync(path.join(projectRoot, 'packages', name)), false);
+  assert.equal(existsSync(path.join(projectRoot, '.anhedral')), false);
+  for (const command of ['inspect', 'ship', 'auth', 'add', 'services']) {
+    const result = spawnSyncPortable(
+      process.execPath,
+      [path.join(installRoot, 'node_modules/anhedral/dist/bin.js'), command, '--json'],
+      { cwd: installRoot, encoding: 'utf8' },
+    );
+    assert.equal(result.status, 1);
+    assert.equal(JSON.parse(result.stderr).code, 'UNKNOWN_COMMAND');
+  }
 }
 
 function resolveProvidedTarball(argument) {
@@ -150,6 +121,7 @@ try {
   assert.equal(packageJson.types, './dist/index.d.ts');
   assert.match(runInstalledCli(installRoot).stdout, /anhedral init/);
   runInstalledScaffold(installRoot);
+  assert.equal(existsSync(path.join(npmCache, 'plugin-data')), false);
   run(
     process.execPath,
     [

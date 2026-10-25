@@ -1,3 +1,24 @@
+# Scaffold-only CLI preparation — October 24, 2026
+
+Prepared on `codex/scaffold-only` from staging in an isolated checkout. The actively edited CLI checkout and its native UI work are preserved. This is an unpublished breaking 0.16.0 candidate; no installed plugin, Platform image, provider account, remote database or deployment was changed.
+
+Scope: `init` is the sole product command; npm exports expose generation only. Removed provider authentication, delivery/provisioning/operations, payments additions, inspection/catalog/MCP and their retired tests. Generated applications retain Next.js/OpenNext, native Expo, web shadcn and native ports, Hono/workerd, Drizzle/D1 and a private R2 binding, contracts/tokens and explicit consumer migration/configuration scripts. They contain no auth/email/billing integration or public object routes. The skills-only Codex plugin explains this stack, initializes it, starts local development/opens the browser, and recommends separately installed provider plugins when requested. Historical evidence below remains unchanged.
+
+Validation: CLI build/typecheck, lint/format/source hygiene, static security and release policy pass. The unit suite passes with one existing conditional skip. Skills-only packaging and published-file policy pass. The packed npm consumer successfully installs the package and initializes the foundation with real dependencies; generation does not register a catalog. The generated HTTP contracts pass six positive/negative semantic compiler cases without source rewriting. A fresh application passes lint, typecheck, strict dead-code analysis, configured dependency-audit policy, and serial production builds including Next/OpenNext and the Hono Worker. An isolated local Next → Hono/workerd health request succeeds without application credentials; removed auth, file and payment routes return 404. Test servers stop after acceptance. No configured remote migrations run.
+
+Limit: full generated `pnpm check` still fails Fallow's health complexity threshold on the unchanged native port catalog (28 findings in the initial fresh run). The scope change's unused web UI/helpers were repaired; final strict dead-code analysis passes. Native UI source is deliberately unchanged because separate active work owns it. The raw dependency audit reports the reviewed node-forge advisory (accepted only with the existing exact local patch) and two moderate transitive advisories; the existing policy preserves the raw report and passes. No new exceptions or weakened thresholds were introduced. Browser interaction, physical-device/store acceptance, live providers and production operation are not claimed. Existing Platform runtime pins keep the prior generator and inspect command until a separate explicit adoption.
+
+# Expo native shadcn catalog — October 24, 2026
+
+The CLI now maintains native semantic adaptations for all 66 entries in the shadcn Components catalog reviewed on 2026-10-24. `assets/ui/native/registry.json` pins the IDs, exports, shared helpers and evidence status; [Native UI](native-ui.md) is its generated parity checklist. This baseline excludes separately maintained AI Elements, form-library integrations and ecosystem registries. Native style/events, SVG chart data and touch/menu interactions deliberately have native APIs rather than DOM/Recharts compatibility.
+
+- The real offline generator is used by both the contract tests and native test harness. Tests compare copied sources, explicit helper inventory, all public exports/module paths, an independent upstream ID snapshot, examples and Expo-compatible dependency pins. Fresh applications receive all source, attribution, inventory and native guidance. Application edits are never overwritten by CLI upgrades.
+- React Native Testing Library: 144 tests in nine suites pass under both iOS and Android module resolution (288 executions), using real generated components. Tests exercise controlled values, disabled inputs, long press, native back/escape, menus/filtering, calendar bounds/leap dates/ranges, cumulative drag state, adjustable actions, table selection/sort/pagination, timers, source-preserving syntax/diff highlighting, clipboard failure/retry, six SVG chart types, questionnaire submission, safe areas, themes and reduced-motion subscriptions. Native persistence/clipboard bridges are isolated at the platform boundary. Coverage gates require 90% lines, 85% statements, 75% functions and 70% branches.
+- Strict TypeScript 6 includes the generated mobile application's `noUncheckedIndexedAccess` setting. A fresh installed core application passes native-package ESLint, native-package typechecking and mobile typechecking. Expo SDK 57 exports Hermes bundles for iOS and Android for that application and the complete 66-component gallery. SVG is pinned to the SDK's 15.15.4 native ABI and Clipboard to 57.0.2.
+- CLI build, lint, source hygiene, static security and release policy pass. The full root unit run initially had two failures: the isolated plugin fixture omitted the newly required native guide and the bundled stack-standard link lacked that reference. Both were fixed at their source; the full rerun reports 560 tests, 559 passed and one existing optional runtime test skipped. Plugin checks, packed CLI smoke and explicit packlist checks pass. Live upstream comparison reports exactly the 66 pinned IDs. Native changes run the test harness within the existing single Linux CI gate; no hosted device/build matrix is added.
+
+The gallery is maintained in `tests/native-ui` for native review. Interactive device acceptance remains pending for every component: neither JavaScript tests nor Hermes exports establish VoiceOver/TalkBack, physical gestures, OS focus restoration, dynamic type or hardware behavior. A local test simulator could boot, but the Simulator application was unavailable and the existing development client lacked the new Clipboard module; no interactive acceptance is claimed. The temporary Metro server was stopped and the simulator returned to its prior shutdown state. No provider configuration, store submission, production deployment or package publication occurred.
+
 # Next.js web and Expo native architecture — October 23, 2026
 
 CLI 0.15 source preparation separates full Next.js App Router web (SSR/RSC through
@@ -875,3 +896,130 @@ provisioned only Node. Add the same pinned pnpm action/version to those jobs, wi
 run_install disabled. Keep normal init, artifact integrity, npm environment/OIDC
 and exact-artifact checks intact. A workflow regression covers all three smoke
 locations. A fresh main candidate must be reviewed again after this correction.
+
+
+## 2026-10-24 — Published 0.15.0 artifact identity
+
+Read-only release verification resolved tag `v0.15.0` to source
+`2c06f4eb528da0ba404212298fc57e1a2287f22e`. The npm registry serves 0.15.0;
+its tarball and the GitHub release tarball both match the release metadata:
+
+- CLI SHA-512: `sha512-1D2XHnw4QSDYXfNigt7YBdv5N8Y8ANOpaoSb38xlqEvv1uq7VHFurx+lAsX0IpB4Jf2R5PISitx2Fs6cDyJ4KQ==`.
+- Plugin SHA-512: `sha512-G3/obSaCpHv+AvitX/Xtb34ChmsBc+7NrV7WHDDNEyqZkOin6CH4MSDgqu4lJnCdUn6dxCN06mFckBadwqlwgg==`.
+
+The downloaded plugin ZIP matches both release metadata and plugin metadata.
+The npm and GitHub package checks hashed the actual bytes in memory; the tag
+was checked against the remote repository. This establishes published artifact
+agreement, not independent provenance-signature verification or a rebuilt source
+comparison. Release assets and metadata are available at
+[the 0.15.0 release](https://github.com/anhedral/anhedral-cli/releases/tag/v0.15.0);
+[registry metadata](https://registry.npmjs.org/anhedral/0.15.0) records the npm integrity.
+
+This supersedes unpublished-preview wording, not the dated runtime evidence
+above. Publication does not update existing applications, installed plugins or
+Platform images. Platform's separately recorded Next generator at `2280c3b` has
+a different integrity and must retain its own acceptance evidence until an
+explicit artifact adoption is verified. No publication, deployment, provider
+mutation or payment operation was performed during this verification.
+
+Documentation correction validation: CLI build, documentation/plugin contract
+checks (two passing test entries) and `git diff --check` passed in an isolated
+checkout. No runtime behavior changed.
+
+
+## 2026-10-24 — Addition post-commit installation recovery
+
+Focused addition regressions now inject a failure in the final frozen install,
+after the actual staged source transaction commits. They verify PostCommitError,
+retained billing source/receipts, removal of stale dependency links, released
+transaction lock, preservation of authored/private files and a successful
+idempotent retry that still invokes the installer. A second regression rejects
+an installer that mutates the reviewed lockfile after source commit.
+
+The dependency runner is injected: these checks exercise the real addition and
+transaction paths, not a real pnpm dependency installation or application runtime.
+No generator behavior change was required. Build and lint (typecheck, formatting,
+source hygiene and release policy) passed; the focused addition, transaction
+rollback and CLI-output run passed all 36 test entries. `git diff --check` passed.
+No provider, publication, deployment, database or payment operation occurred.
+
+
+## 2026-10-24 — Recovered embedded inspector contracts
+
+Compared the preserved user-work snapshot at `4a48ca3` with the current CLI.
+Its embedded-host fixture and browser regressions had not landed. Recovered them
+against the current synthetic core-stack fixture, retaining its lockfile evidence
+and supported init options. The installed MCP Apps SDK now exercises project
+context updates, advertised desktop unsent drafts for both active/new targets,
+unsupported/web-host fallback, failed-composer fallback and actual safe-area layout.
+The production preview CSP remains unchanged; embedding is test-fixture-only.
+Recovered service-argument descriptions now explain catalog/service identities,
+D1's complete-UTC-day analytics windows, pagination and app-only deletion inputs;
+obsolete Vercel guidance was removed.
+
+CLI build, root lint/static security, plugin check (61 tests) and the browser suite
+(17 tests, including four recovered host tests) passed. Browser execution used
+installed Google Chrome via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH because the pinned
+Playwright browser binary is absent. An initial fixture port attempted obsolete
+init flags; it was corrected to preserve the current fixture before acceptance.
+This is synthetic browser/SDK evidence, not live Codex-host or provider acceptance.
+No installed-plugin update, publication, deployment or provider operation occurred.
+
+
+## 2026-10-24 — Recovered generated-type cache restoration
+
+The historical cache-restoration check in `0f827d9` remains useful for the maintained
+core stack. A real installed pre-fix generated workspace failed its warm Next
+cache-HIT assertion after generated type files were removed. Worker typecheck also
+had no declared outputs. The corrected generator caches Worker binding types,
+Next environment types and production route types; it ignores next-env.d.ts so a
+generated file cannot become a changing task input. The regression uses a fresh
+local-only Turbo cache, requires both application tasks to report HIT in the actual
+warm-run JSON summary, and compares every restored file byte-for-byte. It runs in
+the generated-profile integration runner and can target an installed local fixture.
+
+The same pre-fix fixture passed after applying only the reviewed output/ignore
+settings. A fresh core application generated by the corrected CLI passed its full
+check, confirmed cache restoration, dynamic SSR/RSC, workerd service-binding and
+D1 authentication/authorization, protected contracts, session revocation, native
+scheme transport and origin rejection. Migration fixtures were explicitly local.
+CLI build/lint/static security, the unit suite (556 pass, one existing skip), plugin
+check (61 pass), packed CLI smoke and packlist policy (249 files) also passed.
+This does not update existing customer projects or establish device, store or live
+provider acceptance. No remote migration, deployment, payment or publication ran.
+
+
+## 2026-10-24 — Preserved-work disposition and service-tool guidance
+
+Compared all preserved snapshots against the maintained CLI, its registered
+commands/plugin tools, emitted source, packaging and tests. Patch IDs alone were
+insufficient because the repository squashes topic PRs. Exact Git tree comparison
+established the following dispositions:
+
+| Preserved source | Disposition |
+| --- | --- |
+| Maintainer-policy `f7e51c8` | Exactly the tree of merged PR #24 (`723a213`): architecture, lifecycle, security/toolchain and review work landed historically. PR #46 later retired the old control-panel/alternative-stack layout. The still-useful cache regression was adapted for the current API/Next stack. |
+| Former local staging `91ec88f` | Exactly the tree of merged PR #37 (`fc721c9`). Maintenance guidance, CI scope, Windows PATH ordering, release-artifact/profile fixes, README and artwork changes were already incorporated. Current command resolution, CI scope and preview discovery retain their relevant fixes. |
+| Older control-panel variant `d7ac371` | Its 28 changed paths belong to the retired apps/control-panel/plugin layout and an independent anhedral.progress.json report/discovery store. Current project inspection/lifecycle, provider records, delivery evidence, catalog and transaction locks own those concerns. Do not restore a parallel writable evidence store or unsupported capabilities. Original variant remains archived. |
+| User-work snapshot `4a48ca3` | Reviewed all 114 changed paths. Recovered embedded-host browser coverage, service-argument descriptions and per-operation service-tool descriptions. Nova auth controls/packaging (#60/#62), managed auth email (#61), security pins (#58/#59), approved branding (#47), contract checks (#44), UI inspection/substitution (#41/#43) and owned Next/native components (#49) already landed in focused form. |
+| User-work UI/generator alternatives | Generic ui/expo-ui packages, native web adapters, duplicate token JSON, unused component inventory, selectable provider/preset recipes and mobile-web bootstrap variants are superseded by separate DOM/native UI, shared tokens, offline core bootstrap and mandatory Next/Expo/Hono/D1/R2. Preserve originals in the archive; no current runtime consumer requires restoring them. |
+| Attached completed worktree branches | Addition recovery, dependency fixes, Nova packlist and product positioning have exactly the trees of merged PRs #67, #59, #62 and #56 respectively. Retiring their refs does not require removing their worktree files. |
+| Existing user-work stash | Shared tracked paths match the recovery snapshot, and all 39 untracked stash files are byte-identical to files in that snapshot. Keep the stash unchanged and independently backed up. |
+
+The recovered service-tool descriptions distinguish existence from application
+health, explain catalog/service identities, supported Worker/D1 analytics windows,
+offset/cursor paging, app-only private data, and reviewed single-use deletion
+plans. Obsolete Vercel wording was removed. Input validation, visibility,
+permissions, confirmation requirements and provider behavior are unchanged. Plugin
+check passed all 61 tests after the description recovery. No additional tests were
+added merely to compare documentation strings.
+
+Before branch retirement, retain verified self-contained Git bundles containing
+all original refs (including stash), original ref/object inventories and checksums.
+The detailed path inventory covers the 142 changed paths in the two independent
+snapshots. The approved disposition is to retire accounted-for recovery and
+completed-topic refs after the focused patches merge to staging, keeping old
+worktrees detached at their original commits so source and ignored material remain
+intact. Keep main/staging unchanged on the remote except for reviewed staging PRs.
+The old implementations remain recoverable; this is not proof of current device,
+store, live-provider or payment acceptance. No publication or deployment occurred.

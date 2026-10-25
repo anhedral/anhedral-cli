@@ -1,0 +1,520 @@
+import {
+  Children,
+  cloneElement,
+  createContext,
+  isValidElement,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { View, ScrollView, PanResponder, type ViewProps } from 'react-native';
+import { Box, clamp, useControllable, useDirection } from './_core';
+import { Button, type ButtonProps } from './button';
+import { useTheme } from '../theme';
+export function Slider({
+  value,
+  defaultValue = [0],
+  onValueChange,
+  onValueCommit,
+  min = 0,
+  max = 100,
+  step = 1,
+  disabled = false,
+  minStepsBetweenThumbs = 0,
+  accessibilityLabel = 'Value',
+  orientation = 'horizontal',
+  style,
+  onLayout,
+  ...props
+}: ViewProps & {
+  value?: number[];
+  defaultValue?: number[];
+  onValueChange?: (value: number[]) => void;
+  onValueCommit?: (value: number[]) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  disabled?: boolean;
+  minStepsBetweenThumbs?: number;
+  orientation?: 'horizontal' | 'vertical';
+}) {
+  const lower = Number.isFinite(min) ? min : 0;
+  const upper = Number.isFinite(max) && max > lower ? max : lower + 100;
+  const increment = Number.isFinite(step) && step > 0 ? step : 1;
+  const [values, set] = useControllable(value, defaultValue, onValueChange);
+  const { colors } = useTheme();
+  const direction = useDirection();
+  const gap =
+    Math.max(0, Number.isFinite(minStepsBetweenThumbs) ? minStepsBetweenThumbs : 0) * increment;
+  const numbers = values.length
+    ? values.map((item) => clamp(item, lower, upper)).sort((a, b) => a - b)
+    : [lower];
+  if (gap * (numbers.length - 1) > upper - lower)
+    throw new RangeError('Slider thumb spacing exceeds the available range.');
+  const current: number[] = [];
+  for (let index = 0; index < numbers.length; index++)
+    current.push(
+      clamp(
+        numbers[index]!,
+        index ? current[index - 1]! + gap : lower,
+        upper - (numbers.length - index - 1) * gap,
+      ),
+    );
+  const latest = useRef(current);
+  latest.current = current;
+  const extent = useRef(1);
+  const active = useRef(0);
+  const initial = useRef(lower);
+  function update(index: number, next: number, commit = false) {
+    const start = index === 0 ? lower : latest.current[index - 1]! + gap;
+    const end = index === latest.current.length - 1 ? upper : latest.current[index + 1]! - gap;
+    const rounded = Math.round((next - lower) / increment) * increment + lower;
+    const result = latest.current.map((item, i) =>
+      i === index ? Number(clamp(rounded, start, end).toFixed(10)) : item,
+    );
+    latest.current = result;
+    set(result);
+    if (commit) onValueCommit?.(result);
+  }
+  const config = useRef({ disabled, orientation, direction, lower, upper, update, onValueCommit });
+  config.current = { disabled, orientation, direction, lower, upper, update, onValueCommit };
+  const pan = useRef<ReturnType<typeof PanResponder.create> | null>(null);
+  if (!pan.current)
+    pan.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => !config.current.disabled,
+      onMoveShouldSetPanResponder: () => !config.current.disabled,
+      onPanResponderGrant: (event) => {
+        const current = config.current;
+        const ratio = clamp(
+          (current.orientation === 'vertical'
+            ? event.nativeEvent.locationY
+            : event.nativeEvent.locationX) / extent.current,
+          0,
+          1,
+        );
+        const reversed = current.orientation === 'vertical' || current.direction === 'rtl';
+        const next =
+          current.lower + (reversed ? 1 - ratio : ratio) * (current.upper - current.lower);
+        active.current = latest.current.reduce(
+          (best, item, index) =>
+            Math.abs(item - next) < Math.abs(latest.current[best]! - next) ? index : best,
+          0,
+        );
+        current.update(active.current, next);
+        initial.current = latest.current[active.current]!;
+      },
+      onPanResponderMove: (_event, gesture) => {
+        const current = config.current;
+        const distance =
+          current.orientation === 'vertical'
+            ? -gesture.dy
+            : gesture.dx * (current.direction === 'rtl' ? -1 : 1);
+        current.update(
+          active.current,
+          initial.current + (distance / extent.current) * (current.upper - current.lower),
+        );
+      },
+      onPanResponderRelease: () => config.current.onValueCommit?.(latest.current),
+      onPanResponderTerminate: () => config.current.onValueCommit?.(latest.current),
+    });
+  const vertical = orientation === 'vertical';
+  const position = (number: number) => ((number - lower) / (upper - lower)) * 100;
+  const beginning = current.length > 1 ? position(current[0]!) : 0;
+  const length = position(current[current.length - 1]!) - beginning;
+  return (
+    <View
+      {...props}
+      {...pan.current.panHandlers}
+      onLayout={(event) => {
+        extent.current = Math.max(1, event.nativeEvent.layout[vertical ? 'height' : 'width']);
+        onLayout?.(event);
+      }}
+      style={[
+        vertical
+          ? { width: 44, height: 180, alignItems: 'center' }
+          : { height: 44, justifyContent: 'center' },
+        { opacity: disabled ? 0.5 : 1 },
+        style,
+      ]}
+    >
+      <View
+        style={[
+          vertical ? { width: 4, height: '100%' } : { height: 4, width: '100%' },
+          { borderRadius: 2, backgroundColor: colors.secondary },
+        ]}
+      >
+        <View
+          style={[
+            { position: 'absolute', backgroundColor: colors.primary },
+            vertical
+              ? { bottom: `${beginning}%`, height: `${length}%`, width: 4 }
+              : {
+                  [direction === 'rtl' ? 'right' : 'left']: `${beginning}%`,
+                  width: `${length}%`,
+                  height: 4,
+                },
+          ]}
+        />
+      </View>
+      {current.map((item, index) => (
+        <View
+          key={index}
+          accessible
+          accessibilityRole="adjustable"
+          accessibilityLabel={
+            current.length === 1 ? accessibilityLabel : `${accessibilityLabel} ${index + 1}`
+          }
+          accessibilityState={{ disabled }}
+          accessibilityValue={{
+            min: index ? current[index - 1]! + gap : lower,
+            max: index < current.length - 1 ? current[index + 1]! - gap : upper,
+            now: item,
+          }}
+          accessibilityActions={disabled ? [] : [{ name: 'increment' }, { name: 'decrement' }]}
+          onAccessibilityAction={(event) => {
+            if (!disabled && ['increment', 'decrement'].includes(event.nativeEvent.actionName))
+              update(
+                index,
+                item + (event.nativeEvent.actionName === 'increment' ? increment : -increment),
+                true,
+              );
+          }}
+          style={[
+            {
+              position: 'absolute',
+              width: 22,
+              height: 22,
+              borderRadius: 11,
+              borderWidth: 2,
+              borderColor: colors.primary,
+              backgroundColor: colors.background,
+            },
+            vertical
+              ? { bottom: `${position(item)}%`, marginBottom: -11 }
+              : {
+                  [direction === 'rtl' ? 'right' : 'left']: `${position(item)}%`,
+                  marginStart: -11,
+                },
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+type ResizeState = {
+  sizes: number[];
+  width: number;
+  direction: 'horizontal' | 'vertical';
+  resize: (index: number, delta: number) => void;
+};
+const ResizeContext = createContext<ResizeState | null>(null);
+export function ResizablePanelGroup({
+  direction = 'horizontal',
+  onLayout: onSizes,
+  children,
+  style,
+  ...props
+}: Omit<ViewProps, 'onLayout'> & {
+  direction?: 'horizontal' | 'vertical';
+  onLayout?: (sizes: number[]) => void;
+}) {
+  const panels = Children.toArray(children).filter(
+    (child) => isValidElement(child) && child.type === ResizablePanel,
+  ) as React.ReactElement<{ defaultSize?: number; minSize?: number; maxSize?: number }>[];
+  const initial = panels.map(
+    (panel) => panel.props.defaultSize ?? 100 / Math.max(1, panels.length),
+  );
+  const total = initial.reduce((sum, item) => sum + item, 0) || 100;
+  const [sizes, set] = useState(initial.map((item) => (item / total) * 100));
+  const [width, setWidth] = useState(1);
+  const liveSizes = useRef(sizes);
+  liveSizes.current = sizes;
+  const resize = (index: number, delta: number) => {
+    if (!panels[index + 1]) return;
+    const before = liveSizes.current;
+    const available = before[index]! + before[index + 1]!;
+    const min = Math.max(
+      panels[index]!.props.minSize ?? 10,
+      available - (panels[index + 1]!.props.maxSize ?? 100),
+    );
+    const max = Math.min(
+      panels[index]!.props.maxSize ?? 100,
+      available - (panels[index + 1]!.props.minSize ?? 10),
+    );
+    if (min > max) return;
+    const next = [...before];
+    next[index] = clamp(before[index]! + delta, min, max);
+    next[index + 1] = available - next[index];
+    liveSizes.current = next;
+    set(next);
+    onSizes?.(next);
+  };
+  let index = -1;
+  return (
+    <ResizeContext.Provider value={{ sizes, width, direction, resize }}>
+      <View
+        {...props}
+        onLayout={(event) =>
+          setWidth(
+            Math.max(
+              1,
+              event.nativeEvent.layout[direction === 'horizontal' ? 'width' : 'height'] -
+                Math.max(0, panels.length - 1) * 24,
+            ),
+          )
+        }
+        style={[
+          { flexDirection: direction === 'horizontal' ? 'row' : 'column', minHeight: 120 },
+          style,
+        ]}
+      >
+        {Children.map(children, (child) => {
+          if (!isValidElement<{ panelIndex?: number }>(child)) return child;
+          if (child.type !== ResizablePanel && child.type !== ResizableHandle) return child;
+          if (child.type === ResizablePanel) index++;
+          return cloneElement(child, { panelIndex: Math.max(0, index) });
+        })}
+      </View>
+    </ResizeContext.Provider>
+  );
+}
+export function ResizablePanel({
+  defaultSize: _default,
+  minSize: _min,
+  maxSize: _max,
+  panelIndex = 0,
+  style,
+  ...props
+}: ViewProps & { defaultSize?: number; minSize?: number; maxSize?: number; panelIndex?: number }) {
+  const state = useContext(ResizeContext);
+  if (!state) throw Error('ResizablePanel requires ResizablePanelGroup.');
+  return (
+    <Box
+      {...props}
+      style={[
+        { flex: state.sizes[panelIndex], minWidth: 0, minHeight: 0, overflow: 'hidden' },
+        style,
+      ]}
+    />
+  );
+}
+export function ResizableHandle({
+  withHandle = false,
+  panelIndex = 0,
+  accessibilityLabel = 'Resize panels',
+}: {
+  panelIndex?: number;
+  accessibilityLabel?: string;
+  withHandle?: boolean;
+}) {
+  const state = useContext(ResizeContext);
+  const previous = useRef(0);
+  const liveState = useRef(state);
+  liveState.current = state;
+  const pan = useRef<ReturnType<typeof PanResponder.create> | null>(null);
+  const { colors } = useTheme();
+  if (!state) throw Error('ResizableHandle requires ResizablePanelGroup.');
+  if (!pan.current)
+    pan.current = PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        previous.current = 0;
+      },
+      onPanResponderMove: (_event, gesture) => {
+        const current = liveState.current;
+        if (!current) return;
+        const distance = current.direction === 'horizontal' ? gesture.dx : gesture.dy;
+        current.resize(panelIndex, ((distance - previous.current) / current.width) * 100);
+        previous.current = distance;
+      },
+    });
+  return (
+    <View
+      {...pan.current.panHandlers}
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityValue={{ min: 0, max: 100, now: state.sizes[panelIndex] }}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(event) => {
+        if (['increment', 'decrement'].includes(event.nativeEvent.actionName))
+          state.resize(panelIndex, event.nativeEvent.actionName === 'increment' ? 5 : -5);
+      }}
+      style={
+        state.direction === 'horizontal'
+          ? { width: 24, alignSelf: 'stretch', justifyContent: 'center', alignItems: 'center' }
+          : { height: 24, alignSelf: 'stretch', justifyContent: 'center', alignItems: 'center' }
+      }
+    >
+      {withHandle && (
+        <View
+          testID="resize-grip"
+          style={{
+            width: state.direction === 'horizontal' ? 4 : 28,
+            height: state.direction === 'horizontal' ? 28 : 4,
+            borderRadius: 2,
+            backgroundColor: colors.border,
+          }}
+        />
+      )}
+    </View>
+  );
+}
+type CarouselState = {
+  index: number;
+  count: number;
+  setCount: (count: number) => void;
+  size: number;
+  setSize: (size: number) => void;
+  move: (index: number) => void;
+  selected: (index: number) => void;
+  loop: boolean;
+  orientation: 'horizontal' | 'vertical';
+  scroll: React.RefObject<ScrollView | null>;
+};
+const CarouselContext = createContext<CarouselState | null>(null);
+function useCarousel() {
+  const value = useContext(CarouselContext);
+  if (!value) throw Error('Carousel parts require Carousel.');
+  return value;
+}
+export function Carousel({
+  index,
+  defaultIndex = 0,
+  onIndexChange,
+  loop = false,
+  orientation = 'horizontal',
+  ...props
+}: ViewProps & {
+  index?: number;
+  defaultIndex?: number;
+  onIndexChange?: (index: number) => void;
+  loop?: boolean;
+  orientation?: 'horizontal' | 'vertical';
+}) {
+  const [selected, set] = useControllable(index, defaultIndex, onIndexChange);
+  const [count, setCount] = useState(0);
+  const [size, setSize] = useState(1);
+  const scroll = useRef<ScrollView>(null);
+  const move = (next: number) => {
+    if (!count) return;
+    const target = loop ? (next + count) % count : clamp(next, 0, count - 1);
+    set(target);
+    scroll.current?.scrollTo({
+      [orientation === 'horizontal' ? 'x' : 'y']: target * size,
+      animated: false,
+    });
+  };
+  useEffect(() => {
+    if (size > 1)
+      scroll.current?.scrollTo({
+        [orientation === 'horizontal' ? 'x' : 'y']:
+          clamp(selected, 0, Math.max(0, count - 1)) * size,
+        animated: false,
+      });
+  }, [selected, size, count, orientation]);
+  return (
+    <CarouselContext.Provider
+      value={{
+        index: selected,
+        selected: set,
+        count,
+        setCount,
+        size,
+        setSize,
+        move,
+        loop,
+        orientation,
+        scroll,
+      }}
+    >
+      <Box accessibilityLabel="Carousel" {...props} />
+    </CarouselContext.Provider>
+  );
+}
+export function CarouselContent({
+  children,
+  style,
+  ...props
+}: React.ComponentProps<typeof ScrollView>) {
+  const carousel = useCarousel();
+  const count = Children.count(children);
+  useEffect(() => carousel.setCount(count), [count, carousel.setCount]);
+  return (
+    <ScrollView
+      {...props}
+      ref={carousel.scroll}
+      horizontal={carousel.orientation === 'horizontal'}
+      pagingEnabled
+      onLayout={(event) =>
+        carousel.setSize(
+          event.nativeEvent.layout[carousel.orientation === 'horizontal' ? 'width' : 'height'],
+        )
+      }
+      onMomentumScrollEnd={(event) =>
+        carousel.selected(
+          Math.round(
+            event.nativeEvent.contentOffset[carousel.orientation === 'horizontal' ? 'x' : 'y'] /
+              carousel.size,
+          ),
+        )
+      }
+      showsHorizontalScrollIndicator={false}
+      style={[{ flexGrow: 0 }, style]}
+    >
+      {children}
+    </ScrollView>
+  );
+}
+export function CarouselItem({ style, ...props }: ViewProps) {
+  const carousel = useCarousel();
+  return (
+    <Box
+      {...props}
+      style={[
+        carousel.orientation === 'horizontal'
+          ? { width: carousel.size }
+          : { height: carousel.size },
+        style,
+      ]}
+    />
+  );
+}
+export function CarouselPrevious({
+  children = 'Previous',
+  ...props
+}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) {
+  const carousel = useCarousel();
+  return (
+    <Button
+      accessibilityLabel="Previous slide"
+      {...props}
+      disabled={!carousel.count || (!carousel.loop && carousel.index <= 0) || props.disabled}
+      onPress={() => carousel.move(carousel.index - 1)}
+    >
+      {children}
+    </Button>
+  );
+}
+export function CarouselNext({
+  children = 'Next',
+  ...props
+}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) {
+  const carousel = useCarousel();
+  return (
+    <Button
+      accessibilityLabel="Next slide"
+      {...props}
+      disabled={
+        !carousel.count ||
+        (!carousel.loop && carousel.index >= carousel.count - 1) ||
+        props.disabled
+      }
+      onPress={() => carousel.move(carousel.index + 1)}
+    >
+      {children}
+    </Button>
+  );
+}

@@ -1,55 +1,34 @@
 # Anhedral CLI
 
-Anhedral CLI is the starter foundation for applications built with Anhedral. It brings web, iOS, Android, backend services, authentication, data storage, and shared design foundations into one maintained application stack. Generated projects contain editable source, established architectural boundaries, and the configuration and development conventions needed to build on that foundation.
+An open-source scaffold for Next.js App Router with OpenNext, Expo iOS/Android, DOM shadcn and Anhedral’s native shadcn ports, Hono on Cloudflare Workers/workerd, Drizzle ORM with D1, and a private R2 bucket.
 
-The CLI gives each application a consistent starting point that Anhedral Agents and developers can extend together, carrying a shared architecture from initial setup into ongoing development and cloud delivery.
-
-Anhedral Platform is the shared workspace for collaboration, planning, and software delivery. Anhedral Agents is the orchestration layer for programming agents, isolated development environments, and source management. Anhedral Cloud is the managed hosting and application services layer. See the [Anhedral product family](https://www.anhedral.com/work) for how they fit together.
-
-Anhedral is open source under the [Apache License 2.0](LICENSE).
-Generated applications are editable source that developers can customize and license for their products.
-
-One command creates one stack:
-
-- **Next.js App Router** for the web, with DOM shadcn UI and Cloudflare OpenNext.
-- **Expo** for iOS and Android, with the Anhedral-maintained native shadcn port using StyleSheet and shared tokens.
-- **Hono** on Cloudflare Workers for application APIs and authorization.
-- **Drizzle / D1** for SQL persistence and explicit migrations.
-- **Private R2** for authenticated, owner-scoped files.
-- Supporting Better Auth sessions, shared public contracts and design tokens.
-
-The only optional additions are **Stripe** for web billing and **RevenueCat** for native purchases. They can be selected independently or together. Provider accounts, activation, product configuration and acceptance remain explicit work.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/anhedral-stack.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/anhedral-stack-light.png">
-  <img alt="Next.js web and Expo iOS/Android connect to Hono, Drizzle/D1 and private R2. Stripe and RevenueCat are optional payment additions." src="docs/assets/anhedral-stack-light.png" width="1200">
-</picture>
-
-CLI 0.15 is a source preview and is not yet published to npm. Build this repository
-with `pnpm install --frozen-lockfile && pnpm build`, then use its local CLI.
-For the examples below, replace `anhedral` with `node /path/to/anhedral-cli/dist/bin.js`
-until the matching version is published.
+One command creates a complete, editable foundation:
 
 ```sh
-node /path/to/anhedral-cli/dist/bin.js init my-app
+anhedral init my-app
 cd my-app
 pnpm dev
 ```
 
-Initialization writes source locally, installs dependencies and initializes Git unless requested otherwise. Generation does not create cloud resources, apply remote migrations or deploy.
+Open the local URL printed by the development server. Start Expo separately with `pnpm --dir apps/mobile start`.
 
 ```sh
 anhedral init my-app --dry-run --json
-anhedral init my-app --stripe --revenuecat
-anhedral add stripe --cwd my-app --dry-run --json
-anhedral add stripe --cwd my-app
+anhedral init my-app --skip-install --no-git
 ```
 
-Use `--skip-install --no-git` for source-only generation. This mode requires no network. Keep the project CLI version pinned before applying additions; edited-source conflicts are preserved rather than overwritten.
+The core stack is always included. The CLI has no auth, payment, provider-management or hosting commands. You own the source and are responsible for developing, securing and hosting your application, including any authentication, Stripe or RevenueCat integration you choose to add. Init does not create cloud resources or expose public file routes.
 
-Deployable applications live in `apps/web`, `apps/mobile` and `apps/api`; shared contracts, database, auth and styling live in `packages`. The API owns data access and authorization. Clients never receive provider management credentials.
+The optional Codex plugin explains the stack, runs initialization and local development, and opens the resulting local app in a browser. It can recommend separate Cloudflare, Stripe or RevenueCat plugins when relevant; it does not manage those services.
 
-Read the [stack standard](docs/stack-standard.md), [development and delivery workflow](docs/software-factory.md), [architecture diagram](docs/anhedral-stack.md), and [verification record](docs/verification.md).
+Anhedral Platform is a separate B2B managed product. The scaffold requires no Platform account, credentials or service connection.
 
-Version 0.15 separates Next.js web from Expo native. Web uses the full App Router with SSR and React Server Components through OpenNext; Expo has no browser build. The focused catalog retains only Stripe and RevenueCat additions. Existing applications are not automatically migrated or reinitialized; retain their pinned older CLI until a reviewed migration is available. Historical versions remain in Git history and release tags.
+See [stack standard](docs/stack-standard.md), [workflow](docs/software-factory.md), [native UI](docs/native-ui.md).
+
+## Compatibility
+
+This is a breaking scaffold-only change. Older applications and Platform runtime images keep their pinned CLI and source. Existing source, credentials and cloud resources are never rewritten or removed. Publishing the CLI does not update an installed plugin or hosted image.
+
+For source development, run `pnpm install --frozen-lockfile && pnpm build`, then `node dist/bin.js init my-app`.
+
+Apache-2.0. Generated applications are editable source that consumers may customize and license for their own products.

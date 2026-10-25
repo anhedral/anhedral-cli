@@ -18,7 +18,7 @@ type Options = NonNullable<Parameters<typeof createApiClient>[1]>;
 function validProtocol(url: URL): boolean {
   return url.protocol === 'https:' || (__DEV__ && url.protocol === 'http:');
 }
-export function nativeApiOrigin(): string {
+function nativeApiOrigin(): string {
   const configured = process.env.EXPO_PUBLIC_API_URL;
   if (!configured) throw new Error('Configure EXPO_PUBLIC_API_URL with the product origin reachable from this device.');
   const origin = new URL(configured);
@@ -31,14 +31,13 @@ function apiBaseURL(): string {
   return nativeApiOrigin() + '/api';
 }
 
-// A native auth adapter can provide its own session headers. No server secret belongs here.
-export function createApplicationApiClient(options: Options = {}) {
+// Consumers can extend transport headers for their own application. No server secret belongs here.
+function createApplicationApiClient(options: Options = {}) {
   const client = () => createApiClient(apiBaseURL(), {
     ...options, credentials: 'omit',
   });
   return {
     health: (init?: RequestInit) => client().health(init),
-    session: (init?: RequestInit) => client().session(init),
   };
 }
 

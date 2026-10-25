@@ -56,8 +56,6 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
     react: '19.2.3',
     // renovate: datasource=npm depName=react-dom
     'react-dom': '19.2.3',
-    // renovate: datasource=npm depName=better-auth
-    'better-auth': '1.7.7',
     // renovate: datasource=npm depName=server-only
     'server-only': '0.0.1',
     // renovate: datasource=npm depName=@base-ui/react
@@ -95,6 +93,10 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
 
 export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
   dependencies: {
+    // renovate: datasource=npm depName=react-native-svg
+    'react-native-svg': '15.15.4',
+    // renovate: datasource=npm depName=expo-clipboard
+    'expo-clipboard': '57.0.2',
     // renovate: datasource=npm depName=@react-native-async-storage/async-storage
     '@react-native-async-storage/async-storage': '2.2.0',
     // renovate: datasource=npm depName=expo-system-ui
@@ -109,9 +111,6 @@ export const WORKSPACE_NODE_ENGINE = '^22.13.0 || >=24.0.0';
 
 export const PACKAGE_MANAGER = 'pnpm@10.34.5';
 
-// renovate: datasource=npm depName=eas-cli
-export const EAS_CLI_VERSION = '21.0.1';
-
 export const STACK_DEPENDENCIES = {
   // renovate: datasource=npm depName=zod
   zod: '4.6.6',
@@ -123,16 +122,6 @@ export const STACK_DEPENDENCIES = {
   turbo: '2.11.7',
   // renovate: datasource=npm depName=tsx
   tsx: '4.23.15',
-  // renovate: datasource=npm depName=better-auth
-  'better-auth': '1.7.7',
-  // renovate: datasource=npm depName=@better-auth/expo
-  '@better-auth/expo': '1.7.7',
-  // renovate: datasource=npm depName=expo-secure-store
-  'expo-secure-store': '57.0.4',
-  // renovate: datasource=npm depName=expo-network
-  'expo-network': '57.0.2',
-  // renovate: datasource=npm depName=@better-auth/drizzle-adapter
-  '@better-auth/drizzle-adapter': '1.7.7',
   // renovate: datasource=npm depName=drizzle-orm
   'drizzle-orm': '0.45.4',
   // renovate: datasource=npm depName=wrangler

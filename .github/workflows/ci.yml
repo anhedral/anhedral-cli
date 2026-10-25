@@ -38,6 +38,9 @@ jobs:
         with:
           node-version: '24.21.0'
           cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            tests/native-ui/pnpm-lock.yaml
       - name: Install CLI dependencies only
         if: steps.scope.outputs.full == 'true'
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -49,10 +52,16 @@ jobs:
         run: pnpm format:check && pnpm check:hygiene && pnpm check:security && pnpm check:release-policy
       - name: Fast contract smoke tests
         if: steps.scope.outputs.full == 'true'
-        run: node --test tests/test-cli-validation.test.mjs tests/test-ci-scope.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-util-exec.test.mjs
+        run: node --test tests/test-cli-validation.test.mjs tests/test-ci-scope.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-util-exec.test.mjs tests/test-native-ui-catalog.test.mjs
+      - name: Native component contracts when their source changes
+        if: steps.scope.outputs.native == 'true'
+        run: |
+          pnpm --dir tests/native-ui install --frozen-lockfile --ignore-scripts
+          pnpm --dir tests/native-ui typecheck
+          pnpm --dir tests/native-ui test
       - name: Build plugin only for an explicitly requested main candidate
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
-        run: pnpm --dir plugins/codex/inspector install --frozen-lockfile && pnpm plugin:build
+        run: pnpm plugin:build
       - name: Build and verify Linux release candidate
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         run: |

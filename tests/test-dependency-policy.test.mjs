@@ -77,7 +77,7 @@ export const VOID_NODE_ENGINE = '>=24.21.0';
   );
 });
 
-test('maintained dependency catalog audits the focused core and payment dependencies', async () => {
+test('maintained dependency catalog audits the foundation dependencies', async () => {
   const { readFileSync } = await import('node:fs');
   const { collectCatalogDependencyPins } = await import('../scripts/dependency-policy.mjs');
   const source = readFileSync(new URL('../src/dependencies.ts', import.meta.url), 'utf8');
@@ -88,8 +88,6 @@ test('maintained dependency catalog audits the focused core and payment dependen
     '@opennextjs/cloudflare',
     'hono',
     'drizzle-orm',
-    'better-auth',
-    'react-native-purchases',
     'wrangler',
     'pnpm',
   ])

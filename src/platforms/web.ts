@@ -179,16 +179,31 @@ a { color: inherit; } .button, input { min-height: 2.75rem; padding: .65rem 1rem
 import Link from 'next/link';
 import './globals.css';
 export const metadata: Metadata = { title: ${jsString(options.name)}, description: 'Anhedral application' };
-export default function Layout({ children }: { children: React.ReactNode }) { return <html lang="en"><body><main><nav aria-label="Main"><Link href="/">Home</Link><Link href="/account">Account</Link></nav>{children}</main></body></html>; }
+export default function Layout({ children }: { children: React.ReactNode }) { return <html lang="en"><body><main><nav aria-label="Main"><Link href="/">Home</Link></nav>{children}</main></body></html>; }
 `,
   );
   put(
     root,
     `${app}/app/page.tsx`,
     `import { headers } from 'next/headers';
+import { FoundationExample } from '@/components/foundation-example';
 export default async function Home() {
   const request = await headers();
-  return <section className="stack"><h1>${escapeJsx(options.name)}</h1><p>Next.js on Cloudflare, with a shared Hono API.</p><p className="muted" data-rendering="server">Rendered on the server for {request.get('host') ?? 'this request'}.</p></section>;
+  return <section className="stack"><h1>${escapeJsx(options.name)}</h1><p>Next.js on Cloudflare, with a shared Hono API.</p><p className="muted" data-rendering="server">Rendered on the server for {request.get('host') ?? 'this request'}.</p><FoundationExample /></section>;
+}
+`,
+  );
+  put(
+    root,
+    `${app}/components/foundation-example.tsx`,
+    `'use client';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+export function FoundationExample() {
+  const [idea, setIdea] = useState('My next application');
+  return <section className="stack"><Label htmlFor="idea">What will you build?</Label><Input id="idea" value={idea} onChange={event => setIdea(event.target.value)} /><p aria-live="polite">{idea}</p><Button onClick={() => setIdea('My next application')}>Reset example</Button></section>;
 }
 `,
   );
@@ -236,43 +251,6 @@ export const PATCH = apiRequest;
 export const DELETE = apiRequest;
 export const HEAD = apiRequest;
 export const OPTIONS = apiRequest;
-`,
-  );
-  put(
-    root,
-    `${app}/lib/auth-client.ts`,
-    `import { createAuthClient } from 'better-auth/react';\nexport const authClient = createAuthClient();\n`,
-  );
-  put(root, `${app}/app/sign-in/page.tsx`, WEB_SIGN_IN);
-  put(
-    root,
-    `${app}/components/sign-out.tsx`,
-    `'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
-import { Button } from '@/components/ui/button';
-export function SignOut() { const [error, setError] = useState(''); const [pending, setPending] = useState(false); const router = useRouter();
-  async function logout() { setPending(true); setError(''); try { const result = await authClient.signOut(); if (result.error) throw Error('Unable to sign out.'); router.replace('/sign-in'); router.refresh(); } catch { setError('Unable to sign out. Please retry.'); } finally { setPending(false); } }
-  return <><Button disabled={pending} onClick={() => void logout()}>{pending ? 'Signing out…' : 'Sign out'}</Button><p role="status">{error}</p></>; }
-`,
-  );
-  put(
-    root,
-    `${app}/app/account/page.tsx`,
-    `import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { sessionSchema } from '@workspace/contracts';
-import { apiRequest } from '@/lib/server-api';
-import { SignOut } from '@/components/sign-out';
-export default async function Account() {
-  const incoming = await headers();
-  const response = await apiRequest(new Request('https://app.internal/api/session', { headers: { cookie: incoming.get('cookie') ?? '' } }));
-  if (response.status === 401) redirect('/sign-in');
-  if (!response.ok) throw Error('Session verification is unavailable.');
-  const { user } = sessionSchema.parse(await response.json());
-  return <section className="stack"><h1>Account</h1><p>{user.email}</p><SignOut /></section>;
-}
 `,
   );
   put(
@@ -336,46 +314,5 @@ export async function proxyApi(request: Request, options: Options): Promise<Resp
     const response = options.development ? await (options.send ?? fetch)(upstream) : await options.binding!.fetch(upstream);
     return privateResponse(response, options.development);
   } catch { return Response.json({ error: 'API unavailable' }, { status: 503, headers: { 'cache-control': 'private, no-store' } }); }
-}
-`;
-const WEB_SIGN_IN = `'use client';
-import { useRef, useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { authClient } from '@/lib/auth-client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-function verificationPending(create: boolean, signedIn: boolean): boolean { return create && !signedIn; }
-async function requestVerification(email: string) {
-  const result = await authClient.sendVerificationEmail({ email, callbackURL: '/sign-in' });
-  if (result.error) throw Error('Verification unavailable');
-}
-async function authenticate(data: FormData, create: boolean) {
-  const email = String(data.get('email')); const password = String(data.get('password')); const name = String(data.get('name'));
-  const result = create ? await authClient.signUp.email({ email, password, name, callbackURL: '/sign-in' }) : await authClient.signIn.email({ email, password });
-  if (result.error) throw Error('Sign in failed.');
-  return Boolean(result.data?.token);
-}
-export default function SignIn() {
-  const form = useRef<HTMLFormElement>(null);
-  const router = useRouter(); const [create, setCreate] = useState(false); const [pending, setPending] = useState(false); const [error, setError] = useState('');
-  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (pending) return; setPending(true); setError('');
-    const data = new FormData(event.currentTarget);
-    try { const signedIn = await authenticate(data, create); if (verificationPending(create, signedIn)) { form.current?.reset(); setCreate(false); setError('Check your email to verify your account, then sign in.'); return; } router.replace('/account'); router.refresh(); } catch { setError('Unable to sign in. Check your details and retry.'); } finally { setPending(false); }
-  }
-  async function resend() {
-    const input = form.current?.querySelector<HTMLInputElement>('[name="email"]');
-    if (pending || !input?.reportValidity()) return;
-    const email = input.value;
-    setPending(true); setError('');
-    try {
-      await requestVerification(email);
-      setError('If verification is needed, check your email for the link.');
-    } catch { setError('Unable to request verification. Please retry.'); }
-    finally { setPending(false); }
-  }
-  const labels = create ? { title: 'Create account', password: 'new-password', toggle: 'Use an existing account' } : { title: 'Sign in', password: 'current-password', toggle: 'Create an account' };
-  return <section className="stack"><h1>{labels.title}</h1><form ref={form} onSubmit={submit}>{create && <Label>Name<Input name="name" required autoComplete="name" /></Label>}<Label>Email<Input name="email" type="email" required autoComplete="email" /></Label><Label>Password<Input name="password" type="password" minLength={8} required autoComplete={labels.password} /></Label><Button type="submit" disabled={pending}>{pending ? 'Working…' : labels.title}</Button><p role="status">{error}</p><Link href="/reset-password">Forgot your password?</Link><Button type="button" disabled={pending} onClick={() => void resend()}>Resend verification email</Button><Button type="button" disabled={pending} onClick={() => setCreate(!create)}>{labels.toggle}</Button></form></section>;
 }
 `;

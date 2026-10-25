@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { parse } from 'yaml';
-import { needsFullCI } from '../scripts/ci-scope.mjs';
+import { needsFullCI, needsNativeUI } from '../scripts/ci-scope.mjs';
 
 test('only ordinary documentation takes the lightweight path', () => {
   assert.equal(
@@ -49,7 +49,7 @@ test('manual runs and missing history conservatively require code checks', () =>
       });
       assert.equal(
         readFileSync(output, 'utf8'),
-        'full=true\nrelease=' + (env.GITHUB_EVENT_NAME === 'workflow_dispatch') + '\n',
+        'full=true\nrelease=' + (env.GITHUB_EVENT_NAME === 'workflow_dispatch') + '\nnative=true\n',
       );
     }
   } finally {
@@ -93,18 +93,18 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
     base = git('rev-parse', 'HEAD').trim();
     writeFileSync(path.join(directory, 'README.md'), '🚧 Under construction\n');
     git('commit', '--quiet', '-am', 'Docs');
-    assert.equal(run(), 'full=false\nrelease=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\nnative=false\n');
     writeFileSync(path.join(directory, 'README.md'), 'Trailing space \n');
     git('commit', '--quiet', '-am', 'Whitespace defect');
     assert.throws(run, 'documentation whitespace defects must fail');
     assert.throws(() => readFileSync(output));
     writeFileSync(path.join(directory, 'README.md'), 'Clean documentation\n');
     git('commit', '--quiet', '-am', 'Fix whitespace');
-    assert.equal(run(), 'full=false\nrelease=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\nnative=false\n');
     mkdirSync(path.join(directory, 'docs'));
     git('mv', 'source.ts', 'docs/source.md');
     git('commit', '--quiet', '-m', 'Move source');
-    assert.equal(run(), 'full=true\nrelease=false\n');
+    assert.equal(run(), 'full=true\nrelease=false\nnative=false\n');
     base = 'a'.repeat(40);
     assert.throws(run);
     assert.throws(() => readFileSync(output));
@@ -175,8 +175,31 @@ test('main rejects topic PRs and identifies promotions without expanding hosted 
       });
     assert.throws(() => run('codex/topic'));
     run('staging');
-    assert.equal(readFileSync(output, 'utf8'), 'full=true\nrelease=true\n');
+    assert.equal(readFileSync(output, 'utf8'), 'full=true\nrelease=true\nnative=true\n');
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test('native component CI covers owned source, consumers and its harness without unrelated builds', () => {
+  for (const file of [
+    'assets/ui/native/slider.tsx',
+    'assets/ui/theme.tsx',
+    'src/dependencies.ts',
+    'src/scaffold/native-ui.ts',
+    'src/scaffold/styling.ts',
+    'src/platforms/mobile.ts',
+    'tests/native-ui/controls.test.tsx',
+    'scripts/native-ui-catalog.mjs',
+    '.github/workflows/ci.yml',
+  ])
+    assert.equal(needsNativeUI([file]), true, file);
+  for (const file of [
+    'README.md',
+    'docs/native-ui.md',
+    'src/service-deletion.ts',
+    'assets/ui/web/button.tsx',
+  ])
+    assert.equal(needsNativeUI([file]), false, file);
+  assert.equal(needsNativeUI([]), true);
 });

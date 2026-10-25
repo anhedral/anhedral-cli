@@ -1,6 +1,8 @@
 {
   "name": "anhedral",
-  "interface": { "displayName": "Anhedral" },
+  "interface": {
+    "displayName": "Anhedral"
+  },
   "plugins": [
     {
       "name": "anhedral",
@@ -8,11 +10,15 @@
         "source": "git-subdir",
         "url": "https://github.com/anhedral/anhedral-cli.git",
         "path": "./plugins/anhedral",
-        "ref": "plugin-v0.15.0"
+        "ref": "plugin-v0.16.0"
       },
-      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
       "category": "Developer Tools",
-      "interface": { "displayName": "Anhedral" }
+      "interface": {
+        "displayName": "Anhedral"
+      }
     }
   ]
 }

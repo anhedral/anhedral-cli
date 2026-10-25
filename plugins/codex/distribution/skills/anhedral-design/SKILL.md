@@ -1,12 +1,12 @@
 ---
 name: anhedral-design
-description: "Design accessible Next.js web and Expo native interfaces with shared tokens."
+description: "Explain and extend the scaffold's shared tokens, DOM shadcn UI and Anhedral native shadcn ports."
 ---
 
 # Anhedral Design
 
-Use DOM shadcn components in apps/web and the Anhedral-maintained native shadcn port using StyleSheet and shared tokens in apps/mobile. Share design tokens and public contracts; do not use react-native-web or import native UI into Next.js. Preserve accessible component semantics, keyboard focus, responsive layout, reduced motion and native platform conventions. Reuse shared typography/colors/spacing rather than app-local palettes.
+Read the generated app's instructions and source. Web uses Next.js App Router and DOM shadcn components; native uses Expo and the editable Anhedral native shadcn port in packages/native-ui. Share contracts and tokens, not platform primitives. Keep theme tokens in packages/styling and use existing components before introducing custom primitives.
 
-Build real loading, empty, error and success states. Keep API and provider implementation details out of user flows unless they inform a meaningful decision. Do not introduce alternative frontend frameworks or UI runtimes. Existing non-generated applications keep their own architecture.
+Use the generated apps/web ui:add and ui:view scripts for official web shadcn components. Native APIs and device acceptance differ; inspect the copied native component source and ../../references/native-ui.md before adapting it. Preserve keyboard focus, accessibility labels, loading/error states and platform-specific interaction. Read version-matched framework guidance and test the requested user flow.
 
-Verify web interaction and the target device separately; web build success does not prove native accessibility or behavior. Auth/private-file screens and optional Stripe/RevenueCat flows must reflect server results rather than optimistic entitlement claims.
+This skill describes a foundation. Application authentication, billing, integrations and hosting are consumer-owned work; choose separate provider plugins or official SDKs when requested.

@@ -1,4 +1,3 @@
-import { verifyPluginRuntime } from '../plugins/codex/inspector/source-integrity.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -61,46 +60,21 @@ export function buildPluginArchive(root) {
   const pluginRoot = path.join(root, 'plugins/codex/distribution');
   const manifest = JSON.parse(readFileSync(path.join(pluginRoot, 'plugin.json'), 'utf8'));
   const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
-  const registry = JSON.parse(
-    readFileSync(path.join(pluginRoot, 'references/capabilities.json'), 'utf8'),
-  );
-  const stack = JSON.parse(
-    readFileSync(path.join(pluginRoot, 'references/stack-registry.json'), 'utf8'),
-  );
-  if (
-    manifest.version !== packageJson.version ||
-    registry.cliVersion !== packageJson.version ||
-    stack.cliVersion !== packageJson.version ||
-    stack.items.some((item) => item.version !== packageJson.version)
-  )
-    throw new Error('Plugin and CLI release versions must match. Run pnpm build.');
+  if (manifest.version !== packageJson.version)
+    throw new Error('Plugin and CLI versions must match.');
   const files = pluginFiles(pluginRoot);
   const names = new Set(files.map((file) => file.name));
   for (const name of [
     'LICENSE',
-    'mcp.json',
-    ...['init', 'dev', 'design', 'auth', 'billing', 'hosting'].map(
-      (name) => `skills/anhedral-${name}/SKILL.md`,
-    ),
-    ...['stack-standard.md', 'software-factory.md', 'verification.md'].map(
+    ...['init', 'design'].map((name) => `skills/anhedral-${name}/SKILL.md`),
+    ...['stack-standard.md', 'software-factory.md', 'native-ui.md'].map(
       (name) => `references/${name}`,
     ),
-    'runtime/build.json',
-    'runtime/server.mjs',
-    'runtime/dashboard.html',
-    'runtime/THIRD_PARTY_NOTICES.txt',
   ]) {
     if (!names.has(name)) throw new Error(`Plugin distribution is missing required file: ${name}`);
   }
-  const server = JSON.parse(
-    files.find((file) => file.name === 'mcp.json').contents.toString('utf8'),
-  ).mcpServers?.['anhedral-projects'];
-  if (
-    server?.type !== 'stdio' ||
-    server.command !== 'node' ||
-    JSON.stringify(server.args) !== JSON.stringify(['${PLUGIN_ROOT}/runtime/server.mjs', 'serve'])
-  )
-    throw new Error('Plugin MCP entrypoint must launch the bundled projects runtime.');
+  if ([...names].some((name) => name === 'mcp.json' || name.startsWith('runtime/')))
+    throw new Error('Scaffold plugin must contain skills and references only.');
   const interface_ = manifest.extensions?.['com.openai']?.interface;
   for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
     const asset = interface_?.[field];
@@ -111,7 +85,6 @@ export function buildPluginArchive(root) {
     )
       throw new Error(`Plugin interface ${field} must reference a bundled asset.`);
   }
-  verifyPluginRuntime(root);
   const local = [],
     central = [];
   let offset = 0;

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { argv } from 'node:process';
 import { runCommand } from './cli-commands.js';
-import { DELIVERY_COMMANDS } from './cli-delivery.js';
 import { STANDARD_USAGE, commandHelp } from './registry/usage.js';
 import { GENERATOR_VERSION } from './version.js';
 import { PostCommitError } from './transaction.js';
@@ -62,22 +61,10 @@ async function main(): Promise<void> {
   await runCommand(command, args, { json, quiet: global.quiet });
 }
 
-const errorCodes: Readonly<Record<string, string>> = {
-  ...Object.fromEntries(
-    [...DELIVERY_COMMANDS, 'repository', 'integrations'].map((name) => [name, 'DELIVERY_FAILED']),
-  ),
-  inspect: 'INSPECTION_FAILED',
-  services: 'SERVICE_FAILED',
-  auth: 'AUTH_FAILED',
-  doctor: 'INVALID_ARGUMENT',
-  init: 'GENERATION_FAILED',
-  add: 'ADDITION_FAILED',
-  registry: 'REGISTRY_FAILED',
-};
 function failureCode(error: unknown): string {
   if (error instanceof CliArgumentError) return error.code;
   if (error instanceof PostCommitError) return 'POST_COMMIT_FAILED';
-  return Object.hasOwn(errorCodes, command ?? '') ? errorCodes[command!] : 'UNKNOWN_COMMAND';
+  return command === 'init' ? 'GENERATION_FAILED' : 'UNKNOWN_COMMAND';
 }
 
 try {

@@ -12,6 +12,18 @@ assert.match(readme, /\]\(docs\/stack-standard\.md\)/);
 
 try {
   for (const args of [
+    ...[
+      'inspect',
+      'integrations',
+      'services',
+      'repository',
+      'register',
+      'provision',
+      'status',
+      'manage',
+      'verify',
+      'rollback',
+    ].map((command) => [command]),
     ['add', 'expo'],
     ['auth', '--unknown'],
     ['auth', '--provider'],
@@ -42,23 +54,15 @@ try {
     if (args[0] === 'cloud') assert.equal(failure.code, 'UNKNOWN_COMMAND');
     assert.deepEqual(readdirSync(root), [], 'invalid commands must not create files');
   }
-  assert.equal(run('repository', '--help').status, 0);
-  assert.match(run('repository', '--help').stdout, /repository.*--owner/);
-  const diagnosis = run('doctor', '--json');
-  assert.equal(diagnosis.status, 1);
-  assert.equal(JSON.parse(diagnosis.stdout).productionReady, false);
-  assert.deepEqual(readdirSync(root), [], 'doctor must not write');
   const target = path.join(root, 'planned');
-  const result = run('init', target, '--stripe', '--dry-run', '--json');
+  const result = run('init', target, '--dry-run', '--json');
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout).products, [
-    'better-auth',
     'd1',
     'expo',
     'hono',
     'next',
     'r2',
-    'stripe',
     'styling',
   ]);
   assert.equal(existsSync(target), false);

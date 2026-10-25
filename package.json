@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
-  "version": "0.15.0",
-  "description": "Create a Next.js web + native Expo + Hono + Drizzle/D1 + private R2 application. Add Stripe and RevenueCat when needed.",
+  "version": "0.16.0",
+  "description": "Scaffold Next.js, Expo, shadcn, Hono/workerd, Drizzle/D1 and private R2 as editable source.",
   "type": "module",
   "exports": {
     ".": {
@@ -27,9 +27,8 @@
     "docs/software-factory.md",
     "docs/verification.md",
     "docs/anhedral-stack.md",
-    "docs/assets/anhedral-stack.png",
-    "docs/assets/anhedral-stack-light.png",
-    "assets/ui"
+    "assets/ui",
+    "docs/native-ui.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -73,16 +72,16 @@
     "release:artifact:verify": "node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:smoke": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
     "test:standard": "pnpm build && node --test tests/test-standard.test.mjs",
-    "test:unit": "node scripts/prepare-test-runtime.mjs && node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
+    "test:unit": "node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
     "test:integration": "pnpm build && node tests/test-generated-apps.mjs",
-    "test:live:delivery": "pnpm build && node tests/test-live-delivery.mjs",
-    "format": "prettier --write src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\" assets/ui",
-    "format:check": "prettier --check src scripts tests plugins/codex/inspector \"assets/patches/*.mjs\" assets/ui",
-    "plugin:build": "pnpm --dir plugins/codex/inspector build",
-    "plugin:check": "pnpm --dir plugins/codex/inspector check",
-    "plugin:preview": "pnpm --dir plugins/codex/inspector start",
+    "format": "prettier --write src scripts tests \"assets/patches/*.mjs\" assets/ui",
+    "format:check": "prettier --check src scripts tests \"assets/patches/*.mjs\" assets/ui",
+    "plugin:build": "node scripts/check-plugin.mjs",
+    "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
-    "test:billing": "node tests/test-generated-apps.mjs billing"
+    "test:native-ui": "pnpm build && pnpm --dir tests/native-ui typecheck && pnpm --dir tests/native-ui test",
+    "native-ui:docs": "node scripts/native-ui-catalog.mjs --write",
+    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream"
   },
   "keywords": [
     "cli",
@@ -94,8 +93,6 @@
     "d1",
     "r2",
     "drizzle",
-    "stripe",
-    "revenuecat",
     "turborepo",
     "nextjs",
     "opennext"
@@ -106,11 +103,10 @@
     "@types/node": "20.19.43",
     "hono": "4.13.13",
     "prettier": "3.9.10",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "zod": "4.6.6"
   },
   "dependencies": {
-    "jsonc-parser": "3.3.1",
-    "yaml": "2.9.1",
-    "zod": "4.6.6"
+    "yaml": "2.9.1"
   }
 }
