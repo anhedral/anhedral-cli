@@ -368,6 +368,8 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           /\/ui\/(alert-dialog|dialog|dropdown-menu|popover|tooltip)$/.test(module)
         )
           target = '../../native/registry-aria-overlay';
+        else if (ariaRecipe && !nativeActions && /\/ui\/select$/.test(module))
+          target = '../../native/registry-aria-select';
         else if (/\/bases\/(base|aria)\/ui\/slider$/.test(module))
           target = '../../native/registry-slider';
         else if (nativeActions && /\/ui\/(radio-group|select|checkbox|switch)$/.test(module))
@@ -378,7 +380,22 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           target = '../../native/charts';
         else if (module === 'lucide-react') target = 'lucide-react-native';
         else if (module === '@tabler/icons-react') target = '@tabler/icons-react-native';
-        else if (module === '@/hooks/use-copy-to-clipboard')
+        else if (
+          module === 'react-aria-components' &&
+          /\/bases\/aria\/examples\/select-example\.tsx$/.test(filename)
+        ) {
+          const bindings = node.importClause?.namedBindings;
+          if (
+            node.importClause?.name ||
+            !bindings ||
+            !ts.isNamedImports(bindings) ||
+            bindings.elements.some(
+              (e) => !['Autocomplete', 'useFilter'].includes((e.propertyName ?? e.name).text),
+            )
+          )
+            throw Error('Unreviewed native Select companion import.');
+          target = '../../native/registry-aria-select';
+        } else if (module === '@/hooks/use-copy-to-clipboard')
           target = '../../native/registry-copy-to-clipboard';
         else if (module === 'react-textarea-autosize') {
           if (!node.importClause?.name || node.importClause.namedBindings)

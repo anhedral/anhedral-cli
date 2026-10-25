@@ -100,6 +100,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/example-layout",Component:NativeExampleLayoutMatrix}',
           '{id: "native/chart-contract",Component:NativeChartMatrix}',
           '{id: "native/input-group-contract",Component:NativeInputGroupMatrix}',
+          '{id: "native/select-contract",Component:NativeSelectMatrix}',
         ].join(',\n') +
         '];',
     );

@@ -114,6 +114,11 @@ export const NativeTextStyleContext = createContext<{
   textBreakStrategy?: TextProps['textBreakStrategy'];
 }>({});
 export const NativeTextStyleProvider = NativeTextStyleContext.Provider;
+/** Reviewed descendant selectors apply to source text/glyphs until a physical modal boundary. */
+export const NativeDescendantStyleContext = createContext<{
+  textColor?: string;
+  iconColor?: string;
+}>({});
 /** RN 0.86 Text's runtime supports pointer enter/leave; its legacy public TextProps omit them. */
 export type NativeTextPointerProps = Pick<ViewProps, 'onPointerEnter' | 'onPointerLeave'>;
 export function LabelText({
@@ -152,7 +157,13 @@ export function LabelText({
 }
 export function Muted({ style, ...props }: TextProps) {
   const { colors } = useTheme();
-  return <LabelText {...props} style={[{ color: colors['muted-foreground'] }, style]} />;
+  const descendant = useContext(NativeDescendantStyleContext);
+  return (
+    <LabelText
+      {...props}
+      style={[{ color: descendant.textColor ?? colors['muted-foreground'] }, style]}
+    />
+  );
 }
 export function Surface({ style, ...props }: ViewProps) {
   const { colors, radius } = useTheme();

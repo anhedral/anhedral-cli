@@ -8,13 +8,13 @@ import {
   nativeAndroidTestSelection,
   nativeAndroidRunResult,
 } from '../scripts/native-ui-android.mjs';
-const result = (count = 19) =>
+const result = (count = 20) =>
   Array.from(
     { length: count },
     () => 'INSTRUMENTATION_STATUS_CODE: 1\nINSTRUMENTATION_STATUS_CODE: 0\n',
   ).join('') + `OK (${count} tests)\nINSTRUMENTATION_CODE: -1\n`;
 test('Android native acceptance requires every expected instrumentation case and rejects skips, crashes and incomplete output', () => {
-  assert.deepEqual(assertNativeAndroidResult(result()), { tests: 19, failures: 0 });
+  assert.deepEqual(assertNativeAndroidResult(result()), { tests: 20, failures: 0 });
   for (const output of [
     '',
     result(0),

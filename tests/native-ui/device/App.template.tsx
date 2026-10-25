@@ -2,6 +2,11 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { View, FlatList, ScrollView, Text, Keyboard, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
+import * as AriaSelect from './.generated/src/native/registry-aria-select';
+import {
+  RegistrySelectAutocomplete,
+  useRegistrySelectFilter,
+} from './.generated/src/native/_select';
 import { NativeInputGroupContext } from './.generated/src/native/_input-group-context';
 import { NativeRegistryPalette } from './.generated/src/native/_registry-context';
 import { withRegistryStyles, RegistryView } from './.generated/src/native/registry-styles';
@@ -13,6 +18,159 @@ import {
 } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+function NativeSelectMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  const [index, setIndex] = useState(0),
+    [frame, setFrame] = useState(''),
+    [fruit, setFruit] = useState('alpha'),
+    [multi, setMulti] = useState<string[]>([]),
+    [country, setCountry] = useState(''),
+    [long, setLong] = useState('29'),
+    [valueHeight, setValueHeight] = useState(0);
+  const preset = presets[index]!,
+    items = [
+      { value: 'alpha', label: 'Multi Alpha' },
+      { value: 'beta', label: 'Multi Beta' },
+    ];
+  const { contains } = useRegistrySelectFilter({ sensitivity: 'base' });
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Select preset: ' + preset}</UI.Text>
+      <UI.Text>{'Select geometry: ' + preset + ':' + frame}</UI.Text>
+      <UI.Button onPress={() => setIndex((index + 1) % presets.length)}>
+        Next select preset
+      </UI.Button>
+      <NativeRegistryPalette
+        source={
+          preset === 'default' || preset === 'new-york' || preset === 'new-york-v4'
+            ? preset
+            : 'base'
+        }
+        generation={preset === 'default' || preset === 'new-york' ? 'legacy' : 'modern'}
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <UI.Field>
+            <UI.Label controlID="native-fruit">Open fruit choices by label</UI.Label>
+            <UI.Select
+              key={preset}
+              value={fruit}
+              onValueChange={(value) => setFruit(String(value))}
+              nativeID="native-fruit"
+            >
+              <UI.SelectTrigger
+                accessibilityLabel="Pick a native fruit"
+                style={{ width: 320 }}
+                onLayout={({ nativeEvent: { layout } }) =>
+                  setFrame(Math.round(layout.width) + 'x' + Math.round(layout.height))
+                }
+              >
+                <UI.SelectValue />
+              </UI.SelectTrigger>
+              <UI.SelectContent>
+                <UI.SelectGroup>
+                  <UI.SelectItem value="alpha">Fruit Alpha</UI.SelectItem>
+                  <UI.SelectItem value="beta">Fruit Beta</UI.SelectItem>
+                  <UI.SelectItem value="blocked" disabled>
+                    Fruit Blocked
+                  </UI.SelectItem>
+                </UI.SelectGroup>
+              </UI.SelectContent>
+            </UI.Select>
+          </UI.Field>
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+      <UI.Text>{'Selected native fruit: ' + fruit}</UI.Text>
+      <AriaSelect.Select
+        selectionMode="multiple"
+        value={multi}
+        onValueChange={(value) => setMulti(Array.isArray(value) ? value.map(String) : [])}
+      >
+        <AriaSelect.SelectTrigger
+          accessibilityLabel="Pick multiple native fruits"
+          style={{ width: 320 }}
+        >
+          <AriaSelect.SelectValue<(typeof items)[0]>
+            onLayout={({ nativeEvent: { layout } }) => setValueHeight(Math.round(layout.height))}
+          >
+            {({ selectedItems }) =>
+              selectedItems.length
+                ? selectedItems.map((item) => item.label).join(', ')
+                : 'Choose native fruits'
+            }
+          </AriaSelect.SelectValue>
+        </AriaSelect.SelectTrigger>
+        <AriaSelect.SelectContent>
+          <AriaSelect.SelectGroup items={items}>
+            {(item) => <AriaSelect.SelectItem id={item.value}>{item.label}</AriaSelect.SelectItem>}
+          </AriaSelect.SelectGroup>
+        </AriaSelect.SelectContent>
+      </AriaSelect.Select>
+      <UI.Text>{'Selected native multiples: ' + multi.join(',')}</UI.Text>
+      <UI.Text>{'Select value height: ' + valueHeight}</UI.Text>
+      <AriaSelect.Select value={country} onValueChange={(value) => setCountry(String(value))}>
+        <AriaSelect.SelectTrigger
+          accessibilityLabel="Search native countries"
+          style={{ width: 320 }}
+        >
+          <AriaSelect.SelectValue placeholder="Choose a country" />
+        </AriaSelect.SelectTrigger>
+        <RegistrySelectAutocomplete filter={contains}>
+          <AriaSelect.SelectPopover>
+            <AriaSelect.SelectInput
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
+            />
+            <AriaSelect.SelectList
+              renderEmptyState={() => (
+                <AriaSelect.SelectEmpty>No native countries</AriaSelect.SelectEmpty>
+              )}
+            >
+              <AriaSelect.SelectGroup
+                items={[
+                  { value: 'ivory-coast', label: 'Côte d’Ivoire' },
+                  { value: 'turkey', label: 'Türkiye' },
+                ]}
+              >
+                {(item) => (
+                  <AriaSelect.SelectItem id={item.value}>{item.label}</AriaSelect.SelectItem>
+                )}
+              </AriaSelect.SelectGroup>
+            </AriaSelect.SelectList>
+          </AriaSelect.SelectPopover>
+        </RegistrySelectAutocomplete>
+      </AriaSelect.Select>
+      <UI.Text>{'Selected native country: ' + country}</UI.Text>
+      <UI.Select value={long} onValueChange={(value) => setLong(String(value))}>
+        <UI.SelectTrigger accessibilityLabel="Open long native list" style={{ width: 320 }}>
+          <UI.SelectValue />
+        </UI.SelectTrigger>
+        <UI.SelectContent side="left" align="start" testID="native-long-select-surface">
+          <UI.SelectGroup>
+            {Array.from({ length: 30 }, (_, index) => (
+              <UI.SelectItem key={index} value={String(index)}>
+                {'Native long option ' + index}
+              </UI.SelectItem>
+            ))}
+          </UI.SelectGroup>
+        </UI.SelectContent>
+      </UI.Select>
+      <UI.Text>{'Selected native long option: ' + long}</UI.Text>
+    </View>
+  );
+}
+
 function NativeInputGroupProbe({ onChange }: { onChange: (value: string) => void }) {
   const group = useContext(NativeInputGroupContext);
   useEffect(() => {

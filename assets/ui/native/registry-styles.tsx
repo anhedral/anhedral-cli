@@ -37,6 +37,7 @@ import {
   monospace,
   LabelText,
   NativeTextStyleContext,
+  NativeDescendantStyleContext,
   NativeTextStyleProvider,
   TextToneProvider,
   useTextTone,
@@ -159,6 +160,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       variables = useContext(RegistryVariables),
       cardSpacing = useContext(NativeCardSpacingContext),
       inherited = useContext(NativeTextStyleContext),
+      descendantPaint = useContext(NativeDescendantStyleContext),
       inheritedPaint = useContext(RegistryPaintContext),
       descendant = useContext(DescendantStyle),
       tone = useTextTone();
@@ -258,6 +260,17 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
     if (translated.paint.triggerWidth) {
       if (!overlay) throw Error('Native trigger width requires an overlay root.');
       if (overlay.triggerSize.width > 0) translated.view.width = overlay.triggerSize.width;
+    }
+    const textOwner =
+      ['text', 'link', 'icon', 'svg-root'].includes(kind) ||
+      ['nativeTextSlot', 'nativeCardTextSlot'].some(
+        (key) =>
+          key in Component && (Component as unknown as Record<string, unknown>)[key] === true,
+      );
+    if (descendantPaint.textColor && textOwner) {
+      translated.text.color = descendantPaint.textColor;
+      if (translated.paint.hoverForeground)
+        translated.paint.hoverForeground = descendantPaint.textColor;
     }
     const paint = { ...inheritedPaint, ...translated.paint };
     const text = { ...StyleSheet.flatten(inherited.style), ...translated.text };
@@ -436,7 +449,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           forwarded[key] = parseFloat(value) * 16;
       }
       if (forwarded.color === undefined)
-        forwarded.color = tone ?? text.color ?? theme.colors.foreground;
+        forwarded.color =
+          (kind === 'icon' &&
+          !(typeof inputClassName === 'string' && inputClassName.includes('text-'))
+            ? descendantPaint.iconColor
+            : undefined) ??
+          tone ??
+          text.color ??
+          theme.colors.foreground;
       if (kind === 'svg-root' || kind === 'icon') {
         forwarded.style = [translated.view, nativeInline];
         delete forwarded.transform;
@@ -592,7 +612,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       scoped
     );
   }
-  return Object.assign(Styled, {
+  const wrapped = Object.assign(Styled, {
     nativeRegistryComponent: Component,
     nativeRegistryKind: kind,
     nativeRegistryIcon:
@@ -600,6 +620,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       kind === 'svg-root' ||
       ('nativeRegistryIcon' in Component && Component.nativeRegistryIcon === true),
   });
+  // Preserve generic collection/render-prop inference while forwarding the source props.
+  return wrapped as C extends (...args: any[]) => any ? C & typeof wrapped : typeof wrapped;
 }
 type NativeRecipeViewProps = Omit<PressableProps, 'children'> & {
   children?: ReactNode;

@@ -20,7 +20,7 @@ import {
   nativeQAStoryCountSource,
 } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeAndroidTestCount = 19;
+export const nativeAndroidTestCount = 20;
 const start = '// BEGIN ANHEDRAL NATIVE REGISTRY QA',
   end = '// END ANHEDRAL NATIVE REGISTRY QA';
 export function nativeAndroidTestGradle(source) {

@@ -50,6 +50,7 @@ export function registryStyle(
   if (cardSpacing !== undefined && (!Number.isFinite(cardSpacing) || cardSpacing < 0))
     throw Error('Invalid native Card spacing.');
   const number = (value: string): number => {
+    if (value === 'px') return 1;
     if (value === '(--card-spacing)' || value === '[var(--card-spacing)]') {
       if (cardSpacing === undefined) throw Error('Unbound native Card spacing.');
       return cardSpacing;
@@ -522,7 +523,10 @@ export function registryStyle(
       if (view.aspectRatio === undefined)
         throw Error(`Unsupported native aspect ratio: ${original}`);
     } else if (token === 'absolute' || token === 'relative') view.position = token;
-    else if (/^(left|top)-/.test(token)) {
+    else if (/^(top|bottom|left|right)-[\d.]+$/.test(token)) {
+      const edge = /^(top|bottom|left|right)-([\d.]+)$/.exec(token)!;
+      Object.assign(view, { [edge[1]!]: number(edge[2]!) });
+    } else if (/^(left|top)-/.test(token)) {
       const at = token.indexOf('-');
       Object.assign(view, { [token.slice(0, at)]: number(token.slice(at + 1)) });
     } else if (token.startsWith('z-')) view.zIndex = Number(token.slice(2));
@@ -633,6 +637,10 @@ export function registryStyle(
       view.boxShadow = [
         { offsetX: 0, offsetY: 10, blurRadius: 15, spreadDistance: -3, color: 'rgba(0,0,0,0.1)' },
         { offsetX: 0, offsetY: 4, blurRadius: 6, spreadDistance: -4, color: 'rgba(0,0,0,0.1)' },
+      ];
+    } else if (token === 'shadow-2xl') {
+      view.boxShadow = [
+        { offsetX: 0, offsetY: 25, blurRadius: 50, spreadDistance: -12, color: 'rgba(0,0,0,0.25)' },
       ];
     } else if (token === 'shadow-xl') {
       view.boxShadow = [

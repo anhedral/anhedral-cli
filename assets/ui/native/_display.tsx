@@ -406,6 +406,8 @@ export function ItemDescription({ style, ...props }: TextProps) {
   const size = useContext(ItemSize);
   return <Muted {...props} style={[{ fontSize: size === 'xs' ? 12 : 14 }, style]} />;
 }
+Object.assign(ItemTitle, { nativeTextSlot: true });
+Object.assign(ItemDescription, { nativeTextSlot: true });
 export const ItemActions = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={row(style)} />
 );

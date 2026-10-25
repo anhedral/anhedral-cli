@@ -205,7 +205,7 @@ test('browser-only API classifications require a real upstream export and native
 });
 test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
   const pending = incompleteNativeItems(inventory, coverage);
-  assert.equal(pending.length, 431);
+  assert.equal(pending.length, 426);
   for (const key of [
     'registry:ui/chart',
     'registry:ui/input-group',
@@ -222,7 +222,13 @@ test('export presence and browser-only policy cannot promote incomplete items to
   ])
     assert.ok(!pending.includes(key));
   for (const name of ['chart-area-interactive', 'chart-pie-interactive'])
-    assert.ok(pending.includes('registry:block/' + name));
+    assert.ok(!pending.includes('registry:block/' + name));
+  for (const key of [
+    'registry:ui/select',
+    'registry:example/select-demo',
+    'registry:example/select-scrollable',
+  ])
+    assert.ok(!pending.includes(key));
   assert.ok(pending.includes('registry:ui/form'));
   assert.ok(pending.includes('registry:block/dashboard-01'));
   assert.ok(!pending.includes('registry:ui/button'));

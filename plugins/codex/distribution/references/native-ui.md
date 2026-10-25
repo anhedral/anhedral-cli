@@ -205,6 +205,21 @@ leading. Textarea and raw autosizing examples grow through native content sizing
 readonly controls keep enabled accessibility state and delegate focus requests to the OS. Native readOnly interaction follows TextInput behavior; browser keyboard-focus parity is not claimed. Adjacent text expressions retain a continuous
 native text run for counters and accessibility.
 
+Select retains six source implementations and eleven style families, source trigger
+sizes, indicator placement, focus/invalid/disabled paint and native host refs.
+A renderer audit consumes all 64 native class slots; one slot delegates and eighteen
+are explicit browser-specific decisions, covering all 83 captured source slots.
+Controlled object values and array-valued multiple selections retain their callbacks.
+The Aria source adapter keeps generic collections, original selectedItems, rich selected
+content and the authored country search with locale-sensitive collation and empty state.
+Native Modal surfaces preserve safe-area bounds, logical left/right placement and
+source offset defaults. ScrollView measures the selected native row for initial scrolling.
+Browser portal/trigger coordinates, selected-row anchoring, hover scroll arrows,
+backdrop-filter pseudo-elements and CSS animation timing remain explicit platform
+boundaries. Native surfaces retain source alpha, native shadows and direct state paint.
+The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
+it does not install the browser primitive libraries or emulate DOM objects.
+
 The authored copy example uses the OS clipboard through Expo Clipboard, with success,
 rejection, timeout and unmount handling. Its companion upstream hook, outside the
 published registry index, has an explicit source path, pin and SHA-256; changing the
@@ -217,7 +232,7 @@ maintained separately. Overlay preset/API parity remains unfinished.
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 463 reviewed source modules,
+The authored component example overlay currently includes 464 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 `node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`
 and `node scripts/native-icons.mjs --check`. Their coverage remains partial while

@@ -1,3 +1,68 @@
+# Select source slots, collections and native popup behavior — October 25, 2026
+
+Select now retains six source implementations and eleven style families, with a
+renderer audit for every captured class slot: 64 native, one delegated and eighteen
+explicit browser-only decisions. Source text wrappers, glyph placement, native
+refs, typography, rings/shadows and focus/invalid/disabled paint remain reviewed.
+Generic collection/render-prop types survive registry styling wrappers. The new
+Aria example preserves original selectedItems, multiple-selection callbacks,
+rich selected content and country-search collation/empty state. Search inputs own
+a separate field scope so they cannot steal the parent Select label target.
+
+Native popups use measured selected-row scrolling, safe-area bounds, source offset
+defaults and physical/logical side placement. Review fixed left/right alignment,
+RTL placement, descendant focus colors, native dark glyph inheritance and compact
+value clipping. Native value boxes reserve a scaled intrinsic text line without
+changing the authored outer preset height. Native styles remain caller-overridable.
+Browser trigger/portal coordinates, selected-row anchoring, hover arrows,
+backdrop-filter pseudo-elements and exact CSS animation remain explicit boundaries.
+Native surfaces preserve source alpha, native shadows and direct state painting.
+
+The catalog now includes 464 component example modules, 729 modules total and 725
+native story roots. Select, its two standalone examples and the interactive area
+and pie blocks close five more groups: 193 accounted for, 426 unfinished. The larger
+select-example group remains partial because Field, Item, Dialog and Native Select
+preset/API coverage is still pending.
+
+Validation:
+
+- All 64 native suites and 1,820 tests passed on each target after the final slot,
+  intrinsic-line, descendant-color, dark-glyph and search-field changes. All 729
+  modules bundle for both Hermes targets. Generated typecheck, source/style/slot
+  generators, lint and static security passed. CLI tests passed 676 with one existing
+  optional skip. Packed consumer and packlist passed within the existing budgets;
+  exact archive measurements are retained with the terminal evidence.
+- Full Android and iOS 26.5 suites each passed all 20 cases against the preserved
+  preceding implementation, including all 725 story roots. Full evidence:
+  `.artifacts/native-ui-android/2026-10-25T17-31-28-188Z-reuse-full/` and
+  `.artifacts/native-ui-ios/2026-10-25T17-31-29-339Z-reuse-full/`.
+  The replay runner verified private runtime sources and installed APK hashes;
+  iOS verified the installed JS bundle and complete built app/test bundle capsules
+  before and after execution. App capsule
+  ce4cea5986b85aefce733afc3feca533c1577695ec2ddbbc9c3cdb72021e2bd1;
+  test capsule 6c49279f0e5c269780cc0fa6b09c6cbbef364c08bf1a7a0de8de7d20f068f713.
+- Final sizing/slot/paint refinements passed the focused Select OS regression on
+  both platforms: Android `.artifacts/native-ui-android/2026-10-25T18-01-58-908Z/`
+  and iOS `.artifacts/native-ui-ios/2026-10-25T18-03-15-365Z/`.
+  All 147 native source files match both private copies. The case measures eleven
+  trigger heights, label activation, disabled choices, multiple collections/callbacks,
+  accent-insensitive search, a 20-point native value line inside the 32-point Nova
+  control, automatic visibility of the last selected row and actual left alignment.
+  Dark popup screenshots were retained and visually inspected on both platforms.
+  Android APK e03197d62324c146eff6ad88e4a676656e410f903f16f56eed4866ae3374a284;
+  test APK 74bfc432ac8534c04c08bf6beef1cf0b2da16db8e528e0d0ef0ae0bc1a7d156f.
+  Focused refinements are not described as full same-binary suite acceptance.
+- Earlier source-render failures are preserved: a raw currency string in View and
+  an extra child in an asChild trigger. Renderer tests now cover both. Screenshot
+  review found compact text clipping; source slot review found an unwired item-text
+  wrapper and focus descendant paint. The new slot-consumption audit protects these
+  paths against future upstream additions. No assertion or coverage gate was weakened.
+
+Detailed source equivalence and terminal evidence live under
+`.artifacts/native-ui/2026-10-25-select-presets/`. Device columns retain their separate
+physical-device, keyboard and screen-reader acceptance requirements. The QA app's
+iOS 27 scene lifecycle work remains unresolved. These results do not close the full registry.
+
 # Input Group source presets, composed actions and authored examples — October 25, 2026
 
 Input Group now retains all six source implementations, eleven style families,

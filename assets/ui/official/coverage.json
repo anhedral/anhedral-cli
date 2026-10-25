@@ -3413,16 +3413,24 @@
       }
     },
     "registry:example/select-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored Select example retains its original grouped choices, labels and callbacks across the frozen generations using the reviewed Select styles and native scrolling. Browser pointer-driven scroll arrows and trigger-coordinate anchoring use the recorded native Modal/ScrollView boundary; native renderer and OS acceptance remain separately recorded.",
       "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/select.tsx",
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/_select-presets.tsx",
+        "assets/ui/native/_preset-select-style.tsx",
+        "assets/ui/native/registry-aria-select.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-select.test.tsx",
+        "tests/native-ui/registry-select-presets.test.tsx",
+        "tests/native-ui/registry-select-slots.test.tsx",
+        "tests/test-native-select-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "56394f9862dd4df59a1e51c2a2d95a29460c66acd68f246516f4c3053a70260d",
@@ -3431,16 +3439,24 @@
       }
     },
     "registry:example/select-scrollable": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored Select example retains its original grouped choices, labels and callbacks across the frozen generations using the reviewed Select styles and native scrolling. Browser pointer-driven scroll arrows and trigger-coordinate anchoring use the recorded native Modal/ScrollView boundary; native renderer and OS acceptance remain separately recorded.",
       "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/select.tsx",
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/_select-presets.tsx",
+        "assets/ui/native/_preset-select-style.tsx",
+        "assets/ui/native/registry-aria-select.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-select.test.tsx",
+        "tests/native-ui/registry-select-presets.test.tsx",
+        "tests/native-ui/registry-select-slots.test.tsx",
+        "tests/test-native-select-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "84c366cc56316c55c10c2598be33501fe143a9709b3db6e64a79cd2a6335f4a4",
@@ -7494,29 +7510,26 @@
       }
     },
     "registry:block/chart-area-interactive": {
-      "status": "partial",
-      "reason": "Original datasets, formatters, native SVG and controlled selection are retained and tested. The authored Select controls still require complete per-style native verification.",
+      "status": "ported",
+      "reason": "The authored interactive chart block retains its original data, all source generations, reviewed chart/card/Select presets, source icons, selection callbacks and actual displayed-series/date-range changes. Browser Recharts/portal/animation internals use the recorded native chart and Select boundaries; data/config AST provenance remains guarded.",
       "nativeFiles": [
+        "assets/ui/native/select.tsx",
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/_select-presets.tsx",
+        "assets/ui/native/_preset-select-style.tsx",
+        "assets/ui/native/registry-aria-select.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/registry-styles.tsx",
         "assets/ui/native-chart-recipes.json.gz",
-        "assets/ui/native/chart.tsx",
         "assets/ui/native/charts.tsx",
-        "assets/ui/native/_chart-context.tsx",
-        "assets/ui/native/_chart-math.tsx",
-        "assets/ui/native/_chart-presets.tsx",
-        "assets/ui/native/_preset-chart-style.tsx",
-        "assets/ui/native/_registry-css.tsx",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_preset-chart-style.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-chart-contracts.test.tsx",
-        "tests/native-ui/registry-chart-engine.test.tsx",
-        "tests/native-ui/registry-chart-presets.test.tsx",
-        "tests/test-native-chart-presets.test.mjs",
-        "tests/native-ui/device/RegistryAndroidTests.kt",
-        "tests/native-ui/device/RegistryUITests.swift",
-        "tests/native-ui/registry-chart-recipes.test.tsx",
-        "tests/native-ui/registry-chart-examples.test.tsx",
-        "tests/test-native-chart-recipes.test.mjs"
+        "tests/native-ui/registry-select.test.tsx",
+        "tests/native-ui/registry-select-presets.test.tsx",
+        "tests/native-ui/registry-select-slots.test.tsx",
+        "tests/test-native-select-presets.test.mjs",
+        "tests/native-ui/registry-chart-recipes.test.tsx"
       ],
       "reviewedInputs": {
         "default": "42b865bc5b605a7aa05ecc05d6f2e3cbbb4fb816fc220b445eb82fc4b057a98e",
@@ -8393,29 +8406,26 @@
       }
     },
     "registry:block/chart-pie-interactive": {
-      "status": "partial",
-      "reason": "Original datasets, formatters, native SVG and controlled selection are retained and tested. The authored Select controls still require complete per-style native verification.",
+      "status": "ported",
+      "reason": "The authored interactive chart block retains its original data, all source generations, reviewed chart/card/Select presets, source icons, selection callbacks and actual displayed-series/date-range changes. Browser Recharts/portal/animation internals use the recorded native chart and Select boundaries; data/config AST provenance remains guarded.",
       "nativeFiles": [
+        "assets/ui/native/select.tsx",
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/_select-presets.tsx",
+        "assets/ui/native/_preset-select-style.tsx",
+        "assets/ui/native/registry-aria-select.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/registry-styles.tsx",
         "assets/ui/native-chart-recipes.json.gz",
-        "assets/ui/native/chart.tsx",
         "assets/ui/native/charts.tsx",
-        "assets/ui/native/_chart-context.tsx",
-        "assets/ui/native/_chart-math.tsx",
-        "assets/ui/native/_chart-presets.tsx",
-        "assets/ui/native/_preset-chart-style.tsx",
-        "assets/ui/native/_registry-css.tsx",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_preset-chart-style.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-chart-contracts.test.tsx",
-        "tests/native-ui/registry-chart-engine.test.tsx",
-        "tests/native-ui/registry-chart-presets.test.tsx",
-        "tests/test-native-chart-presets.test.mjs",
-        "tests/native-ui/device/RegistryAndroidTests.kt",
-        "tests/native-ui/device/RegistryUITests.swift",
-        "tests/native-ui/registry-chart-recipes.test.tsx",
-        "tests/native-ui/registry-chart-examples.test.tsx",
-        "tests/test-native-chart-recipes.test.mjs"
+        "tests/native-ui/registry-select.test.tsx",
+        "tests/native-ui/registry-select-presets.test.tsx",
+        "tests/native-ui/registry-select-slots.test.tsx",
+        "tests/test-native-select-presets.test.mjs",
+        "tests/native-ui/registry-chart-recipes.test.tsx"
       ],
       "reviewedInputs": {
         "default": "0a53f484b863daf63eb0f75fad70650f54974f3db810a46c04d16b495721f920",
@@ -9792,6 +9802,54 @@
       ],
       "reviewedInputs": {
         "new-york-v4": "dd3ae3cac6e215807b49f8af21b60c22142562f5d359b88ba6d6d81754696b45"
+      }
+    },
+    "registry:ui/select": {
+      "status": "ported",
+      "reason": "All six Select implementations and eleven style families retain source sizes, typography, rings/shadows, item text wrappers, indicators, focus/invalid/disabled paint and native refs. The renderer consumes all 64 native source slots, with one delegated and eighteen explicitly browser-only slots. Native arrays/object callbacks and generic Aria collections retain original selected items; locale-aware search has its own label scope. Native Modal uses safe bounds, logical viewport sides, source offset defaults and measured selected-row scrolling. DOM portal/trigger anchoring, hover arrows, backdrop filtering and exact CSS animation remain explicit web-specific boundaries. Native OS regression covers eleven heights, label activation, independent actions, collation, text-line height, long-list scrolling and dark surfaces.",
+      "nativeFiles": [
+        "assets/ui/native/select.tsx",
+        "assets/ui/native/_select.tsx",
+        "assets/ui/native/_select-presets.tsx",
+        "assets/ui/native/_preset-select-style.tsx",
+        "assets/ui/native/registry-aria-select.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-select.test.tsx",
+        "tests/native-ui/registry-select-presets.test.tsx",
+        "tests/native-ui/registry-select-slots.test.tsx",
+        "tests/test-native-select-presets.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "1e1613cc34efc8f7c28374fa6c13dff90705e590ef656fe2f6f9f765b934f0e9",
+        "aria-lyra": "3097abad1bffe61470c75edba3d13bbd7957e062586eaa74a39c967f3c42236e",
+        "aria-maia": "5fb99c310d0f8b99f459049320adca170cc103c6e9bb227e6f54a06bdcb056da",
+        "aria-mira": "54bfe0261c6d6132b7ff15b89e4ef7f90bd1f92616c5068b90c9a9f93da60d31",
+        "aria-nova": "ea7cf11dc258c27a654749c5b0929f9a24cbd1619bb54042e453b962188b65ff",
+        "aria-rhea": "d24b37c7bbcb20e883fbaa41d4c8b4877a79c80e38e7d63e458fe0c305d8ffff",
+        "aria-sera": "f9b81c9923d00000bd8107473c47241eebe3258becc4d1e7094ba8d116823a23",
+        "aria-vega": "e37e8f4ead07a169589c845ddf02b54de2cc66b1cd4484711d6754b62f0c9cd1",
+        "base-luma": "07b24581c77eadc93c05849de1bb3a8f68c08d9ba20662a5b32c0b49413a1295",
+        "base-lyra": "8f723178aa1b0dbe5e79afcf0c1c2534f5d879549d64ff0b594868dd02520e3f",
+        "base-maia": "2c535483e1c6f35b04d5570d578f52dbb5d8f8fdb3eac1f810199271f44b7cb6",
+        "base-mira": "b21ddbdc932935d1f5c21fcf177c8020fabb14b4fc22f87472daaab59bb894db",
+        "base-nova": "4d316e7c8aeff378cb2f40d679b9876971fa34083547edaf75a257e8eddec53c",
+        "base-rhea": "af121877f9df423d9cb9180198379fcaefaaa29f84683ca0d14b4545cc4bb23f",
+        "base-sera": "131c2ceaf2ec31ef577e53b5e63d72911d3072b2d9773eac7eba81dc0ec3a90d",
+        "base-vega": "57591c585550dd85f36542a5b845bda54f980b2f75e5a76ec7db606d7d178163",
+        "default": "aefb6f39a14e4f23a6f410f58fb7ccabd752af6553d34321ab530f6980bbed78",
+        "new-york": "96d032f7d7a72fdf6462f6eec9b87f6686228d20468a379fc7a76925a7d7ea7a",
+        "new-york-v4": "beab898032b6c795c778dac277efa9510143cb30d7418f2a11cc443df99409f4",
+        "radix-luma": "7c22a2768db9126d192244843100f6f13903183c499ad1e8102a5eab0bb8fa73",
+        "radix-lyra": "c56a3f0ae7a94aea4316a1824dccc594b4f9b1a0cce3958ce5666312978cce88",
+        "radix-maia": "e9dd74563d77e56b35d90cc089f2195f5d1b18ed91a0aef7976e9fc14b0b9bf9",
+        "radix-mira": "773077d552bf2474e055e891d8f103f16d270ed17bf6ff87b522fb926f841019",
+        "radix-nova": "a41f7724949938cad8d4521d80471d76d5c3e7a5d4f2293c744ba853a64b1dab",
+        "radix-rhea": "41a04d34b065c925ad5d150479d068ca85e6338a72529af5472af10d7348d2cb",
+        "radix-sera": "15770786bed72fe59efa19a269d9fc438d4a6d86636895a28e6aa21053c4e6c6",
+        "radix-vega": "0d52a81c2ec0a6a3afcef7079045d2c7ebff25672379c6f5fd023f56d140cde7"
       }
     }
   },

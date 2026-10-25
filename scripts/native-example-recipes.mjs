@@ -123,6 +123,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         'apps/v4/registry/bases/aria/examples/command-example.tsx',
         'apps/v4/registry/bases/aria/examples/label-example.tsx',
         'apps/v4/registry/bases/aria/examples/native-select-example.tsx',
+        'apps/v4/registry/bases/aria/examples/select-example.tsx',
         'apps/v4/registry/bases/aria/examples/pagination-example.tsx',
         'apps/v4/registry/bases/aria/examples/progress-example.tsx',
         'apps/v4/registry/bases/aria/examples/radio-group-example.tsx',

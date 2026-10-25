@@ -62,6 +62,59 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun selectPresetsRetainNativeSelectionCollectionsAndSearch() = uiAutomator {
+    openStory("native/select-contract")
+    fun press(name:String) { label(name).apply { waitForStable(); click() } }
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
+    val heights=listOf(32,36,36,32,28,36,40,32,40,36,36)
+    for ((index,preset) in presets.withIndex()) {
+      label("Select preset: "+preset)
+      label("Select geometry: "+preset+":320x"+heights[index])
+      press("Next select preset")
+    }
+    label("Select geometry: nova:320x32")
+    press("Open fruit choices by label")
+    val blocked=label("Fruit Blocked")
+    assertFalse(blocked.isEnabled)
+    blocked.click()
+    press("Fruit Beta")
+    label("Selected native fruit: beta")
+    press("Pick multiple native fruits")
+    press("Multi Alpha")
+    press("Multi Beta")
+    press("Dismiss overlay")
+    label("Selected native multiples: alpha,beta")
+    label("Select value height: 20")
+    press("Search native countries")
+    onElement { named("Search options") && isFocused }.setText("missing")
+    label("No native countries")
+    onElement { named("Search options") }.setText("cote")
+    device.pressEnter()
+    assertNull(onElementOrNull(timeoutMs=500) { named("Türkiye") && isVisibleToUser })
+    press("Côte d’Ivoire")
+    label("Selected native country: ivory-coast")
+    press("Open long native list")
+    val selected=onElement(timeoutMs=15000) {
+      val bounds=Rect().also { getBoundsInScreen(it) }
+      named("Native long option 29") && isVisibleToUser && !bounds.isEmpty && bounds.centerY() in 0..device.displayHeight
+    }
+    assertTrue("Selected native row was not visible",selected.visibleBounds.height()>0)
+    val surface=onElement { viewIdResourceName=="native-long-select-surface" }.visibleBounds
+    assertTrue("Left popup stayed centered",surface.left < (device.displayWidth-surface.width())/3)
+    press("Native long option 28")
+    label("Selected native long option: 28")
+    onElement { named("Dark") }.apply { waitForStable(); click() }
+    press("Open long native list")
+    onElement(timeoutMs=15000) { named("Native long option 28") && isVisibleToUser }
+    val evidenceRun=InstrumentationRegistry.getArguments().getString("evidenceRun") ?: "local"
+    require(evidenceRun.matches(Regex("[A-Za-z0-9_-]+")))
+    val night=File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),"native-qa/"+evidenceRun)
+    night.mkdirs()
+    assertTrue(device.takeScreenshot(File(night,"select-dark-surface.png")))
+    press("Native long option 27")
+    label("Selected native long option: 27")
+    onElement { named("System") }.click()
+  }
   @Test fun inputGroupPresetsRetainGeometryEditingAndIndependentActions() = uiAutomator {
     openStory("native/input-group-contract")
     fun press(name:String) { label(name).apply { waitForStable(); click() } }

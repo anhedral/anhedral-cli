@@ -414,6 +414,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeInputGroupPresets(inventory),
     source: await nativeInputGroupPresetSource(inventory),
   });
+  const { nativeSelectPresets, nativeSelectPresetSource } =
+    await import('./native-select-presets.mjs');
+  outputs.push({
+    component: 'select',
+    target: target('select'),
+    data: nativeSelectPresets(inventory),
+    source: await nativeSelectPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({

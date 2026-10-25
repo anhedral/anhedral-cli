@@ -1,6 +1,57 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testSelectPresetsRetainNativeSelectionCollectionsAndSearch() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch();openStory("native/select-contract",in:app)
+    let scroll=storyScroll(app)
+    func target(_ name:String)->XCUIElement { app.descendants(matching:.any).matching(identifier:name).firstMatch }
+    func press(_ name:String) {
+      let element=target(name)
+      for _ in 0..<12 { if element.exists && element.isHittable {break};scroll.swipeUp() }
+      for _ in 0..<12 { if element.exists && element.isHittable {break};scroll.swipeDown() }
+      XCTAssertTrue(element.isHittable,name);element.tap()
+    }
+    let presets=["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"],heights=[32,36,36,32,28,36,40,32,40,36,36]
+    for (index,preset) in presets.enumerated() {
+      XCTAssertTrue(app.staticTexts["Select preset: "+preset].waitForExistence(timeout:10))
+      XCTAssertTrue(app.staticTexts["Select geometry: "+preset+":320x"+String(heights[index])].waitForExistence(timeout:10))
+      press("Next select preset")
+    }
+    XCTAssertTrue(app.staticTexts["Select geometry: nova:320x32"].waitForExistence(timeout:10))
+    press("Open fruit choices by label")
+    let blocked=target("Fruit Blocked");XCTAssertTrue(blocked.waitForExistence(timeout:10));XCTAssertFalse(blocked.isEnabled)
+    press("Fruit Beta")
+    XCTAssertTrue(app.staticTexts["Selected native fruit: beta"].waitForExistence(timeout:10))
+    press("Pick multiple native fruits");press("Multi Alpha");press("Multi Beta");press("Dismiss overlay")
+    XCTAssertTrue(app.staticTexts["Selected native multiples: alpha,beta"].waitForExistence(timeout:10))
+    XCTAssertTrue(app.staticTexts["Select value height: 20"].waitForExistence(timeout:10))
+    press("Search native countries")
+    let search=app.textFields["Search options"];XCTAssertTrue(search.waitForExistence(timeout:10))
+    search.typeText("missing")
+    XCTAssertTrue(app.staticTexts["No native countries"].waitForExistence(timeout:10))
+    search.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:7)+"cote\n")
+    XCTAssertFalse(target("Türkiye").exists)
+    press("Côte d’Ivoire")
+    XCTAssertTrue(app.staticTexts["Selected native country: ivory-coast"].waitForExistence(timeout:10))
+    press("Open long native list")
+    let selected=target("Native long option 29")
+    let visible=NSPredicate { _,_ in selected.exists && selected.isHittable }
+    expectation(for:visible,evaluatedWith:nil);waitForExpectations(timeout:15)
+    let surface=app.otherElements["native-long-select-surface"]
+    XCTAssertTrue(surface.exists)
+    XCTAssertLessThan(surface.frame.minX,(app.frame.width-surface.frame.width)/3,"Left popup stayed centered")
+    press("Native long option 28")
+    XCTAssertTrue(app.staticTexts["Selected native long option: 28"].waitForExistence(timeout:10))
+    app.buttons["Dark"].tap()
+    press("Open long native list")
+    let selectedNight=target("Native long option 28")
+    expectation(for:NSPredicate {_,_ in selectedNight.exists && selectedNight.isHittable},evaluatedWith:nil);waitForExpectations(timeout:15)
+    let screenshot=XCTAttachment(screenshot:app.screenshot());screenshot.name="Native dark select surface";screenshot.lifetime = .keepAlways;add(screenshot)
+    press("Native long option 27")
+    XCTAssertTrue(app.staticTexts["Selected native long option: 27"].waitForExistence(timeout:10))
+    app.buttons["System"].tap()
+  }
   func testInputGroupPresetsRetainGeometryEditingAndIndependentActions() {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()
