@@ -66,7 +66,14 @@ export function nativeQAApp(catalog, sourceFor) {
   }
   return template
     .replace('/* REGISTRY_IMPORTS */', imports.join('\n'))
-    .replace('/* REGISTRY_STORIES */', 'const stories=[' + stories.join(',\n') + '];');
+    .replace(
+      '/* REGISTRY_STORIES */',
+      'const stories=[' +
+        [...stories, '{id: "native/button-preset-matrix",Component:NativeButtonPresetMatrix}'].join(
+          ',\n',
+        ) +
+        '];',
+    );
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const harness = path.join(root, 'tests/native-ui'),
@@ -133,7 +140,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(
     'Prepared and typechecked ' +
       catalog.recipes.filter((r) => r.kind !== 'support').length +
-      ' native QA stories at ' +
+      ' authored native QA stories plus the preset matrix at ' +
       qa,
   );
   if (process.argv.includes('--prepare-only')) process.exit(0);

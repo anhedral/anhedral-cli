@@ -137,7 +137,13 @@ export function InputGroupButton({
   if (type !== 'button' && !props.onPress)
     throw Error('Native submit/reset buttons require onPress.');
   return (
-    <Button {...props} variant={variant} size={size} disabled={group.disabled || props.disabled}>
+    <Button
+      nativePreset={false}
+      {...props}
+      variant={variant}
+      size={size}
+      disabled={group.disabled || props.disabled}
+    >
       {Children.map(children, (child) =>
         typeof child === 'string' || typeof child === 'number' ? (
           <LabelText style={{ fontSize: 14, fontWeight: '500' }}>{child}</LabelText>

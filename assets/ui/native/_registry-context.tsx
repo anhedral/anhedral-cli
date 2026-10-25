@@ -3,7 +3,7 @@ export type NativeExampleStyle =
   'vega' | 'nova' | 'maia' | 'lyra' | 'mira' | 'luma' | 'sera' | 'rhea';
 const ExampleStyle = createContext<NativeExampleStyle>('nova');
 export const useNativeExampleStyle = () => useContext(ExampleStyle);
-/** Recipe-local style conditions; this does not certify all component preset implementations. */
+/** Recipe-local style selection; each native component slot is reviewed separately. */
 export function NativeExampleOptions({
   style,
   children,
@@ -11,7 +11,11 @@ export function NativeExampleOptions({
   style: NativeExampleStyle;
   children?: ReactNode;
 }) {
-  return <ExampleStyle.Provider value={style}>{children}</ExampleStyle.Provider>;
+  return (
+    <ComponentPreset.Provider value={style}>
+      <ExampleStyle.Provider value={style}>{children}</ExampleStyle.Provider>
+    </ComponentPreset.Provider>
+  );
 }
 
 export const NativeRecipeState = createContext<{
@@ -33,3 +37,22 @@ export function NativeRegistryPalette({
 }) {
   return <RegistryPalette.Provider value={generation}>{children}</RegistryPalette.Provider>;
 }
+
+const ComponentPreset = createContext<NativeExampleStyle | undefined>(undefined);
+export const useNativeComponentStyle = () => useContext(ComponentPreset);
+/** Explicit component preset selection. Only reviewed native slots consume it. */
+export function NativeComponentStyleProvider({
+  style,
+  children,
+}: {
+  style: NativeExampleStyle;
+  children?: ReactNode;
+}) {
+  return (
+    <ComponentPreset.Provider value={style}>
+      <ExampleStyle.Provider value={style}>{children}</ExampleStyle.Provider>
+    </ComponentPreset.Provider>
+  );
+}
+export const NativeButtonGroupContext = createContext(false);
+export const NativeButtonIconSize = createContext<number | undefined>(undefined);

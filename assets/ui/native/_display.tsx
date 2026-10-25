@@ -21,7 +21,7 @@ import {
   type TextProps,
 } from 'react-native';
 import { useTheme } from '../theme';
-import { useRegistryPalette } from './_registry-context';
+import { useRegistryPalette, NativeButtonGroupContext } from './_registry-context';
 import { useNativeFontStyle } from './fonts';
 import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
 import { Button, type ButtonProps } from './button';
@@ -327,10 +327,12 @@ export const ButtonGroup = ({
   style,
   ...props
 }: ViewProps & { orientation?: 'horizontal' | 'vertical' }) => (
-  <Box
-    {...props}
-    style={[{ flexDirection: orientation === 'horizontal' ? 'row' : 'column', gap: 2 }, style]}
-  />
+  <NativeButtonGroupContext.Provider value={true}>
+    <Box
+      {...props}
+      style={[{ flexDirection: orientation === 'horizontal' ? 'row' : 'column', gap: 2 }, style]}
+    />
+  </NativeButtonGroupContext.Provider>
 );
 export function ButtonGroupText({
   asChild = false,
@@ -582,7 +584,7 @@ export const Breadcrumb = ({ style, ...props }: ViewProps) => (
 export const BreadcrumbList = ItemActions;
 export const BreadcrumbItem = Box;
 export const BreadcrumbLink = (props: ButtonProps) => (
-  <Button variant="link" {...props} accessibilityRole="link" />
+  <Button nativePreset={false} variant="link" {...props} accessibilityRole="link" />
 );
 export const BreadcrumbPage = ({ style, ...props }: TextProps) => (
   <LabelText

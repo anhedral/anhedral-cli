@@ -97,6 +97,7 @@ export function Calendar(props: CalendarProps) {
     <Box {...host} style={style}>
       <View style={row({ justifyContent: 'space-between' })}>
         <Button
+          nativePreset={false}
           variant="ghost"
           accessibilityLabel="Previous month"
           disabled={
@@ -112,6 +113,7 @@ export function Calendar(props: CalendarProps) {
           {start.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
         </LabelText>
         <Button
+          nativePreset={false}
           variant="ghost"
           accessibilityLabel="Next month"
           disabled={!!toDate && dayKey(next) > dayKey(toDate)}
@@ -144,6 +146,7 @@ export function Calendar(props: CalendarProps) {
                   <View style={{ minHeight: 44 }} />
                 ) : (
                   <Button
+                    nativePreset={false}
                     size="icon"
                     variant={highlighted(date) ? 'secondary' : 'ghost'}
                     disabled={blocked(date)}
@@ -190,6 +193,7 @@ export function CalendarDayButton({
   const date = day instanceof Date ? day : day.date;
   return (
     <Button
+      nativePreset={false}
       size="icon"
       variant={modifiers?.selected ? 'secondary' : 'ghost'}
       {...props}

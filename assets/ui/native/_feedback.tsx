@@ -51,6 +51,7 @@ export function SidebarTrigger({
     overlay = useOverlay();
   return (
     <Button
+      nativePreset={false}
       accessibilityLabel="Toggle sidebar"
       {...props}
       ref={overlay.trigger}
@@ -73,6 +74,7 @@ export function SidebarRail({
   const state = useSidebar();
   return (
     <Button
+      nativePreset={false}
       variant="ghost"
       accessibilityLabel={state.open ? 'Collapse sidebar' : 'Expand sidebar'}
       {...props}
@@ -119,6 +121,7 @@ export const SidebarMenu = Box;
 export const SidebarMenuItem = Box;
 export const SidebarMenuButton = ({ isActive, ...props }: ButtonProps & { isActive?: boolean }) => (
   <Button
+    nativePreset={false}
     variant={isActive ? 'secondary' : 'ghost'}
     {...props}
     accessibilityState={{ selected: !!isActive, disabled: !!props.disabled }}

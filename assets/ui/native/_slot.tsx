@@ -84,6 +84,8 @@ export function NativeSlot({
     'onPressOut',
     'onFocus',
     'onBlur',
+    'onHoverIn',
+    'onHoverOut',
     'onLayout',
     'onAccessibilityAction',
   ] as const) {

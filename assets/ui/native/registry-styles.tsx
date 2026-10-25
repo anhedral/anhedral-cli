@@ -46,6 +46,7 @@ import {
   useNativeRecipeState,
   useNativeExampleStyle,
   useRegistryPalette,
+  NativeButtonIconSize,
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
 import { NativeRegistryImage } from './registry-image';
@@ -55,7 +56,7 @@ export const RegistryPaintContext = createContext<Record<string, string | number
 const RegistryVariables = createContext<Record<string, string>>({});
 const DescendantStyle = createContext<string[]>([]);
 export type RegistryIcon = ComponentType<
-  import('lucide-react-native').LucideProps & { className?: string }
+  import('lucide-react-native').LucideProps & Pick<RecipeProps, 'className' | 'registryIcon'>
 >;
 type RecipeProps = {
   className?: string;
@@ -64,6 +65,7 @@ type RecipeProps = {
   'data-active'?: boolean;
   registryIndex?: number;
   registryCount?: number;
+  registryIcon?: 'inline-start' | 'inline-end';
 };
 type StyledProps<P> = P extends unknown
   ? Omit<P, Exclude<keyof RecipeProps, 'children'>> &
@@ -104,11 +106,15 @@ function mapRegistryChildren(
 /** Keeps original component identity and discriminated prop unions for compound collectors. */
 export function withRegistryStyles<C extends ComponentType<any>>(Component: C, kind = 'view') {
   function Styled(input: StyledProps<ComponentProps<C>>) {
-    const { className, registryIndex, registryCount, ...props } = input as Omit<
-      ComponentProps<C>,
-      Exclude<keyof RecipeProps, 'children'>
-    > &
+    const {
+      className,
+      registryIndex,
+      registryCount,
+      registryIcon: _registryIcon,
+      ...props
+    } = input as Omit<ComponentProps<C>, Exclude<keyof RecipeProps, 'children'>> &
       Omit<RecipeProps, 'children'> & { children?: unknown };
+    const buttonIconSize = useContext(NativeButtonIconSize);
     const theme = useTheme(),
       window = useWindowDimensions(),
       [measuredWidth, setMeasuredWidth] = useState<number>(),
@@ -314,6 +320,16 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
     }
     if (kind === 'svg' || kind === 'svg-root' || kind === 'icon') {
       Object.assign(forwarded, translated.paint, translated.text, nativeInline);
+      if (
+        kind === 'icon' &&
+        props.size === undefined &&
+        props.width === undefined &&
+        props.height === undefined &&
+        translated.view.width === undefined &&
+        translated.view.height === undefined &&
+        buttonIconSize !== undefined
+      )
+        forwarded.size = buttonIconSize;
       if (translated.view.width !== undefined) forwarded.width = translated.view.width;
       if (translated.view.height !== undefined) forwarded.height = translated.view.height;
       for (const key of ['fill', 'stroke', 'color', 'stopColor']) {

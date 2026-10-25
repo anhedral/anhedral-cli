@@ -194,6 +194,7 @@ function NativeToastView({
       <Box style={row()}>
         {message.action && (
           <Button
+            nativePreset={false}
             onPress={() => {
               message.action?.onClick();
               dismiss(message.id);
@@ -204,6 +205,7 @@ function NativeToastView({
         )}
         {message.cancel && (
           <Button
+            nativePreset={false}
             variant="outline"
             onPress={() => {
               message.cancel?.onClick?.();
@@ -215,6 +217,7 @@ function NativeToastView({
         )}
         {dismissible && (message.closeButton ?? closeButton) && (
           <Button
+            nativePreset={false}
             variant="ghost"
             accessibilityLabel={`Dismiss ${plainText(message.title)}`}
             onPress={() => dismiss(message.id)}

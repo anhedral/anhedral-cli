@@ -251,6 +251,7 @@ export function SelectItem({
     return null;
   return (
     <Button
+      nativePreset={false}
       variant="ghost"
       {...props}
       disabled={selection.disabled || groupDisabled || props.disabled}
@@ -401,6 +402,7 @@ export function Combobox({
           {filtered.length ? (
             filtered.map((item) => (
               <Button
+                nativePreset={false}
                 key={item.value}
                 disabled={item.disabled}
                 accessibilityRole="radio"
@@ -532,6 +534,7 @@ export function CommandItem({
     return null;
   return (
     <Button
+      nativePreset={false}
       variant="ghost"
       {...props}
       accessibilityState={{ selected: state.value === value, disabled: !!props.disabled }}
@@ -563,7 +566,7 @@ export const NavigationMenuItem = OverlayRoot;
 export const NavigationMenuTrigger = OverlayTrigger;
 export const NavigationMenuContent = OverlayContent;
 export const NavigationMenuLink = (props: ButtonProps) => (
-  <Button variant="link" {...props} accessibilityRole="link" />
+  <Button nativePreset={false} variant="link" {...props} accessibilityRole="link" />
 );
 export const NavigationMenuViewport = Box;
 export const NavigationMenuIndicator = () => <LabelText accessibilityElementsHidden>▾</LabelText>;

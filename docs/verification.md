@@ -1,3 +1,39 @@
+# Eight native Button preset families — October 24, 2026
+
+Added source-driven native Button slots for Vega, Nova, Maia, Lyra, Mira, Luma,
+Sera and Rhea: all 120 CSS rules, six variants and eight sizes per preset. The
+explicit NativeComponentStyleProvider shares selection with recipe options, while
+legacy boundaries retain their own presentation. Other native compound controls
+own their preset slots and do not accidentally inherit Button geometry/typography.
+
+- The matrix evaluates 768 preset/variant/size/mode combinations through three
+  state sets (2,304 combinations). Focus/invalid precedence, native hover/expanded
+  state, disabled surfaces, group corners, icon placement/size overrides and OKLCH
+  secondary hover are tested. Native labels grow for OS font scaling and explicit
+  text metrics; icon-only slots remain square. Touch expansion, no-wrap labels,
+  cleared icon padding and composed parent/child hover callbacks are covered.
+- Full native suites passed 1,180 tests on each platform, 39 suites each, with
+  unchanged thresholds. Strict generated types and both production Hermes bundles
+  passed; the bundles contain all 674 maintained registry modules. The root suite
+  passed 603 tests with one existing optional skip; focused source/gallery checks
+  cover the final preset and QA additions. Lint, static security, installed packed
+  CLI smoke and packlist passed: 249 files, 966,558 compressed bytes.
+- Native iOS 26.5 passed all four XCTest cases. The new matrix checks each preset's
+  actual default height and taps all eight to update selection. Dated evidence:
+  .artifacts/native-ui-ios/2026-10-25T03-26-34-358Z/results.xcresult and
+  button-presets.png. This does not establish all variants, hardware keyboard,
+  screen-reader, Android device or iOS 27 acceptance.
+- Initial focused checks exposed a test targeting pressIn rather than the native
+  pressed-state fixture; the corrected test uses React Native's supported
+  testOnly_pressed state. Follow-up tests ensure internal compound controls retain
+  their own styling and large native fonts do not clip into fixed source heights.
+- The manual upstream review now retains a component-style diff and rejects stale
+  Button selectors, slot counts, CSS hashes or global formulas. Browser underline
+  offset, View background clipping and immediate state transitions remain explicit
+  renderer differences. Complete legacy CSS and other component preset families
+  remain pending; whole-registry completion still rejects 552 distinct items.
+  No publication or deployment occurred.
+
 # Upstream global style provenance — October 24, 2026
 
 The official inventory now retains apps/v4/app/globals.css from the exact reviewed

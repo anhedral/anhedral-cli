@@ -192,6 +192,7 @@ export function Toggle({
   const [value, set] = useControllable(pressed, defaultPressed, onPressedChange);
   return (
     <Button
+      nativePreset={false}
       {...props}
       disabled={disabled}
       variant={value ? 'secondary' : variant === 'outline' ? 'outline' : 'ghost'}
@@ -337,6 +338,7 @@ export function RadioGroupItem({
   );
   return (
     <Button
+      nativePreset={false}
       {...props}
       disabled={disabled || group.disabled}
       variant="outline"
@@ -427,6 +429,7 @@ export function TabsTrigger({ value, ...props }: ButtonProps & { value: string }
   if (!tabs) throw Error('TabsTrigger requires Tabs.');
   return (
     <Button
+      nativePreset={false}
       {...props}
       nativeID={`${tabs.id}-${value}-trigger`}
       accessibilityRole="tab"
@@ -497,6 +500,7 @@ export function CollapsibleTrigger(props: ButtonProps) {
   if (!state) throw Error('CollapsibleTrigger requires Collapsible.');
   return (
     <Button
+      nativePreset={false}
       {...props}
       nativeID={`${state.id}-trigger`}
       disabled={state.disabled || props.disabled}
@@ -800,6 +804,7 @@ export function InputOTPSlot({ index }: { index: number }) {
   const otp = useContext(OTPContext);
   return (
     <Button
+      nativePreset={false}
       disabled={otp.disabled}
       variant="outline"
       accessibilityLabel={`Digit ${index + 1} of ${otp.maxLength}`}

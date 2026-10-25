@@ -45,6 +45,7 @@ test('the maintained OS gallery renders every recipe component and uses only act
     'ThemeProvider',
     'ThemeSwitcher',
     ...registry.components.flatMap((c) => c.exports),
+    ...(registry.supportModules ?? []).flatMap((module) => module.exports),
   ]);
   for (const owner of ['layout', 'text', 'theme-switcher']) {
     const source = ts.createSourceFile(
@@ -72,4 +73,6 @@ test('the maintained OS gallery renders every recipe component and uses only act
   assert.match(source, /Component:Story\d+\.ChartAreaAxes/);
   assert.match(source, /Component:Story\d+\.Demo/);
   assert.doesNotMatch(source, /UI\.Row/);
+  assert.match(source, /native\/button-preset-matrix/);
+  assert.match(source, /Component:NativeButtonPresetMatrix/);
 });

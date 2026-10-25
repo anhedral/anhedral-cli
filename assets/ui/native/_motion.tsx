@@ -698,6 +698,7 @@ export function CarouselPrevious({
   const carousel = useCarousel();
   return (
     <Button
+      nativePreset={false}
       accessibilityLabel="Previous slide"
       {...props}
       disabled={!carousel.count || (!carousel.loop && carousel.index <= 0) || props.disabled}
@@ -714,6 +715,7 @@ export function CarouselNext({
   const carousel = useCarousel();
   return (
     <Button
+      nativePreset={false}
       accessibilityLabel="Next slide"
       {...props}
       disabled={

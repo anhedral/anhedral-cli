@@ -448,6 +448,7 @@ export function registryStyle(
       paint.turnTransition = 1;
       paint.transitionDuration = 150;
     } else if (token === 'rotate-90') paint.turnAngle = 90;
+    else if (token === 'translate-y-[1px]') view.transform = [{ translateY: 1 }];
     else if (token === 'transition-none') paint.transitionDuration = 0;
     else if (token === 'transition-all') paint.transitionDuration = 150;
     else if (token === 'ease-in-out') paint.transitionEasing = 'in-out';
@@ -479,7 +480,14 @@ export function registryStyle(
     else if (token === 'tracking-normal') text.letterSpacing = 0;
     else if (token === 'tracking-tight') paint.letterSpacingEm = -0.025;
     else if (token === 'tracking-wide') paint.letterSpacingEm = 0.05;
-    else if (token === 'text-pretty' || token === 'text-balance') {
+    else if (token === 'tracking-widest') paint.letterSpacingEm = 0.1;
+    else if (token === 'underline') text.textDecorationLine = 'underline';
+    else if (token === 'shadow-xs') {
+      view.boxShadow = [
+        { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: 'rgba(0,0,0,0.05)' },
+      ];
+      view.elevation = 1;
+    } else if (token === 'text-pretty' || token === 'text-balance') {
       paint.textBreakStrategy = token === 'text-pretty' ? 'highQuality' : 'balanced';
     } else if (token === 'tabular-nums') text.fontVariant = ['tabular-nums'];
     else if (token === 'capitalize') text.textTransform = 'capitalize';

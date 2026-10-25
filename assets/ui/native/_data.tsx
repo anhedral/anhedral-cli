@@ -140,6 +140,7 @@ function PageButton({
   if (href && href !== '#')
     return (
       <LinkButton
+        nativePreset={false}
         {...props}
         href={href}
         onPress={onPress}
@@ -149,6 +150,7 @@ function PageButton({
     );
   return (
     <Button
+      nativePreset={false}
       {...props}
       onPress={(event) => {
         onPress?.(event);
@@ -293,6 +295,7 @@ export function DataTable<T>({
             {onSelectionChange && <TableHead>Selected</TableHead>}
             {columns.map((column) => (
               <Button
+                nativePreset={false}
                 key={column.id}
                 variant="ghost"
                 disabled={column.sortable === false}

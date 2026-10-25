@@ -45,4 +45,18 @@ final class RegistryUITests: XCTestCase {
     app.typeText("native@example.com")
     XCTAssertEqual(input.value as? String, "native@example.com")
   }
+  func testButtonPresetsRetainNativeGeometryAndActions() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/button-preset-matrix", in: app)
+    let cases: [(String, CGFloat)] = [("vega",36),("nova",32),("maia",36),("lyra",32),("mira",28),("luma",36),("sera",40),("rhea",32)]
+    for (name,height) in cases {
+      let button=app.buttons["Native preset " + name]
+      XCTAssertTrue(button.waitForExistence(timeout:10))
+      XCTAssertEqual(button.frame.height,height,accuracy:1)
+      button.tap()
+      XCTAssertTrue(app.staticTexts["Selected preset: " + name].waitForExistence(timeout:3))
+    }
+  }
+
 }

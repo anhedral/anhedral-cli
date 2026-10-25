@@ -219,6 +219,7 @@ export function ToastAction({
   if (!label) return null;
   return (
     <Button
+      nativePreset={false}
       {...item.actionProps}
       {...props}
       onPress={(event) => {
@@ -242,6 +243,7 @@ export function ToastClose({
   const target = id ?? item?.id;
   return (
     <Button
+      nativePreset={false}
       variant="ghost"
       accessibilityLabel={`Dismiss ${typeof item?.title === 'string' ? item.title : 'notification'}`}
       {...props}

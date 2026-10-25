@@ -1224,7 +1224,9 @@
     "registry-icons.tsx",
     "registry-slider.tsx",
     "registry-aria-overlay.tsx",
-    "registry-image.tsx"
+    "registry-image.tsx",
+    "_button-presets.tsx",
+    "_preset-button-style.tsx"
   ],
   "supportModules": [
     {
@@ -1309,6 +1311,10 @@
     {
       "file": "native-form",
       "exports": ["NativeForm", "NativeFormScope"]
+    },
+    {
+      "file": "_registry-context",
+      "exports": ["NativeComponentStyleProvider"]
     }
   ],
   "recipeCatalogs": [

@@ -729,6 +729,12 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           node.initializer.text === '0'
         )
           return f.updateJsxAttribute(node, node.name, f.createStringLiteral('none'));
+        if (name === 'data-icon')
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier('registryIcon'),
+            ts.visitNode(node.initializer, visit),
+          );
         if (name === 'xmlns' || (name.startsWith('data-') && name !== 'data-active'))
           return undefined;
         if (

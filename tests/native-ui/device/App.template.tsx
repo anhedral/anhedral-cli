@@ -5,6 +5,24 @@ import * as UI from './.generated';
 import { NativeExampleOptions } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+function NativeButtonPresetMatrix() {
+  const [selected, setSelected] = useState('none');
+  return (
+    <View style={{ gap: 8 }}>
+      {(['vega', 'nova', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea'] as const).map((style) => (
+        <UI.NativeComponentStyleProvider key={style} style={style}>
+          <UI.Button
+            accessibilityLabel={'Native preset ' + style}
+            onPress={() => setSelected(style)}
+          >
+            {style}
+          </UI.Button>
+        </UI.NativeComponentStyleProvider>
+      ))}
+      <UI.Text>{'Selected preset: ' + selected}</UI.Text>
+    </View>
+  );
+}
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: string | null }> {
   state = { error: null };
   static getDerivedStateFromError(error: Error) {

@@ -64,6 +64,9 @@ jobs:
           node scripts/native-icons.mjs
           node scripts/shadcn-colors.mjs
           node scripts/native-utility-colors.mjs
+      - name: Compare native component preset evidence
+        if: success() || failure()
+        run: node scripts/native-component-styles.mjs --report > .artifacts/ui-upstream/native-component-styles.json
       - name: Reject stale native parity evidence
         if: success() || failure()
         run: node scripts/shadcn-registry.mjs --write

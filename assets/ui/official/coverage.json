@@ -5953,6 +5953,105 @@
         "radix-sera": "97b9322351b65c8e7d954c587e2cf09f863e4c0193522c6a202cf6d84a0ec78a",
         "radix-vega": "f2d106eee197cf5aad5c0c0973913f6711321e58eabb64f8b19142f1eb196d0c"
       }
+    },
+    "registry:ui/button": {
+      "status": "partial",
+      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Full legacy CSS, browser paint/transition differences and native device acceptance remain separately accounted for; complete component parity is not asserted.",
+      "nativeFiles": [
+        "assets/ui/native/button.tsx",
+        "assets/ui/native/_preset-button-style.tsx",
+        "assets/ui/native/_button-presets.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-button-presets.test.tsx",
+        "tests/test-native-component-styles.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "f3e3e068260f1953194f09b896f0f140432213f1a8aa58e3626ab91c2a00cb59",
+        "aria-lyra": "4251176c8276d898404bd197eb74c6286ccc4e031aeb707c5934c6f8414709f5",
+        "aria-maia": "360d203f297a71532dad16d2bd8b4d94ed7b4d93e35ebd1f2018d58a92b29122",
+        "aria-mira": "00410f7ba2add9176d690fa1896b6bb57d2d512cf92ffb91d8a15f30cf09bf3b",
+        "aria-nova": "27a8c14e5a4dc5df7dc1911ed315cd274dc2e77fde3453d2650590520e0735e1",
+        "aria-rhea": "f9e678703319068540ec4e0a63d8038b2d80f0fa221bbd51ddb28e201bbb7e4a",
+        "aria-sera": "b047aee3c17c9ed2bf72d0405c675341a812d6c84feef2238c03f41c9e191089",
+        "aria-vega": "2fc0a48cdc6c81476cca7aa9011d2de1819fbb89ac3e9f072b1a31b122a96320",
+        "base-luma": "074481b0113538413add65557aaf34e5bca40f49476bd6d88bbd9044d87ccfdb",
+        "base-lyra": "e57e70bc2dd1291c30f4216eeb863e2acf82142987852b4c3ee65a5b6f970c4a",
+        "base-maia": "b76ea1fafe42d9bf98b3b7988dbb3598f5471dbfd1608aa251eea248a6f1d0b2",
+        "base-mira": "2bff13bc648cd95f64404f73b1e3a77f865c6c0e9c4c73f5c9d96fd4fb7b9579",
+        "base-nova": "3576c2be1f256255c10d1fa34668745a0cf0a1e7b3cbd397d1d4430ff43c3996",
+        "base-rhea": "8d1c8fe43894b7e5167ed6332e7c6e4740649d289cb4bc72e0e304d7a063fe9b",
+        "base-sera": "3d8cd3ee2c58e3bf73403b1e472be2148edaf279604499e51b9e626d5fcdc3bb",
+        "base-vega": "23ea61e4482714a168e94e6aae26261688b4c03324b81541cbc06db1a411186e",
+        "default": "eb19de91f115edd01e381761e6c3fd22bb3c0dc5d33f8576ffb05ea815bf52c4",
+        "new-york": "2563f8e80815ffaad35d440220ae4414e1a4dac430dbe5ea3c26b148a15dbeed",
+        "new-york-v4": "2852bd8f2db2fcfe1f0c239b6ecff08c34ca0f5cc0f7805465da579685b9ce7e",
+        "radix-luma": "4cfa665f95c83da925a2190558bbd2ba4f7ea2c7c2199e53a1477382c4686e59",
+        "radix-lyra": "b46cb76cbb8f6199b44de1e9b10b9ddb27f623bd5e774c11ff3e346c70c5af3c",
+        "radix-maia": "ddca1838ab40cf7da36f1a6d71ef10ca89093a5a239e7cbfc42a74123114549a",
+        "radix-mira": "3057b0afdaf3713ced231337a96f7fbbd9addf3c1c84efc67a09e7b9845659ba",
+        "radix-nova": "528a8143a7029bc3e00a016c45eba87088d68927999af137b510e9e30ec99dbb",
+        "radix-rhea": "b50724d35fd285043f1181fbeff3d4af7e1f0023a96a44e13aaee1e74ff212ac",
+        "radix-sera": "7b527de8ca777f02475f4969a907f920b9cc2b2754d8a1296efa3001874d9b06",
+        "radix-vega": "dd1a830610bfaec08db32ed7062353270d7772244abbdb43782c9ea32b93ad10"
+      }
+    },
+    "registry:example/aspect-ratio-demo": {
+      "status": "partial",
+      "reason": "Authored aspect-ratio source, HTTPS media, alt/decorative semantics, crop, filters, loading/error/retry and stale-source behavior are ported and tested. Full component presets, local media asset support and device visual acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-image.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-image.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "107b98cf9b770efbe30e1fa46fc47ef9bc0e196f51ef486dd6f6ad8faac59dcb",
+        "new-york": "99435421e7b0a9a749cfa69a7ba9f82205adbe0088389ceac63a3c0656efec95",
+        "new-york-v4": "5589f47a80ff967864e2754ad53d0af6b077a4826292a5c052c83634c1bace1c"
+      }
+    },
+    "registry:example/aspect-ratio-example": {
+      "status": "partial",
+      "reason": "Authored aspect-ratio source, HTTPS media, alt/decorative semantics, crop, filters, loading/error/retry and stale-source behavior are ported and tested. Full component presets, local media asset support and device visual acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-image.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-image.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "46801b5ed06b261996ee7b60e354921801fd54cba1904a99cce618553a524f84",
+        "aria-lyra": "53e69f2c9506ac97c7a2d3fd8c8c3ac8286a19c649fcdc94e377fb255f0f663d",
+        "aria-maia": "f5a61f30f12ef630b7308f4de96946ab6805d76be47b631f00fb7346aac19fcb",
+        "aria-mira": "5384e3587b7ba5bcf01e696964ba3d1bef58dd6475ae5a73aa108cd59102fd12",
+        "aria-nova": "dfee0ff4edb128e36a1c3891ad58e4efb03c9e03dd9cf99665279731925935f2",
+        "aria-rhea": "2359b4d4258ba4812da4bdb6fa8f213eef3eae5faae98c7850468bca784370d0",
+        "aria-sera": "fc85e623b5bda089eac053f50699134d396482b343a4e8286800f0c2cfcee747",
+        "aria-vega": "11eabe92dc3f2f04b2374ef520fab3d4c619f09aa97bbf1698ac3129e833919f",
+        "base-luma": "f78af49480f3ae233042a1f2cf0fc8584a23dcfc5dd8233f9ddbab1c184ed6af",
+        "base-lyra": "ba94b3281e79aec13aceeff41ab82caacdca8215023abca02dd4f2fabdf62885",
+        "base-maia": "c29bea70aa65aceaac2c9bbf5a1bb8661862c069e16eae000e6873f6f8ab7531",
+        "base-mira": "926565e05db9e391465798ea0084723cb03187e73361ca56fcf7c3564c53d7cb",
+        "base-nova": "b0b01cb16f55eabe18473fd02ee05d38a9aae434a13213182735730fd1a73b0b",
+        "base-rhea": "e7a6ee97010e8391bfa15800a718490e7206bd23dc6e635c9db73cdd04eb8144",
+        "base-sera": "e7c214d5bf9b6eb798711b5152c848c64d0bede208c30079bf229ce2025a1dd7",
+        "base-vega": "0dda59b330aa91e13f3f634febf7fe8576f33910061b1aaab05793292dc7f9d1",
+        "radix-luma": "88ed09fabfe6c7ce83c64f629e48ce2a550e9592f75238329bab27401b739dae",
+        "radix-lyra": "fe14a2a9cbc15afe390bfb38795d70a736a1765e296c1fe4b74af84d3c27fd04",
+        "radix-maia": "5b97827ee95e581745b0c7e2a3e943c61d51def24585da44353ad0710bf963ef",
+        "radix-mira": "82e969ec22a6d6da3e278a61145dd9f0f4ea0445f1056278c1ad844e30588e0f",
+        "radix-nova": "8935691690b52d1506d6c54f767b2dc7c24797dad59d984b3d4053728d62a708",
+        "radix-rhea": "f8bc7becc96737aad8bb72b830ed9a7a7e6d9c145d4ce283eefdf2c0bbc47d55",
+        "radix-sera": "8d9e16ae1c7e08aaf075c7a6e8fc6a67d91f14260d5abba5c1ce23e7c7e76911",
+        "radix-vega": "1a78fcc961446fe9dd66bb34f63ed57092454a9fd59cb1da7da72d51c84b608a"
+      }
     }
   },
   "webSpecific": [

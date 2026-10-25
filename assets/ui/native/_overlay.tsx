@@ -418,6 +418,7 @@ export function DropdownMenuItem({
   const state = useOverlay();
   return (
     <Button
+      nativePreset={false}
       variant="ghost"
       {...props}
       accessibilityRole="menuitem"

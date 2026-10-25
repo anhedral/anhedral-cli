@@ -312,6 +312,7 @@ export function ComboboxItem<T>({
     return null;
   return (
     <Button
+      nativePreset={false}
       variant={selected ? 'secondary' : 'ghost'}
       {...props}
       disabled={state.disabled || state.itemDisabled(value) || props.disabled}
@@ -364,6 +365,7 @@ export function ComboboxChip<T>({
     );
   return (
     <Button
+      nativePreset={false}
       variant="secondary"
       {...props}
       disabled={state.disabled || props.disabled}
