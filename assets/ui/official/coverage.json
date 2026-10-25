@@ -3399,64 +3399,100 @@
       }
     },
     "registry:example/spinner-basic": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored frozen source retains all glyphs, colors, dimensions and Button/Badge composition. Native tests assert actual SVG paint and field geometry; custom glyphs retain status semantics and one reduced-motion-aware animation. Native progressbar/View properties replace browser SVG status/host properties. These examples use completed Spinner, Button and Badge source slots; physical-device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_spinner.tsx",
+        "assets/ui/native/spinner.tsx",
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/_animation.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-spinner.test.tsx",
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "750c51e7d8ddc00b93707aa9dcac34483afbd4b5b8a258f366657da84220bad9"
       }
     },
     "registry:example/spinner-button": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored frozen source retains all glyphs, colors, dimensions and Button/Badge composition. Native tests assert actual SVG paint and field geometry; custom glyphs retain status semantics and one reduced-motion-aware animation. Native progressbar/View properties replace browser SVG status/host properties. These examples use completed Spinner, Button and Badge source slots; physical-device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_spinner.tsx",
+        "assets/ui/native/spinner.tsx",
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/_animation.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-spinner.test.tsx",
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "783117e29b6a3d5ecef76d81c73a2d819aab20a0aaad5aa9bb6dd12824569604"
       }
     },
     "registry:example/spinner-color": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored frozen source retains all glyphs, colors, dimensions and Button/Badge composition. Native tests assert actual SVG paint and field geometry; custom glyphs retain status semantics and one reduced-motion-aware animation. Native progressbar/View properties replace browser SVG status/host properties. These examples use completed Spinner, Button and Badge source slots; physical-device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_spinner.tsx",
+        "assets/ui/native/spinner.tsx",
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/_animation.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-spinner.test.tsx",
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "d69a15d07d94d3db15a9f158edd4f73bb6f200f5994a960aaa2ead260b563d9f"
       }
     },
     "registry:example/spinner-custom": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored frozen source retains all glyphs, colors, dimensions and Button/Badge composition. Native tests assert actual SVG paint and field geometry; custom glyphs retain status semantics and one reduced-motion-aware animation. Native progressbar/View properties replace browser SVG status/host properties. These examples use completed Spinner, Button and Badge source slots; physical-device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_spinner.tsx",
+        "assets/ui/native/spinner.tsx",
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/_animation.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-spinner.test.tsx",
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "2d576d20da8935f2878bc3f00e456ee2f9c6a22fd0bed790acc9e9200615b939"
@@ -3479,16 +3515,25 @@
       }
     },
     "registry:example/spinner-size": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored frozen source retains all glyphs, colors, dimensions and Button/Badge composition. Native tests assert actual SVG paint and field geometry; custom glyphs retain status semantics and one reduced-motion-aware animation. Native progressbar/View properties replace browser SVG status/host properties. These examples use completed Spinner, Button and Badge source slots; physical-device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_spinner.tsx",
+        "assets/ui/native/spinner.tsx",
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/_animation.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-spinner.test.tsx",
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "121885aa016ba2dfd926d091a4b2894955d16348f64d7538edc9036f6eb610f2"
@@ -5559,16 +5604,25 @@
       }
     },
     "registry:example/spinner-badge": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Authored frozen source retains all glyphs, colors, dimensions and Button/Badge composition. Native tests assert actual SVG paint and field geometry; custom glyphs retain status semantics and one reduced-motion-aware animation. Native progressbar/View properties replace browser SVG status/host properties. These examples use completed Spinner, Button and Badge source slots; physical-device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_spinner.tsx",
+        "assets/ui/native/spinner.tsx",
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/_animation.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-spinner.test.tsx",
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "2f546e0888130c2775f3a5f3d1eda932761e8899758ed940195e464d22bff5e1"
@@ -6615,6 +6669,53 @@
         "new-york": "c9a4840facfec78fc4769f1bf7d86907df1216e45ec19c584978753d7c27218e",
         "new-york-v4": "f8e44d7a2166f2e8aab0d32b367cd2191a2b1b90a41362bc3911abacfd03cc6a"
       }
+    },
+    "registry:ui/spinner": {
+      "status": "ported",
+      "reason": "All six pinned source definitions retain the actual Loader2 glyph, size-4 default, inherited/custom colors, stroke, real class/native dimensions and one one-second linear rotation. Reduced motion, unavailable/stale preference handling, cleanup, refs, logical stop/hide and native status names are tested. Badge direct SVG rules do not leak into nested containers. All twelve Android and iOS native cases passed. Native progressbar/loading labels, View refs and native styles/props replace browser SVG status/host semantics; OS screen-reader and physical-device acceptance remain separate.",
+      "nativeFiles": [
+        "assets/ui/native/_spinner.tsx",
+        "assets/ui/native/spinner.tsx",
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_registry-context.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_animation.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-spinner.test.tsx",
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "b215e961f4daa31e89b09a31b7dfc244f72d8215d32f104fc5decde285994aed",
+        "aria-lyra": "c02814aac6a09071f1590229a2546cd9ee2428d2e80ea672a84c0def87560bf4",
+        "aria-maia": "f9d50d5c75ac0b29a2af0ad384bed84eb9edbef2828ffa010b0e63a058ff0311",
+        "aria-mira": "fa7d31dbbb964c5acf860726cd06d8bc099957dbabf65575e95cab4385705afd",
+        "aria-nova": "396dfa82cc04b32e32093d4c2f80bc5c5913cff21e6b147f9e9e1071eecf3375",
+        "aria-rhea": "3999d0f0557596c9607521e939ad6ff516159c23f7b0e19a95ef7d617cd6d15c",
+        "aria-sera": "9eb948705c1be99f1d459fd6b057e7fb17dff63309d7b7f95702310062419265",
+        "aria-vega": "0c0a75b38df3c869f302ae7658a7affab44378693491e7c9835c067e02665ed5",
+        "base-luma": "e607eeb9d8775f2844cccc4037e668c0b8707e21c0f893951e9cecf60ffa3b6d",
+        "base-lyra": "ee479ab2153aeaaf68225bbd90597e8b51b7b12884b03bc7c9b3d89591ddb1fa",
+        "base-maia": "2610fbf759fc63fbe7fbef59c04834a39f6ae833728a15dad8ffd33bb95a420d",
+        "base-mira": "ee663a927deb5f8f288eaa1f37808f691a9f2d698c15a6443f757bf42377ad06",
+        "base-nova": "474d2285a6785e82514340185b05627029e68c1ec6b6659a76f03f71c25632a8",
+        "base-rhea": "4ef64d77fb608bc91390d1309f01c768d69981599fb6ce18fc9f6d35f601cc97",
+        "base-sera": "7396e21a0f7f69c37402975fd02e3e49a8cdd50b46e07542126f16f84c49bc40",
+        "base-vega": "317e7801959623165a9666b19ffbc1ea7826edc572b8f4ab1e7a251343096d61",
+        "default": "ac0d4caf4c7828f394488d4e334177e2d5bacd086fbd7587d870d954b3033f80",
+        "new-york": "74dd11df21f932665c0efeffab0370454c70b739602e6a9467617b86d897839a",
+        "new-york-v4": "878d1112d99e5cb807434d3b95fff8d4d3f6cbf11f2102b7d6f3f654c0f09073",
+        "radix-luma": "e137714cbe59bf1f0443d92f4ac854f5caaeac10174692028aaa94fae6a53dca",
+        "radix-lyra": "3e9b0055551aaf17eadc877affde9da1116bc1e26c62733cc4b196a9a41914c5",
+        "radix-maia": "787028a7b89ed9de0667ed10ce611947745c9ab8922875e3be3c09b4ec97c824",
+        "radix-mira": "87269b19ac4c7dca45241a4b74019a8d7d68d315105d126b62c8bee18a9cd59e",
+        "radix-nova": "ccd8e5db88743d58381602138a7d9a3664df8753ec5f087f9ee0cb8e68086cd6",
+        "radix-rhea": "522b9cfbb630eadee5d81e08c0548a921e055959055ee4e9c1006bf617c2197a",
+        "radix-sera": "85c354b480c2fb443904152cbf2b0619fee99062b8a7d5c1e5d7a961cff6c223",
+        "radix-vega": "10dc57e5aab5171571ed753d69911f650329c37d9b45ac9bd518a709d123dcbf"
+      }
     }
   },
   "webSpecific": [
@@ -6682,6 +6783,11 @@
       "feature": "Browser Button render hosts, focus-visible heuristics and disabled tab order",
       "adaptation": "Native Button supports one native render element/callback and live children state. Native focus supplies focus-visible; OS policy owns disabled/pending focus. Native views use Pressable and native props; DOM tabIndex, nativeButton and focusableWhenDisabled flags have no direct native counterpart.",
       "status": "Element/callback hosts, pending state, child-first cancellation, refs, typography and one form dispatch are tested. All eleven Android/iOS acceptance cases passed; physical devices and expanded screen-reader acceptance remain separate."
+    },
+    {
+      "feature": "SVG loading status, root SVG refs and animation classes",
+      "adaptation": "Actual native Lucide glyph, progressbar/loading names, native View refs and real native dimensions/stroke. One native-driver rotation follows live reduced motion. Animation classes control visual motion independently from loading state; native stops may explicitly keep the glyph visible.",
+      "status": "Source glyph matches the lock-integrity-verified upstream package. All eleven style families, authored sizes/colors/custom glyphs and Button/Badge composition have native tests. Both platforms pass twelve native OS cases; physical-device/screen-reader acceptance remains separate."
     }
   ]
 }

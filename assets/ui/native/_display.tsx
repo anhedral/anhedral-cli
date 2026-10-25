@@ -14,7 +14,6 @@ import {
 import {
   View,
   Image,
-  ActivityIndicator,
   Animated,
   AccessibilityInfo,
   type ImageProps,
@@ -498,21 +497,7 @@ export const TypographyBlockquote = ({ style, ...props }: TextProps) => {
 };
 export const TypographyInlineCode = Kbd;
 export const TypographyList = Box;
-export function Spinner({
-  size = 'small',
-  ...props
-}: React.ComponentProps<typeof ActivityIndicator>) {
-  const { colors } = useTheme();
-  return (
-    <ActivityIndicator
-      accessibilityLabel="Loading"
-      accessibilityRole="progressbar"
-      color={colors.primary}
-      size={size}
-      {...props}
-    />
-  );
-}
+export { Spinner } from './_spinner';
 export function Skeleton({ style, children, ...props }: ViewProps & { ref?: Ref<View> }) {
   const { colors, mode, radius } = useTheme(),
     source = useNativeRegistrySource(),

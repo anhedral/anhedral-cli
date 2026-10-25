@@ -50,6 +50,7 @@ import {
   useNativeExampleStyle,
   useRegistryPalette,
   NativeButtonIconSize,
+  NativeIconForcedSize,
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
 import { nativePresetMetrics } from './_preset-metrics';
@@ -129,6 +130,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
     } = input as Omit<ComponentProps<C>, Exclude<keyof RecipeProps, 'children'>> &
       Omit<RecipeProps, 'children'> & { children?: unknown };
     const buttonIconSize = useContext(NativeButtonIconSize);
+    const forcedIconSize = useContext(NativeIconForcedSize);
+    const spinner = 'nativeSpinnerSlot' in Component && Component.nativeSpinnerSlot === true;
     const theme = useTheme(),
       window = useWindowDimensions(),
       [measuredWidth, setMeasuredWidth] = useState<number>(),
@@ -344,6 +347,25 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       };
     delete forwarded['data-active'];
     if (Component === Button) forwarded.nativeImplicitSubmit = true;
+    if (spinner) {
+      if (translated.paint.spin !== undefined)
+        forwarded.nativeSpin = Boolean(translated.paint.spin);
+      if (translated.paint.strokeWidth !== undefined)
+        forwarded.strokeWidth = translated.paint.strokeWidth;
+      if (translated.paint.fill !== undefined) forwarded.fill = translated.paint.fill;
+      if (translated.text.color !== undefined && props.color === undefined)
+        forwarded.color = translated.text.color;
+    }
+    if ((kind === 'icon' || spinner) && forcedIconSize !== undefined) {
+      if (nativeInline.width === undefined && props.size === undefined && props.width === undefined)
+        translated.view.width = forcedIconSize;
+      if (
+        nativeInline.height === undefined &&
+        props.size === undefined &&
+        props.height === undefined
+      )
+        translated.view.height = forcedIconSize;
+    }
     if (translated.paint.listMarker !== undefined) forwarded.marker = translated.paint.listMarker;
     if (translated.paint.pointerEvents && props.pointerEvents === undefined)
       forwarded.pointerEvents = translated.paint.pointerEvents;
@@ -359,6 +381,11 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       if (!('nativeRegistryImage' in Component))
         throw Error('Native grayscale requires a supported image component.');
       forwarded.grayscale = true;
+    }
+    if ((kind === 'icon' || kind === 'svg-root') && props.role === 'status') {
+      forwarded.accessible = props.accessible ?? true;
+      forwarded.accessibilityRole = 'progressbar';
+      delete forwarded.role;
     }
     if (kind === 'svg' || kind === 'svg-root' || kind === 'icon') {
       Object.assign(forwarded, translated.paint, translated.text, nativeInline);
@@ -507,7 +534,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       ) : (
         result
       );
-    return translated.paint.spin ? (
+    return translated.paint.spin && !spinner ? (
       <RegistrySpin>{scoped}</RegistrySpin>
     ) : translated.paint.turnTransition ? (
       <RegistryTurn
@@ -825,35 +852,25 @@ export const RegistryPre = withRegistryStyles(RecipePre);
 export const RegistryCode = withRegistryStyles(RecipeCode, 'text');
 
 function RegistrySpin({ children }: { children: ReactNode }) {
-  const position = useRef(new Animated.Value(0)).current;
+  const position = useRef(new Animated.Value(0)).current,
+    reduced = useNativeReducedMotion();
   useEffect(() => {
-    let mounted = true;
-    let animation: Animated.CompositeAnimation | undefined;
-    const update = (reduced: boolean) => {
-      animation?.stop();
-      position.setValue(0);
-      if (!reduced && mounted) {
-        animation = Animated.loop(
-          Animated.timing(position, {
-            toValue: 1,
-            duration: 1000,
-            easing: Easing.linear,
-            useNativeDriver: true,
-          }),
-        );
-        animation.start();
-      }
-    };
-    void AccessibilityInfo.isReduceMotionEnabled().then((value) => {
-      if (mounted) update(value);
-    });
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', update);
+    position.setValue(0);
+    if (reduced) return;
+    const animation = Animated.loop(
+      Animated.timing(position, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    animation.start();
     return () => {
-      mounted = false;
-      animation?.stop();
-      subscription.remove();
+      animation.stop();
+      position.stopAnimation();
     };
-  }, [position]);
+  }, [position, reduced]);
   return (
     <Animated.View
       style={{

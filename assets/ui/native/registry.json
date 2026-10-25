@@ -1240,7 +1240,8 @@
     "_preset-skeleton-style.tsx",
     "_badge.tsx",
     "_card-presets.tsx",
-    "_preset-card-style.tsx"
+    "_preset-card-style.tsx",
+    "_spinner.tsx"
   ],
   "supportModules": [
     {

@@ -166,4 +166,16 @@ class RegistryAndroidTests {
     onElement { contentDescription?.toString()?.startsWith("Callback pending") == true && !isEnabled }
   }
 
+  @Test fun sourceSpinnerRetainsNativeGlyphGeometryAndActions() = uiAutomator {
+    openStory("native/spinner-paint")
+    label("Spinner geometry: 24x24")
+    label("Badge spinner geometry: 12x12")
+    label("Spinner actions: 0")
+    label("Spinner action").click()
+    label("Spinner actions: 1")
+    label("Stop native spinner").click()
+    label("Spinner motion stopped")
+    label("Native source spinner")
+  }
+
 }

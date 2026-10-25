@@ -33,7 +33,7 @@ commands serial because they regenerate the shared harness source directory.
 For Android, set \`JAVA_HOME\` and \`ANDROID_HOME\` for the pinned React Native
 runtime and start a dedicated emulator. Run \`pnpm test:native-ui:android -- --device emulator-5558\`.
 The runner builds a release app and AndroidX UI Automator instrumentation, then checks
-all eleven required native cases. Skipped, aborted and incomplete runs fail. Source
+all twelve required native cases. Skipped, aborted and incomplete runs fail. Source
 hashes, retained APKs, native screenshots, hierarchy dumps and logs remain under
 \`.artifacts/native-ui-android/\`. Both platforms use one owned QA preparation path;
 unrelated directories and symlinked outputs are rejected. Keep harness preparation
@@ -83,6 +83,16 @@ remain accessible. Overflow hosts use native ScrollView with separate content pa
 and gap styles. Native underline placement follows OS text decoration rather than CSS
 underline offsets. Card image color blending uses the native compositor. These examples
 remain partial until their other component presets have full source parity.
+
+Spinner retains the authored Lucide Loader2 glyph, sixteen-point default, inherited
+and explicit colors, real class/native dimensions and stroke paint. Native animation
+uses one one-second linear rotation with live reduced-motion updates and cleanup.
+Animation classes control visual motion independently of the loading state; stopped
+indicators may remain visible explicitly. Badge's direct SVG sizing includes Spinner
+without reaching glyphs inside nested containers. Native progressbar roles and loading
+labels replace SVG status semantics; SVG descendants remain hidden from accessibility.
+Custom authored spinner glyphs use the same reduced-motion policy. Native styles,
+props and View refs replace browser SVG host attributes and refs.
 
 Skeleton retains all eleven source style families, including frozen New York primary
 transparency and New York v4 accent paint. Its native pulse follows the source two-second

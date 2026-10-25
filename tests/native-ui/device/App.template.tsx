@@ -8,6 +8,45 @@ import { NativeExampleOptions } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
 const SourceCallbackButton = withRegistryStyles(UI.Button, 'button');
+const SourceSpinner = withRegistryStyles(UI.Spinner);
+function NativeSpinnerMatrix() {
+  const [frame, setFrame] = useState('pending'),
+    [badgeFrame, setBadgeFrame] = useState('pending'),
+    [actions, setActions] = useState(0),
+    [moving, setMoving] = useState(true);
+  return (
+    <View style={{ gap: 16 }}>
+      <UI.Text>{'Spinner geometry: ' + frame}</UI.Text>
+      <UI.Text>{'Badge spinner geometry: ' + badgeFrame}</UI.Text>
+      <UI.Text>{'Spinner actions: ' + actions}</UI.Text>
+      <UI.Text>{moving ? 'Spinner motion active' : 'Spinner motion stopped'}</UI.Text>
+      <SourceSpinner
+        accessibilityLabel="Native source spinner"
+        className="size-6 text-red-500"
+        animating={moving}
+        hidesWhenStopped={false}
+        onLayout={({ nativeEvent: { layout } }) =>
+          setFrame(Math.round(layout.width) + 'x' + Math.round(layout.height))
+        }
+      />
+      <UI.Badge>
+        <SourceSpinner
+          className="size-6"
+          accessibilityLabel="Native badge spinner"
+          onLayout={({ nativeEvent: { layout } }) =>
+            setBadgeFrame(Math.round(layout.width) + 'x' + Math.round(layout.height))
+          }
+        />{' '}
+        Syncing
+      </UI.Badge>
+      <UI.Button onPress={() => setActions((n) => n + 1)}>
+        <SourceSpinner />
+        Spinner action
+      </UI.Button>
+      <UI.Button onPress={() => setMoving(false)}>Stop native spinner</UI.Button>
+    </View>
+  );
+}
 function NativeButtonCallbackMatrix() {
   const [plan, setPlan] = useState('one'),
     [views, setViews] = useState(0),

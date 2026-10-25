@@ -5,6 +5,7 @@ import {
   cloneElement,
   isValidElement,
   useState,
+  useContext,
   type ReactNode,
   type ReactElement,
   type Ref,
@@ -36,6 +37,7 @@ import {
   useNativeRegistrySource,
   useRegistryPalette,
   NativeButtonIconSize,
+  NativeIconForcedSize,
 } from './_registry-context';
 import { NativeSlot, nativeTextPressRetentionOffset } from './_slot';
 import { nativePresetBadgeStyle } from './_preset-badge-style';
@@ -287,6 +289,30 @@ export function Badge({
       child = createElement(LabelText, { ...hostChild.props, key: hostChild.key });
   }
   const finalStyle = resolve();
+  const inheritedIconSize = useContext(NativeButtonIconSize);
+  const sizeDirectGlyphs = (nodes: ReactNode): ReactNode =>
+    Children.map(nodes, (node) => {
+      if (!isValidElement<{ children?: ReactNode }>(node)) return node;
+      if (node.type === Fragment)
+        return cloneElement(node, { children: sizeDirectGlyphs(node.props.children) });
+      const target = node.type;
+      if (
+        !target ||
+        (typeof target !== 'function' && typeof target !== 'object') ||
+        !('nativeRegistryIcon' in target) ||
+        target.nativeRegistryIcon !== true
+      )
+        return node;
+      return (
+        <NativeButtonIconSize.Provider value={finalStyle?.iconSize ?? inheritedIconSize}>
+          <NativeIconForcedSize.Provider value={finalStyle?.iconSize}>
+            {node}
+          </NativeIconForcedSize.Provider>
+        </NativeButtonIconSize.Provider>
+      );
+    });
+  if ((asChild || element) && isValidElement<{ children?: ReactNode }>(child))
+    child = cloneElement(child, { children: sizeDirectGlyphs(child.props.children) });
   const rendered =
     asChild || element ? (
       <NativeSlot
@@ -302,7 +328,7 @@ export function Badge({
         {...common}
         accessibilityRole={props.accessibilityRole ?? (variant === 'link' ? 'link' : 'button')}
       >
-        {content(children)}
+        {content(sizeDirectGlyphs(children))}
       </Pressable>
     ) : (
       <View
@@ -322,7 +348,7 @@ export function Badge({
           props.onHoverOut?.(event as never);
         }}
       >
-        {content(children)}
+        {content(sizeDirectGlyphs(children))}
       </View>
     );
   return (
@@ -344,9 +370,7 @@ export function Badge({
             : undefined)
         }
       >
-        <NativeButtonIconSize.Provider value={finalStyle?.iconSize}>
-          {rendered}
-        </NativeButtonIconSize.Provider>
+        {rendered}
       </TextToneProvider>
     </NativeTextStyleProvider>
   );

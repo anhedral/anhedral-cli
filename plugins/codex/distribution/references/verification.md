@@ -1,3 +1,40 @@
+# Source Spinner and native glyph composition — October 25, 2026
+
+Spinner now uses the authored Lucide Loader2 glyph, size-4 default, inherited/custom
+colors, stroke and actual native dimensions. A one-second linear native animation
+responds to live reduced motion and releases its resources. Custom authored glyphs
+use the same fail-static preference policy. Native progressbar names/View refs replace
+browser SVG status and host semantics. Badge's direct SVG size rules include Spinner
+and fragments while preserving authored sizes inside nested containers.
+
+- Native suites: 1,521 passed per platform across 51 suites with existing coverage
+  thresholds. All 711 modules compile to both Hermes targets. Generated typecheck,
+  lint, static security and focused registry/driver contracts passed.
+- CLI suite: 640 passed, one existing optional braces-runtime skip. Packed-consumer
+  smoke passed; packlist before evidence changes: 249 files / 1,021,771 packed bytes.
+  Full CLI validation caught a stale assertion expecting Button to remain pending;
+  the explicit checklist assertions were updated and the full run then passed.
+- Android: all twelve release instrumentation cases passed. Evidence:
+  `.artifacts/native-ui-android/2026-10-25T09-50-40-420Z/`. APK SHA-256
+  90a277af4deaad0208e8927aa9c3613db7663cec98ca81973ed122ba64ea4e92;
+  test APK 7095e7b682ac8d6fe0dcad325f48fddfc18b46bdd852d1a0cf89d285ad47f26b.
+- iOS: all twelve XCTest cases passed without skips in 365.659 seconds on the owned
+  iOS 26.5 simulator. Evidence: `.artifacts/native-ui-ios/2026-10-25T09-55-55-918Z/`.
+  The completed result summary was validated and screenshot attachments exported.
+  Both platforms' Spinner screenshots were inspected: a 24-point red source glyph,
+  12-point Badge glyph, inherited Button color, stopped glyph and one action.
+- All 123 native source files matched both device QA copies before Input work began.
+  `.artifacts/native-ui/2026-10-25-spinner/` retains that equality, source review,
+  patches, logs and upstream Lucide 0.474.0 tar integrity/glyph verification.
+  The earlier iOS run was interrupted after a selector failure: Fabric's native
+  scroll element omits the wrapper testID. The final helper selects the largest
+  actual scroll viewport and retains all native cases/assertions.
+
+Spinner plus six authored basic/Button/Badge/size/color/custom example groups are
+accounted for: 89 groups accounted / 527 pending. Examples depending on unfinished
+Empty, Item, InputGroup or Field slots remain partial. These results do not establish
+complete registry, physical-device, screen-reader or store acceptance.
+
 # Native Button callback and form composition — October 25, 2026
 
 Button now supports element/function render hosts and live children state, including

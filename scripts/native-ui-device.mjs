@@ -78,6 +78,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/layout-primitives",Component:NativeLayoutMatrix}',
           '{id: "native/card-metrics",Component:NativeCardMatrix}',
           '{id: "native/button-callbacks",Component:NativeButtonCallbackMatrix}',
+          '{id: "native/spinner-paint",Component:NativeSpinnerMatrix}',
         ].join(',\n') +
         '];',
     );

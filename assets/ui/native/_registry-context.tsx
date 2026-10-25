@@ -67,5 +67,7 @@ export function NativeComponentStyleProvider({
 }
 export const NativeButtonGroupContext = createContext(false);
 export const NativeButtonIconSize = createContext<number | undefined>(undefined);
+/** Source selectors that size every SVG, including glyphs with their own size class. */
+export const NativeIconForcedSize = createContext<number | undefined>(undefined);
 
 export const NativeCardSpacingContext = createContext<number | undefined>(undefined);

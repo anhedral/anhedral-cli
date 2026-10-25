@@ -84,7 +84,7 @@ test('the maintained OS gallery renders every recipe component and uses only act
 
 test('native XCTest acceptance requires every expected case on the exact requested simulator without skips or expected failures', () => {
   const entry = {
-    passedTests: 11,
+    passedTests: 12,
     failedTests: 0,
     skippedTests: 0,
     expectedFailures: 0,
@@ -92,8 +92,8 @@ test('native XCTest acceptance requires every expected case on the exact request
   };
   const result = {
     result: 'Passed',
-    totalTestCount: 11,
-    passedTests: 11,
+    totalTestCount: 12,
+    passedTests: 12,
     failedTests: 0,
     skippedTests: 0,
     expectedFailures: 0,
@@ -101,7 +101,7 @@ test('native XCTest acceptance requires every expected case on the exact request
     devicesAndConfigurations: [entry],
   };
   assert.deepEqual(assertNativeIOSResult(result, nativeIOSTestCount, 'owned'), {
-    tests: 11,
+    tests: 12,
     failures: 0,
   });
   for (const change of [
@@ -116,7 +116,7 @@ test('native XCTest acceptance requires every expected case on the exact request
     { devicesAndConfigurations: [{ ...entry, device: { deviceId: 'other' } }] },
   ])
     assert.throws(
-      () => assertNativeIOSResult({ ...result, ...change }, 11, 'owned'),
+      () => assertNativeIOSResult({ ...result, ...change }, 12, 'owned'),
       /did not pass every expected case/,
     );
   const source = readFileSync('tests/native-ui/device/RegistryUITests.swift', 'utf8');

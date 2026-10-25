@@ -1,5 +1,12 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
+  func storyScroll(_ app:XCUIApplication) -> XCUIElement {
+    // Fabric's iOS scroll accessibility element does not expose the wrapper testID.
+    // Choose the largest native viewport so nested recipe scroll areas stay independent.
+    let candidates=app.scrollViews.allElementsBoundByIndex
+    XCTAssertFalse(candidates.isEmpty,"Missing native story viewport")
+    return candidates.max(by:{a,b in a.frame.width*a.frame.height < b.frame.width*b.frame.height}) ?? app.scrollViews.firstMatch
+  }
   func openStory(_ name: String, in app: XCUIApplication) {
     let search = app.textFields["Find an example"]
     XCTAssertTrue(search.waitForExistence(timeout: 30))
@@ -106,7 +113,7 @@ final class RegistryUITests: XCTestCase {
       let value = app.descendants(matching:.any).matching(identifier:"Item " + String(index) + ": Value " + String(index)).firstMatch
       for _ in 0..<4 {
         if value.exists && value.isHittable { break }
-        app.scrollViews["registry-story-scroll"].swipeUp()
+        storyScroll(app).swipeUp()
       }
       XCTAssertTrue(value.exists)
       XCTAssertTrue(value.isHittable)
@@ -121,7 +128,7 @@ final class RegistryUITests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()
     openStory("native/card-metrics", in:app)
-    let scroll = app.scrollViews["registry-story-scroll"]
+    let scroll = storyScroll(app)
     // Passive measurement labels require a nonempty frame entirely within the native
     // viewport. Touch activation is exercised separately by the action cases.
     func visible(_ value: XCUIElement) -> Bool {
@@ -158,7 +165,7 @@ final class RegistryUITests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()
     openStory("base/card-example", in: app)
-    let scroll = app.scrollViews["registry-story-scroll"]
+    let scroll = storyScroll(app)
     func reveal(_ value: XCUIElement) {
       for _ in 0..<48 {
         if value.exists && !value.frame.isEmpty && scroll.frame.contains(value.frame) { return }
@@ -192,7 +199,7 @@ final class RegistryUITests: XCTestCase {
     app.launch()
     openStory("native/button-callbacks", in:app)
     func reveal(_ value:XCUIElement, _ name:String) {
-      let scroll=app.scrollViews["registry-story-scroll"]
+      let scroll=storyScroll(app)
       for _ in 0..<12 {
         if value.exists && value.isHittable { return }
         let up=value.exists && !value.frame.isEmpty && value.frame.minY < scroll.frame.minY
@@ -221,6 +228,21 @@ final class RegistryUITests: XCTestCase {
     screenshot.name="Native callback controls and source form semantics"
     screenshot.lifetime = .keepAlways
     add(screenshot)
+  }
+
+  func testSourceSpinnerGeometryAndActionsOnNativeOS() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch(); openStory("native/spinner-paint",in:app)
+    for name in ["Spinner geometry: 24x24","Badge spinner geometry: 12x12","Spinner actions: 0"] {
+      XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout:10))
+    }
+    app.buttons["Spinner action"].tap()
+    XCTAssertTrue(app.staticTexts["Spinner actions: 1"].exists)
+    app.buttons["Stop native spinner"].tap()
+    XCTAssertTrue(app.staticTexts["Spinner motion stopped"].exists)
+    XCTAssertTrue(app.descendants(matching:.any).matching(identifier:"Native source spinner").firstMatch.exists)
+    let screenshot=XCTAttachment(screenshot:app.screenshot())
+    screenshot.name="Native source Spinner glyph and dimensions"; screenshot.lifetime = .keepAlways; add(screenshot)
   }
 
 }
