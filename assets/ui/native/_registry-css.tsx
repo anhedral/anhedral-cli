@@ -363,9 +363,10 @@ export function registryStyle(
       view.flexDirection = 'column';
       paint.columns = 1;
     } else if (/^grid-cols-[1-9]$/.test(token)) {
-      view.flexDirection = 'row';
-      view.flexWrap = 'wrap';
-      paint.columns = Number(token.slice(10));
+      const columns = Number(token.slice(10));
+      view.flexDirection = columns === 1 ? 'column' : 'row';
+      view.flexWrap = columns === 1 ? 'nowrap' : 'wrap';
+      paint.columns = columns;
     } else if (token === 'grid-cols-[25px_1fr]') {
       view.flexDirection = 'row';
       view.flexWrap = 'wrap';
@@ -748,6 +749,19 @@ export function registryStyle(
       } else if (value === 'left' || value === 'center' || value === 'right' || value === 'justify')
         text.textAlign = value;
       else text.color = options.color(value);
+    } else if (/^bg-(?:gradient|linear)-to-(t|tr|r|br|b|bl|l|tl)$/.test(token))
+      paint.gradientDirection = token.slice(token.lastIndexOf('-') + 1);
+    else if (/^(from|via|to)-/.test(token)) {
+      const match = /^(from|via|to)-(.+)$/.exec(token)!,
+        stop = match[1]!,
+        value = match[2]!,
+        key = 'gradient' + stop[0]!.toUpperCase() + stop.slice(1);
+      if (/^(?:\d+(?:\.\d+)?%|\[\d+(?:\.\d+)?%\])$/.test(value)) {
+        const number = Number(value.replace(/[\[\]%]/g, ''));
+        if (!value.includes('%') || !Number.isFinite(number) || number < 0 || number > 100)
+          throw Error('Unreviewed native gradient stop position: ' + value);
+        paint[key + 'Offset'] = number / 100;
+      } else paint[key] = options.color(value);
     } else if (token.startsWith('bg-')) view.backgroundColor = options.color(token.slice(3));
     else if (token === 'fill-none') paint.fill = 'none';
     else if (token.startsWith('fill-')) paint.fill = options.color(token.slice(5));

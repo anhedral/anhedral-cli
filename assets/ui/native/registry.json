@@ -1272,7 +1272,11 @@
     "_preset-progress-style.tsx",
     "_alert-presets.tsx",
     "_preset-alert-style.tsx",
-    "_alert.tsx"
+    "_alert.tsx",
+    "_empty-presets.tsx",
+    "_preset-empty-style.tsx",
+    "_empty.tsx",
+    "_gradient.tsx"
   ],
   "supportModules": [
     {

@@ -118,6 +118,8 @@ export const NativeTextStyleProvider = NativeTextStyleContext.Provider;
 export const NativeDescendantStyleContext = createContext<{
   textColor?: string;
   iconColor?: string;
+  iconSize?: number;
+  iconPointerEvents?: ViewProps['pointerEvents'];
   linkUnderline?: boolean;
   linkHoverColor?: string;
   paragraphGap?: number;

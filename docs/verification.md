@@ -1,3 +1,53 @@
+# Empty source variants, native composition and gradients — October 25, 2026
+
+Empty retains six upstream publications, thirty-six class slots, both media
+variants and eleven style families. Source padding, responsive frozen spacing,
+header/content gaps, title typography, heading fonts and icon metrics are tested.
+Media defaults preserve consumer glyph sizes and reset at physical Modal boundaries.
+Description keeps inline text runs and native paragraph blocks; source underline
+and hover styling applies only to direct links. Browser text balancing, CSS underline
+offset and DOM refs/events remain explicit platform boundaries.
+
+The native source compiler now retains seven more authored examples, with all
+three modern Empty examples tested across eight styles and seven frozen examples
+rendered. Avatar and AvatarGroup examples remain partial pending their component
+owner. The actual source gradient uses a native SVG background, retaining source
+colors, alpha and percentage stops. Native SVG interpolation differs from browser
+color interpolation. Unsupported gradient hosts and scrolling/background combinations
+fail explicitly. Grid items neutralize flex hints and preserve actual equal widths;
+a regression first demonstrated the old flex-basis collapse before the fix.
+
+Full native regression passes 74 suites /1,969 tests on each platform. All 742
+registry modules compile to iOS and Android Hermes bytecode (477 component examples,
+231 chart modules and 34 form modules, including four support modules). The catalog
+has 738 authored roots. Generated TypeScript, source/style/API guards, lint and static
+security pass. CLI unit tests pass 684 with one existing optional skip (685 total).
+Packed consumer and packlist pass: 249 files /1,106,389 packed bytes, within unchanged
+budgets. Both focused native OS cases pass all eleven preset layouts, media dimensions,
+header/content gaps, actual actions, equal grid widths and native text editing.
+The required suite has 24 cases; these are focused runs, not a full 24-case run.
+
+
+- Android: `.artifacts/native-ui-android/2026-10-25T21-22-43-544Z/`; app
+  SHA-256 `617c4c1871a48eb4e4e834b0685debb6b1f6c94d0ac5fca36e1b392bb42c427d`,
+  test APK `da009d980a78c7c0f4dfd3b9087c64977e7dae32a27455fb3a4c620b3a6062ed`.
+- iOS 26.5: `.artifacts/native-ui-ios/2026-10-25T21-23-25-225Z/`.
+- `.artifacts/native-ui/2026-10-25-empty/final-device-source-equivalence.json`
+  matches all 158 native TypeScript modules, 742 recipe modules, the generated
+  gallery and both compiled test sources against the tested binary manifests.
+  Final native dark-gradient screenshots were inspected on both platforms.
+
+The first focused OS cases passed, but screenshot inspection caught a theme race:
+the Android capture occurred before the requested dark preference was applied.
+Both drivers now await the rendered preference/mode before capturing; both updated
+cases pass. Earlier binaries, captures, the initial failed UI-helper guard and
+the pre-fix grid regression are retained with the dated terminal evidence.
+Physical-device/screen-reader acceptance and the iOS 27 host issue remain separate.
+
+The checklist records 210 ported groups plus one web-specific group; 408 remain
+unfinished. The full registry port is still in progress. No merge, publication,
+release or deployment occurred.
+
 # Alert source variants, typography and native descriptions — October 25, 2026
 
 Alert now retains all six upstream publications, twenty-one source class slots,

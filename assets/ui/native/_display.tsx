@@ -286,35 +286,14 @@ export function ButtonGroupText({
   );
 }
 export const ButtonGroupSeparator = Separator;
-export const Empty = ({ style, ...props }: ViewProps) => (
-  <Surface {...props} style={[{ alignItems: 'center', padding: 24 }, style]} />
-);
-export const EmptyHeader = Box;
-export const EmptyTitle = NativeDisplayTitle;
-export const EmptyDescription = Muted;
-export const EmptyContent = Box;
-export function EmptyMedia({
-  variant = 'default',
-  style,
-  ...props
-}: ViewProps & { variant?: 'default' | 'icon' }) {
-  const { colors, radius } = useTheme();
-  return (
-    <Box
-      {...props}
-      style={[
-        { alignItems: 'center', justifyContent: 'center' },
-        variant === 'icon' && {
-          width: 32,
-          height: 32,
-          borderRadius: radius,
-          backgroundColor: colors.muted,
-        },
-        style,
-      ]}
-    />
-  );
-}
+export {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+  EmptyMedia,
+} from './_empty';
 const ItemSize = createContext<'default' | 'sm' | 'xs'>('default');
 export function Item({
   variant = 'default',

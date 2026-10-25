@@ -220,6 +220,26 @@ boundaries. Native surfaces retain source alpha, native shadows and direct state
 The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
 it does not install the browser primitive libraries or emulate DOM objects.
 
+Empty retains six source publications, thirty-six class slots, both media variants
+and all eleven style families. Native containers preserve source padding, header/content
+gaps, compact typography and heading-font roles. Media defaults retain intrinsic sizing;
+icon media supplies source glyph defaults and pointer rules to both native library icons
+and raw SVG roots. Explicit glyph dimensions remain caller-owned, interactive media
+children still work, and glyph scope ends at physical native modals. Descriptions keep
+inline runs and block content; only direct source links receive Empty's underline and
+primary hover rules. Native refs/events, OS underline placement and native text breaking
+replace DOM hosts and browser typography algorithms.
+
+Reviewed background hosts (Empty and registry View/pressable/motion surfaces) render
+linear gradients as native SVG backgrounds. Source color stops, percent positions,
+transparency and rounded clipping are retained; stopOpacity explicitly preserves alpha
+through the native SVG bridge. Native sRGB interpolation replaces browser interpolation
+spaces. Unsupported hosts and combined scrolling/background surfaces fail explicitly
+and require a reviewed adapter. Native grid cells neutralize source flex-item hints;
+one-column grids keep vertical flow, and multi-column cells retain their source widths.
+The broader browser grid feature set is reviewed per item rather than inferred from
+these supported source patterns. Empty's avatar examples still require Avatar review.
+
 Alert retains all six source implementations, twenty-one class slots, both variants and
 all eleven style families. Modern native rows preserve direct glyph columns, title/body
 spacing and action padding; frozen roots retain their physical icon inset and the
@@ -277,7 +297,7 @@ maintained separately. Overlay preset/API parity remains unfinished.
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 470 reviewed source modules,
+The authored component example overlay currently includes 477 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 `node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`
 and `node scripts/native-icons.mjs --check`. Their coverage remains partial while

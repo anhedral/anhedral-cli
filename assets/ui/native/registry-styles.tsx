@@ -56,6 +56,7 @@ import {
   NativeIconForcedSize,
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
+import { NativeRegistryBackground } from './_gradient';
 import { NativeInputGroupHostBoundary } from './_input-group-context';
 import { nativePresetMetrics } from './_preset-metrics';
 import { useNativeReducedMotion, useNativePulse } from './_animation';
@@ -71,6 +72,7 @@ import { Button, LinkButton } from './button';
 import { nativeTextPressRetentionOffset } from './_slot';
 
 const RegistryLocalPaint = createContext<Record<string, string | number>>({});
+export const useNativeRegistryPaint = () => useContext(RegistryLocalPaint);
 export const RegistryPaintContext = createContext<Record<string, string | number>>({});
 const RegistryVariables = createContext<Record<string, string>>({});
 const DescendantStyle = createContext<string[]>([]);
@@ -256,6 +258,17 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         active: props['data-active'],
       },
     );
+    if (
+      translated.paint.gradientDirection !== undefined &&
+      (!('nativeRegistryGradientHost' in Component) ||
+        Component.nativeRegistryGradientHost !== true)
+    )
+      throw Error('Native gradient paint requires a supported background host.');
+    if (
+      translated.paint.gradientDirection !== undefined &&
+      (translated.paint.scrollHorizontal || translated.paint.scrollVertical)
+    )
+      throw Error('Native scrolling gradient hosts require a separate background surface.');
     if (translated.paint.subgrid) translated.paint.columns = Number(inheritedPaint.columns ?? 1);
     if (translated.paint.triggerWidth) {
       if (!overlay) throw Error('Native trigger width requires an overlay root.');
@@ -323,28 +336,49 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
                 : Math.min(columns, Number(spanMatch[1]))
               : 1;
             const gridStyle =
-              columns > 1
+              columns >= 1
                 ? {
-                    width:
-                      (Math.max(
-                        0,
-                        width -
-                          Number(translated.view.paddingLeft ?? translated.view.padding ?? 0) -
-                          Number(translated.view.paddingRight ?? translated.view.padding ?? 0) -
-                          Number(
-                            translated.view.borderLeftWidth ?? translated.view.borderWidth ?? 0,
-                          ) -
-                          Number(
-                            translated.view.borderRightWidth ?? translated.view.borderWidth ?? 0,
-                          ) -
-                          Number(translated.view.gap ?? 0) * (columns - 1),
-                      ) /
-                        columns) *
-                        span +
-                      Number(translated.view.gap ?? 0) * (span - 1),
+                    // CSS grid items do not participate as flex items in their parent.
+                    flexGrow: 0,
+                    flexShrink: 0,
+                    flexBasis: 'auto' as const,
+                    ...(columns > 1
+                      ? {
+                          width:
+                            (Math.max(
+                              0,
+                              width -
+                                Number(
+                                  translated.view.paddingLeft ?? translated.view.padding ?? 0,
+                                ) -
+                                Number(
+                                  translated.view.paddingRight ?? translated.view.padding ?? 0,
+                                ) -
+                                Number(
+                                  translated.view.borderLeftWidth ??
+                                    translated.view.borderWidth ??
+                                    0,
+                                ) -
+                                Number(
+                                  translated.view.borderRightWidth ??
+                                    translated.view.borderWidth ??
+                                    0,
+                                ) -
+                                Number(translated.view.gap ?? 0) * (columns - 1),
+                            ) /
+                              columns) *
+                              span +
+                            Number(translated.view.gap ?? 0) * (span - 1),
+                        }
+                      : {}),
                   }
                 : undefined;
-            if (gridStyle && span === 1 && typeof translated.paint.firstColumnWidth === 'number') {
+            if (
+              gridStyle &&
+              typeof gridStyle.width === 'number' &&
+              span === 1 &&
+              typeof translated.paint.firstColumnWidth === 'number'
+            ) {
               const available = gridStyle.width * columns;
               const first = Math.min(available, translated.paint.firstColumnWidth);
               gridStyle.width = index % columns === 0 ? first : available - first;
@@ -408,6 +442,22 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       if (translated.text.color !== undefined && props.color === undefined)
         forwarded.color = translated.text.color;
     }
+    if ((kind === 'icon' || kind === 'svg-root') && descendantPaint.iconSize !== undefined) {
+      if (
+        props.size === undefined &&
+        props.width === undefined &&
+        nativeInline.width === undefined &&
+        translated.view.width === undefined
+      )
+        translated.view.width = descendantPaint.iconSize;
+      if (
+        props.size === undefined &&
+        props.height === undefined &&
+        nativeInline.height === undefined &&
+        translated.view.height === undefined
+      )
+        translated.view.height = descendantPaint.iconSize;
+    }
     if ((kind === 'icon' || spinner) && forcedIconSize !== undefined) {
       if (nativeInline.width === undefined && props.size === undefined && props.width === undefined)
         translated.view.width = forcedIconSize;
@@ -418,6 +468,12 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       )
         translated.view.height = forcedIconSize;
     }
+    if (
+      (kind === 'icon' || kind === 'svg-root') &&
+      descendantPaint.iconPointerEvents !== undefined &&
+      forwarded.pointerEvents === undefined
+    )
+      forwarded.pointerEvents = descendantPaint.iconPointerEvents;
     if (translated.paint.listMarker !== undefined) forwarded.marker = translated.paint.listMarker;
     if (translated.paint.listPosition !== undefined)
       forwarded.markerPosition = translated.paint.listPosition;
@@ -491,10 +547,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         forwarded.style = [translated.view, translated.text, nativeInline];
       if (
         ('nativeCardTextSlot' in Component && Component.nativeCardTextSlot === true) ||
-        ('nativeCardSlot' in Component && Component.nativeCardSlot === true)
+        ('nativeCardSlot' in Component && Component.nativeCardSlot === true) ||
+        ('nativeTextPaintSlot' in Component && Component.nativeTextPaintSlot === true)
       )
         forwarded.nativeTextPaint = {
           ...translated.paint,
+          ...('nativeTextPaintSlot' in Component && Component.nativeTextPaintSlot === true
+            ? { fontRole: translated.fontRole }
+            : {}),
           ...(nativeInline.letterSpacing !== undefined ? { letterSpacingEm: undefined } : {}),
           ...(nativeInline.lineHeight !== undefined ? { lineHeightMultiplier: undefined } : {}),
         };
@@ -707,9 +767,15 @@ function RecipeHover({
     },
   };
   const body = (
-    <NativeInputGroupHostBoundary>
-      {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
-    </NativeInputGroupHostBoundary>
+    <>
+      <NativeRegistryBackground
+        paint={effect}
+        style={typeof style === 'function' ? style({ pressed }) : style}
+      />
+      <NativeInputGroupHostBoundary>
+        {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
+      </NativeInputGroupHostBoundary>
+    </>
   );
   return onPress ? (
     <AnimatedRecipePressable
@@ -769,9 +835,15 @@ function RecipeView({
 }: NativeRecipeViewProps) {
   const effects = useContext(RegistryLocalPaint);
   const body = (
-    <NativeInputGroupHostBoundary>
-      {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
-    </NativeInputGroupHostBoundary>
+    <>
+      <NativeRegistryBackground
+        paint={effects}
+        style={typeof style === 'function' ? style({ pressed: false }) : style}
+      />
+      <NativeInputGroupHostBoundary>
+        {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
+      </NativeInputGroupHostBoundary>
+    </>
   );
   if (effects.scrollHorizontal || effects.scrollVertical) {
     if (onPress || effects.hoverTranslateY !== undefined || effects.pulse === 1)
@@ -859,6 +931,7 @@ export const RegistryButtonLink = withRegistryStyles(LinkButton, 'button');
 export const RegistryLink = withRegistryStyles(NativeLink, 'link');
 export const RegistryImage = withRegistryStyles(NativeRegistryImage);
 RecipeView.nativeExampleContainer = true;
+RecipeView.nativeRegistryGradientHost = true;
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
 const NativeParagraph = Object.assign(

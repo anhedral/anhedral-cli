@@ -66,6 +66,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'input-group-demo',
       'input-group-textarea',
       'empty-input-group',
+      'empty-demo',
+      'empty-icon',
+      'empty-outline',
+      'empty-background',
       'input-group-icon',
       'input-group-text',
       'input-otp-controlled',
@@ -284,8 +288,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       origins.push(`apps/v4/registry/bases/${base}/examples/kbd-example.tsx`);
       origins.push(`apps/v4/registry/bases/${base}/examples/input-group-example.tsx`);
     }
-    for (const base of ['base', 'radix', 'aria'])
+    for (const base of ['base', 'radix', 'aria']) {
       origins.push(`apps/v4/registry/bases/${base}/examples/alert-example.tsx`);
+      origins.push(`apps/v4/registry/bases/${base}/examples/empty-example.tsx`);
+    }
     // Published legacy examples are separate authored inputs, even when their names
     // match a maintained modern recipe. Never substitute modern source for them.
     const maintainedNames = new Set(origins.map((origin) => path.basename(origin, '.tsx')));

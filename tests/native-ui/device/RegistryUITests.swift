@@ -1,6 +1,40 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testEmptyPresetsRetainNativeLayoutGridGradientAndActions() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch();openStory("native/empty-contract",in:app)
+    let scroll=storyScroll(app)
+    func target(_ name:String)->XCUIElement {app.descendants(matching:.any).matching(identifier:name).firstMatch}
+    func reveal(_ name:String)->XCUIElement {
+      let element=target(name)
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeUp()}
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeDown()}
+      XCTAssertTrue(element.isHittable,name);return element
+    }
+    let presets=["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"],padding=[24,48,48,24,24,48,48,48,24,24,24],media=[32,40,40,32,32,40,40,40,40,40,40]
+    for (index,preset) in presets.enumerated() {
+      let gap=index>=8 ? 24 : 16
+      XCTAssertTrue(target("Empty geometry: "+preset+":320:"+String(padding[index]*2+gap)+":"+String(padding[index])+":"+String(gap)).waitForExistence(timeout:10))
+      XCTAssertTrue(target("Empty header gaps: "+preset+":"+(preset == "mira" ? "12:4" : preset == "sera" ? "16:10" : "16:8")).exists)
+      XCTAssertTrue(target("Empty media: "+preset+":"+String(media[index])+"x"+String(media[index])).exists)
+      reveal("Create workspace").tap()
+      XCTAssertTrue(target("Empty actions: "+String(index+1)).waitForExistence(timeout:10))
+      reveal("Next empty preset").tap()
+    }
+    XCTAssertTrue(target("Empty grid geometry: 144:144:32").waitForExistence(timeout:10))
+    _=reveal("No Notifications")
+    app.buttons["Dark"].tap()
+    XCTAssertTrue(target("Empty appearance: dark:dark").waitForExistence(timeout:10))
+    _=reveal("No Notifications")
+    XCTAssertTrue(target("No Notifications").exists)
+    let image=XCTAttachment(screenshot:app.screenshot());image.name="Native Empty authored dark gradient and source content";image.lifetime = .keepAlways;add(image)
+    reveal("Refresh").tap()
+    XCTAssertTrue(target("Empty actions: 11").exists)
+    app.buttons["System"].tap()
+    let input=reveal("Empty search");input.tap();input.typeText("native")
+    XCTAssertTrue(target("Empty search value: native").waitForExistence(timeout:10))
+  }
   func testAlertPresetsRetainNativeLayoutDescriptionsAndActions() {
     let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
     app.launch();openStory("native/alert-contract",in:app)

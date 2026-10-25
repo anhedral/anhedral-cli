@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { View, FlatList, ScrollView, Text, Keyboard, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
+import { useTheme } from './.generated/src/theme';
 import * as AriaSelect from './.generated/src/native/registry-aria-select';
 import {
   RegistrySelectAutocomplete,
@@ -18,9 +19,153 @@ import {
 } from './.generated/src/native/registry-example';
 import { IconPlaceholder } from './.generated/src/native/registry-example';
 import { RegistryParagraph, RegistryLink } from './.generated/src/native/registry-styles';
+import SourceEmptyBackground from './.generated/src/examples/new-york-v4/empty-background';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
-const AlertSourceGlyph = withRegistryStyles(IconPlaceholder, 'icon');
+const NativeSourceGlyph = withRegistryStyles(IconPlaceholder, 'icon');
+const GridEmpty = withRegistryStyles(UI.Empty, 'view');
+function NativeEmptyMatrix() {
+  const appearance = useTheme();
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  type Slot =
+    'root' | 'header' | 'media' | 'title' | 'description' | 'content' | 'first' | 'second';
+  const empty = { x: 0, y: 0, width: 0, height: 0 };
+  const [index, setIndex] = useState(0),
+    [changes, setChanges] = useState(0),
+    [search, setSearch] = useState('');
+  const [layout, setLayout] = useState<Record<Slot, typeof empty>>({
+    root: empty,
+    header: empty,
+    media: empty,
+    title: empty,
+    description: empty,
+    content: empty,
+    first: empty,
+    second: empty,
+  });
+  const preset = presets[index]!;
+  const record = (slot: Slot) => (event: LayoutChangeEvent) => {
+    const value = { ...event.nativeEvent.layout };
+    setLayout((previous) => {
+      const old = previous[slot];
+      return old.x === value.x &&
+        old.y === value.y &&
+        old.width === value.width &&
+        old.height === value.height
+        ? previous
+        : { ...previous, [slot]: value };
+    });
+  };
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Empty preset: ' + preset}</UI.Text>
+      <UI.Text>
+        {'Empty geometry: ' +
+          preset +
+          ':' +
+          Math.round(layout.root.width) +
+          ':' +
+          Math.round(layout.root.height - layout.header.height - layout.content.height) +
+          ':' +
+          Math.round(layout.header.y) +
+          ':' +
+          Math.round(layout.content.y - layout.header.y - layout.header.height)}
+      </UI.Text>
+      <UI.Text>
+        {'Empty header gaps: ' +
+          preset +
+          ':' +
+          Math.round(layout.title.y - layout.media.y - layout.media.height) +
+          ':' +
+          Math.round(layout.description.y - layout.title.y - layout.title.height)}
+      </UI.Text>
+      <UI.Text>
+        {'Empty media: ' +
+          preset +
+          ':' +
+          Math.round(layout.media.width) +
+          'x' +
+          Math.round(layout.media.height)}
+      </UI.Text>
+      <UI.Text>{'Empty actions: ' + changes}</UI.Text>
+      <UI.Button onPress={() => setIndex((index + 1) % presets.length)}>
+        Next empty preset
+      </UI.Button>
+      <NativeRegistryPalette
+        source={
+          preset === 'default' || preset === 'new-york' || preset === 'new-york-v4'
+            ? preset
+            : 'base'
+        }
+        generation={preset === 'default' || preset === 'new-york' ? 'legacy' : 'modern'}
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <UI.Empty key={preset} onLayout={record('root')} testID="native-empty-source">
+            <UI.EmptyHeader onLayout={record('header')}>
+              <UI.EmptyMedia variant="icon" onLayout={record('media')}>
+                <NativeSourceGlyph lucide="FolderIcon" />
+              </UI.EmptyMedia>
+              <UI.EmptyTitle onLayout={record('title')}>Empty workspace</UI.EmptyTitle>
+              <UI.EmptyDescription onLayout={record('description')}>
+                Start by creating a project.
+              </UI.EmptyDescription>
+            </UI.EmptyHeader>
+            <UI.EmptyContent onLayout={record('content')}>
+              <UI.Button onPress={() => setChanges((value) => value + 1)}>
+                Create workspace
+              </UI.Button>
+            </UI.EmptyContent>
+          </UI.Empty>
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+      <UI.Text>
+        {'Empty grid geometry: ' +
+          Math.round(layout.first.width) +
+          ':' +
+          Math.round(layout.second.width) +
+          ':' +
+          Math.round(layout.second.x - layout.first.x - layout.first.width)}
+      </UI.Text>
+      <RegistryView className="grid grid-cols-2 gap-8" style={{ width: 320 }}>
+        <GridEmpty onLayout={record('first')}>
+          <UI.EmptyHeader>
+            <UI.EmptyTitle>First</UI.EmptyTitle>
+          </UI.EmptyHeader>
+        </GridEmpty>
+        <GridEmpty onLayout={record('second')}>
+          <UI.EmptyHeader>
+            <UI.EmptyTitle>Second</UI.EmptyTitle>
+          </UI.EmptyHeader>
+        </GridEmpty>
+      </RegistryView>
+      <UI.Text>{'Empty appearance: ' + appearance.preference + ':' + appearance.mode}</UI.Text>
+      <View style={{ width: 320, height: 280 }} testID="native-empty-gradient-frame">
+        <SourceEmptyBackground />
+      </View>
+      <UI.Text>{'Empty search value: ' + search}</UI.Text>
+      <UI.InputGroup>
+        <UI.InputGroupInput
+          accessibilityLabel="Empty search"
+          placeholder="Empty search"
+          value={search}
+          onChangeText={setSearch}
+        />
+      </UI.InputGroup>
+    </View>
+  );
+}
 function NativeAlertMatrix() {
   const presets = [
     'nova',
@@ -69,7 +214,7 @@ function NativeAlertMatrix() {
             variant={destructive ? 'destructive' : 'default'}
             testID="native-alert-source"
           >
-            <AlertSourceGlyph lucide="CircleAlertIcon" />
+            <NativeSourceGlyph lucide="CircleAlertIcon" />
             <UI.AlertTitle
               testID="native-alert-title"
               onLayout={({ nativeEvent: { layout } }) => setTitle(layout)}

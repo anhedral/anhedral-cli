@@ -5431,7 +5431,7 @@
     },
     "registry:example/empty-avatar": {
       "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "reason": "Authored source is translated and rendered with source-owned Empty geometry, media, typography and native links. Avatar/AvatarGroup source presets, loading and group semantics remain incomplete; this composition stays partial until that owner is verified.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -5447,7 +5447,7 @@
     },
     "registry:example/empty-avatar-group": {
       "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "reason": "Authored source is translated and rendered with source-owned Empty geometry, media, typography and native links. Avatar/AvatarGroup source presets, loading and group semantics remain incomplete; this composition stays partial until that owner is verified.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -10116,6 +10116,236 @@
         "radix-sera": "b14fb9761ac7a221fb10f6c45ab50643a13f4390df6d38e257e1b4091a0ac266",
         "radix-vega": "456216d1aa65e77bceeae383a909fac8c833c2988b1779c1b7dad6a383c04bb4"
       }
+    },
+    "registry:ui/empty": {
+      "status": "ported",
+      "reason": "Six upstream Empty publications retain thirty-six source slots, default/icon media variants and eleven style families. Source geometry, responsive frozen padding, title/header/body typography, direct-link styling, glyph sizes/pointer scope, consumer metrics and Modal reset are tested. Native View/Text refs and OS line layout/underline replace browser hosts, text balancing and underline offsets. Actual authored gradient uses native SVG with source alpha and percentage stops; native interpolation is explicitly documented. Renderer and OS cases verify all presets, equal grid sizing, native actions and search input.",
+      "nativeFiles": [
+        "assets/ui/native/_empty.tsx",
+        "assets/ui/native/_empty-presets.tsx",
+        "assets/ui/native/_preset-empty-style.tsx",
+        "assets/ui/native/_gradient.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_core.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-empty.test.tsx",
+        "tests/native-ui/registry-empty-presets.test.tsx",
+        "tests/native-ui/registry-empty-examples.test.tsx",
+        "tests/native-ui/registry-gradients.test.tsx",
+        "tests/test-native-empty-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "ab872d032f999bc915206b0ea2d7ee950c154c71dc56a57385cf23659497ea63",
+        "aria-lyra": "e08711488d53c906057b954fd03081969abb16f02eb71153f136703cb284cf1b",
+        "aria-maia": "5e856eb496e58f8e04225dfb2e6c7e74c060a26f729eec30591a4a329b065207",
+        "aria-mira": "00c31f00b92f06674e2ebf7222da7ba58c568e7180475931ad374a33105f8253",
+        "aria-nova": "fce87c8d84f4f086e978670614d1a853da915d43dd9368f94995739ef1c0686b",
+        "aria-rhea": "b04ebfdc2736b9cd4eaa938b1f1df37c634d15ca3cc602ccc5d3f106afbba2ce",
+        "aria-sera": "1311ce8d5924dcaf523cf6c8f8ce02e8164a2a8d2a5f7c5d48bb5da92e77f7e7",
+        "aria-vega": "09a567f49efff488f2aa43122668802343608e24d10424b025be8e6683a848df",
+        "base-luma": "c1014eddf21dde0a17902f9c123552ae1745a00cbfa8cdded9c02c2ebf5506a0",
+        "base-lyra": "4b1260a5999cbbf69a8a7a7f130ab6693ce774f248a00e60f5491f736d1292f9",
+        "base-maia": "9a779883620a0faaa43433c09dce957a244157d7a56bb5f58a99c31cda3c4e34",
+        "base-mira": "724a7bf41199be29ccefed42912c97be5dde8a459dbf36bff3d23ee0132c9113",
+        "base-nova": "5a1cbe972ab98f16c7ea51c69aaa067a5938d2f35c49893ebeba007875b5a10a",
+        "base-rhea": "6d3e5730a6108009fa47d2147729ff5625fd501060d50aba4875a6b3e496c998",
+        "base-sera": "3ad60d63626d4f3d4096d7996c4bd8029267eaccb9d5cdafe9b3abd4a6f1bdba",
+        "base-vega": "c9210179af94bc013423e9d5d8507cec5fb53ee7c540b92fdb24d45702e31110",
+        "default": "4ed6c74c6f69ac45892336f72f0864723e4a351bd93d19bcb94148bde1978656",
+        "new-york": "8d53694fa956e6d3fc01fb91456e5c2bae4bee4ef903d3665ee1ab888fc91352",
+        "new-york-v4": "8e17294b0c5f1690d204a80e05cab19d77a75acf2936e07276b1879d439697f9",
+        "radix-luma": "c7b41054f0b3f7b5cfcd391e4308925a01996cadeff8723aa66832b32bad7767",
+        "radix-lyra": "c16ac2e34cd596bd37c30f3e04c2826c022ed5daaf2e0a830512a76e3f9c6415",
+        "radix-maia": "4d7b52ee5a5593a3476cdcf90c32fc9db64591c53cd0a741c1641078feaf7378",
+        "radix-mira": "4a2ac0032f72804e6bc6adebbe0569371d1c880a43b559591a2bbc0a7a220c48",
+        "radix-nova": "eeed4831f3acd25bc2beb485d7387bec265372a1e6c0b002721884410be5b750",
+        "radix-rhea": "91b50386854e8c1040614ad4779341e08991444057c28c76796d4df453cd6745",
+        "radix-sera": "490f1ed4422bfac591b6120802967c5644455262213737d33b4531b9e5ac654b",
+        "radix-vega": "59b2bfd144274079468119d032b432163df52970e8de9f0bd8ab65044d391fa7"
+      }
+    },
+    "registry:example/empty-example": {
+      "status": "ported",
+      "reason": "Six upstream Empty publications retain thirty-six source slots, default/icon media variants and eleven style families. Source geometry, responsive frozen padding, title/header/body typography, direct-link styling, glyph sizes/pointer scope, consumer metrics and Modal reset are tested. Native View/Text refs and OS line layout/underline replace browser hosts, text balancing and underline offsets. Actual authored gradient uses native SVG with source alpha and percentage stops; native interpolation is explicitly documented. Renderer and OS cases verify all presets, equal grid sizing, native actions and search input.",
+      "nativeFiles": [
+        "assets/ui/native/_empty.tsx",
+        "assets/ui/native/_empty-presets.tsx",
+        "assets/ui/native/_preset-empty-style.tsx",
+        "assets/ui/native/_gradient.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_core.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-empty.test.tsx",
+        "tests/native-ui/registry-empty-presets.test.tsx",
+        "tests/native-ui/registry-empty-examples.test.tsx",
+        "tests/native-ui/registry-gradients.test.tsx",
+        "tests/test-native-empty-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "9c8567812bc56e585f1dc3115ed980e6ef6f1a2f5761d2ced4f8f2a07f7ab43a",
+        "aria-lyra": "8b8f83e15cf8ba2fc2daa61c3ff1ffa7ef7630068b2a278aec2c823d11f78260",
+        "aria-maia": "46203bc4c67f69234f9d81fe592a05e4d3904d53dadc8f337d4b9c46eea1cd43",
+        "aria-mira": "19635c5568cd919404f240ee0b8c8306479ee215c6bcdac7a9e427a071a24fcd",
+        "aria-nova": "b70997712c8911828db43cd5c9acbabf246bb0de87fd5d1fe095b65b5d4af761",
+        "aria-rhea": "8d5f8fee4519fc3173bedc20a9452d9f52f14ca383acfb0884d249c64498375d",
+        "aria-sera": "0013cc77f4d0c58c0a87c655c7d5b5aa629b8482666ceebe4bd5ca2073300565",
+        "aria-vega": "a6386078353cba97a735487f9dc9aa62b42b80c9a1b64f7a774319241dbf7163",
+        "base-luma": "8402481eff0a71e518734e99cb1380607e901ad1ce87ce8edc78bf93d68e5ce4",
+        "base-lyra": "0a4605934231bcdb89ffdbc8ccb35a4a19845fafd5c9ef6e0c5ba59045b4d16e",
+        "base-maia": "2c6b2f22ae2398bc065c1b82df9534540c3fb77b8a9645a4701c33770bdd7ef4",
+        "base-mira": "007582f16314c2fa53b0d2de47ca89a27b59c81c36271e264fba0a91451c499f",
+        "base-nova": "ec5cf1b85a893d8680244826c25ac2f7a5a29c97e4b4fdd1e688303c2234783a",
+        "base-rhea": "db1775dacf8e72de1bf03ecee37ba50c59ea6582173a1aadd96528fff43f2d58",
+        "base-sera": "b727fd276e668574b7ab5cbd21544c005ef29e471af5f8e338eca28951108ee5",
+        "base-vega": "eef1e767e4a9257896020b72f7684417c9f2ddca04f5e1efd5621dff7dc307e6",
+        "radix-luma": "3b60e593c4a1df047346e6b55161b7ea279ab25e5cd78927ade380fb9ad54cc4",
+        "radix-lyra": "386cbf2b2ba5339658e575d9d3c1ff93d7b14af0452986ecf4393e4ecc6185b9",
+        "radix-maia": "4257fb0a29a2c85d9a5fac4bf48af761bd46c62aca80de63cf85e28f969177e3",
+        "radix-mira": "424b75f4580fa9093a2f4ebe7dfff85389ca1528d6aa0dcb6e06d9ad0def06ac",
+        "radix-nova": "e10fc9270b964ad70288bae7b6f75a558b6041f0ff2d983fbfb1e7605acfc485",
+        "radix-rhea": "4e12dc921ed0e492c3a814a941f5a34e00c3bdf0eb01389861dbd41ac74d1a19",
+        "radix-sera": "359852ad9d0aef9c8487f294afd1f89b1625c691944889923ee7c095663d0b57",
+        "radix-vega": "8ab15f6979f9f07d954ce0820bac838a0f49204ffea59f3a92db999b7c9ad075"
+      }
+    },
+    "registry:example/empty-demo": {
+      "status": "ported",
+      "reason": "Six upstream Empty publications retain thirty-six source slots, default/icon media variants and eleven style families. Source geometry, responsive frozen padding, title/header/body typography, direct-link styling, glyph sizes/pointer scope, consumer metrics and Modal reset are tested. Native View/Text refs and OS line layout/underline replace browser hosts, text balancing and underline offsets. Actual authored gradient uses native SVG with source alpha and percentage stops; native interpolation is explicitly documented. Renderer and OS cases verify all presets, equal grid sizing, native actions and search input.",
+      "nativeFiles": [
+        "assets/ui/native/_empty.tsx",
+        "assets/ui/native/_empty-presets.tsx",
+        "assets/ui/native/_preset-empty-style.tsx",
+        "assets/ui/native/_gradient.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_core.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-empty.test.tsx",
+        "tests/native-ui/registry-empty-presets.test.tsx",
+        "tests/native-ui/registry-empty-examples.test.tsx",
+        "tests/native-ui/registry-gradients.test.tsx",
+        "tests/test-native-empty-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "9d0c2ab3c0a5b86348e6e3aac09c3d58fd1010bd57be7b4e1139895f9de40ec5"
+      }
+    },
+    "registry:example/empty-icon": {
+      "status": "ported",
+      "reason": "Six upstream Empty publications retain thirty-six source slots, default/icon media variants and eleven style families. Source geometry, responsive frozen padding, title/header/body typography, direct-link styling, glyph sizes/pointer scope, consumer metrics and Modal reset are tested. Native View/Text refs and OS line layout/underline replace browser hosts, text balancing and underline offsets. Actual authored gradient uses native SVG with source alpha and percentage stops; native interpolation is explicitly documented. Renderer and OS cases verify all presets, equal grid sizing, native actions and search input.",
+      "nativeFiles": [
+        "assets/ui/native/_empty.tsx",
+        "assets/ui/native/_empty-presets.tsx",
+        "assets/ui/native/_preset-empty-style.tsx",
+        "assets/ui/native/_gradient.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_core.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-empty.test.tsx",
+        "tests/native-ui/registry-empty-presets.test.tsx",
+        "tests/native-ui/registry-empty-examples.test.tsx",
+        "tests/native-ui/registry-gradients.test.tsx",
+        "tests/test-native-empty-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "b7f3bf9e3da09739c1e74cde8601e324dd2e49b31e11c62916c50007ce430ef3"
+      }
+    },
+    "registry:example/empty-outline": {
+      "status": "ported",
+      "reason": "Six upstream Empty publications retain thirty-six source slots, default/icon media variants and eleven style families. Source geometry, responsive frozen padding, title/header/body typography, direct-link styling, glyph sizes/pointer scope, consumer metrics and Modal reset are tested. Native View/Text refs and OS line layout/underline replace browser hosts, text balancing and underline offsets. Actual authored gradient uses native SVG with source alpha and percentage stops; native interpolation is explicitly documented. Renderer and OS cases verify all presets, equal grid sizing, native actions and search input.",
+      "nativeFiles": [
+        "assets/ui/native/_empty.tsx",
+        "assets/ui/native/_empty-presets.tsx",
+        "assets/ui/native/_preset-empty-style.tsx",
+        "assets/ui/native/_gradient.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_core.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-empty.test.tsx",
+        "tests/native-ui/registry-empty-presets.test.tsx",
+        "tests/native-ui/registry-empty-examples.test.tsx",
+        "tests/native-ui/registry-gradients.test.tsx",
+        "tests/test-native-empty-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "425e600da8e040e1d2e408e0311dd8b79155f861381df8f4819480f370da1e50"
+      }
+    },
+    "registry:example/empty-background": {
+      "status": "ported",
+      "reason": "Six upstream Empty publications retain thirty-six source slots, default/icon media variants and eleven style families. Source geometry, responsive frozen padding, title/header/body typography, direct-link styling, glyph sizes/pointer scope, consumer metrics and Modal reset are tested. Native View/Text refs and OS line layout/underline replace browser hosts, text balancing and underline offsets. Actual authored gradient uses native SVG with source alpha and percentage stops; native interpolation is explicitly documented. Renderer and OS cases verify all presets, equal grid sizing, native actions and search input.",
+      "nativeFiles": [
+        "assets/ui/native/_empty.tsx",
+        "assets/ui/native/_empty-presets.tsx",
+        "assets/ui/native/_preset-empty-style.tsx",
+        "assets/ui/native/_gradient.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_core.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-empty.test.tsx",
+        "tests/native-ui/registry-empty-presets.test.tsx",
+        "tests/native-ui/registry-empty-examples.test.tsx",
+        "tests/native-ui/registry-gradients.test.tsx",
+        "tests/test-native-empty-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "1b47e81b4e02e7b91afa58a83d7f979b86c2efa2885d64c83e8952b9b10aab4f"
+      }
+    },
+    "registry:example/empty-input-group": {
+      "status": "ported",
+      "reason": "Six upstream Empty publications retain thirty-six source slots, default/icon media variants and eleven style families. Source geometry, responsive frozen padding, title/header/body typography, direct-link styling, glyph sizes/pointer scope, consumer metrics and Modal reset are tested. Native View/Text refs and OS line layout/underline replace browser hosts, text balancing and underline offsets. Actual authored gradient uses native SVG with source alpha and percentage stops; native interpolation is explicitly documented. Renderer and OS cases verify all presets, equal grid sizing, native actions and search input.",
+      "nativeFiles": [
+        "assets/ui/native/_empty.tsx",
+        "assets/ui/native/_empty-presets.tsx",
+        "assets/ui/native/_preset-empty-style.tsx",
+        "assets/ui/native/_gradient.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_core.tsx",
+        "assets/ui/native-example-recipes.json.gz"
+      ],
+      "tests": [
+        "tests/native-ui/registry-empty.test.tsx",
+        "tests/native-ui/registry-empty-presets.test.tsx",
+        "tests/native-ui/registry-empty-examples.test.tsx",
+        "tests/native-ui/registry-gradients.test.tsx",
+        "tests/test-native-empty-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "d68b53dd19cb6d023c2ec5a050631ec30091f70fcf318c1ab3c05ce774cabc82"
+      }
     }
   },
   "webSpecific": [
@@ -10228,6 +10458,11 @@
       "feature": "Alert DOM hosts, direct SVG/data selectors, CSS pseudo stripe and scoped text layout",
       "adaptation": "Native View/Text hosts and tagged glyphs retain the six source families, source icon/action geometry and twenty-one slots. A non-interactive native edge replaces Sera’s pseudo stripe. Description blocks retain separate paragraphs/lists, native list-inside markers, scoped link underline/hover and source destructive alpha. Native line breaking/clamping replaces browser balance/pretty algorithms; OS underline placement cannot reproduce CSS underline-offset. Native alert/live-region properties and announcements replace DOM alert hosts; announcements preserve block boundaries and omit hidden content/actions. DOM refs/events and arbitrary browser selector execution remain web-specific.",
       "status": "Both variants and all eleven style families have strict source/style, renderer and authored-example coverage. Native OS cases verify all eleven row gaps, real action taps and destructive state. Physical screen-reader and device accessibility acceptance remain separate."
+    },
+    {
+      "feature": "Empty browser text layout, direct anchors and gradients",
+      "adaptation": "Native View/Text paragraphs and direct native link styling; native SVG gradient background with source colors, alpha and percentage stops.",
+      "status": "Browser text balancing, DOM refs/events, exact underline offset and browser gradient color interpolation do not have identical native rendering semantics. Native behavior is tested explicitly; unsupported gradient hosts and scrolling/background combinations fail rather than dropping the paint."
     }
   ]
 }

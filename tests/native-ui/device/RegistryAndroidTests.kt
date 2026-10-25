@@ -62,6 +62,35 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun emptyPresetsRetainNativeLayoutGridGradientAndActions() = uiAutomator {
+    openStory("native/empty-contract")
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
+    val padding=listOf(24,48,48,24,24,48,48,48,24,24,24)
+    val media=listOf(32,40,40,32,32,40,40,40,40,40,40)
+    for ((index,preset) in presets.withIndex()) {
+      val gap=if(index>=8)24 else 16
+      label("Empty geometry: "+preset+":320:"+(padding[index]*2+gap)+":"+padding[index]+":"+gap)
+      label("Empty header gaps: "+preset+":"+(if(preset=="mira")"12:4" else if(preset=="sera")"16:10" else "16:8"))
+      label("Empty media: "+preset+":"+media[index]+"x"+media[index])
+      label("Create workspace").apply {waitForStable();click()}
+      label("Empty actions: "+(index+1))
+      label("Next empty preset").apply {waitForStable();click()}
+    }
+    label("Empty grid geometry: 144:144:32")
+    label("No Notifications")
+    onElement {named("Dark")}.apply {waitForStable();click()}
+    label("Empty appearance: dark:dark").waitForStable()
+    label("No Notifications").waitForStable()
+    val evidenceRun=InstrumentationRegistry.getArguments().getString("evidenceRun") ?: "local"
+    require(evidenceRun.matches(Regex("[A-Za-z0-9_-]+")))
+    val directory=File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),"native-qa/"+evidenceRun)
+    directory.mkdirs();assertTrue(device.takeScreenshot(File(directory,"empty-dark-background.png")))
+    label("Refresh").apply {waitForStable();click()}
+    label("Empty actions: 11")
+    onElement {named("System")}.click()
+    label("Empty search").setText("native")
+    label("Empty search value: native")
+  }
   @Test fun alertPresetsRetainNativeLayoutDescriptionsAndActions() = uiAutomator {
     openStory("native/alert-contract")
     val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
