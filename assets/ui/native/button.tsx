@@ -24,6 +24,7 @@ import {
   NativeRecipeState,
   useRegistryPalette,
   useNativeComponentStyle,
+  useNativeRegistrySource,
   NativeButtonGroupContext,
   NativeButtonIconSize,
 } from './_registry-context';
@@ -76,7 +77,16 @@ export function Button({
 }: ButtonProps) {
   const { colors, radius, mode } = useTheme();
   const legacy = useRegistryPalette() === 'legacy';
-  const preset = useNativeComponentStyle();
+  const requestedPreset = useNativeComponentStyle();
+  const registrySource = useNativeRegistrySource();
+  const preset =
+    registrySource === 'default' ||
+    registrySource === 'new-york' ||
+    registrySource === 'new-york-v4'
+      ? registrySource
+      : legacy
+        ? 'default'
+        : (requestedPreset ?? (registrySource ? 'nova' : undefined));
   const { fontScale } = useWindowDimensions();
   const inGroup = useContext(NativeButtonGroupContext);
   const [hovered, setHovered] = useState(false),
@@ -107,6 +117,16 @@ export function Button({
         isValidElement<{ registryIcon?: string; children?: ReactNode }>(child) &&
         (child.props.registryIcon === placement || iconPlacement(child.props.children, placement)),
     );
+  const hasDirectIcon = (nodes: ReactNode): boolean =>
+    Children.toArray(nodes).some(
+      (child) =>
+        isValidElement<{ children?: ReactNode }>(child) &&
+        (child.type === Fragment
+          ? hasDirectIcon(child.props.children)
+          : (typeof child.type === 'function' || typeof child.type === 'object') &&
+            'nativeRegistryIcon' in child.type &&
+            child.type.nativeRegistryIcon === true),
+    );
   const presetState = {
     mode,
     radius,
@@ -124,9 +144,10 @@ export function Button({
     hasPopup: accessibilityState?.expanded !== undefined,
     iconStart: iconPlacement(children, 'inline-start'),
     iconEnd: iconPlacement(children, 'inline-end'),
+    hasIcon: hasDirectIcon(children),
   };
   const resolvePreset = (pressed = false) =>
-    preset && nativePreset && !legacy
+    preset && nativePreset
       ? nativePresetButtonStyle(preset, variant, size, { ...presetState, pressed })
       : undefined;
   const adapted = resolvePreset();
@@ -207,6 +228,7 @@ export function Button({
               setFocused(false);
               props.onBlur?.(event);
             }}
+            pointerEvents={blocked ? 'none' : props.pointerEvents}
             accessibilityRole={accessibilityRole}
             accessibilityLabel={props.accessibilityLabel ?? (plainText(children) || undefined)}
             onPress={(event) => {
@@ -225,7 +247,17 @@ export function Button({
               styles.button,
               sizes[size],
               surface,
-              adapted && { minHeight: 0, minWidth: 0, paddingVertical: 0, paddingHorizontal: 0 },
+              adapted && {
+                minHeight: 0,
+                minWidth: 0,
+                paddingVertical: 0,
+                paddingHorizontal: 0,
+                borderWidth: 0,
+                borderColor: 'transparent',
+                borderRadius: 0,
+                backgroundColor: 'transparent',
+                gap: 0,
+              },
               resolvePreset(state.pressed)?.view,
               blocked && styles.disabled,
               !adapted && state.pressed && styles.pressed,

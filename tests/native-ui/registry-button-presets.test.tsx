@@ -219,7 +219,7 @@ test('legacy recipe boundaries keep their published presentation when a modern c
       </UI.NativeComponentStyleProvider>
     </UI.ThemeProvider>,
   );
-  expect(screen.getByTestId('legacy')).toHaveStyle({ minHeight: 44, borderRadius: 8 });
+  expect(screen.getByTestId('legacy')).toHaveStyle({ minHeight: 0, height: 40, borderRadius: 6 });
 });
 
 test('preset icon buttons clear legacy padding and long labels keep the source no-wrap behavior', async () => {
@@ -322,4 +322,113 @@ test('native preset labels grow with OS font scaling and explicit text metrics w
   expect(screen.getByTestId('scaled')).toHaveStyle({ height: 52 });
   expect(screen.getByTestId('large-type')).toHaveStyle({ height: 84 });
   expect(screen.getByTestId('icon-only')).toHaveStyle({ height: 32, width: 32 });
+});
+
+test.each(['default', 'new-york', 'new-york-v4'] as const)(
+  '%s retains all authored variant/size combinations and native states',
+  (name) => {
+    const available = name === 'new-york-v4' ? sizes : (['default', 'sm', 'lg', 'icon'] as const);
+    for (const mode of ['light', 'dark'] as const)
+      for (const variant of variants)
+        for (const size of available)
+          for (const state of [
+            {},
+            { hovered: true, focused: true, invalid: true, hasIcon: true },
+            { disabled: true, focused: true, hovered: true },
+          ]) {
+            const result = nativePresetButtonStyle(name, variant, size, {
+              mode,
+              radius: 10,
+              colors: {
+                ...styling.registryThemes['theme-neutral'].native[mode],
+                'destructive-foreground': '#ffffff',
+              },
+              ...state,
+            });
+            expect(result.view.height).toBeGreaterThan(0);
+            expect(result.text.fontSize).toBeGreaterThan(0);
+            expect(result.iconSize).toBeGreaterThan(0);
+            if (size === 'icon') expect(result.view.width).toBe(result.view.height);
+            expect(JSON.stringify(result)).not.toMatch(/NaN|Infinity/);
+          }
+  },
+);
+test.each([
+  ['default', 40, 6],
+  ['new-york', 36, 6],
+  ['new-york-v4', 36, 6.4],
+] as const)(
+  '%s uses its own published height, radius, border and filled destructive paint',
+  async (style, height, radius) => {
+    function Fixture() {
+      const { colors } = UI.useTheme();
+      return (
+        <>
+          <UI.Text testID="tokens">{JSON.stringify(colors)}</UI.Text>
+          <UI.NativeComponentStyleProvider style={style}>
+            <UI.Button testID="source" variant="destructive">
+              Source action
+            </UI.Button>
+          </UI.NativeComponentStyleProvider>
+        </>
+      );
+    }
+    await render(
+      <UI.ThemeProvider>
+        <Fixture />
+      </UI.ThemeProvider>,
+    );
+    const colors = JSON.parse(String(screen.getByTestId('tokens').props.children));
+    expect(screen.getByTestId('source')).toHaveStyle({
+      height,
+      borderRadius: radius,
+      borderWidth: 0,
+      backgroundColor: colors.destructive,
+    });
+    expect(screen.getByText('Source action')).toHaveStyle({
+      color: style === 'new-york-v4' ? '#ffffff' : colors['destructive-foreground'],
+    });
+    expect(screen.getByTestId('source').props.hitSlop.top * 2 + height).toBeGreaterThanOrEqual(44);
+  },
+);
+test('published Default focus retains its two-point ring offset as separate native shadow layers', async () => {
+  function Fixture() {
+    const { colors } = UI.useTheme();
+    return (
+      <>
+        <UI.Text testID="tokens">{JSON.stringify(colors)}</UI.Text>
+        <UI.NativeComponentStyleProvider style="default">
+          <UI.Button testID="source">Focus</UI.Button>
+        </UI.NativeComponentStyleProvider>
+      </>
+    );
+  }
+  await render(
+    <UI.ThemeProvider>
+      <Fixture />
+    </UI.ThemeProvider>,
+  );
+  const colors = JSON.parse(String(screen.getByTestId('tokens').props.children));
+  await fireEvent(screen.getByTestId('source'), 'focus', {});
+  expect(StyleSheet.flatten(screen.getByTestId('source').props.style).boxShadow).toEqual([
+    { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 2, color: colors.background },
+    { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 4, color: colors.ring },
+  ]);
+});
+test('New York v4 icon-dependent padding recognizes the actual native SVG identity through fragments', async () => {
+  await render(
+    <UI.ThemeProvider>
+      <UI.NativeComponentStyleProvider style="new-york-v4">
+        <UI.Button testID="with-icon">
+          <>
+            <Icon />
+            With icon
+          </>
+        </UI.Button>
+        <UI.Button testID="plain">Plain label</UI.Button>
+      </UI.NativeComponentStyleProvider>
+    </UI.ThemeProvider>,
+  );
+  expect(screen.getByTestId('with-icon')).toHaveStyle({ paddingLeft: 12, paddingRight: 12 });
+  expect(screen.getByTestId('plain')).toHaveStyle({ paddingLeft: 16, paddingRight: 16 });
 });

@@ -84,3 +84,5 @@ export function IconPlaceholder({
   if (!Icon) throw Error('Unreviewed native registry icon: ' + lucide);
   return <Icon {...props} />;
 }
+
+IconPlaceholder.nativeRegistryIcon = true;

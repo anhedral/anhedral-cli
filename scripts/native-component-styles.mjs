@@ -49,7 +49,43 @@ export function nativeButtonPresets(inventory) {
       throw Error('Upstream button rules need native review: ' + style);
     presets[style] = { sha256: sheet.sha256, rules };
   }
-  return { upstream: inventory.source, globals: { sha256: global.sha256, radius }, presets };
+  const classRecipes = {};
+  for (const [name, registry] of Object.entries({
+    base: 'base-nova',
+    radix: 'radix-nova',
+    aria: 'aria-nova',
+    default: 'default',
+    'new-york': 'new-york',
+    'new-york-v4': 'new-york-v4',
+  })) {
+    const item = inventory.registries[registry]?.items.find(
+      (item) => item.type === 'registry:ui' && item.name === 'button',
+    );
+    const origin = item?.files?.[0]?.source,
+      input = inventory.sources[origin],
+      recipe = input?.classRecipes?.buttonVariants;
+    if (
+      !recipe ||
+      recipe.unsupported?.length ||
+      typeof recipe.base !== 'string' ||
+      Object.keys(recipe.variants).sort().join(',') !== 'size,variant'
+    )
+      throw Error('Upstream button class recipe needs native review: ' + name);
+    classRecipes[name] = { origin, sha256: input.sha256, recipe };
+  }
+  if (
+    ['radix', 'aria'].some(
+      (base) =>
+        JSON.stringify(classRecipes[base].recipe) !== JSON.stringify(classRecipes.base.recipe),
+    )
+  )
+    throw Error('Button class recipes diverged across component bases; native review is required.');
+  return {
+    upstream: inventory.source,
+    globals: { sha256: global.sha256, radius },
+    presets,
+    classRecipes,
+  };
 }
 export async function nativeButtonPresetSource(inventory) {
   return format(

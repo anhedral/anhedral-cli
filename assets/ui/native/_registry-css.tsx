@@ -397,9 +397,9 @@ export function registryStyle(
         { offsetX: 0, offsetY: 2, blurRadius: 4, spreadDistance: -2, color: 'rgba(0,0,0,0.1)' },
       ];
       view.elevation = 4;
-    } else if (token === 'shadow-sm') {
+    } else if (token === 'shadow-sm' || token === 'shadow') {
       view.boxShadow =
-        options.generation === 'legacy'
+        token === 'shadow-sm' && options.generation === 'legacy'
           ? [
               {
                 offsetX: 0,
@@ -432,7 +432,10 @@ export function registryStyle(
         { offsetX: 0, offsetY: 8, blurRadius: 10, spreadDistance: -6, color: 'rgba(0,0,0,0.1)' },
       ];
       view.elevation = 8;
-    } else if (/^ring-\d+$/.test(token)) paint.ringWidth = Number(token.slice(5));
+    } else if (/^ring-offset-\d+$/.test(token)) paint.ringOffsetWidth = Number(token.slice(12));
+    else if (token.startsWith('ring-offset-'))
+      paint.ringOffsetColor = options.color(token.slice(12));
+    else if (/^ring-\d+$/.test(token)) paint.ringWidth = Number(token.slice(5));
     else if (token.startsWith('ring-')) paint.ringColor = options.color(token.slice(5));
     else if (token === 'italic') text.fontStyle = 'italic';
     else if (token === 'grayscale') paint.grayscale = 1;
@@ -535,17 +538,30 @@ export function registryStyle(
     else if (token === 'resize-none') paint.nativeResize = 'none';
     else throw Error(`Unreviewed native registry utility: ${original}`);
   }
-  if (typeof paint.ringWidth === 'number')
+  if (typeof paint.ringWidth === 'number') {
+    const offset = typeof paint.ringOffsetWidth === 'number' ? paint.ringOffsetWidth : 0;
     view.boxShadow = [
-      ...((view.boxShadow as []) ?? []),
+      ...(offset > 0
+        ? [
+            {
+              offsetX: 0,
+              offsetY: 0,
+              blurRadius: 0,
+              spreadDistance: offset,
+              color: String(paint.ringOffsetColor ?? options.color('background')),
+            },
+          ]
+        : []),
       {
         offsetX: 0,
         offsetY: 0,
         blurRadius: 0,
-        spreadDistance: paint.ringWidth,
+        spreadDistance: paint.ringWidth + offset,
         color: String(paint.ringColor ?? options.color('ring')),
       },
+      ...((view.boxShadow as []) ?? []),
     ];
+  }
   if (typeof paint.lineHeightMultiplier === 'number' && text.fontSize)
     text.lineHeight = text.fontSize * paint.lineHeightMultiplier;
   return result;

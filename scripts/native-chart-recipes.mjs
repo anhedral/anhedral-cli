@@ -4,6 +4,11 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import {
+  nativeRecipeBoundaries,
+  recipeFunctionOwner,
+  recipeRootExpression,
+} from './native-recipe-boundaries.mjs';
 import { nativeFieldAssociations, nativeLabelBindings } from './native-field-associations.mjs';
 import { loadOfficialRegistry, reviewedInputs } from './shadcn-registry.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -104,6 +109,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     );
   const f = ts.factory,
     file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const boundary = nativeRecipeBoundaries(file, filename);
   const fieldLabels = nativeLabelBindings(file);
   const fieldRanges = nativeForms ? nativeFieldAssociations(file) : new Map(),
     fieldAlias = f.createUniqueName('NativeRegistryFieldScope');
@@ -135,6 +141,46 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     path: 'Path',
     clipPath: 'ClipPath',
     ...(nativeForms ? { form: 'NativeForm', pre: 'RegistryPre', code: 'RegistryCode' } : {}),
+  };
+  const wrapRecipeRoot = (input) => {
+    let expression =
+      ts.isJsxElement(input) || ts.isJsxSelfClosingElement(input) || ts.isJsxFragment(input)
+        ? input
+        : f.createJsxExpression(undefined, input);
+    if (nativeForms)
+      expression = f.createJsxElement(
+        f.createJsxOpeningElement(
+          f.createIdentifier('NativeFormScope'),
+          undefined,
+          f.createJsxAttributes([]),
+        ),
+        [expression],
+        f.createJsxClosingElement(f.createIdentifier('NativeFormScope')),
+      );
+    return f.createJsxElement(
+      f.createJsxOpeningElement(
+        f.createIdentifier('NativeRegistryPalette'),
+        undefined,
+        f.createJsxAttributes([
+          f.createJsxAttribute(
+            f.createIdentifier('generation'),
+            f.createStringLiteral(
+              /registry\/(?:default|new-york)\//.test(filename) ? 'legacy' : 'modern',
+            ),
+          ),
+          ...(boundary.source
+            ? [
+                f.createJsxAttribute(
+                  f.createIdentifier('source'),
+                  f.createStringLiteral(boundary.source),
+                ),
+              ]
+            : []),
+        ]),
+      ),
+      [expression],
+      f.createJsxClosingElement(f.createIdentifier('NativeRegistryPalette')),
+    );
   };
   const transformer = (context) => {
     const visit = (node) => {
@@ -402,48 +448,24 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       if (
         ts.isReturnStatement(node) &&
         node.expression &&
-        ts.isFunctionDeclaration(node.parent?.parent) &&
-        node.parent.parent.modifiers?.some(
-          (modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword,
-        )
+        boundary.functions.has(recipeFunctionOwner(node)) &&
+        recipeRootExpression(node.expression)
+      )
+        return f.updateReturnStatement(node, wrapRecipeRoot(ts.visitNode(node.expression, visit)));
+      if (
+        ts.isArrowFunction(node) &&
+        boundary.functions.has(node) &&
+        recipeRootExpression(node.body)
       ) {
-        let original = node.expression;
-        while (ts.isParenthesizedExpression(original)) original = original.expression;
-        if (
-          !ts.isJsxElement(original) &&
-          !ts.isJsxSelfClosingElement(original) &&
-          !ts.isJsxFragment(original)
-        )
-          return ts.visitEachChild(node, visit, context);
-        let expression = ts.visitNode(original, visit);
-        if (nativeForms)
-          expression = f.createJsxElement(
-            f.createJsxOpeningElement(
-              f.createIdentifier('NativeFormScope'),
-              undefined,
-              f.createJsxAttributes([]),
-            ),
-            [expression],
-            f.createJsxClosingElement(f.createIdentifier('NativeFormScope')),
-          );
-        return f.updateReturnStatement(
-          node,
-          f.createJsxElement(
-            f.createJsxOpeningElement(
-              f.createIdentifier('NativeRegistryPalette'),
-              undefined,
-              f.createJsxAttributes([
-                f.createJsxAttribute(
-                  f.createIdentifier('generation'),
-                  f.createStringLiteral(
-                    /registry\/(?:default|new-york)\//.test(filename) ? 'legacy' : 'modern',
-                  ),
-                ),
-              ]),
-            ),
-            [expression],
-            f.createJsxClosingElement(f.createIdentifier('NativeRegistryPalette')),
-          ),
+        const updated = ts.visitEachChild(node, visit, context);
+        return f.updateArrowFunction(
+          updated,
+          updated.modifiers,
+          updated.typeParameters,
+          updated.parameters,
+          updated.type,
+          updated.equalsGreaterThanToken,
+          wrapRecipeRoot(updated.body),
         );
       }
       if (

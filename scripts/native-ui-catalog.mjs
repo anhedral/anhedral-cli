@@ -38,7 +38,8 @@ runtime for current acceptance and retain that SDK compatibility gap explicitly.
 Select a native component preset with \`NativeComponentStyleProvider style="nova"\`
 around the relevant subtree. It shares style selection with recipe options; legacy
 recipe boundaries retain their own presentation. The source-driven Button adapter
-includes all eight presets, six variants and eight sizes, plus native hover/focus,
+includes all eight newer presets plus the published Default, New York and New York v4
+CVA definitions, with every authored variant/size and native hover/focus,
 invalid/expanded/disabled states, group corners and icon placement. It uses the
 pinned upstream radius formulas and OKLCH secondary hover mix. Explicit native styles
 and icon sizes take precedence. Text-bearing buttons grow for native font scaling and
@@ -47,8 +48,13 @@ own their own preset slots and do not inherit Button typography or dimensions.
 Small visual buttons retain expanded touch targets
 through hitSlop; parent layout must allow those touch bounds.
 
-Run \`pnpm native-ui:presets\` to check all 120 Button CSS rules and their global
-inputs. Other component preset slots remain unfinished and keep their existing native
+Run \`pnpm native-ui:presets\` to check all 120 Button CSS rules, six component
+class definitions and their global inputs. The frozen source generations can also
+be selected with \`style="default"\`, \`style="new-york"\` or \`style="new-york-v4"\`.
+Default and New York retain their four authored sizes; the other families support
+eight. Authored recipes carry their original generation automatically, including
+named exports and default aliases. Native code is generated from static data; the
+browser CVA runtime is not installed in the native package. Other component preset slots remain unfinished and keep their existing native
 adaptations. Browser underline offset, background clipping and CSS transition timing
 use native text/View painting and immediate state changes; they are not exact browser
 paint/animation parity. Native device/keyboard/visual acceptance remains separate.

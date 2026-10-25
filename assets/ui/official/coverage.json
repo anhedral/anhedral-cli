@@ -5956,7 +5956,7 @@
     },
     "registry:ui/button": {
       "status": "partial",
-      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Full legacy CSS, browser paint/transition differences and native device acceptance remain separately accounted for; complete component parity is not asserted.",
+      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Default, New York and New York v4 retain their pinned CVA geometry and paint; all eleven style families are tested. Link composition, browser paint/transition differences and expanded native device acceptance remain separately accounted for; complete component parity is not asserted.",
       "nativeFiles": [
         "assets/ui/native/button.tsx",
         "assets/ui/native/_preset-button-style.tsx",

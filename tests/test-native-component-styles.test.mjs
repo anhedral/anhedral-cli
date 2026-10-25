@@ -56,3 +56,29 @@ test('new button rules, removed radius definitions and corrupt preset CSS requir
   );
   assert.throws(() => nativeButtonPresets(selector), /button selectors/);
 });
+
+test('native Button definitions retain all three component bases and all three frozen CVA generations', () => {
+  const data = nativeButtonPresets(inventory);
+  assert.deepEqual(Object.keys(data.classRecipes), [
+    'base',
+    'radix',
+    'aria',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ]);
+  assert.deepEqual(data.classRecipes.base.recipe, data.classRecipes.aria.recipe);
+  assert.deepEqual(data.classRecipes.base.recipe, data.classRecipes.radix.recipe);
+  assert.equal(data.classRecipes.default.recipe.variants.size.default, 'h-10 px-4 py-2');
+  assert.equal(data.classRecipes['new-york'].recipe.variants.size.default, 'h-9 px-4 py-2');
+  assert.match(data.classRecipes['new-york-v4'].recipe.variants.variant.destructive, /text-white/);
+  const changed = structuredClone(inventory);
+  const origin = data.classRecipes.aria.origin;
+  changed.sources[origin].classRecipes.buttonVariants.base += ' extra-unsupported-class';
+  assert.throws(() => nativeButtonPresets(changed), /diverged across component bases/);
+  const unsupported = structuredClone(inventory);
+  unsupported.sources[origin].classRecipes.buttonVariants.unsupported = [
+    { field: 'base', expression: 'dynamic()' },
+  ];
+  assert.throws(() => nativeButtonPresets(unsupported), /class recipe needs native review/);
+});

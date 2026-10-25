@@ -330,6 +330,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         buttonIconSize !== undefined
       )
         forwarded.size = buttonIconSize;
+      if (kind === 'icon' && buttonIconSize !== undefined && props.pointerEvents === undefined)
+        forwarded.pointerEvents = 'none';
       if (translated.view.width !== undefined) forwarded.width = translated.view.width;
       if (translated.view.height !== undefined) forwarded.height = translated.view.height;
       for (const key of ['fill', 'stroke', 'color', 'stopColor']) {
@@ -444,7 +446,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       scoped
     );
   }
-  return Object.assign(Styled, { nativeRegistryComponent: Component, nativeRegistryKind: kind });
+  return Object.assign(Styled, {
+    nativeRegistryComponent: Component,
+    nativeRegistryKind: kind,
+    nativeRegistryIcon:
+      kind === 'icon' ||
+      kind === 'svg-root' ||
+      ('nativeRegistryIcon' in Component && Component.nativeRegistryIcon === true),
+  });
 }
 function RecipeHover({ children, style, ...props }: ViewProps) {
   const effect = useContext(RegistryLocalPaint),

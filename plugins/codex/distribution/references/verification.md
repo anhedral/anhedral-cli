@@ -1,3 +1,26 @@
+# Frozen Button recipes and exported recipe scopes — October 24, 2026
+
+Default, New York and New York v4 now use their actual pinned CVA classes for
+native Button geometry, variants and states. Together with the eight newer
+presets, the matrix covers 2,880 source/style/variant/size/mode/state combinations.
+Named exports, default aliases and concise arrow recipes now receive their source
+palette and component family at the exported root; nested callbacks remain local.
+
+- All 1,188 native tests passed on each platform (39 suites), strict generated
+  types passed, and both Hermes bundles contain all 674 maintained modules.
+  Root tests passed 613 with one existing optional skip. Lint, static security,
+  installed packed smoke and packlist passed: 249 files, 977,714 compressed bytes.
+- Focus/ring offsets, legacy additive versus modern multiplicative radii, filled
+  destructive variants, direct icons through fragments and shadow layers have
+  focused regressions. Conditional exported JSX and default/named aliases have
+  compiler contracts. Divergent or unsupported upstream recipes require review.
+- An initial runtime run exposed parenthesized JSX being emitted as literal text
+  inside a generated provider. The compiler now emits a JSX expression; corrected
+  focused and full suites pass. The failed and corrected logs remain dated local
+  evidence. Device coverage remains the preceding iOS four-case run; it was not
+  repeated for this slice. Link composition and other component families remain
+  pending, and strict whole-registry completion still rejects 552 items.
+
 # Complete static CVA recipe inventory — October 24, 2026
 
 The pinned official inventory now retains all 116 CVA class recipes, including

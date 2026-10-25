@@ -1,7 +1,10 @@
 import { createContext, useContext, type ReactNode } from 'react';
 export type NativeExampleStyle =
   'vega' | 'nova' | 'maia' | 'lyra' | 'mira' | 'luma' | 'sera' | 'rhea';
-const ExampleStyle = createContext<NativeExampleStyle>('nova');
+export type NativeComponentStyle = NativeExampleStyle | 'default' | 'new-york' | 'new-york-v4';
+export type NativeRegistrySource =
+  'base' | 'radix' | 'aria' | 'default' | 'new-york' | 'new-york-v4';
+const ExampleStyle = createContext<NativeComponentStyle>('nova');
 export const useNativeExampleStyle = () => useContext(ExampleStyle);
 /** Recipe-local style selection; each native component slot is reviewed separately. */
 export function NativeExampleOptions({
@@ -26,26 +29,34 @@ export const NativeRecipeState = createContext<{
 }>({});
 export const useNativeRecipeState = () => useContext(NativeRecipeState);
 
+const RegistrySource = createContext<NativeRegistrySource | undefined>(undefined);
+export const useNativeRegistrySource = () => useContext(RegistrySource);
 const RegistryPalette = createContext<'legacy' | 'modern'>('modern');
 export const useRegistryPalette = () => useContext(RegistryPalette);
 export function NativeRegistryPalette({
   generation,
+  source,
   children,
 }: {
   generation: 'legacy' | 'modern';
+  source?: NativeRegistrySource;
   children?: ReactNode;
 }) {
-  return <RegistryPalette.Provider value={generation}>{children}</RegistryPalette.Provider>;
+  return (
+    <RegistrySource.Provider value={source}>
+      <RegistryPalette.Provider value={generation}>{children}</RegistryPalette.Provider>
+    </RegistrySource.Provider>
+  );
 }
 
-const ComponentPreset = createContext<NativeExampleStyle | undefined>(undefined);
+const ComponentPreset = createContext<NativeComponentStyle | undefined>(undefined);
 export const useNativeComponentStyle = () => useContext(ComponentPreset);
 /** Explicit component preset selection. Only reviewed native slots consume it. */
 export function NativeComponentStyleProvider({
   style,
   children,
 }: {
-  style: NativeExampleStyle;
+  style: NativeComponentStyle;
   children?: ReactNode;
 }) {
   return (
