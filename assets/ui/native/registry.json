@@ -1232,6 +1232,10 @@
     "_preset-badge-style.tsx",
     "_badge-presets.tsx",
     "_preset-metrics.ts",
+    "_animation.tsx",
+    "_layout.tsx",
+    "_skeleton-presets.tsx",
+    "_preset-skeleton-style.tsx",
     "_badge.tsx"
   ],
   "supportModules": [

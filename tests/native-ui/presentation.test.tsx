@@ -61,7 +61,9 @@ test('badge, bubble, markers and typography use native semantic theme colours', 
 });
 test('structural separator supports both orientations without becoming a touch control', async () => {
   const result = await mount(<UI.Separator testID="separator" />);
-  expect(screen.getByTestId('separator')).toHaveStyle({ height: 1 });
+  expect(screen.getByTestId('separator', { includeHiddenElements: true })).toHaveStyle({
+    height: 1,
+  });
   await result.rerender(
     <UI.ThemeProvider>
       <UI.Separator testID="separator" orientation="vertical" decorative={false} />

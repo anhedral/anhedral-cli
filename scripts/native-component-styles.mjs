@@ -20,6 +20,7 @@ export function nativeGlobalMetrics(inventory) {
   return { upstream: inventory.source, globals: { sha256: global.sha256, radius } };
 }
 function nativeComponentPresets(inventory, component) {
+  if (component === 'skeleton') return nativeSkeletonPresets(inventory);
   const { globals } = nativeGlobalMetrics(inventory);
   const presets = {};
   const expected = [
@@ -129,6 +130,72 @@ function nativeComponentPresets(inventory, component) {
 }
 export const nativeButtonPresets = (inventory) => nativeComponentPresets(inventory, 'button');
 export const nativeBadgePresets = (inventory) => nativeComponentPresets(inventory, 'badge');
+const reviewedSkeletonInputs = {
+  base: {
+    origin: 'apps/v4/registry/bases/base/ui/skeleton.tsx',
+    sha256: '8fcbad84e494a75484a0975221fb40f54c4a7d68f79cfc305cb158d1feb1badf',
+    classes: 'cn-skeleton animate-pulse',
+  },
+  radix: {
+    origin: 'apps/v4/registry/bases/radix/ui/skeleton.tsx',
+    sha256: '8fcbad84e494a75484a0975221fb40f54c4a7d68f79cfc305cb158d1feb1badf',
+    classes: 'cn-skeleton animate-pulse',
+  },
+  aria: {
+    origin: 'apps/v4/registry/bases/aria/ui/skeleton.tsx',
+    sha256: '8fcbad84e494a75484a0975221fb40f54c4a7d68f79cfc305cb158d1feb1badf',
+    classes: 'cn-skeleton animate-pulse',
+  },
+  default: {
+    origin: 'apps/v4/public/r/styles/default/skeleton.json#registry/default/ui/skeleton.tsx',
+    sha256: 'a72a9d8fc1c1999b5411a33391c5e70048863c5865629077280e943ca85689a8',
+    classes: 'animate-pulse rounded-md bg-muted',
+  },
+  'new-york': {
+    origin: 'apps/v4/public/r/styles/new-york/skeleton.json#registry/new-york/ui/skeleton.tsx',
+    sha256: '87608e7cc815ad3d88e0b9de6c402bb37b58ea1b38636cf69709da1baff6e334',
+    classes: 'animate-pulse rounded-md bg-primary/10',
+  },
+  'new-york-v4': {
+    origin: 'apps/v4/registry/new-york-v4/ui/skeleton.tsx',
+    sha256: 'f51ce0fcd31e5c31437382e80ea0af94b4fc3d64221d27091d36824546780a43',
+    classes: 'animate-pulse rounded-md bg-accent',
+  },
+};
+/** Static classes are reviewed against exact source bytes; upstream edits require renewed review. */
+export function nativeSkeletonPresets(inventory) {
+  const { globals } = nativeGlobalMetrics(inventory);
+  const classRecipes = Object.fromEntries(
+    Object.entries(reviewedSkeletonInputs).map(([name, input]) => {
+      if (inventory.sources[input.origin]?.sha256 !== input.sha256)
+        throw Error('Skeleton source changed; renew native API and class review: ' + name);
+      return [
+        name,
+        {
+          origin: input.origin,
+          sha256: input.sha256,
+          recipe: { base: input.classes, variants: {}, defaultVariants: {}, compoundVariants: [] },
+        },
+      ];
+    }),
+  );
+  const presets = Object.fromEntries(
+    ['vega', 'nova', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea'].map((style) => {
+      const sheet = inventory.styleSheets['style-' + style + '.css'];
+      if (!sheet || sha256(sheet.content) !== sheet.sha256)
+        throw Error('Upstream preset integrity failed: ' + style);
+      const selectors = [...sheet.content.matchAll(/\.cn-skeleton[^\s{,]*(?=\s*\{)/g)];
+      const rules = [...sheet.content.matchAll(/\.cn-skeleton\s*\{\s*@apply\s+([^;]+);\s*\}/g)];
+      if (selectors.length !== 1 || rules.length !== 1)
+        throw Error('Upstream skeleton selectors need native review: ' + style);
+      return [
+        style,
+        { sha256: sheet.sha256, rules: { base: rules[0][1].trim().replace(/\s+/g, ' ') } },
+      ];
+    }),
+  );
+  return { upstream: inventory.source, globals, presets, classRecipes };
+}
 async function source(inventory, component) {
   return format(
     '// Adapted from shadcn/ui (MIT). Source CSS and global formulas remain pinned in the official inventory.\nexport const native' +
@@ -142,6 +209,7 @@ async function source(inventory, component) {
 }
 export const nativeButtonPresetSource = (inventory) => source(inventory, 'button');
 export const nativeBadgePresetSource = (inventory) => source(inventory, 'badge');
+export const nativeSkeletonPresetSource = (inventory) => source(inventory, 'skeleton');
 const metricsTarget = fileURLToPath(
   new URL('../assets/ui/native/_preset-metrics.ts', import.meta.url),
 );
@@ -156,7 +224,7 @@ export async function nativePresetMetricsSource(inventory) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const inventory = loadOfficialRegistry();
   const outputs = await Promise.all(
-    ['button', 'badge'].map(async (component) => ({
+    ['button', 'badge', 'skeleton'].map(async (component) => ({
       component,
       target: target(component),
       data: nativeComponentPresets(inventory, component),

@@ -51,6 +51,7 @@ import {
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
 import { nativePresetMetrics } from './_preset-metrics';
+import { useNativeReducedMotion, useNativePulse } from './_animation';
 import { NativeRegistryImage } from './registry-image';
 import { NativeLink } from './navigation';
 import { LinkButton } from './button';
@@ -508,23 +509,13 @@ function RecipeHover({
 }: NativeRecipeViewProps) {
   const effect = useContext(RegistryLocalPaint),
     position = useRef(new Animated.Value(0)).current,
-    [reduced, setReduced] = useState(false),
+    reduced = useNativeReducedMotion(),
+    pulse = useNativePulse(reduced, effect.pulse === 1),
     [pressed, setPressed] = useState(false);
-  useEffect(() => {
-    let mounted = true;
-    void AccessibilityInfo.isReduceMotionEnabled().then((value) => {
-      if (mounted) setReduced(value);
-    });
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
-    return () => {
-      mounted = false;
-      subscription.remove();
-      position.stopAnimation();
-    };
-  }, [position]);
+  useEffect(() => () => position.stopAnimation(), [position]);
   const animate = (active: boolean) =>
     Animated.timing(position, {
-      toValue: active && !disabled ? Number(effect.hoverTranslateY) : 0,
+      toValue: active && !disabled ? Number(effect.hoverTranslateY ?? 0) : 0,
       duration: reduced ? 0 : Number(effect.transitionDuration ?? 0),
       easing: Easing.inOut(Easing.ease),
       useNativeDriver: true,
@@ -534,7 +525,10 @@ function RecipeHover({
     const transform = StyleSheet.flatten(current)?.transform;
     return [
       current,
-      { transform: [...(Array.isArray(transform) ? transform : []), { translateY: position }] },
+      {
+        transform: [...(Array.isArray(transform) ? transform : []), { translateY: position }],
+        ...(effect.pulse === 1 ? { opacity: StyleSheet.flatten(current)?.opacity ?? pulse } : {}),
+      },
     ];
   };
   const motion = {
@@ -621,7 +615,7 @@ function RecipeView({
 }: NativeRecipeViewProps) {
   const effects = useContext(RegistryLocalPaint);
   const body = primitiveText(children) ? <LabelText>{children}</LabelText> : content(children);
-  return effects.hoverTranslateY !== undefined ? (
+  return effects.hoverTranslateY !== undefined || effects.pulse === 1 ? (
     <RecipeHover
       {...props}
       style={style}

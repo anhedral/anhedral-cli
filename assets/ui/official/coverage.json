@@ -3366,16 +3366,13 @@
       }
     },
     "registry:example/skeleton-card": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
-      "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
-      ],
+      "status": "ported",
+      "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/native-ui/registry-skeleton-presets.test.tsx"
       ],
       "reviewedInputs": {
         "default": "e9aaa228c3967f3022eff916714c5aa3f4de3bb2953b8592d022abaa54ad9077",
@@ -4234,7 +4231,7 @@
     },
     "registry:example/skeleton-example": {
       "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "reason": "All authored sections render under each newer preset and Skeleton source styles are complete. Card/CardHeader/CardContent source styles remain partial; the composed example cannot inherit completion until those dependencies are reviewed. Device acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
@@ -5460,16 +5457,13 @@
       }
     },
     "registry:example/separator-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
-      "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
-      ],
+      "status": "ported",
+      "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/native-ui/registry-skeleton-presets.test.tsx"
       ],
       "reviewedInputs": {
         "default": "68486c2d15cbe18c11f41e7f6e0b4fb5a54a29e08382db04398ebe7e1a83e9b8",
@@ -5514,16 +5508,13 @@
       }
     },
     "registry:example/skeleton-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
-      "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
-      ],
+      "status": "ported",
+      "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/native-ui/registry-skeleton-presets.test.tsx"
       ],
       "reviewedInputs": {
         "default": "d3f04f9fe24ee430f9e1b563df3390876e6d952022a409f76fdaeb86d316f876",
@@ -6031,16 +6022,13 @@
       }
     },
     "registry:example/aspect-ratio-demo": {
-      "status": "partial",
-      "reason": "Authored aspect-ratio source, HTTPS media, alt/decorative semantics, crop, filters, loading/error/retry and stale-source behavior are ported and tested. Full component presets, local media asset support and device visual acceptance remain pending.",
-      "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-image.tsx"
-      ],
+      "status": "ported",
+      "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
       "tests": [
-        "tests/native-ui/registry-image.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/native-ui/registry-skeleton-presets.test.tsx"
       ],
       "reviewedInputs": {
         "default": "107b98cf9b770efbe30e1fa46fc47ef9bc0e196f51ef486dd6f6ad8faac59dcb",
@@ -6049,16 +6037,13 @@
       }
     },
     "registry:example/aspect-ratio-example": {
-      "status": "partial",
-      "reason": "Authored aspect-ratio source, HTTPS media, alt/decorative semantics, crop, filters, loading/error/retry and stale-source behavior are ported and tested. Full component presets, local media asset support and device visual acceptance remain pending.",
-      "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-image.tsx"
-      ],
+      "status": "ported",
+      "reason": "All published source generations for this item are preserved as authored native modules. Reviewed native Skeleton, Separator or AspectRatio owns geometry, source presentation and native props; browser hosts/CSS translate to native layout values. Device acceptance remains separate.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_display.tsx"],
       "tests": [
-        "tests/native-ui/registry-image.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/native-ui/registry-skeleton-presets.test.tsx"
       ],
       "reviewedInputs": {
         "aria-luma": "46801b5ed06b261996ee7b60e354921801fd54cba1904a99cce618553a524f84",
@@ -6329,6 +6314,122 @@
         "radix-rhea": "0a50a8974b65049730d0e4685c2e379dfd0f2e80390f04b286087d69bc7561e0",
         "radix-sera": "9008d48e8a3a319fe90cb69b175416ed7fbb4b0a8793e30bd66a1338a6314e39",
         "radix-vega": "afb37f4a516e33c937f2acfe9c1b11b0c49e29a574d9950b087249221c998a15"
+      }
+    },
+    "registry:ui/skeleton": {
+      "status": "ported",
+      "reason": "All eight newer preset styles and three frozen source generations retain their colors/radii and authored overrides. Native-driver pulse preserves source duration/easing/opacity, responds to live reduced motion and cleans up. Native View props replace DOM attributes; device acceptance is tracked separately.",
+      "nativeFiles": [
+        "assets/ui/native/_display.tsx",
+        "assets/ui/native/_animation.tsx",
+        "assets/ui/native/_skeleton-presets.tsx",
+        "assets/ui/native/_preset-skeleton-style.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-skeleton-presets.test.tsx"],
+      "reviewedInputs": {
+        "aria-luma": "471091978138f3f7fd1ea6c55f7e07a9fc9fbe6034a9706b9f6ec9869b8ecbad",
+        "aria-lyra": "07bc0c8ee761e5b3cc753e1ed073bad60ddd6f94867d1169afa9caaa17251547",
+        "aria-maia": "d2a4787d9da3ed5bea9108907fa767401ae8a6606668ee27ddd957ac23209666",
+        "aria-mira": "6546c678902ec2f428b2a96ad79132cd84e691d934add99a7b6d3d3615357b8d",
+        "aria-nova": "f9c304fa21a19e22b7d4b0561fd2cde704ac8b995156c7ea0136a4091d8aa40c",
+        "aria-rhea": "11917d920d63d57a64128d99a40b8a12b6702ca29c2bfc2e3c797b42ab4e641c",
+        "aria-sera": "1b2f441dd77d7e76cf93451c3e48c13161dc0e0664908d87ff45514811bf4fca",
+        "aria-vega": "276250ed60907bbf7d15967e0611b7387b52184146ef18e98ede15c767906270",
+        "base-luma": "48e0d696eccf6a525accfb70b3422e4c24027af08a21ef7a218c82ef82fbf750",
+        "base-lyra": "d26a45e14f5902e85e43ce82da1e42b5304017005099b174837a276bc30e76db",
+        "base-maia": "633a90409fee24f74bbcce847e6e355ef6dc7ca0d6c7507f357469938c874087",
+        "base-mira": "d679f1c5264b879dd872b9afbf9d3bb3e181661eb69cb0edd9b1361492c5c642",
+        "base-nova": "46d7f458ca3924ba945e3e3fbe649680a09a34f1e6190c3d67946a2a319a2a61",
+        "base-rhea": "027f4e21e571ef06062827851dce9e703971438ab492f174f5880abfd413e9e4",
+        "base-sera": "dff59f017e0a2f62ebf6c8e691d3a3dacb885c84a59db1469621fe19538f49f1",
+        "base-vega": "5f93f1bd8529d2ff71514aaf371c5875c5742f56b6c898618aeb7c63306577d0",
+        "default": "dae5a164baae3abb085d5c644a530663165586f593710127bd4ccff16dc17d68",
+        "new-york": "8f35c77dcf8f9cd36b0799871e300709bdcb12d11574e9e50d87d162ea6b0680",
+        "new-york-v4": "845cafef2322a123ba4ab1f9c219909c37ccec73dc7f2679b5fcf8b5d764cc75",
+        "radix-luma": "c86adb4eedb243b94ece5e9f0d10a9ced4d71a8786d8148c2d3ac5846ce25893",
+        "radix-lyra": "3e1c26c955030eb05bf78d1862893729642bf11ed36dab8d8627b980bf190e21",
+        "radix-maia": "7c7091d2feb6723abb95655c5f90ddf6859f5b5738fb6b4dd0183f086e4c1174",
+        "radix-mira": "b8cee4b872c8f83688d06f96f222e23dab4bb46fefa34de4c569baaa815123a9",
+        "radix-nova": "fa3375bc5900881d3542d4f282913a1c70dfe0df016193e5c7b566a0ad53dd26",
+        "radix-rhea": "7882e3a7759784b740cc58c04341f82a13d5803a2ad7077190d703ef2f61ef43",
+        "radix-sera": "23f054808401655a39891df952572e46214fbe807a14253adadd30f2c383d1e6",
+        "radix-vega": "65c61012ff8206fd25e5c638877b6d2fa567431d44570ff07da26d37343014f4"
+      }
+    },
+    "registry:ui/aspect-ratio": {
+      "status": "ported",
+      "reason": "Native aspectRatio replaces CSS custom properties and padding wrappers. All six component definitions retain ratio, geometry and explicit overrides; native one-host asChild/render composition preserves refs, child content and layout callbacks. DOM props are replaced by native View props. Device acceptance is tracked separately.",
+      "nativeFiles": ["assets/ui/native/_display.tsx", "assets/ui/native/_layout.tsx"],
+      "tests": [
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/native-ui/presentation.test.tsx"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "465b6c8cd4effb1777ed5794063e78df186f8f9e652e19f25827c227282f9ba8",
+        "aria-lyra": "c9c60ac42f8af12e917c0816fc330a45a7d231a44ef9b8ebf2eab159e9f22d64",
+        "aria-maia": "8979f66b0c8738efde957235e024ac6eb31e2315a44812f3073dd5b9b3480237",
+        "aria-mira": "9d61299a641f7c684a24bf8d33ae024941fab2b6d1b97846377f3069f6b2d5ac",
+        "aria-nova": "55b8209664a1af0e4f259c5768b91dedb8eb03b3423ffda11c99181f47cdee41",
+        "aria-rhea": "e6f4c742f285a3197ab194eeb374e1b200c369d0473b29d3c4594bfdf3afb61e",
+        "aria-sera": "6d9b2d40d7358919672c553670477df48f509783e482f165000704b5b47fca56",
+        "aria-vega": "e436eba4fc86cfff7f7aeddcfc96592d8560dbc6c62b3c38b3320671d52924fd",
+        "base-luma": "69ce78ee59d71bd78dfb275d3ae0ab09b7acbcf8072602d814059999b695058d",
+        "base-lyra": "549b2a4dcf8409685b41105e7871f525429a6cd01f718b23e49ccd99c02dd7f8",
+        "base-maia": "80e1ac704e0aa1cc4d35d226a67b1399a97d20cdb143f90f7022e7949dd072bb",
+        "base-mira": "c80f7024071695bc97b99be5c1fdb088bed0eb3d9f544ff5a4f64c3ef2fcee94",
+        "base-nova": "facf41e6e592c986c7149a1aa7a7d930d06135f0e1f12ce229bb600c088037bc",
+        "base-rhea": "9541873ffec376080264005951716ee461f9fc5ea558b65b41497673a5de82c0",
+        "base-sera": "de9301c86974adc6565daf8971547f7163dedace2bcc9b763d18da0eeae307cd",
+        "base-vega": "1d9fc26714f8a44b5720fccc6b5a1bac6900c92a58d975f00dd002cd776e2ef0",
+        "default": "57dfdde9b1fae7162a729b1229a1d10e49938d07a88f0491c374460908489e39",
+        "new-york": "8c2e445e597ad81dfe6fba3f83fda803ccb40296cd1e1abdaa1bba764ff75ac9",
+        "new-york-v4": "2d6ba8e11d65f68f11236aa502e31ba274ab5079a1a88a0e64cd8cba845eca58",
+        "radix-luma": "3d3e062ef11a509a1cb2e21ce718a6f26c43e450fa62ff969f27c8138786ff6f",
+        "radix-lyra": "f2f45d502bb2f5737fd8472e8e8db91b249aee8e7374b40de005b0ad4a0f63e4",
+        "radix-maia": "14da88b1c6be4a23bc30a9938cb4cd85f950a89b36b3ab0fbd90ff852194a6a9",
+        "radix-mira": "f99494b75ec368c35f6e513fab313d8a6b96bf28c9d2b4b9b922975cc3fbae09",
+        "radix-nova": "7d4c3a961422147cf0fba50e8d51853492057ec7065a06317839c443ea90863d",
+        "radix-rhea": "ba6b0e29bcaf9519c78875f20ee6ac09eabc3ae16a05a1b4d542be074fc31845",
+        "radix-sera": "0259c94a5a499338843c98a30c0fb4e9fe69743c0490896d38d1c873b31b441d",
+        "radix-vega": "89412b8bf04841b67e2d33d6a3ec01a313b1d5598702411aa37b17aa6792bfc5"
+      }
+    },
+    "registry:ui/separator": {
+      "status": "ported",
+      "reason": "Every source generation retains horizontal/vertical dimensions, shrink behavior and decorative defaults. Native labeled separator roles and hidden decorative elements replace DOM/hr semantics; native child/render composition preserves refs/styles/callbacks. Device acceptance is tracked separately.",
+      "nativeFiles": ["assets/ui/native/_display.tsx", "assets/ui/native/_layout.tsx"],
+      "tests": [
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/native-ui/presentation.test.tsx"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "4fa94897017a4cafe676e30775a3e988479bb33ee2f8b6e6c9ab10ad035adec4",
+        "aria-lyra": "f77a9706e715ac46de4682bbe68c1c16d7c787b49966c977e9f98057410c7edd",
+        "aria-maia": "afb3ee4633c9c1d7db7312d8dbfbbf1316214867fa9d50a25ac531df38d5be88",
+        "aria-mira": "de94db820bada9984344caa963ddbf989fdd3f8857c1228977aaae91488e4a1e",
+        "aria-nova": "641ed9e8b742bc4813afe2f093592544509bcc7490743d9e0ee66c9724376bd5",
+        "aria-rhea": "7b7ff8aa08d6ee87c26e7b9b000da8a28b72d26f8a97dbd36cf6e2085415cdad",
+        "aria-sera": "2fbd046fad2c20598d0d5ee3605a4e1f6a3b923e4fb14e4964d7e365403940fb",
+        "aria-vega": "f6e2c861d0769410fda4a652bc5b6fcfaa30726ba6a7127e60126af487bba087",
+        "base-luma": "5d07855a3782f09a9d3f1bc0b4ce472e86be4eae4ae5103750a716cf7419147b",
+        "base-lyra": "66f02dca91457ebe23f9b9e6196829b6cd293ce45b52b31313177b9380415d7f",
+        "base-maia": "f21d180273d0768f5cff04637aa4b8bf4b94d3a6c65e24d425f74c2e34bebf77",
+        "base-mira": "137b33b83a71541424761aa2102b1a5a599698b3be280e860adc8a92c177f063",
+        "base-nova": "294ca3bfaa2b46ebca57221930ff761f188d411272c2da1aff7afb79b77ba07d",
+        "base-rhea": "2c871c0d110fc8b229eae3c935d7548a76af6c1ba22d6f78aa7b6e27d551c6f7",
+        "base-sera": "432e982f434028dfbc47859ddc7eee61cb0fae731fae11de2557f52386feb812",
+        "base-vega": "19cdc3395e6aff9949df232a1545c82f8c35d02493349b0679a09efb5c9ac301",
+        "default": "707147585a8049c7e86ad9f8d2c16498dcf2ed073511ebd26fb76c0710c235d8",
+        "new-york": "a4f0d1b10c929835458dc552c26800ccaec627fb92d5ab4d0fceaae8d4f50de5",
+        "new-york-v4": "907da748e9ab876d928f9f56d41b05c5b9f1381f55aa066dc921d384eed18788",
+        "radix-luma": "75ebffb610a2c58bbbbf6cfde4b03d9347623b3aa4fccd924ac38c57a7d27c19",
+        "radix-lyra": "749af6e5865ea804839f8a91e714d105cd432f6753a9b0aa25f0bc0034217d0e",
+        "radix-maia": "8b2e9faaabd9606b7f6bae0f8b4176f21d7710b5bae4ea5ba8f3ef0cf13df2cd",
+        "radix-mira": "2f98af5a85b18490966a9ca63d2df888b990479635b4a4556d568dabf33ad801",
+        "radix-nova": "0627be9f1acf1484762912db59f47f60e54004045559e9ef257c51b5698973a5",
+        "radix-rhea": "9165b7bd8b08c50008722eb5eacef7fb487e9f26a4c18e44b8cceb8eca2185b5",
+        "radix-sera": "5403b7049121c667d73bb5f0e283005ff0920490aa059a18779e162f5c69ac85",
+        "radix-vega": "4773a262c16551fa23c5b9851462a68a09a9e55c719d2b1a58e9cd2cb758694a"
       }
     }
   },

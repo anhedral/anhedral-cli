@@ -544,7 +544,11 @@ export function registryStyle(
       const value = token.slice(11);
       paint.brightness = value.startsWith('[') ? Number(value.slice(1, -1)) : Number(value) / 100;
     } else if (/^object-(cover|contain|fill)$/.test(token)) paint.objectFit = token.slice(7);
-    else if (token === 'animate-spin') paint.spin = 1;
+    else if (token === 'animate-pulse') paint.pulse = 1;
+    else if (token === 'animate-none') {
+      paint.pulse = 0;
+      paint.spin = 0;
+    } else if (token === 'animate-spin') paint.spin = 1;
     else if (token.startsWith('hover:bg-')) paint.hoverBackground = options.color(token.slice(9));
     else if (token.startsWith('hover:text-'))
       paint.hoverForeground = options.color(token.slice(11));

@@ -56,6 +56,14 @@ asChild/render elements and typed native render callbacks. Authored text colors 
 explicit consumer text styles win over source defaults. Avatar badges retain their
 separate baseline until their own preset slots are reviewed. Interactive badges keep
 expanded native touch bounds without changing authored visual geometry.
+Skeleton retains all eleven source style families, including frozen New York primary
+transparency and New York v4 accent paint. Its native pulse follows the source two-second
+cubic easing cycle and half-opacity midpoint, responds to live reduced-motion changes,
+and remains static if the native preference is unavailable. Explicit native styles win.
+Separator preserves source-specific decorative defaults and vertical stretch versus
+full-height behavior. AspectRatio uses native layout instead of CSS padding/custom
+properties. Both support one native child/render host, native style values, composed
+refs and layout callbacks; DOM host properties are replaced by native View properties.
 
 Render callbacks return one native host element with native style arrays and
 normalized text/pressable props. Static View and themed Text roots preserve inherited

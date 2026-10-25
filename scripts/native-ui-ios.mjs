@@ -74,6 +74,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/button-preset-matrix",Component:NativeButtonPresetMatrix}',
           '{id: "native/navigation-contract",Component:NativeNavigationMatrix}',
           '{id: "native/render-hosts",Component:NativeRenderHostMatrix}',
+          '{id: "native/layout-primitives",Component:NativeLayoutMatrix}',
         ].join(',\n') +
         '];',
     );

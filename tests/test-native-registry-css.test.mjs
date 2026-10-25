@@ -216,3 +216,11 @@ test('physical and logical corners retain their independent native fields', () =
     },
   );
 });
+
+test('native animation metadata preserves pulse and lets explicit animate-none cancel it', () => {
+  assert.equal(registryStyle('animate-pulse', options).paint.pulse, 1);
+  assert.deepEqual(registryStyle('animate-pulse animate-spin animate-none', options).paint, {
+    pulse: 0,
+    spin: 0,
+  });
+});

@@ -5,6 +5,8 @@ import { loadOfficialRegistry, sha256 } from '../scripts/shadcn-registry.mjs';
 import {
   nativePresetMetricsSource,
   nativeGlobalMetrics,
+  nativeSkeletonPresets,
+  nativeSkeletonPresetSource,
   nativeBadgePresets,
   nativeBadgePresetSource,
   nativeButtonPresets,
@@ -126,4 +128,28 @@ test('global native metrics retain the pinned source fingerprint independently o
     readFileSync('assets/ui/native/_preset-metrics.ts', 'utf8'),
     await nativePresetMetricsSource(inventory),
   );
+});
+
+test('Skeleton retains all source generations and exact preset selectors while source drift requires renewed review', async () => {
+  const data = nativeSkeletonPresets(inventory);
+  assert.equal(Object.keys(data.presets).length, 8);
+  assert.equal(Object.keys(data.classRecipes).length, 6);
+  assert.equal(data.classRecipes['new-york'].recipe.base, 'animate-pulse rounded-md bg-primary/10');
+  assert.equal(data.presets.sera.rules.base, 'bg-muted');
+  assert.equal(
+    readFileSync('assets/ui/native/_skeleton-presets.tsx', 'utf8'),
+    await nativeSkeletonPresetSource(inventory),
+  );
+  const changed = structuredClone(inventory);
+  changed.sources[data.classRecipes.base.origin].sha256 = 'f'.repeat(64);
+  assert.throws(() => nativeSkeletonPresets(changed), /Skeleton source changed/);
+  const selector = structuredClone(inventory);
+  selector.styleSheets['style-nova.css'].content += '\n.cn-skeleton-new {@apply bg-muted;}';
+  selector.styleSheets['style-nova.css'].sha256 = sha256(
+    selector.styleSheets['style-nova.css'].content,
+  );
+  assert.throws(() => nativeSkeletonPresets(selector), /skeleton selectors/);
+  const corrupt = structuredClone(inventory);
+  corrupt.styleSheets['style-nova.css'].sha256 = '0'.repeat(64);
+  assert.throws(() => nativeSkeletonPresets(corrupt), /preset integrity/);
 });

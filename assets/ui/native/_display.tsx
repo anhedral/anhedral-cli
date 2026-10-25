@@ -9,6 +9,7 @@ import {
   useRef,
   type ReactNode,
   type ReactElement,
+  type Ref,
 } from 'react';
 import {
   View,
@@ -25,11 +26,19 @@ import {
 import { useTheme } from '../theme';
 import { Badge, type BadgeProps } from './_badge';
 export { Badge } from './_badge';
-import { NativeButtonGroupContext } from './_registry-context';
+import {
+  NativeButtonGroupContext,
+  useNativeComponentStyle,
+  useNativeRegistrySource,
+  useRegistryPalette,
+} from './_registry-context';
+import { useNativeReducedMotion, useNativePulse } from './_animation';
+import { nativePresetSkeletonStyle } from './_preset-skeleton-style';
 import { useNativeFontStyle } from './fonts';
 import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
 import { Button, LinkButton, type ButtonProps } from './button';
 import { NativeSlot } from './_slot';
+import { NativeLayout, type NativeLayoutProps } from './_layout';
 import Svg, { Defs, Filter, FeColorMatrix, Image as SvgImage } from 'react-native-svg';
 
 const AlertTone = createContext<'default' | 'destructive'>('default');
@@ -82,12 +91,17 @@ export function AlertDescription({ style, ...props }: TextProps) {
 export const AlertAction = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={[{ position: 'absolute', right: 12, top: 12 }, style]} />
 );
-export function AspectRatio({ ratio = 1, style, ...props }: ViewProps & { ratio?: number }) {
+export type AspectRatioProps = NativeLayoutProps & { ratio?: number };
+export function AspectRatio({ ratio = 1, style, ...props }: AspectRatioProps) {
   return (
-    <View
+    <NativeLayout
       {...props}
       style={[
-        { aspectRatio: Number.isFinite(ratio) && ratio > 0 ? ratio : 1, width: '100%' },
+        {
+          position: 'relative',
+          aspectRatio: Number.isFinite(ratio) && ratio > 0 ? ratio : 1,
+          width: '100%',
+        },
         style,
       ]}
     />
@@ -231,23 +245,44 @@ export const AvatarGroup = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={row(style)} />
 );
 export const AvatarGroupCount = AvatarBadge;
+export type SeparatorProps = NativeLayoutProps & {
+  orientation?: 'horizontal' | 'vertical';
+  decorative?: boolean;
+};
 export function Separator({
   orientation = 'horizontal',
-  decorative = true,
+  decorative,
   style,
   ...props
-}: ViewProps & { orientation?: 'horizontal' | 'vertical'; decorative?: boolean }) {
-  const { colors } = useTheme();
+}: SeparatorProps) {
+  const { colors } = useTheme(),
+    source = useNativeRegistrySource(),
+    requested = useNativeComponentStyle(),
+    generation = useRegistryPalette();
+  const selected = source ?? (generation === 'legacy' ? 'default' : requested);
+  const legacy = selected === 'default' || selected === 'new-york' || selected === 'new-york-v4';
+  const hidden = decorative ?? (selected !== 'base' && selected !== 'aria');
   return (
-    <View
-      accessible={!decorative}
-      accessibilityLabel={decorative ? undefined : 'Separator'}
+    <NativeLayout
       {...props}
+      accessible={hidden ? false : (props.accessible ?? true)}
+      role={hidden ? 'presentation' : (props.role ?? 'separator')}
+      accessibilityLabel={
+        hidden
+          ? undefined
+          : (props.accessibilityLabel ??
+            (orientation === 'vertical' ? 'Vertical separator' : 'Separator'))
+      }
+      accessibilityElementsHidden={hidden || props.accessibilityElementsHidden}
+      importantForAccessibility={hidden ? 'no-hide-descendants' : props.importantForAccessibility}
       style={[
-        { backgroundColor: colors.border },
+        { backgroundColor: colors.border, flexShrink: 0 },
+        selected === 'aria' && { borderWidth: 0 },
         orientation === 'horizontal'
-          ? { height: 1, alignSelf: 'stretch' }
-          : { width: 1, alignSelf: 'stretch' },
+          ? { height: 1, width: '100%' }
+          : legacy
+            ? { width: 1, height: '100%' }
+            : { width: 1, alignSelf: 'stretch' },
         style,
       ]}
     />
@@ -468,44 +503,25 @@ export function Spinner({
     />
   );
 }
-export function Skeleton({ style, ...props }: ViewProps) {
-  const { colors } = useTheme();
-  const opacity = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    let active = true;
-    let animation: Animated.CompositeAnimation | undefined;
-    const update = (reduce: boolean) => {
-      animation?.stop();
-      opacity.setValue(1);
-      if (!reduce && active) {
-        animation = Animated.loop(
-          Animated.sequence([
-            Animated.timing(opacity, { toValue: 0.4, duration: 800, useNativeDriver: true }),
-            Animated.timing(opacity, { toValue: 1, duration: 800, useNativeDriver: true }),
-          ]),
-        );
-        animation.start();
-      }
-    };
-    void AccessibilityInfo.isReduceMotionEnabled()
-      .then((reduce) => {
-        if (active) update(reduce);
-      })
-      .catch(() => {
-        /* Keep the static placeholder if the native preference is unavailable. */
-      });
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', update);
-    return () => {
-      active = false;
-      animation?.stop();
-      subscription.remove();
-    };
-  }, [opacity]);
+export function Skeleton({ style, ...props }: ViewProps & { ref?: Ref<View> }) {
+  const { colors, mode, radius } = useTheme(),
+    source = useNativeRegistrySource(),
+    requested = useNativeComponentStyle(),
+    generation = useRegistryPalette();
+  const preset =
+    source === 'default' || source === 'new-york' || source === 'new-york-v4'
+      ? source
+      : generation === 'legacy'
+        ? 'default'
+        : (requested ?? 'nova');
+  const sourceStyle = nativePresetSkeletonStyle(preset, { colors, mode, radius });
+  const reduced = useNativeReducedMotion(),
+    opacity = useNativePulse(reduced);
   return (
     <Animated.View
       accessibilityLabel="Loading content"
       {...props}
-      style={[{ minHeight: 20, backgroundColor: colors.muted, borderRadius: 6, opacity }, style]}
+      style={[{ borderRadius: 0 }, sourceStyle.view, { opacity }, style]}
     />
   );
 }

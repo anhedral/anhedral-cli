@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, FlatList, ScrollView, Text } from 'react-native';
+import { View, FlatList, ScrollView, Text, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
 import { RegistryView } from './.generated/src/native/registry-styles';
@@ -75,6 +75,41 @@ function NativeRenderHostMatrix() {
         </RegistryView>
         <UI.Text>{'Host action: ' + host}</UI.Text>
         <UI.Text>{'Host count: ' + count}</UI.Text>
+      </View>
+    </UI.NativeComponentStyleProvider>
+  );
+}
+function NativeLayoutMatrix() {
+  const [metrics, setMetrics] = useState<Record<string, string>>({});
+  const measure = (name: string) => (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    const next = Math.round(width) + 'x' + Math.round(height);
+    setMetrics((previous) => (previous[name] === next ? previous : { ...previous, [name]: next }));
+  };
+  return (
+    <UI.NativeComponentStyleProvider style="nova">
+      <View style={{ gap: 12 }}>
+        <View style={{ width: 160, gap: 12 }}>
+          <UI.AspectRatio ratio={2} onLayout={measure('Ratio')} style={{ backgroundColor: '#ddd' }}>
+            <UI.Text>Aspect 2:1</UI.Text>
+          </UI.AspectRatio>
+          <UI.Separator decorative={false} onLayout={measure('Horizontal')} />
+          <View
+            style={{ width: 160, height: 80, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+          >
+            <UI.Text>Before</UI.Text>
+            <UI.Separator
+              orientation="vertical"
+              decorative={false}
+              onLayout={measure('Vertical')}
+            />
+            <UI.Text>After</UI.Text>
+          </View>
+          <UI.Skeleton style={{ width: 100, height: 20 }} onLayout={measure('Skeleton')} />
+        </View>
+        {['Ratio', 'Horizontal', 'Vertical', 'Skeleton'].map((name) => (
+          <UI.Text key={name}>{name + ' geometry: ' + (metrics[name] ?? 'pending')}</UI.Text>
+        ))}
       </View>
     </UI.NativeComponentStyleProvider>
   );

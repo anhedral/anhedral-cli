@@ -1,3 +1,37 @@
+# Native Skeleton source styles and layout primitives — October 24, 2026
+
+Skeleton retains all eight newer presets and three frozen source styles. Source hashes
+and CSS selectors guard every definition. Native-driver pulse uses the upstream
+[two-second cubic easing and half-opacity midpoint](https://tailwindcss.com/docs/animation),
+responds to live reduced-motion changes, rejects stale preference reads and releases
+animations/subscriptions. Raw authored pulse utilities use the same implementation.
+Separator preserves source-specific decorative defaults and stretch/full-height layout;
+AspectRatio uses native geometry. Their one-host composition retains refs and callbacks.
+
+- Strict generated types passed. Both full native suites passed 1,356 tests across
+  44 suites with unchanged coverage thresholds; both Hermes bundles contain all 699
+  registry modules. Forty-four Skeleton contracts include all source styles and modes,
+  authored section rendering, source dimensions, overrides and motion lifecycle.
+- Root tests passed 622 with one existing optional skip. Lint, source contracts,
+  security policy, installed CLI smoke and packlist checks passed; package size was
+  997,713 compressed bytes. Initial type/mocking/format diagnostics are retained with
+  corrected results under .artifacts/native-ui/2026-10-25-native-static/.
+- Actual iOS 26.5 XCTest passed all seven cases in 157.6 seconds. The new native layout
+  fixture measured 160x80 aspect-ratio geometry, 160x1 and 1x80 separators, and a 100x20
+  Skeleton. Evidence: .artifacts/native-ui-ios/2026-10-25T05-44-28-486Z/results.xcresult.
+  Its exported app screenshot was inspected: geometry, labels, separators and the
+  placeholder are visible without a runtime error. This is a bounded fixture review;
+  full device, screen-reader, keyboard and visual matrix acceptance remains separate.
+- Eight more type/name groups have reviewed source coverage; strict whole-registry
+  completion still rejects 538 pending items. Modern Skeleton examples remain partial
+  because their Card dependencies still require source-style work. They were not
+  promoted merely because they render. No publication or deployment occurred.
+- A read-only syntax audit examined all 1,684 distinct example/block/internal/component
+  TypeScript sources: 1,175 translate through the current adapter and 509 require
+  additional source adapters. This does not establish rendering, native API, behavior,
+  style or device parity. Per-source results and exact blockers are retained under
+  .artifacts/native-ui/2026-10-25-full-source-audit/audit.json to guide the remaining port.
+
 # Native global radius metrics — October 24, 2026
 
 Raw authored layouts now use the pinned modern global radius multipliers instead of

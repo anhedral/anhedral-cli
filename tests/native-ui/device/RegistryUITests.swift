@@ -85,4 +85,17 @@ final class RegistryUITests: XCTestCase {
     }
   }
 
+  func testNativeLayoutPrimitivesMeasureTheirAuthoredGeometry() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/layout-primitives", in:app)
+    for status in ["Ratio geometry: 160x80", "Horizontal geometry: 160x1", "Vertical geometry: 1x80", "Skeleton geometry: 100x20"] {
+      XCTAssertTrue(app.staticTexts[status].waitForExistence(timeout:10))
+    }
+    let screenshot = XCTAttachment(screenshot:app.screenshot())
+    screenshot.name = "Native layout primitive geometry"
+    screenshot.lifetime = .keepAlways
+    add(screenshot)
+  }
+
 }
