@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import {
   analyzeSource,
   loadOfficialRegistry,
@@ -200,7 +203,8 @@ test('browser-only API classifications require a real upstream export and native
 });
 test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
   const pending = incompleteNativeItems(inventory, coverage);
-  assert.equal(pending.length, 551);
+  assert.equal(pending.length, 552);
+  assert.ok(pending.includes('registry:ui/form'));
   assert.ok(pending.includes('registry:block/dashboard-01'));
   assert.ok(pending.includes('registry:ui/button'));
   assert.ok(!pending.includes('registry:font/font-inter'));
@@ -224,4 +228,67 @@ test('omitted registry companion imports are inventoried and invalidate native r
     reviewedInputs(changed, 'registry:example/form-rhf-input'),
     reviewedInputs(inventory, 'registry:example/form-rhf-input'),
   );
+});
+
+test('global theme formulas are integrity checked and invalidate dependent component recipes without changing hooks', async () => {
+  const { validateStyleGlobals } = await import('../scripts/shadcn-registry.mjs');
+  assert.doesNotThrow(() => validateStyleGlobals(inventory));
+  assert.equal(Object.keys(inventory.styleGlobals).length, 1);
+  const css = inventory.styleGlobals['apps/v4/app/globals.css'];
+  assert.equal(css.sha256, sha256(css.content));
+  assert.match(css.content, /--radius-md: calc\(var\(--radius\) \* 0\.8\)/);
+  const missing = structuredClone(inventory);
+  delete missing.styleGlobals;
+  assert.throws(() => validateStyleGlobals(missing), /global style inputs are missing/);
+  const corrupt = structuredClone(inventory);
+  corrupt.styleGlobals['apps/v4/app/globals.css'].content += '\n/* changed */';
+  assert.throws(() => validateStyleGlobals(corrupt), /global style integrity failed/);
+  const changed = structuredClone(inventory);
+  changed.styleGlobals['apps/v4/app/globals.css'].sha256 = 'f'.repeat(64);
+  const diff = diffOfficialRegistry(inventory, changed);
+  assert.ok(diff.changed.includes('base-nova/button'));
+  assert.ok(diff.changed.includes('radix-vega/button-example'));
+  assert.ok(diff.changed.includes('aria-rhea/button-example'));
+  assert.ok(!diff.changed.includes('base-nova/use-mobile'));
+  assert.ok(!diff.changed.includes('default/button'));
+  assert.notDeepEqual(
+    reviewedInputs(inventory, 'registry:example/button-example'),
+    reviewedInputs(changed, 'registry:example/button-example'),
+  );
+});
+
+test('global stylesheet collection reads the exact Git object even when the working file changes or is sparse', async () => {
+  const { collectStyleGlobals } = await import('../scripts/shadcn-registry.mjs');
+  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-global-style-'));
+  const file = 'apps/v4/app/globals.css';
+  const git = (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  try {
+    git(['init', '--quiet', '--object-format=sha1']);
+    mkdirSync(path.join(root, 'apps/v4/app'), { recursive: true });
+    const original = '@theme inline { --radius-md: calc(var(--radius) * 0.8); }\n';
+    writeFileSync(path.join(root, file), original);
+    git(['add', '--', file]);
+    git([
+      '-c',
+      'user.name=Fixture',
+      '-c',
+      'user.email=' + ['fixture', 'example.invalid'].join('@'),
+      '-c',
+      'commit.gpgsign=false',
+      'commit',
+      '--quiet',
+      '-m',
+      'Pinned style fixture',
+    ]);
+    const commit = git(['rev-parse', 'HEAD']);
+    writeFileSync(path.join(root, file), 'uncommitted replacement');
+    assert.deepEqual(collectStyleGlobals(root, commit), {
+      [file]: { sha256: sha256(original), content: original },
+    });
+    rmSync(path.join(root, file));
+    assert.equal(collectStyleGlobals(root, commit)[file].content, original);
+    assert.throws(() => collectStyleGlobals(root, 'main'), /full upstream commit/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

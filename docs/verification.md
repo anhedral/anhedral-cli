@@ -1,3 +1,27 @@
+# Upstream global style provenance — October 24, 2026
+
+The official inventory now retains apps/v4/app/globals.css from the exact reviewed
+Git object. This captures theme metric formulas omitted by the component CSS files,
+including the upstream multiplicative radius scale. Sparse checkout state or an
+uncommitted working-file replacement cannot alter that source. Missing globals or
+a content/hash mismatch fail validation. Global changes now invalidate affected
+component, example and block fingerprints through registry dependencies.
+
+- Twenty-two source/parity contracts and twenty generated-consumer checks passed.
+  An isolated Git fixture proves exact-commit reading after working-file changes
+  and removal. A global-only edit invalidates all three component families while
+  independent hooks and legacy components keep their previous fingerprints.
+- Rebuilt chart and example catalogs retain identical native source hashes for all
+  674 modules; only review metadata changes. Font, theme and icon evidence checks
+  passed. Existing device coverage is unchanged; no native runtime retest is implied.
+- Lint, static security, installed packed CLI smoke and packlist passed: 249 files,
+  961,353 compressed bytes. The first security run rejected a literal test fixture
+  address; fixture construction now avoids that false positive without exemptions.
+- The initial regeneration guard correctly rejected silently renewing form's
+  completed status. Its tested behavior is retained, but preset/global metric parity
+  remains unfinished, so its checklist status is now partial. The strict completion
+  gate rejects 552 pending items. No publication, deployment or completion is claimed.
+
 # Published legacy registry examples — October 24, 2026
 
 Added the actual published source for 91 Default and 91 New York examples, with

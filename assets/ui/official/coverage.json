@@ -72,8 +72,8 @@
       }
     },
     "registry:ui/form": {
-      "status": "ported",
-      "reason": "React Hook Form provider/controller and native control binding retain refs, focus, labels, descriptions, validation messages, resolver integration, field arrays and submission. HTML slot/aria attributes become native control props and hints; device accessibility acceptance is separate.",
+      "status": "partial",
+      "reason": "React Hook Form provider/controller and native control binding retain refs, focus, labels, descriptions, validation messages, resolver integration, field arrays and submission. HTML slot/aria attributes become native control props and hints; device accessibility acceptance is separate. Component preset styles and inherited global metric parity remain pending.",
       "nativeFiles": ["assets/ui/native/form.tsx"],
       "tests": [
         "tests/native-ui/registry-form.test.tsx",

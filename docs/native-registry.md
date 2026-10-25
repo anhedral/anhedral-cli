@@ -2,7 +2,7 @@
 
 Pinned source: [shadcn-ui/ui at 617134d5810bba521803b3ed787190bacbb80b35](https://github.com/shadcn-ui/ui/tree/617134d5810bba521803b3ed787190bacbb80b35/apps/v4/registry). Published metadata snapshot dated 2026-10-24; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.
 
-**27 registries, 6437 style/item entries, 616 distinct type/name pairs, 2073 referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.
+**27 registries, 6437 style/item entries, 616 distinct type/name pairs, 2073 referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate. The snapshot also retains eight component stylesheets and the pinned upstream global stylesheet, including its theme metric formulas.
 
 ## Maintenance model
 
@@ -39,6 +39,7 @@ These decisions describe the named native boundary; they do not mark an entire c
 | CSS grayscale, generated borders, motion and paragraph utilities | Native SVG saturation filter, native borders, reduced-motion animations and OS text breaking | Image loading/source identity tests and interaction tests. CSS pseudo-element mix-blend compositing remains web-specific and is not reproduced by native borders. |
 | Embla browser carousel and resizable DOM geometry | Native ScrollView snap offsets, fractional cards, selection subscriptions and percentage panels | Authored counter/API and named-layout/bounds tests. DOM node access, browser plugins and cyclic cloned-slide animation remain outside these reviewed native APIs. |
 | HTML label-for lookup and repeated DOM IDs | Reviewed source pairs become scoped native fields with named focus/activation targets | Label names, input focus, repeated IDs, unmount cleanup and transparent grid scopes are tested; one missing upstream Amount input ID is explicitly repaired. Unknown or ambiguous ownership fails generation. Other recipe/API coverage remains pending. |
+| Upstream global theme formulas and CSS metric aliases | Retain the pinned global stylesheet alongside all eight component styles; include it in transitive native review fingerprints | Missing or corrupt globals fail snapshot validation. A global-only change invalidates affected component, example and block evidence. Native component metric implementation is still pending with the presets. |
 | Next Image server optimization and browser responsive image loading | Native OS image cache, source HTTPS URLs, native dimensions/cropping and composed SVG grayscale/brightness | Four authored aspect-ratio examples, alt/decorative image names, independent renderer loading, stale-source callbacks, visible errors and retry are tested. Browser srcset, preload and optimization stay web-specific. Unported local assets fail explicitly; source URLs require network availability. |
 | HTML file inputs, web routing and SSR examples | Require explicit native controls, file picking, submit/navigation callbacks and Expo screen composition | Remaining native examples/blocks and provider-independent bindings remain pending in the inventory below; a no-op callback is not completion. |
 
@@ -730,7 +731,7 @@ Every row applies to all listed registries. The machine inventory retains each s
 | dropdown-menu | ui | S3 | pending | Needs item, variant and dependency review. |
 | empty | ui | S3 | pending | Needs item, variant and dependency review. |
 | field | ui | S3 | pending | Needs item, variant and dependency review. |
-| form | ui | S3 | ported | React Hook Form provider/controller and native control binding retain refs, focus, labels, descriptions, validation messages, resolver integration, field arrays and submission. HTML slot/aria attributes become native control props and hints; device accessibility acceptance is separate. |
+| form | ui | S3 | partial | React Hook Form provider/controller and native control binding retain refs, focus, labels, descriptions, validation messages, resolver integration, field arrays and submission. HTML slot/aria attributes become native control props and hints; device accessibility acceptance is separate. Component preset styles and inherited global metric parity remain pending. |
 | hover-card | ui | S3 | pending | Needs item, variant and dependency review. |
 | input | ui | S3 | pending | Needs item, variant and dependency review. |
 | input-group | ui | S3 | pending | Needs item, variant and dependency review. |
