@@ -38,3 +38,6 @@ yarn-error.log*
 **/test-results/
 
 /tests/native-ui/.generated/
+
+# Rebuilt lossless native template payload for npm.
+/assets/ui/native-overlay.json.br

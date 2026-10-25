@@ -1,7 +1,7 @@
 import { Children, createContext, isValidElement, useContext, useRef, type ReactNode } from 'react';
 import { ScrollView, View, type ViewProps, type TextInputProps } from 'react-native';
 import { Combobox as LegacyCombobox } from './_selection';
-import { Box, LabelText, Muted, plainText, row, useControllable } from './_core';
+import { Box, LabelText, Muted, plainText, row, useControllable, nativeComponent } from './_core';
 import { OverlayRoot, OverlayTrigger, OverlayContent } from './_overlay';
 import { Button, type ButtonProps } from './button';
 import { Input } from './input';
@@ -65,7 +65,7 @@ function useCombobox() {
 function collect(node: ReactNode, result: unknown[] = [], labels = new Map<unknown, string>()) {
   Children.forEach(node, (child) => {
     if (!isValidElement<{ value?: unknown; children?: ReactNode }>(child)) return;
-    if (child.type === ComboboxItem) {
+    if (nativeComponent(child.type) === ComboboxItem) {
       result.push(child.props.value);
       labels.set(child.props.value, plainText(child.props.children));
     } else collect(child.props.children, result, labels);
@@ -76,8 +76,8 @@ function containsInput(node: ReactNode): boolean {
   return Children.toArray(node).some(
     (child) =>
       isValidElement<{ children?: ReactNode }>(child) &&
-      (child.type === ComboboxInput ||
-        child.type === ComboboxChipsInput ||
+      (nativeComponent(child.type) === ComboboxInput ||
+        nativeComponent(child.type) === ComboboxChipsInput ||
         containsInput(child.props.children)),
   );
 }

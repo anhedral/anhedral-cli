@@ -265,6 +265,8 @@ const PRODUCT_ITEMS = defineItems({
     package: packageSource(
       'styling',
       `import { light, dark, spacing } from './tokens.cjs';
+import { registryThemes } from './registry-themes';
+export { registryThemes };
 
 export const styling = {
   colors: {
@@ -273,6 +275,7 @@ export const styling = {
   },
   spacing,
   themes: { light, dark },
+  registryThemes,
 };
 `,
       {},

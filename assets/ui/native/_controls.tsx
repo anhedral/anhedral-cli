@@ -1,15 +1,16 @@
-import { createContext, useContext, useId, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useId, useRef, useState, type ReactNode } from 'react';
 import {
   View,
   Pressable,
   Switch as NativeSwitch,
+  useWindowDimensions,
   TextInput,
   type ViewProps,
   type TextInputProps,
   type PressableProps,
 } from 'react-native';
 import { useTheme } from '../theme';
-import { Box, LabelText, Muted, Surface, content, plainText, row, useControllable } from './_core';
+import { Box, LabelText, Muted, content, plainText, row, useControllable } from './_core';
 import { Button, type ButtonProps } from './button';
 import { Input } from './input';
 
@@ -42,7 +43,10 @@ export function Checkbox({
         disabled: !!disabled,
       }}
       disabled={disabled}
-      onPress={() => set(value !== true)}
+      onPress={(event) => {
+        props.onPress?.(event);
+        if (!event.isDefaultPrevented()) set(value !== true);
+      }}
       style={(state) => [
         row({ minHeight: 44, opacity: disabled ? 0.5 : 1 }),
         typeof style === 'function' ? style(state) : style,
@@ -69,11 +73,13 @@ export function Checkbox({
   );
 }
 export function Switch({
+  size = 'default',
   checked,
   defaultChecked = false,
   onCheckedChange,
   ...props
 }: Omit<React.ComponentProps<typeof NativeSwitch>, 'value' | 'onValueChange'> & {
+  size?: 'default' | 'sm';
   checked?: boolean;
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
@@ -85,6 +91,8 @@ export function Switch({
       accessible
       trackColor={{ false: colors.input, true: colors.primary }}
       {...props}
+      hitSlop={props.hitSlop ?? (size === 'sm' ? 12 : 8)}
+      style={[size === 'sm' && { transform: [{ scale: 0.8 }] }, props.style]}
       accessibilityRole="switch"
       accessibilityState={{ checked: value, disabled: !!props.disabled }}
       value={value}
@@ -111,7 +119,10 @@ export function Toggle({
       disabled={disabled}
       variant={value ? 'secondary' : variant === 'outline' ? 'outline' : 'ghost'}
       accessibilityState={{ selected: value, disabled: !!disabled }}
-      onPress={() => set(!value)}
+      onPress={(event) => {
+        props.onPress?.(event);
+        if (!event.isDefaultPrevented()) set(!value);
+      }}
     />
   );
 }
@@ -119,11 +130,16 @@ type GroupValue = {
   value: string[];
   set: (value: string[]) => void;
   multiple: boolean;
+  variant?: 'default' | 'outline';
+  size?: ButtonProps['size'];
   disabled?: boolean;
 };
 const ToggleContext = createContext<GroupValue | null>(null);
 export function ToggleGroup({
   type = 'single',
+  orientation = 'horizontal',
+  variant = 'default',
+  size = 'default',
   value,
   defaultValue,
   onValueChange,
@@ -133,6 +149,9 @@ export function ToggleGroup({
   ...props
 }: ViewProps & {
   type?: 'single' | 'multiple';
+  orientation?: 'horizontal' | 'vertical';
+  variant?: 'default' | 'outline';
+  size?: ButtonProps['size'];
   value?: string | string[];
   defaultValue?: string | string[];
   onValueChange?: (value: string | string[]) => void;
@@ -147,9 +166,12 @@ export function ToggleGroup({
   );
   return (
     <ToggleContext.Provider
-      value={{ value: selected, set, multiple: type === 'multiple', disabled }}
+      value={{ value: selected, set, multiple: type === 'multiple', disabled, variant, size }}
     >
-      <View {...props} style={row(style)}>
+      <View
+        {...props}
+        style={[row(), { flexDirection: orientation === 'vertical' ? 'column' : 'row' }, style]}
+      >
         {children}
       </View>
     </ToggleContext.Provider>
@@ -161,6 +183,8 @@ export function ToggleGroupItem({ value, disabled, ...props }: ButtonProps & { v
   const selected = group.value.includes(value);
   return (
     <Toggle
+      variant={group.variant}
+      size={group.size}
       {...props}
       disabled={disabled || group.disabled}
       pressed={selected}
@@ -221,7 +245,10 @@ export function RadioGroupItem({
         checked: group.value === value,
         disabled: !!(disabled || group.disabled),
       }}
-      onPress={() => group.set(value)}
+      onPress={(event) => {
+        props.onPress?.(event);
+        if (!event.isDefaultPrevented()) group.set(value);
+      }}
     >
       <LabelText accessibilityElementsHidden>{group.value === value ? '●' : '○'}</LabelText>
       {content(children)}
@@ -247,11 +274,35 @@ export function Tabs({
     </TabsContext.Provider>
   );
 }
-export const TabsList = ({ style, ...props }: ViewProps) => (
-  <Box accessibilityRole="tablist" {...props} style={row(style)} />
-);
+const TabListVariant = createContext<'default' | 'line'>('default');
+export function TabsList({
+  variant = 'default',
+  style,
+  ...props
+}: ViewProps & { variant?: 'default' | 'line' }) {
+  const { colors, radius } = useTheme();
+  return (
+    <TabListVariant.Provider value={variant}>
+      <Box
+        accessibilityRole="tablist"
+        {...props}
+        style={[
+          row(),
+          {
+            backgroundColor: variant === 'default' ? colors.muted : 'transparent',
+            borderRadius: radius,
+            padding: variant === 'default' ? 4 : 0,
+          },
+          style,
+        ]}
+      />
+    </TabListVariant.Provider>
+  );
+}
 export function TabsTrigger({ value, ...props }: ButtonProps & { value: string }) {
   const tabs = useContext(TabsContext);
+  const variant = useContext(TabListVariant),
+    { colors } = useTheme();
   if (!tabs) throw Error('TabsTrigger requires Tabs.');
   return (
     <Button
@@ -259,8 +310,19 @@ export function TabsTrigger({ value, ...props }: ButtonProps & { value: string }
       nativeID={`${tabs.id}-${value}-trigger`}
       accessibilityRole="tab"
       accessibilityState={{ selected: tabs.value === value, disabled: !!props.disabled }}
-      variant={tabs.value === value ? 'secondary' : 'ghost'}
-      onPress={() => tabs.set(value)}
+      variant={variant === 'line' ? 'ghost' : tabs.value === value ? 'secondary' : 'ghost'}
+      style={(state) => [
+        variant === 'line' && {
+          borderBottomWidth: 2,
+          borderBottomColor: tabs.value === value ? colors.foreground : 'transparent',
+          borderRadius: 0,
+        },
+        typeof props.style === 'function' ? props.style(state) : props.style,
+      ]}
+      onPress={(event) => {
+        props.onPress?.(event);
+        if (!event.isDefaultPrevented()) tabs.set(value);
+      }}
     />
   );
 }
@@ -400,19 +462,51 @@ export function AccordionItem({
 export const AccordionTrigger = CollapsibleTrigger;
 export const AccordionContent = CollapsibleContent;
 const FieldContext = createContext({ invalid: false, id: '' });
-export function Field({ invalid = false, style, ...props }: ViewProps & { invalid?: boolean }) {
+export function Field({
+  invalid = false,
+  orientation = 'vertical',
+  style,
+  ...props
+}: ViewProps & { invalid?: boolean; orientation?: 'horizontal' | 'vertical' | 'responsive' }) {
+  const { width: windowWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const width = containerWidth ?? windowWidth;
   const id = useId();
   return (
     <FieldContext.Provider value={{ invalid, id }}>
-      <Box {...props} style={style} />
+      <Box
+        {...props}
+        onLayout={(event) => {
+          setContainerWidth(event.nativeEvent.layout.width);
+          props.onLayout?.(event);
+        }}
+        style={[
+          {
+            flexDirection:
+              orientation === 'horizontal' || (orientation === 'responsive' && width >= 640)
+                ? 'row'
+                : 'column',
+            alignItems: orientation === 'horizontal' ? 'center' : 'stretch',
+          },
+          style,
+        ]}
+      />
     </FieldContext.Provider>
   );
 }
 export const FieldGroup = Box;
 export const FieldSet = Box;
 export const FieldContent = Box;
-export const FieldLegend = ({ style, ...props }: React.ComponentProps<typeof LabelText>) => (
-  <LabelText accessibilityRole="header" {...props} style={[{ fontWeight: '600' }, style]} />
+export const FieldLegend = ({
+  variant = 'legend',
+  style,
+  ...props
+}: React.ComponentProps<typeof LabelText> & { variant?: 'label' | 'legend' }) => (
+  <LabelText
+    accessibilityRole="header"
+    {...props}
+    style={[{ fontWeight: '600', fontSize: variant === 'legend' ? 16 : 14 }, style]}
+  />
 );
 export const FieldLabel = ({ ...props }: React.ComponentProps<typeof LabelText>) => {
   const field = useContext(FieldContext);
@@ -444,17 +538,9 @@ export function FieldInput(props: React.ComponentProps<typeof Input>) {
   return <Input accessibilityLabelledBy={`${field.id}-label`} invalid={field.invalid} {...props} />;
 }
 export const FieldSeparator = ({ children }: { children?: ReactNode }) => <Muted>{children}</Muted>;
-export const InputGroup = Surface;
-export const InputGroupAddon = ({ style, ...props }: ViewProps) => (
-  <Box {...props} style={row(style)} />
-);
-export const InputGroupText = Muted;
-export const InputGroupButton = Button;
-export const InputGroupInput = Input;
 export const Textarea = ({ style, ...props }: TextInputProps) => (
   <Input {...props} multiline textAlignVertical="top" style={[{ minHeight: 100 }, style]} />
 );
-export const InputGroupTextarea = Textarea;
 const OTPContext = createContext({ value: '', maxLength: 6, focus: () => {}, disabled: false });
 export function InputOTP({
   value,

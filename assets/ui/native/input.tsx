@@ -1,9 +1,11 @@
 import { TextInput, type TextInputProps } from 'react-native';
 import type { Ref } from 'react';
 import { useTheme } from '../theme';
+import { useNativeFontStyle } from './fonts';
 export type InputProps = TextInputProps & { invalid?: boolean; ref?: Ref<TextInput> };
 export function Input({ style, invalid, ...props }: InputProps) {
-  const { colors } = useTheme();
+  const { colors, radius } = useTheme();
+  const font = useNativeFontStyle();
   return (
     <TextInput
       {...props}
@@ -16,11 +18,12 @@ export function Input({ style, invalid, ...props }: InputProps) {
           borderColor: invalid ? colors.destructive : colors.input,
           backgroundColor: colors.background,
           color: colors.foreground,
-          borderRadius: 8,
+          borderRadius: radius,
           paddingHorizontal: 12,
           paddingVertical: 10,
           fontSize: 16,
         },
+        font,
         style,
       ]}
     />

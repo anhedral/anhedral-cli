@@ -184,6 +184,13 @@ test('main rejects topic PRs and identifies promotions without expanding hosted 
 test('native component CI covers owned source, consumers and its harness without unrelated builds', () => {
   for (const file of [
     'assets/ui/native/slider.tsx',
+    'assets/ui/native-chart-recipes.json.gz',
+    'assets/ui/native-fonts.json.gz',
+    'assets/ui/registry-themes.json.gz',
+    'scripts/native-chart-recipes.mjs',
+    'scripts/native-overlay.mjs',
+    'scripts/shadcn-fonts.mjs',
+    'tests/test-native-chart-recipes.test.mjs',
     'assets/ui/theme.tsx',
     'src/dependencies.ts',
     'src/scaffold/native-ui.ts',

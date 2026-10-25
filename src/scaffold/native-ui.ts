@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { gunzipSync, brotliDecompressSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import {
   NATIVE_ESLINT_VERSION,
@@ -11,6 +12,26 @@ import { writeReactLintConfig } from '../platforms/lint.js';
 /** Anhedral-maintained native shadcn port. Never imported by the DOM application. */
 export function scaffoldNativeUI(root: string): void {
   const assets = fileURLToPath(new URL('../../assets/ui/', import.meta.url));
+  let overlay: { schemaVersion: number; files: Record<string, string> } | undefined;
+  const readAsset = (file: string): string => {
+    if (existsSync(assets + file)) return readFileSync(assets + file, 'utf8');
+    if (existsSync(assets + file + '.gz'))
+      return gunzipSync(readFileSync(assets + file + '.gz'), {
+        maxOutputLength: 16 * 1024 * 1024,
+      }).toString();
+    overlay ??= JSON.parse(
+      brotliDecompressSync(readFileSync(assets + 'native-overlay.json.br'), {
+        maxOutputLength: 16 * 1024 * 1024,
+      }).toString(),
+    );
+    if (
+      overlay?.schemaVersion !== 1 ||
+      !Object.hasOwn(overlay.files, file) ||
+      typeof overlay.files[file] !== 'string'
+    )
+      throw Error('Missing native template: ' + file);
+    return overlay.files[file]!;
+  };
   const registry = JSON.parse(readFileSync(assets + 'native/registry.json', 'utf8')) as {
     components: { id: string; file: string }[];
     supportFiles: string[];
@@ -22,6 +43,33 @@ export function scaffoldNativeUI(root: string): void {
     'text',
     'theme-switcher',
   ];
+  put(root, 'packages/native-ui/native-fonts.json', readAsset('native-fonts.json'));
+  const recipes = JSON.parse(readAsset('native-chart-recipes.json')) as {
+    schemaVersion: number;
+    upstream: unknown;
+    recipes: {
+      kind: 'block' | 'example';
+      style: string;
+      name: string;
+      source: string;
+      origin: string;
+      upstreamSha256: string;
+      nativeSha256: string;
+    }[];
+  };
+  for (const recipe of recipes.recipes) {
+    if (
+      !/^(default|new-york|new-york-v4|base|radix|aria)$/.test(recipe.style) ||
+      !/^chart-[a-z0-9-]+$/.test(recipe.name)
+    )
+      throw Error('Unsafe native recipe path.');
+    const folder = recipe.kind === 'example' ? 'examples' : 'recipes';
+    put(root, `packages/native-ui/src/${folder}/${recipe.style}/${recipe.name}.tsx`, recipe.source);
+  }
+  json(root, 'packages/native-ui/NATIVE_RECIPES.json', {
+    ...recipes,
+    recipes: recipes.recipes.map(({ source: _source, ...metadata }) => metadata),
+  });
   const nativeFiles = [...registry.components.map((item) => item.file), ...registry.supportFiles];
   for (const file of [
     'theme.tsx',
@@ -31,10 +79,7 @@ export function scaffoldNativeUI(root: string): void {
     'UPSTREAM-LOCK.json',
     ...nativeFiles.map((name) => `native/${name}`),
   ]) {
-    const source = readFileSync(
-      fileURLToPath(new URL(`../../assets/ui/${file}`, import.meta.url)),
-      'utf8',
-    );
+    const source = readAsset(file);
     put(
       root,
       `packages/native-ui/${file.endsWith('.tsx') || file.endsWith('.ts') ? 'src/' : ''}${file}`,
@@ -60,7 +105,13 @@ export function scaffoldNativeUI(root: string): void {
     root,
     'packages/native-ui/src/index.ts',
     `export * from './theme';\n` +
-      components.map((name) => `export * from './native/${name}';\n`).join('') +
+      components
+        .map((name) =>
+          name === 'toast'
+            ? `export { ToastProvider, useToast, Toast, Toaster, ToastViewport, ToastTitle, ToastDescription, ToastAction, ToastClose, ToastContent, ToastPortal, createToastManager, useToastManager, toast as nativeToastManager } from './native/toast';\n`
+            : `export * from './native/${name}';\n`,
+        )
+        .join('') +
       (registry.supportModules ?? [])
         .map((item) => `export { ${item.exports.join(', ')} } from './native/${item.file}';\n`)
         .join(''),
@@ -75,6 +126,9 @@ export function scaffoldNativeUI(root: string): void {
       './theme': './src/theme.tsx',
       './hooks/*': './src/native/*.tsx',
       './lib/*': './src/native/*.tsx',
+      './blocks/*': './src/recipes/*.tsx',
+      './examples/*': './src/examples/*.tsx',
+      './recipes': './NATIVE_RECIPES.json',
     },
     scripts: { typecheck: 'tsc --noEmit', lint: 'eslint . --max-warnings 0' },
     dependencies: {
@@ -88,6 +142,7 @@ export function scaffoldNativeUI(root: string): void {
       'react-native': MOBILE_APP_DEPENDENCIES.dependencies!['react-native'],
     },
     devDependencies: {
+      ...NATIVE_UI_DEPENDENCIES.devDependencies,
       typescript: MOBILE_APP_DEPENDENCIES.devDependencies!.typescript,
       '@types/react': MOBILE_APP_DEPENDENCIES.devDependencies!['@types/react'],
       react: MOBILE_APP_DEPENDENCIES.dependencies!.react,
@@ -107,6 +162,7 @@ export function scaffoldNativeUI(root: string): void {
       noEmit: true,
       skipLibCheck: true,
       esModuleInterop: true,
+      resolveJsonModule: true,
     },
     include: ['src/**/*.ts', 'src/**/*.tsx'],
   });

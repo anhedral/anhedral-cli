@@ -436,7 +436,7 @@
       },
       "package": {
         "name": "styling",
-        "source": "import { light, dark, spacing } from './tokens.cjs';\n\nexport const styling = {\n  colors: {\n    foreground: 'hsl(' + light['--foreground'] + ')',\n    background: 'hsl(' + light['--background'] + ')',\n  },\n  spacing,\n  themes: { light, dark },\n};\n",
+        "source": "import { light, dark, spacing } from './tokens.cjs';\nimport { registryThemes } from './registry-themes';\nexport { registryThemes };\n\nexport const styling = {\n  colors: {\n    foreground: 'hsl(' + light['--foreground'] + ')',\n    background: 'hsl(' + light['--background'] + ')',\n  },\n  spacing,\n  themes: { light, dark },\n  registryThemes,\n};\n",
         "dependencies": {}
       }
     }

@@ -1,5 +1,7 @@
 import {
   Children,
+  Fragment,
+  cloneElement,
   isValidElement,
   createContext,
   useContext,
@@ -9,6 +11,8 @@ import {
 } from 'react';
 import {
   View,
+  StyleSheet,
+  processColor,
   I18nManager,
   Platform,
   Text as NativeText,
@@ -16,9 +20,26 @@ import {
   type TextProps,
   type StyleProp,
   type ViewStyle,
+  type TextStyle,
 } from 'react-native';
 import { useTheme } from '../theme';
+import { useNativeFontStyle, type NativeFontRole } from './fonts';
 
+/** Identity protocol used by native registry styling wrappers; no DOM inspection is involved. */
+export function nativeComponent(component: unknown): unknown {
+  const seen = new Set<unknown>();
+  let current = component;
+  while (
+    current &&
+    (typeof current === 'function' || typeof current === 'object') &&
+    'nativeRegistryComponent' in current
+  ) {
+    if (seen.has(current)) throw Error('Cyclic native component wrapper.');
+    seen.add(current);
+    current = current.nativeRegistryComponent;
+  }
+  return current;
+}
 export function useControllable<T>(value: T | undefined, initial: T, change?: (value: T) => void) {
   const [internal, setInternal] = useState(initial);
   const current = value === undefined ? internal : value;
@@ -48,10 +69,12 @@ export function plainText(node: ReactNode): string {
     )
     .join('');
 }
-export function content(children: ReactNode) {
+export function content(children: ReactNode): ReactNode {
   return Children.map(children, (child) =>
     typeof child === 'string' || typeof child === 'number' || typeof child === 'bigint' ? (
       <LabelText>{String(child)}</LabelText>
+    ) : isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment ? (
+      cloneElement(child, { children: content(child.props.children) })
     ) : (
       child
     ),
@@ -64,12 +87,45 @@ export function Box({ children, style, ...props }: ViewProps) {
     </View>
   );
 }
-export function LabelText({ style, ...props }: TextProps) {
+export function withAlpha(color: string, opacity: number) {
+  const parsed = processColor(color);
+  if (typeof parsed !== 'number') return color;
+  const alpha = (Math.min(1, Math.max(0, opacity)) * (parsed >>> 24)) / 255;
+  return `rgba(${(parsed >>> 16) & 255}, ${(parsed >>> 8) & 255}, ${parsed & 255}, ${alpha})`;
+}
+const TextToneContext = createContext<string | undefined>(undefined);
+export const TextToneProvider = TextToneContext.Provider;
+export const useTextTone = () => useContext(TextToneContext);
+export const NativeTextStyleContext = createContext<{
+  style?: StyleProp<TextStyle>;
+  fontRole?: NativeFontRole;
+}>({});
+export const NativeTextStyleProvider = NativeTextStyleContext.Provider;
+export function LabelText({
+  style,
+  fontRole,
+  ...props
+}: TextProps & { fontRole?: NativeFontRole }) {
   const { colors } = useTheme();
+  const tone = useTextTone();
+  const inherited = useContext(NativeTextStyleContext);
+  const current = StyleSheet.flatten([inherited.style, style]);
+  const weight = current?.fontWeight === 'bold' ? 700 : Number(current?.fontWeight) || 400;
+  const selected = useNativeFontStyle(
+    fontRole ?? inherited.fontRole ?? 'sans',
+    weight,
+    current?.fontStyle === 'italic',
+  );
   return (
     <NativeText
       {...props}
-      style={[{ color: colors.foreground, fontSize: 14, lineHeight: 21 }, style]}
+      style={[
+        { color: colors.foreground, fontSize: 14, lineHeight: 21 },
+        inherited.style,
+        tone && { color: tone },
+        style,
+        !current?.fontFamily && selected,
+      ]}
     />
   );
 }
@@ -78,7 +134,7 @@ export function Muted({ style, ...props }: TextProps) {
   return <LabelText {...props} style={[{ color: colors['muted-foreground'] }, style]} />;
 }
 export function Surface({ style, ...props }: ViewProps) {
-  const { colors } = useTheme();
+  const { colors, radius } = useTheme();
   return (
     <Box
       {...props}
@@ -87,7 +143,7 @@ export function Surface({ style, ...props }: ViewProps) {
           backgroundColor: colors.card,
           borderColor: colors.border,
           borderWidth: 1,
-          borderRadius: 10,
+          borderRadius: radius + 2,
           padding: 12,
         },
         style,

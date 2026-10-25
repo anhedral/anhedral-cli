@@ -1,4 +1,5 @@
-import { Text as NativeText, StyleSheet, type TextProps as NativeTextProps } from 'react-native';
+import { StyleSheet, type TextProps as NativeTextProps } from 'react-native';
+import { LabelText as NativeText, useTextTone } from './_core';
 import { useTheme } from '../theme';
 export type TextProps = NativeTextProps & {
   variant?: 'heading' | 'title' | 'body' | 'muted' | 'caption' | 'label';
@@ -13,8 +14,15 @@ const typography = StyleSheet.create({
 });
 export function Text({ variant = 'body', style, ...props }: TextProps) {
   const { colors } = useTheme();
+  const tone = useTextTone();
   const color = ['muted', 'caption'].includes(variant)
     ? colors['muted-foreground']
-    : colors.foreground;
-  return <NativeText {...props} style={[typography[variant], { color }, style]} />;
+    : (tone ?? colors.foreground);
+  return (
+    <NativeText
+      fontRole={variant === 'heading' || variant === 'title' ? 'heading' : 'sans'}
+      {...props}
+      style={[typography[variant], { color }, style]}
+    />
+  );
 }

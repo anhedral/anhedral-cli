@@ -7,33 +7,62 @@ import {
   AccessibilityInfo,
   type ImageProps,
   type ViewProps,
+  type PressableProps,
+  Pressable,
   type TextProps,
 } from 'react-native';
 import { useTheme } from '../theme';
-import { Box, LabelText, Muted, Surface, row, monospace } from './_core';
+import { useNativeFontStyle } from './fonts';
+import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
 import { Button, type ButtonProps } from './button';
 
+const AlertTone = createContext<'default' | 'destructive'>('default');
 export function Alert({
   variant = 'default',
+  children,
   style,
   ...props
 }: ViewProps & { variant?: 'default' | 'destructive' }) {
   const { colors } = useTheme();
+  const text = plainText(children);
+  useEffect(() => {
+    if (text) AccessibilityInfo.announceForAccessibility(text);
+  }, [text]);
   return (
-    <Surface
-      accessibilityRole="alert"
+    <AlertTone.Provider value={variant}>
+      <Surface
+        accessibilityRole="alert"
+        accessibilityLiveRegion="assertive"
+        {...props}
+        style={[{ borderColor: colors.border }, style]}
+      >
+        {children}
+      </Surface>
+    </AlertTone.Provider>
+  );
+}
+export function AlertTitle({ style, ...props }: TextProps) {
+  const variant = useContext(AlertTone),
+    { colors } = useTheme();
+  return (
+    <LabelText
+      accessibilityRole="header"
       {...props}
       style={[
-        { borderColor: variant === 'destructive' ? colors.destructive : colors.border },
+        { fontWeight: '500' },
+        variant === 'destructive' && { color: colors.destructive },
         style,
       ]}
     />
   );
 }
-export const AlertTitle = ({ style, ...props }: TextProps) => (
-  <LabelText accessibilityRole="header" {...props} style={[{ fontWeight: '600' }, style]} />
-);
-export const AlertDescription = Muted;
+export function AlertDescription({ style, ...props }: TextProps) {
+  const variant = useContext(AlertTone),
+    { colors } = useTheme();
+  return (
+    <Muted {...props} style={[variant === 'destructive' && { color: colors.destructive }, style]} />
+  );
+}
 export const AlertAction = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={[{ position: 'absolute', right: 12, top: 12 }, style]} />
 );
@@ -52,21 +81,29 @@ export function Badge({
   variant = 'default',
   children,
   style,
+  onPress,
   ...props
 }: ViewProps & {
+  onPress?: PressableProps['onPress'];
   variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
 }) {
-  const { colors } = useTheme();
-  const filled = ['default', 'secondary', 'destructive'].includes(variant);
+  const { colors, mode } = useTheme();
+  const filled = ['default', 'secondary'].includes(variant);
   const backgroundColor =
     variant === 'destructive'
       ? colors.destructive
       : variant === 'secondary'
         ? colors.secondary
         : colors.primary;
+  const Host = onPress ? Pressable : View;
   return (
-    <View
+    <Host
       {...props}
+      onPress={onPress}
+      accessibilityRole={
+        onPress ? (variant === 'link' ? 'link' : 'button') : props.accessibilityRole
+      }
+      hitSlop={onPress ? 14 : undefined}
       style={[
         {
           alignSelf: 'flex-start',
@@ -79,7 +116,12 @@ export function Badge({
             : variant === 'outline'
               ? colors.border
               : 'transparent',
-          backgroundColor: filled ? backgroundColor : colors.background,
+          backgroundColor:
+            variant === 'destructive'
+              ? withAlpha(colors.destructive ?? colors.foreground, mode === 'dark' ? 0.2 : 0.1)
+              : filled
+                ? backgroundColor
+                : 'transparent',
         },
         style,
       ]}
@@ -87,17 +129,31 @@ export function Badge({
       <LabelText
         style={{
           color:
-            filled && variant !== 'secondary' ? colors['primary-foreground'] : colors.foreground,
+            variant === 'destructive'
+              ? colors.destructive
+              : variant === 'link'
+                ? colors.primary
+                : variant === 'secondary'
+                  ? colors['secondary-foreground']
+                  : filled
+                    ? colors['primary-foreground']
+                    : colors.foreground,
           fontSize: 12,
         }}
       >
         {children}
       </LabelText>
-    </View>
+    </Host>
   );
 }
 const AvatarContext = createContext({ loaded: false, setLoaded: (_value: boolean) => {} });
-export function Avatar({ children, style, ...props }: ViewProps) {
+export function Avatar({
+  children,
+  style,
+  size = 'default',
+  ...props
+}: ViewProps & { size?: 'default' | 'lg' | 'sm' }) {
+  const extent = size === 'lg' ? 40 : size === 'sm' ? 24 : 32;
   const [loaded, setLoaded] = useState(false);
   const { colors } = useTheme();
   return (
@@ -106,9 +162,9 @@ export function Avatar({ children, style, ...props }: ViewProps) {
         {...props}
         style={[
           {
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: extent,
+            height: extent,
+            borderRadius: extent / 2,
             overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center',
@@ -196,28 +252,115 @@ export const EmptyHeader = Box;
 export const EmptyTitle = AlertTitle;
 export const EmptyDescription = Muted;
 export const EmptyContent = Box;
-export const EmptyMedia = Box;
-export const Item = Surface;
+export function EmptyMedia({
+  variant = 'default',
+  style,
+  ...props
+}: ViewProps & { variant?: 'default' | 'icon' }) {
+  const { colors, radius } = useTheme();
+  return (
+    <Box
+      {...props}
+      style={[
+        { alignItems: 'center', justifyContent: 'center' },
+        variant === 'icon' && {
+          width: 32,
+          height: 32,
+          borderRadius: radius,
+          backgroundColor: colors.muted,
+        },
+        style,
+      ]}
+    />
+  );
+}
+const ItemSize = createContext<'default' | 'sm' | 'xs'>('default');
+export function Item({
+  variant = 'default',
+  size = 'default',
+  style,
+  ...props
+}: ViewProps & { variant?: 'default' | 'outline' | 'muted'; size?: 'default' | 'sm' | 'xs' }) {
+  const { colors, radius } = useTheme();
+  return (
+    <ItemSize.Provider value={size}>
+      <Box
+        {...props}
+        style={[
+          {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            borderRadius: radius,
+            borderWidth: 1,
+            borderColor: variant === 'outline' ? colors.border : 'transparent',
+            backgroundColor:
+              variant === 'muted'
+                ? withAlpha(colors.muted ?? colors.background, 0.5)
+                : 'transparent',
+            paddingHorizontal: size === 'xs' ? 10 : 12,
+            paddingVertical: size === 'xs' ? 8 : 10,
+            gap: size === 'xs' ? 8 : 10,
+          },
+          style,
+        ]}
+      />
+    </ItemSize.Provider>
+  );
+}
 export const ItemGroup = Box;
-export const ItemContent = Box;
-export const ItemTitle = AlertTitle;
-export const ItemDescription = Muted;
+export function ItemContent({ style, ...props }: ViewProps) {
+  const size = useContext(ItemSize);
+  return <Box {...props} style={[{ flex: 1, minWidth: 0, gap: size === 'xs' ? 0 : 4 }, style]} />;
+}
+export const ItemTitle = ({ style, ...props }: TextProps) => (
+  <LabelText {...props} style={[{ fontWeight: '500' }, style]} />
+);
+export function ItemDescription({ style, ...props }: TextProps) {
+  const size = useContext(ItemSize);
+  return <Muted {...props} style={[{ fontSize: size === 'xs' ? 12 : 14 }, style]} />;
+}
 export const ItemActions = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={row(style)} />
 );
-export const ItemMedia = Box;
+export function ItemMedia({
+  variant = 'default',
+  style,
+  ...props
+}: ViewProps & { variant?: 'default' | 'icon' | 'image' }) {
+  const { radius } = useTheme();
+  const size = useContext(ItemSize);
+  const extent = size === 'xs' ? 24 : size === 'sm' ? 32 : 40;
+  return (
+    <Box
+      {...props}
+      style={[
+        { alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+        variant === 'image' && {
+          width: extent,
+          height: extent,
+          borderRadius: Math.max(0, radius - 4),
+          overflow: 'hidden',
+        },
+        variant === 'icon' && { width: 16, height: 16 },
+        style,
+      ]}
+    />
+  );
+}
 export const ItemHeader = Box;
 export const ItemFooter = ItemActions;
 export const ItemSeparator = Separator;
 export const Kbd = ({ style, ...props }: TextProps) => {
   const { colors } = useTheme();
+  const font = useNativeFontStyle('mono');
   return (
     <LabelText
       {...props}
       style={[
         {
           backgroundColor: colors.muted,
-          fontFamily: monospace,
+          fontFamily: font.fontFamily ?? monospace,
           paddingHorizontal: 6,
           borderRadius: 4,
         },
@@ -230,6 +373,7 @@ export const KbdGroup = ItemActions;
 export const Typography = LabelText;
 export const TypographyH1 = ({ style, ...props }: TextProps) => (
   <LabelText
+    fontRole="heading"
     accessibilityRole="header"
     {...props}
     style={[{ fontSize: 32, lineHeight: 40, fontWeight: '700' }, style]}
@@ -241,7 +385,9 @@ export const TypographyH2 = ({ style, ...props }: TextProps) => (
 export const TypographyH3 = ({ style, ...props }: TextProps) => (
   <TypographyH1 {...props} style={[{ fontSize: 22, lineHeight: 30 }, style]} />
 );
-export const TypographyH4 = AlertTitle;
+export const TypographyH4 = ({ style, ...props }: TextProps) => (
+  <TypographyH1 {...props} style={[{ fontSize: 18, lineHeight: 26, fontWeight: '600' }, style]} />
+);
 export const TypographyP = LabelText;
 export const TypographyMuted = Muted;
 export const TypographyLead = ({ style, ...props }: TextProps) => (
@@ -338,7 +484,45 @@ export const BreadcrumbPage = ({ style, ...props }: TextProps) => (
 );
 export const BreadcrumbSeparator = () => <Muted accessibilityElementsHidden>›</Muted>;
 export const BreadcrumbEllipsis = () => <Muted accessibilityLabel="More breadcrumb items">…</Muted>;
-export const Marker = ({ style, ...props }: ViewProps) => <Box {...props} style={row(style)} />;
+export function Marker({
+  variant = 'default',
+  children,
+  style,
+  ...props
+}: ViewProps & { variant?: 'default' | 'border' | 'separator' }) {
+  const { colors } = useTheme();
+  return (
+    <Box
+      {...props}
+      style={[
+        row(),
+        { width: '100%' },
+        variant === 'border' && {
+          borderBottomWidth: 1,
+          borderColor: colors.border,
+          paddingBottom: 8,
+        },
+        style,
+      ]}
+    >
+      {variant === 'separator' && (
+        <View
+          testID={props.testID ? props.testID + '-before' : undefined}
+          accessible={false}
+          style={{ height: 1, flex: 1, backgroundColor: colors.border }}
+        />
+      )}
+      {children}
+      {variant === 'separator' && (
+        <View
+          testID={props.testID ? props.testID + '-after' : undefined}
+          accessible={false}
+          style={{ height: 1, flex: 1, backgroundColor: colors.border }}
+        />
+      )}
+    </Box>
+  );
+}
 export const MarkerContent = Muted;
 export const MarkerIcon = Box;
 export const Message = ({

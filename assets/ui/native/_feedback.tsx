@@ -1,106 +1,10 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ScrollView, View, AccessibilityInfo, type ViewProps } from 'react-native';
+import { createContext, useContext, useState, type ReactNode } from 'react';
+import { ScrollView, View, type ViewProps } from 'react-native';
 import { Box, LabelText, Muted, Surface, row } from './_core';
 import { Button, type ButtonProps } from './button';
 import { Input } from './input';
 import { Skeleton } from './_display';
 import { OverlayRoot, OverlayContent, useOverlay } from './_overlay';
-export type ToastMessage = {
-  id?: string;
-  title: string;
-  description?: string;
-  duration?: number;
-  action?: { label: string; onPress: () => void };
-};
-const ToastContext = createContext<{
-  messages: (ToastMessage & { id: string })[];
-  toast: (message: ToastMessage) => string;
-  dismiss: (id?: string) => void;
-} | null>(null);
-export function ToastProvider({ children }: { children: ReactNode }) {
-  const [messages, set] = useState<(ToastMessage & { id: string })[]>([]);
-  const counter = useRef(0);
-  const dismiss = (id?: string) =>
-    set((before) => (id ? before.filter((item) => item.id !== id) : []));
-  const toast = (message: ToastMessage) => {
-    const id = message.id ?? `toast-${++counter.current}`;
-    set((before) => [...before.filter((item) => item.id !== id), { ...message, id }]);
-    AccessibilityInfo.announceForAccessibility(
-      [message.title, message.description].filter(Boolean).join('. '),
-    );
-    return id;
-  };
-  return (
-    <ToastContext.Provider value={{ messages, toast, dismiss }}>{children}</ToastContext.Provider>
-  );
-}
-export function useToast() {
-  const value = useContext(ToastContext);
-  if (!value) throw Error('useToast requires ToastProvider.');
-  return value;
-}
-export function Toast({ message }: { message: ToastMessage & { id: string } }) {
-  const { dismiss } = useToast();
-  const latest = useRef(dismiss);
-  latest.current = dismiss;
-  useEffect(() => {
-    const duration = message.duration ?? 5000;
-    if (!Number.isFinite(duration) || duration <= 0) return;
-    const timer = setTimeout(() => latest.current(message.id), duration);
-    return () => clearTimeout(timer);
-  }, [message.id, message.duration]);
-  return (
-    <Surface accessibilityRole="alert" accessibilityLiveRegion="polite">
-      <ToastTitle>{message.title}</ToastTitle>
-      {message.description && <ToastDescription>{message.description}</ToastDescription>}
-      {message.action && (
-        <Button
-          onPress={() => {
-            message.action?.onPress();
-            dismiss(message.id);
-          }}
-        >
-          {message.action.label}
-        </Button>
-      )}
-      <Button
-        variant="ghost"
-        accessibilityLabel={`Dismiss ${message.title}`}
-        onPress={() => dismiss(message.id)}
-      >
-        Dismiss
-      </Button>
-    </Surface>
-  );
-}
-export function Toaster(props: ViewProps) {
-  const { messages } = useToast();
-  return (
-    <Box {...props}>
-      {messages.map((message) => (
-        <Toast key={message.id} message={message} />
-      ))}
-    </Box>
-  );
-}
-export const ToastViewport = Toaster;
-export const ToastTitle = ({ style, ...props }: React.ComponentProps<typeof LabelText>) => (
-  <LabelText {...props} style={[{ fontWeight: '600' }, style]} />
-);
-export const ToastDescription = Muted;
-export const ToastAction = Button;
-export function ToastClose({
-  id,
-  children = 'Dismiss',
-  ...props
-}: Omit<ButtonProps, 'children'> & { id: string; children?: ReactNode }) {
-  const { dismiss } = useToast();
-  return (
-    <Button {...props} onPress={() => dismiss(id)}>
-      {children}
-    </Button>
-  );
-}
 const SidebarContext = createContext<{ open: boolean; setOpen: (value: boolean) => void } | null>(
   null,
 );

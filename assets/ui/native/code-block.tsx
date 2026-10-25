@@ -8,9 +8,10 @@ import {
   type ReactNode,
 } from 'react';
 import { ScrollView, View, Text, type ViewProps } from 'react-native';
-import { Box, LabelText, Muted, row, monospace } from './_core';
+import { Box, LabelText, Muted, row, monospace, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
+import { useNativeFontStyle } from './fonts';
 export type CodeToken = {
   text: string;
   kind: 'plain' | 'keyword' | 'string' | 'number' | 'comment' | 'added' | 'removed';
@@ -99,6 +100,9 @@ export function CodeBlockContent({
   ...props
 }: ViewProps & { wrap?: boolean; lineNumbers?: boolean; startLine?: number }) {
   const { code, language, size } = useContext(CodeContext);
+  const normal = useNativeFontStyle('mono'),
+    strong = useNativeFontStyle('mono', 600);
+  const fontFamily = normal.fontFamily ?? monospace;
   const { colors } = useTheme();
   const source = typeof children === 'string' ? children : code;
   const palette = {
@@ -115,13 +119,16 @@ export function CodeBlockContent({
     tokenizeCode(value, language).map((token, index) => (
       <Text
         key={index}
-        style={{ color: palette[token.kind], fontWeight: token.kind === 'keyword' ? '600' : '400' }}
+        style={[
+          { color: palette[token.kind], fontWeight: token.kind === 'keyword' ? '600' : '400' },
+          token.kind === 'keyword' ? strong : normal,
+        ]}
       >
         {token.text}
       </Text>
     ));
   const customLines = Children.toArray(children).some(
-    (child) => isValidElement(child) && child.type === CodeBlockLine,
+    (child) => isValidElement(child) && nativeComponent(child.type) === CodeBlockLine,
   );
   return (
     <ScrollView horizontal={!wrap} contentContainerStyle={wrap ? { flexGrow: 1 } : undefined}>
@@ -143,7 +150,8 @@ export function CodeBlockContent({
             ))
         ) : customLines ? (
           Children.map(children, (child, index) =>
-            isValidElement<{ lineNumber?: number }>(child) && child.type === CodeBlockLine
+            isValidElement<{ lineNumber?: number }>(child) &&
+            nativeComponent(child.type) === CodeBlockLine
               ? cloneElement(child, { lineNumber: lineNumbers ? start + index : undefined })
               : child,
           )
@@ -151,7 +159,7 @@ export function CodeBlockContent({
           <Text
             selectable
             accessibilityLabel={source || undefined}
-            style={{ fontFamily: monospace, fontSize: size === 'sm' ? 12 : 13, lineHeight: 20 }}
+            style={{ fontFamily, fontSize: size === 'sm' ? 12 : 13, lineHeight: 20 }}
           >
             {children === undefined || typeof children === 'string' ? tokens(source) : children}
           </Text>
@@ -168,6 +176,7 @@ export function CodeBlockLine({
   ...props
 }: ViewProps & { variant?: 'default' | 'added' | 'removed' | 'highlighted'; lineNumber?: number }) {
   const { colors } = useTheme();
+  const fontFamily = useNativeFontStyle('mono').fontFamily ?? monospace;
   const empty =
     children === undefined ||
     children === null ||
@@ -198,7 +207,7 @@ export function CodeBlockLine({
           accessible={false}
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
-          style={{ fontFamily: monospace, minWidth: 28, textAlign: 'right' }}
+          style={{ fontFamily, minWidth: 28, textAlign: 'right' }}
         >
           {lineNumber}
         </Muted>
@@ -206,7 +215,7 @@ export function CodeBlockLine({
       <Text
         selectable
         style={{
-          fontFamily: monospace,
+          fontFamily,
           fontSize: 13,
           lineHeight: 20,
           color:

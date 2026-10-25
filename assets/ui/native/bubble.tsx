@@ -1,9 +1,12 @@
 import { Children, createContext, useContext } from 'react';
 import type { ViewProps } from 'react-native';
-import { Box, LabelText, row } from './_core';
+import { Box, LabelText, row, TextToneProvider, withAlpha } from './_core';
 import { useTheme } from '../theme';
-const Foreground = createContext<string | undefined>(undefined);
 type Variant = 'default' | 'secondary' | 'muted' | 'tinted' | 'outline' | 'ghost' | 'destructive';
+const BubbleState = createContext<{ variant: Variant; align: 'start' | 'end' }>({
+  variant: 'default',
+  align: 'start',
+});
 export function Bubble({
   variant = 'default',
   align,
@@ -12,24 +15,12 @@ export function Bubble({
   style,
   ...props
 }: ViewProps & { variant?: Variant; align?: 'start' | 'end'; side?: 'start' | 'end' }) {
-  const { colors } = useTheme();
   const selected = align ?? side;
-  const background =
-    variant === 'default'
-      ? colors.primary
-      : variant === 'secondary' || variant === 'tinted'
-        ? colors.secondary
-        : variant === 'muted'
-          ? colors.muted
-          : variant === 'destructive'
-            ? colors.destructive
-            : 'transparent';
-  const foreground =
-    variant === 'default' || variant === 'destructive'
-      ? colors['primary-foreground']
-      : colors.foreground;
+  const direct = Children.toArray(children).some(
+    (child) => typeof child === 'string' || typeof child === 'number',
+  );
   return (
-    <Foreground.Provider value={foreground}>
+    <BubbleState.Provider value={{ variant, align: selected }}>
       <Box
         {...props}
         style={[
@@ -37,39 +28,69 @@ export function Bubble({
             position: 'relative',
             alignSelf: selected === 'end' ? 'flex-end' : 'flex-start',
             maxWidth: '90%',
+            gap: 4,
+          },
+          style,
+        ]}
+      >
+        {direct ? <BubbleContent>{children}</BubbleContent> : children}
+      </Box>
+    </BubbleState.Provider>
+  );
+}
+export function BubbleContent({ children, style, ...props }: ViewProps) {
+  const { variant, align } = useContext(BubbleState),
+    { colors, radius, mode, bubbleTinted } = useTheme();
+  const background =
+    variant === 'default'
+      ? colors.primary
+      : variant === 'secondary'
+        ? colors.secondary
+        : variant === 'muted'
+          ? colors.muted
+          : variant === 'tinted'
+            ? bubbleTinted
+            : variant === 'outline'
+              ? colors.background
+              : variant === 'destructive'
+                ? withAlpha(colors.destructive ?? colors.foreground, mode === 'dark' ? 0.2 : 0.1)
+                : 'transparent';
+  const foreground =
+    variant === 'default'
+      ? colors['primary-foreground']
+      : variant === 'secondary'
+        ? colors['secondary-foreground']
+        : variant === 'destructive'
+          ? colors.destructive
+          : colors.foreground;
+  return (
+    <TextToneProvider value={foreground}>
+      <Box
+        {...props}
+        style={[
+          {
+            alignSelf: align === 'end' ? 'flex-end' : 'flex-start',
+            minWidth: 0,
             backgroundColor: background,
-            borderWidth: variant === 'outline' ? 1 : 0,
-            borderColor: colors.border,
-            borderRadius: 12,
-            padding: 12,
-            gap: 6,
+            borderWidth: variant === 'ghost' ? 0 : 1,
+            borderColor: variant === 'outline' ? colors.border : 'transparent',
+            borderRadius: variant === 'ghost' ? 0 : radius + 4,
+            paddingHorizontal: variant === 'ghost' ? 0 : 12,
+            paddingVertical: variant === 'ghost' ? 0 : 8,
+            gap: 4,
           },
           style,
         ]}
       >
         {Children.map(children, (child) =>
           typeof child === 'string' || typeof child === 'number' ? (
-            <LabelText style={{ color: foreground }}>{child}</LabelText>
+            <LabelText>{child}</LabelText>
           ) : (
             child
           ),
         )}
       </Box>
-    </Foreground.Provider>
-  );
-}
-export function BubbleContent({ children, ...props }: ViewProps) {
-  const color = useContext(Foreground);
-  return (
-    <Box {...props}>
-      {Children.map(children, (child) =>
-        typeof child === 'string' || typeof child === 'number' ? (
-          <LabelText style={{ color }}>{child}</LabelText>
-        ) : (
-          child
-        ),
-      )}
-    </Box>
+    </TextToneProvider>
   );
 }
 export const BubbleGroup = ({ style, ...props }: ViewProps) => (

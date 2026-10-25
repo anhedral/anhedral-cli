@@ -1,4 +1,6 @@
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import path from 'node:path';
 import type { RecipeContext } from '../registry/types.js';
 import { json, patchPackage, put, readJson } from './files.js';
@@ -55,6 +57,16 @@ exports.dark = {
 exports.spacing = { small: 4, medium: 8, large: 16 };
 `,
   );
+  const registryThemes = JSON.parse(
+    gunzipSync(readFileSync(new URL('../../assets/ui/registry-themes.json.gz', import.meta.url)), {
+      maxOutputLength: 1024 * 1024,
+    }).toString(),
+  ) as Record<string, { css: { light: Record<string, string>; dark: Record<string, string> } }>;
+  put(
+    root,
+    'packages/styling/src/registry-themes.ts',
+    'export const registryThemes = ' + JSON.stringify(registryThemes, null, 2) + ' as const;\n',
+  );
   patchPackage(root, 'packages/styling/package.json', {
     exports: {
       '.': './src/index.ts',
@@ -77,7 +89,16 @@ exports.spacing = { small: 4, medium: 8, large: 16 };
     rule(':root', tokens.light) +
       '@media (prefers-color-scheme: dark) {\n' +
       rule(':root', tokens.dark) +
-      '}\n',
+      '}\n' +
+      Object.entries(registryThemes)
+        .map(
+          ([name, theme]) =>
+            rule(`[data-ui-theme="${name}"]`, theme.css.light) +
+            '@media (prefers-color-scheme: dark) {\n' +
+            rule(`[data-ui-theme="${name}"]`, theme.css.dark) +
+            '}\n',
+        )
+        .join(''),
   );
   put(
     root,

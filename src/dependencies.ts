@@ -96,7 +96,23 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
 };
 
 export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
+  devDependencies: {
+    // renovate: datasource=npm depName=@types/d3-scale
+    '@types/d3-scale': '4.0.9',
+    // renovate: datasource=npm depName=@types/d3-shape
+    '@types/d3-shape': '3.2.0',
+  },
   dependencies: {
+    // renovate: datasource=npm depName=lucide-react-native
+    'lucide-react-native': '0.562.0',
+    // renovate: datasource=npm depName=d3-shape
+    'd3-shape': '3.2.0',
+    // renovate: datasource=npm depName=d3-scale
+    'd3-scale': '4.0.2',
+    // renovate: datasource=npm depName=colorjs.io
+    'colorjs.io': '0.7.1',
+    // renovate: datasource=npm depName=expo-font
+    'expo-font': '57.0.4',
     // renovate: datasource=npm depName=shiki
     shiki: '3.23.0',
     // renovate: datasource=npm depName=react-hook-form

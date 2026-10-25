@@ -1078,7 +1078,13 @@
         "ToastTitle",
         "ToastDescription",
         "ToastAction",
-        "ToastClose"
+        "ToastClose",
+        "ToastContent",
+        "ToastPortal",
+        "createToastManager",
+        "useToastManager",
+        "toast",
+        "reducer"
       ],
       "suite": "data-feedback",
       "upstream": "https://ui.shadcn.com/docs/components/toast",
@@ -1196,7 +1202,19 @@
     "text.tsx",
     "theme-switcher.tsx",
     "use-highlighted-code.tsx",
-    "use-mobile.tsx"
+    "use-mobile.tsx",
+    "fonts.tsx",
+    "_toast-store.tsx",
+    "use-toast.tsx",
+    "utils.tsx",
+    "_color.tsx",
+    "_chart-context.tsx",
+    "_chart-math.tsx",
+    "charts.tsx",
+    "_slot.tsx",
+    "_registry-css.tsx",
+    "registry-styles.tsx",
+    "registry-example.tsx"
   ],
   "supportModules": [
     {
@@ -1227,6 +1245,56 @@
     {
       "file": "sonner",
       "exports": ["toast", "SonnerToaster", "useSonner"]
+    },
+    {
+      "file": "fonts",
+      "exports": [
+        "nativeFontIds",
+        "nativeFontDetails",
+        "nativeFontSources",
+        "nativeFontStyle",
+        "useNativeFonts",
+        "NativeFontProvider",
+        "useNativeFontStyle"
+      ]
+    },
+    {
+      "file": "use-toast",
+      "exports": ["reducer"]
+    },
+    {
+      "file": "utils",
+      "exports": ["nativeStyles"]
+    },
+    {
+      "file": "charts",
+      "exports": [
+        "AreaChart",
+        "LineChart",
+        "BarChart",
+        "PieChart",
+        "RadarChart",
+        "RadialBarChart",
+        "Area",
+        "Line",
+        "Bar",
+        "Pie",
+        "Radar",
+        "RadialBar",
+        "CartesianGrid",
+        "XAxis",
+        "YAxis",
+        "PolarGrid",
+        "PolarAngleAxis",
+        "PolarRadiusAxis",
+        "LabelList",
+        "ChartLabel",
+        "ChartText",
+        "Sector",
+        "Rectangle",
+        "Cell",
+        "Dot"
+      ]
     }
   ]
 }

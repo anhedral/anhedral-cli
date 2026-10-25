@@ -1,8 +1,19 @@
-import { Pressable, Text, StyleSheet, Linking, type View, type PressableProps } from 'react-native';
-import { Children, useState, type ReactNode, type Ref } from 'react';
+import { Pressable, StyleSheet, Linking, type View, type PressableProps } from 'react-native';
+import {
+  Children,
+  cloneElement,
+  useState,
+  type ReactNode,
+  type ReactElement,
+  type Ref,
+} from 'react';
 import { useTheme } from '../theme';
+import { NativeSlot } from './_slot';
+import { LabelText as Text, TextToneProvider, withAlpha } from './_core';
 export type ButtonProps = Omit<PressableProps, 'children'> & {
-  children: ReactNode;
+  children?: ReactNode;
+  asChild?: boolean;
+  render?: ReactElement<{ children?: ReactNode }>;
   ref?: Ref<View>;
   variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'destructive' | 'link';
   size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
@@ -19,6 +30,8 @@ const sizes = {
 };
 export function Button({
   children,
+  asChild = false,
+  render,
   variant = 'default',
   size = 'default',
   style,
@@ -27,13 +40,13 @@ export function Button({
   accessibilityRole = 'button',
   ...props
 }: ButtonProps) {
-  const { colors } = useTheme();
+  const { colors, radius, mode } = useTheme();
   const backgrounds = {
     default: colors.primary,
     secondary: colors.secondary,
     outline: colors.background,
     ghost: 'transparent',
-    destructive: 'transparent',
+    destructive: withAlpha(colors.destructive ?? colors.foreground, mode === 'dark' ? 0.2 : 0.1),
     link: 'transparent',
   };
   const foregrounds = {
@@ -45,42 +58,52 @@ export function Button({
     link: colors.primary,
   };
   const surface = {
+    borderRadius: radius,
     backgroundColor: backgrounds[variant],
     borderColor: variant === 'outline' ? colors.border : 'transparent',
   };
+  const Host = asChild || render ? NativeSlot : Pressable;
+  const slotChild = render
+    ? cloneElement(render, { children: children ?? render.props.children })
+    : children;
   return (
-    <Pressable
-      {...props}
-      accessibilityRole={accessibilityRole}
-      accessibilityState={{ ...accessibilityState, disabled: !!disabled }}
-      disabled={disabled}
-      style={(state) => [
-        styles.button,
-        sizes[size],
-        surface,
-        disabled && styles.disabled,
-        state.pressed && styles.pressed,
-        typeof style === 'function' ? style(state) : style,
-      ]}
-    >
-      {Children.map(children, (child) =>
-        typeof child === 'string' || typeof child === 'number' ? (
-          <Text
-            style={[
-              styles.label,
-              {
-                color: foregrounds[variant],
-                fontSize: size === 'xs' ? 12 : size === 'lg' ? 16 : 14,
-              },
-            ]}
-          >
-            {child}
-          </Text>
-        ) : (
-          child
-        ),
-      )}
-    </Pressable>
+    <TextToneProvider value={foregrounds[variant]}>
+      <Host
+        {...props}
+        {...(asChild || render ? { slotVariant: variant, slotSize: size } : {})}
+        accessibilityRole={accessibilityRole}
+        accessibilityState={{ ...accessibilityState, disabled: !!disabled }}
+        disabled={disabled}
+        style={(state) => [
+          styles.button,
+          sizes[size],
+          surface,
+          disabled && styles.disabled,
+          state.pressed && styles.pressed,
+          typeof style === 'function' ? style(state) : style,
+        ]}
+      >
+        {asChild || render
+          ? slotChild
+          : Children.map(children, (child) =>
+              typeof child === 'string' || typeof child === 'number' ? (
+                <Text
+                  style={[
+                    styles.label,
+                    {
+                      color: foregrounds[variant],
+                      fontSize: size === 'xs' ? 12 : size === 'lg' ? 16 : 14,
+                    },
+                  ]}
+                >
+                  {child}
+                </Text>
+              ) : (
+                child
+              ),
+            )}
+      </Host>
+    </TextToneProvider>
   );
 }
 const styles = StyleSheet.create({
@@ -147,3 +170,6 @@ export function LinkButton({
     </>
   );
 }
+
+Object.assign(Button, { nativeButtonSlot: true });
+Object.assign(LinkButton, { nativeButtonSlot: true });

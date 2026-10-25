@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
+import { nativeOverlayFiles } from '../scripts/native-overlay.mjs';
 import { parseNpmPackJson } from './support/npm-pack.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -82,6 +83,37 @@ function runInstalledScaffold(installRoot) {
   assert.ok(existsSync(path.join(projectRoot, 'pnpm-lock.yaml')));
   assert.ok(existsSync(path.join(projectRoot, 'apps/web/node_modules/next/package.json')));
   assert.ok(existsSync(path.join(projectRoot, 'packages/native-ui/src/native/dialog.tsx')));
+  // Exercise the actual published archive path and compare every generated source byte.
+  const overlay = nativeOverlayFiles(repoRoot);
+  for (const [file, source] of Object.entries(overlay)) {
+    if (file.startsWith('native/'))
+      assert.equal(
+        readFileSync(path.join(projectRoot, 'packages/native-ui/src', file), 'utf8'),
+        source,
+        file,
+      );
+  }
+  assert.equal(
+    readFileSync(path.join(projectRoot, 'packages/native-ui/native-fonts.json'), 'utf8'),
+    overlay['native-fonts.json'],
+  );
+  const recipes = JSON.parse(overlay['native-chart-recipes.json']);
+  for (const recipe of recipes.recipes)
+    assert.equal(
+      readFileSync(
+        path.join(
+          projectRoot,
+          'packages/native-ui/src',
+          recipe.kind === 'example' ? 'examples' : 'recipes',
+          recipe.style,
+          recipe.name + '.tsx',
+        ),
+        'utf8',
+      ),
+      recipe.source,
+      recipe.name,
+    );
+
   const policy = readFileSync(path.join(projectRoot, 'pnpm-workspace.yaml'), 'utf8');
   assert.match(policy, /node-forge@1\.4\.0/);
   assert.match(policy, /@node-minify\/core>glob.*10\.5\.0/);

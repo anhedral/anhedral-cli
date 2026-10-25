@@ -1,9 +1,11 @@
 import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { STACK_REGISTRY, validateStackCatalog } from '../dist/stack-registry.js';
+import { writeNativeOverlay } from './native-overlay.mjs';
 import { CAPABILITY_REGISTRY } from '../dist/capabilities.js';
 
 validateStackCatalog();
+writeNativeOverlay();
 const entry = fileURLToPath(new URL('../dist/bin.js', import.meta.url));
 if (!readFileSync(entry, 'utf8').startsWith('#!/usr/bin/env node\n')) {
   throw new Error('Compiled CLI must preserve its Node.js shebang');

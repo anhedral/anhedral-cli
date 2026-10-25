@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { View, type ViewProps, type TextProps, type TextInputProps } from 'react-native';
-import { Box, LabelText, Muted, row, plainText, useControllable } from './_core';
+import { Box, LabelText, Muted, row, plainText, useControllable, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
 import { Input } from './input';
@@ -213,7 +213,7 @@ function collect<T>(
   const found: T[] = [];
   Children.forEach(children, (child) => {
     if (!isValidElement<{ children?: ReactNode }>(child)) return;
-    if (child.type === type) found.push(read(child.props));
+    if (nativeComponent(child.type) === type) found.push(read(child.props));
     else if (child.props.children) found.push(...collect(child.props.children, type, read));
   });
   return found;

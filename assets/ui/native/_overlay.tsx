@@ -20,6 +20,8 @@ import {
 } from 'react-native';
 import { Box, LabelText, Muted, row, content, useControllable } from './_core';
 import { Button, type ButtonProps } from './button';
+import { NativeSlot } from './_slot';
+import { cloneElement } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 
@@ -57,10 +59,14 @@ function focus(ref: RefObject<View | null>) {
   const node = ref.current && findNodeHandle(ref.current);
   if (node) AccessibilityInfo.setAccessibilityFocus(node);
 }
-export function OverlayTrigger({ onPress, ...props }: ButtonProps) {
+export function OverlayTrigger({ onPress, asChild, render, children, ...props }: ButtonProps) {
+  const Host = asChild || render ? NativeSlot : Button;
+  const body = render
+    ? cloneElement(render, { children: children ?? render.props.children })
+    : children;
   const state = useOverlay();
   return (
-    <Button
+    <Host
       {...props}
       ref={state.trigger}
       accessibilityState={{ ...props.accessibilityState, expanded: state.open }}
@@ -68,36 +74,60 @@ export function OverlayTrigger({ onPress, ...props }: ButtonProps) {
         onPress?.(event);
         if (!event.isDefaultPrevented()) state.set(true);
       }}
-    />
+    >
+      {body}
+    </Host>
   );
 }
-export function LongPressTrigger({ onLongPress, ...props }: ButtonProps) {
+export function LongPressTrigger({
+  onLongPress,
+  asChild,
+  render,
+  children,
+  ...props
+}: ButtonProps) {
+  const Host = asChild || render ? NativeSlot : Button;
+  const body = render
+    ? cloneElement(render, { children: children ?? render.props.children })
+    : children;
   const state = useOverlay();
   return (
-    <Button
+    <Host
       {...props}
       ref={state.trigger}
-      accessibilityHint="Touch and hold to open"
+      accessibilityHint={props.accessibilityHint ?? 'Touch and hold to open'}
       accessibilityState={{ expanded: state.open }}
       onLongPress={(event) => {
         onLongPress?.(event);
-        state.set(true);
+        if (!event.isDefaultPrevented()) state.set(true);
       }}
       accessibilityActions={[{ name: 'activate', label: 'Open preview' }]}
-      onAccessibilityAction={() => state.set(true)}
-    />
+      onAccessibilityAction={(event) => {
+        props.onAccessibilityAction?.(event);
+        if (!event.isDefaultPrevented() && event.nativeEvent.actionName === 'activate')
+          state.set(true);
+      }}
+    >
+      {body}
+    </Host>
   );
 }
-export function OverlayClose({ onPress, ...props }: ButtonProps) {
+export function OverlayClose({ onPress, asChild, render, children, ...props }: ButtonProps) {
+  const Host = asChild || render ? NativeSlot : Button;
+  const body = render
+    ? cloneElement(render, { children: children ?? render.props.children })
+    : children;
   const state = useOverlay();
   return (
-    <Button
+    <Host
       {...props}
       onPress={(event) => {
         onPress?.(event);
         if (!event.isDefaultPrevented()) state.set(false);
       }}
-    />
+    >
+      {body}
+    </Host>
   );
 }
 export function OverlayContent({
@@ -238,8 +268,18 @@ export const OverlayHeader = Box;
 export const OverlayFooter = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={row(style)} />
 );
-export function AlertDialogContent(props: React.ComponentProps<typeof OverlayContent>) {
-  return <OverlayContent {...props} dismissOnBackdrop={false} />;
+export function AlertDialogContent({
+  size = 'default',
+  style,
+  ...props
+}: React.ComponentProps<typeof OverlayContent> & { size?: 'default' | 'sm' }) {
+  return (
+    <OverlayContent
+      {...props}
+      style={[{ width: '100%', maxWidth: size === 'sm' ? 320 : 384, alignSelf: 'center' }, style]}
+      dismissOnBackdrop={false}
+    />
+  );
 }
 export const AlertDialog = OverlayRoot;
 export const AlertDialogTrigger = OverlayTrigger;

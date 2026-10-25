@@ -21,6 +21,44 @@ Menus, popovers, sheets and preview cards use native Modal surfaces; hover/conte
 
 Calendar supports local-date single, multiple and range selection, locale labels and disabled bounds/predicates. DatePicker adds a modal trigger. DataTable owns native sorting/filtering/pagination and stable row IDs, with native column renderers. Chart accepts \`data: { label: string; value: number }[]\` and bar/line/area/pie/radar/radial renderers using Expo-compatible SVG; it does not execute browser chart components. CodeBlock preserves source bytes, renders offline lexical syntax/diff tokens and uses Expo Clipboard. It does not execute code or claim language-server tokenization. MessageScroller follows new content only while the reader is at the bottom. Questionnaire supports single/multiple/text steps, back/skip and validated submission.
 
+## Official registry assets and recipes
+
+The native package includes the reviewed font and theme catalogs. \`NativeFontProvider\`
+loads selected body/heading/serif/monospace roles through Expo Font; \`useNativeFonts\`
+exposes loading, error and retry states. All 52 official font and heading entries map
+to 347 verified TrueType cuts from an immutable Expo Google Fonts source revision.
+The generated \`native-fonts.json\` retains file hashes, declared/internal weights and
+font licenses. Font files are fetched when selected; applications that need offline
+startup should bundle the selected cuts and register their aliases during startup.
+Missing italic cuts use native synthesis rather than claiming a separate font asset.
+
+\`ThemeProvider\` accepts the eight official registry theme names through \`theme\`.
+The shared styling package owns the original tokens and converted native sRGB values;
+transparent colors retain their alpha. \`radius\` and chart/sidebar tokens come from
+that same theme. The font and theme evidence checks reject changed upstream inputs.
+
+The chart overlay provides native SVG series, axes, grids, labels, tooltips and
+legends through \`@workspace/native-ui/lib/charts\` and the chart component module.
+It uses D3 for geometry and React Native SVG for rendering. Its touch selection and
+adjustable accessibility actions expose the original values. It includes the actual
+70 official chart blocks from each of the default, New York and New York v4 registries,
+including their data, formatters and controls, plus all 21 authored chart examples. Import a block such as
+\`@workspace/native-ui/blocks/new-york-v4/chart-area-interactive\`; inspect
+\`@workspace/native-ui/recipes\` for the source, style/dependency and translated-file hashes.
+\`assets/ui/native-chart-recipes.json.gz\` is the maintained compressed source overlay;
+regenerate it with \`node scripts/native-chart-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`.
+The generator verifies every input against the official inventory before translating.\nThe npm artifact stores native templates in a lossless Brotli overlay; generated source\nis byte-identical to the maintained files and is editable in the application.
+
+Recipe layouts use a reviewed native utility vocabulary, measured container widths,
+native text inheritance and native SVG paint. Unknown utilities fail instead of
+silently disappearing. Browser custom properties become scoped native colors;
+HTML buttons become accessible Pressables. The browser-only \`ChartStyle\` element is
+removed because the native chart container supplies those colors directly. Pie month
+selectors and accessibility actions share controlled selection. Browser SVG text
+attributes and CSS units are converted to their native equivalents. This translation
+does not establish completion of the remaining registry examples or all component
+style presets; the official checklist remains authoritative.
+
 ## Checks and maintenance
 
 From the CLI checkout, install the pinned test harness with \`pnpm --dir tests/native-ui install --frozen-lockfile\`, then run \`pnpm test:native-ui\`. It typechecks the copied public source and renders it with React Native Testing Library under iOS and Android module resolution. Native bridges are mocked only at platform boundaries; component implementations are not replaced with HTML or mocks. The catalog examples must cover exactly the baseline and every declared export must exist. Family tests exercise controlled/uncontrolled state, disabled choices, filtering, date bounds/ranges, native dismissal, stepping/resizing, pagination/selection, timers, code/clipboard, chart selection, themes and submission.

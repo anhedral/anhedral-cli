@@ -1,3 +1,43 @@
+# Native registry fonts, themes, forms and chart recipes — October 24, 2026
+
+Continued the full Expo port on the existing topic branch. The official checklist
+still reports 551 incomplete distinct items; this entry does not certify the full
+port or native device acceptance.
+
+- All 52 font/heading entries now map to 26 families and 347 real TrueType cuts from
+  immutable Expo Google Fonts revision `b7302afca702257988f2e49375530339e1d71336`.
+  Every downloaded cut passed byte/hash, sfnt table, weight and italic checks.
+  Licenses, declared/internal weights and missing-italic synthesis are retained.
+  Expo loading/error/retry, role selection, native text and SVG font cuts are tested.
+- All eight registry themes retain their HSL/OKLCH source and share native gamut-mapped
+  colors, alpha, chart/sidebar tokens and radius metrics with the web styling package.
+  Added native variant behavior, compound composition/ref/event handling, isolated
+  toast managers, the legacy toast hook, native style utilities, input groups and
+  React Hook Form/Zod controller, field-array and focus/accessibility coverage.
+- The actual 210 official chart blocks and 21 chart examples are translated into
+  native source with original data, formatters and controls. D3/native SVG renderers
+  cover stacks, curves, axes, grids, pie/radar/radial shapes, gradients, labels and
+  native data selection. Added scoped native recipe styles, pointer/touch motion
+  respecting reduced motion, and explicit browser-specific decisions. Source,
+  style and transitive dependency changes invalidate recipe evidence.
+- Strict native typechecking passes. All 636 tests pass on each iOS/Android JavaScript
+  target (1,272 executions), across 27 suites, with existing coverage gates intact.
+  Root build/lint/security/release policy checks pass. The latest root unit run has
+  581 tests: 580 passed and one existing optional runtime skip.
+- Native templates ship in a lossless Brotli overlay; generated application source
+  is byte-identical and remains editable. The packed CLI smoke test passed a real
+  frozen generated install and compared every native source/font/recipe byte. The
+  first compressed artifact measured 1,018,114 bytes in 247 entries. The bounded
+  packed budget was increased from 1 MB to 1.25 MB for the expanded registry; the
+  3 MB unpacked budget is unchanged. Later source changes require another artifact
+  measurement before publication.
+
+The [platform adaptation checklist](native-registry.md#platform-adaptation-checklist)
+separates native handling from browser-only behavior and unresolved work. Remaining
+component style/API coverage, non-chart examples/blocks, other form integrations and
+OS/device acceptance are still open. No publication, deployment or provider mutation
+occurred. The upstream fork remains pinned; PR #75 remains draft.
+
 # shadcn upstream fork and expanded native API checkpoint — October 24, 2026
 
 The complete upstream fork is [anhedral/shadcn-ui](https://github.com/anhedral/shadcn-ui), created from `shadcn-ui/ui` with all branches. At verification both repositories advertised identical heads and tags: 71 branches and 138 tags, with main at `617134d5810bba521803b3ed787190bacbb80b35`. The fork preserves upstream source/history; Anhedral owns native adaptations in this CLI. This is **not a completed Expo registry port**: the strict completion command still fails with 615 of 616 distinct items awaiting complete review.

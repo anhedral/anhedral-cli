@@ -54,7 +54,7 @@ test('badge, bubble, markers and typography use native semantic theme colours', 
       <UI.Kbd>⌘ K</UI.Kbd>
     </>,
   );
-  expect(screen.getByTestId('badge')).toHaveStyle({ backgroundColor: 'hsl(0, 0%, 100%)' });
+  expect(screen.getByTestId('badge')).toHaveStyle({ backgroundColor: 'transparent' });
   expect(screen.getByTestId('bubble')).toHaveStyle({ alignSelf: 'flex-end' });
   expect(screen.getByText('System note')).toBeOnTheScreen();
   expect(screen.getByText('Quote')).toHaveStyle({ fontStyle: 'italic' });

@@ -26,10 +26,10 @@ const requiredFiles = new Set([
   'assets/patches/node-forge@1.4.0.patch',
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
-  ...nativeFiles,
+  'assets/ui/native/registry.json',
+  'assets/ui/native-overlay.json.br',
   'docs/native-ui.md',
   'docs/native-registry.md',
-  'assets/ui/native/button.tsx',
   'assets/ui/web/input.tsx',
   'assets/ui/web/label.tsx',
   'assets/ui/theme.tsx',
@@ -128,8 +128,10 @@ try {
   }
   assert.equal(packed.entryCount, files.length, 'entryCount should match the packlist length');
   assert.ok(
-    packed.size < 1_000_000,
-    `packed artifact should remain below 1 MB; received ${packed.size}`,
+    // Full official native fonts and chart recipes are shipped as a lossless Brotli overlay.
+    // Keep a bounded 1.25 MB artifact budget; source parity is checked independently.
+    packed.size < 1_250_000,
+    `packed artifact should remain below 1.25 MB; received ${packed.size}`,
   );
   assert.ok(
     // The reviewed forge patch includes its two minified browser distributions.
@@ -179,8 +181,9 @@ try {
 
   for (const file of packed.files) {
     const allowedNativeUI =
-      nativeFiles.includes(file.path) ||
-      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM\.json|UPSTREAM-LOCK\.json)$/.test(
+      file.path === 'assets/ui/native/registry.json' ||
+      file.path === 'assets/ui/native-overlay.json.br' ||
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|native-fonts\.json\.gz|registry-themes\.json\.gz|LICENSE\.shadcn|UPSTREAM\.json|UPSTREAM-LOCK\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);

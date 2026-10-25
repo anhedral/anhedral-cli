@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { View, ScrollView, PanResponder, type ViewProps } from 'react-native';
-import { Box, clamp, useControllable, useDirection } from './_core';
+import { Box, clamp, useControllable, useDirection, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
 export function Slider({
@@ -221,7 +221,7 @@ export function ResizablePanelGroup({
   onLayout?: (sizes: number[]) => void;
 }) {
   const panels = Children.toArray(children).filter(
-    (child) => isValidElement(child) && child.type === ResizablePanel,
+    (child) => isValidElement(child) && nativeComponent(child.type) === ResizablePanel,
   ) as React.ReactElement<{ defaultSize?: number; minSize?: number; maxSize?: number }>[];
   const initial = panels.map(
     (panel) => panel.props.defaultSize ?? 100 / Math.max(1, panels.length),
@@ -272,8 +272,12 @@ export function ResizablePanelGroup({
       >
         {Children.map(children, (child) => {
           if (!isValidElement<{ panelIndex?: number }>(child)) return child;
-          if (child.type !== ResizablePanel && child.type !== ResizableHandle) return child;
-          if (child.type === ResizablePanel) index++;
+          if (
+            nativeComponent(child.type) !== ResizablePanel &&
+            nativeComponent(child.type) !== ResizableHandle
+          )
+            return child;
+          if (nativeComponent(child.type) === ResizablePanel) index++;
           return cloneElement(child, { panelIndex: Math.max(0, index) });
         })}
       </View>
