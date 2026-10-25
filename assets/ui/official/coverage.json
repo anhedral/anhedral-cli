@@ -6431,6 +6431,47 @@
         "radix-sera": "5403b7049121c667d73bb5f0e283005ff0920490aa059a18779e162f5c69ac85",
         "radix-vega": "4773a262c16551fa23c5b9851462a68a09a9e55c719d2b1a58e9cd2cb758694a"
       }
+    },
+    "registry:example/separator-example": {
+      "status": "ported",
+      "reason": "All Base/Radix/Aria authored sections render under every newer style. Native description term/definition hosts retain scoped combined labels, values and independently accessible embedded controls. Source typography modifiers and flex row defaults are preserved; DOM association attributes do not replace definition values. Device screen-reader/visual acceptance remains separate.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_description-list.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/_display.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-description-lists.test.tsx",
+        "tests/native-ui/registry-static-layouts.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "6c91729b2904488b93d15e71bab0a1fa780f737dcf360218bc8ecd0ca97967ab",
+        "aria-lyra": "0dc5c1887e6dd73f16f1e05965890f6653bfedbf8a1f85dfd2b6a5469d91726b",
+        "aria-maia": "f513683fa5f6b2230ee56ff25a8c0e143315fb48518e4306caa7a7a5a28601c0",
+        "aria-mira": "45455f170cb67203dfe369ad4615f0287845b072dc0a64246b1cddb1c87d9a96",
+        "aria-nova": "5516f7b58ba6b07d3093ecafa5cd2f62e26c5d5f69577d138fb7dd5f8aa53fc8",
+        "aria-rhea": "2efc79f149afe217e9d71fbd53c55bb3f7809a7a45ec8d17d4c037877a8fa69f",
+        "aria-sera": "332271b47fc981ebc4330b047ca9fbddd32ee0e5142bd2a105b56da32fabde77",
+        "aria-vega": "82434cedd76cf228a9a87a9691e73c51699fd5c933c65e3bc164aba53d68ed2e",
+        "base-luma": "15d82169246223b4afd2eb769d217955027e036bdafd4850d72dafba6aa7e0f1",
+        "base-lyra": "4fbc2a2f9170e1cffa2eda7c8d44f785b1e54c95dcc4c4775c5ba68a27914c92",
+        "base-maia": "c62787086fd6511c67da75e53fcda20730ae6dc7f362187c53946b8a4e3704c8",
+        "base-mira": "06b552dc2786b354696d5dc8abadafa2af9afeb445fb2e48b56bf6134bcc5920",
+        "base-nova": "9f851b7554b0da9a510ea69c6e96ec2b3734a51bbfd1c86b627ad28519363fce",
+        "base-rhea": "902c4c33baa7000c6b01a9ddf8774d06e03f4b55ae132952fa83b7aefb232fd5",
+        "base-sera": "9b5ab7e3fcab6aa2300dfa0d8490b4627f6b29add887da4989b1ca392307c2ea",
+        "base-vega": "d1e399603fad0f30c7f4ba41df06dacc3409872f4ea7b4820794a6eaeb7fdd31",
+        "radix-luma": "c6779c9b36838f1af1bea0fe60124ab12d9beb8121be8de4475e98278eb55ad8",
+        "radix-lyra": "ed3d24501fe571cd9c8cc6a44719c79273710ad542bcf3ee7da52ad7fb81d6be",
+        "radix-maia": "18fc7695a4337c7a20bd283472bc72bda64e763b332806bdfb1928a71f3d7f91",
+        "radix-mira": "f57e6388232b33211d1a519a88b2e8ffad842b8035eed22ebb3a4dfb0396da07",
+        "radix-nova": "4353e18ff7f34c8bf5590120d648fd6d7a117a9c4b7ebbc030d7e797d4cd73d2",
+        "radix-rhea": "716aef95418ff92669cda67e3e2c79ba92004c13f2036526b02a8251fee0c9f7",
+        "radix-sera": "170bceec302c7f0949a169ddd2ee5b4f2d0f970959f7117b7092d78cb4c63123",
+        "radix-vega": "40b8651d2a89cfe865c3be65ad571a0dafa6dc3d23413021c77f3bb6c4362035"
+      }
     }
   },
   "webSpecific": [
@@ -6473,6 +6514,11 @@
       "feature": "Shiki HTML spans and CSS theme variables",
       "adaptation": "Keep grammar/state behavior using the JavaScript regex engine, but render themed native Text rather than HTML.",
       "status": "Native Text adaptation tested for all upstream hook grammars, state and streaming behavior; no HTML/CSS runtime is installed."
+    },
+    {
+      "feature": "HTML description lists",
+      "adaptation": "Use scoped native term/definition roles and combined term/value accessibility labels. Preserve native IDs and refs; embedded links, inputs and buttons remain independently exposed. A labelled-by reference to only the term must not erase the definition value.",
+      "status": "All authored Separator examples and nested/dynamic description-list contracts tested. Device screen-reader and visual matrix acceptance remain separate."
     }
   ]
 }

@@ -59,6 +59,10 @@ Separator preserves source-specific decorative defaults and vertical stretch ver
 full-height behavior. AspectRatio uses native layout instead of CSS padding/custom
 properties. Both support one native child/render host, native style values, composed
 refs and layout callbacks; DOM host properties are replaced by native View properties.
+Authored description lists use native term/definition hosts and scoped term/value labels.
+Embedded controls stay independently accessible. Typography slash modifiers retain their
+source line heights; native flex layouts use the authored row default while explicit
+column directions take precedence. Unsupported utility formulas still require review.
 
 Render callbacks return one native host element with native style arrays and
 normalized text/pressable props. Static View and themed Text roots preserve inherited

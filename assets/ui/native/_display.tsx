@@ -35,7 +35,17 @@ import {
 import { useNativeReducedMotion, useNativePulse } from './_animation';
 import { nativePresetSkeletonStyle } from './_preset-skeleton-style';
 import { useNativeFontStyle } from './fonts';
-import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
+import {
+  Box,
+  LabelText,
+  Muted,
+  Surface,
+  row,
+  monospace,
+  withAlpha,
+  plainText,
+  content,
+} from './_core';
 import { Button, LinkButton, type ButtonProps } from './button';
 import { NativeSlot } from './_slot';
 import { NativeLayout, type NativeLayoutProps } from './_layout';
@@ -503,7 +513,7 @@ export function Spinner({
     />
   );
 }
-export function Skeleton({ style, ...props }: ViewProps & { ref?: Ref<View> }) {
+export function Skeleton({ style, children, ...props }: ViewProps & { ref?: Ref<View> }) {
   const { colors, mode, radius } = useTheme(),
     source = useNativeRegistrySource(),
     requested = useNativeComponentStyle(),
@@ -522,7 +532,9 @@ export function Skeleton({ style, ...props }: ViewProps & { ref?: Ref<View> }) {
       accessibilityLabel="Loading content"
       {...props}
       style={[{ borderRadius: 0 }, sourceStyle.view, { opacity }, style]}
-    />
+    >
+      {content(children)}
+    </Animated.View>
   );
 }
 export const Breadcrumb = ({ style, ...props }: ViewProps) => (

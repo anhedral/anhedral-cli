@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { validateNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
-test('434 authored component examples retain native source and complete source/style/dependency provenance', () => {
+test('437 authored component examples retain native source and complete source/style/dependency provenance', () => {
   const catalog = loadNativeExampleRecipes();
   validateNativeChartRecipes(loadOfficialRegistry(), catalog);
-  assert.equal(catalog.recipes.length, 434);
+  assert.equal(catalog.recipes.length, 437);
   for (const recipe of catalog.recipes)
     assert.doesNotMatch(recipe.source, /<(?:div|span|button|input|form|svg)\b|onClick=/);
   const pagination = catalog.recipes.find((recipe) => recipe.name === 'pagination-demo');
@@ -133,4 +133,14 @@ test('native registry view click conversion retains the authored state callback 
   assert.match(output, /RegistryView role="button" onPress=\{\(\) => setOpen\(true\)\}/);
   assert.match(output, /RegistryText>Opened/);
   assert.doesNotMatch(output, /onClick=/);
+});
+
+test('authored description lists retain native term/definition hosts instead of dropping their semantic associations', () => {
+  const source = loadNativeExampleRecipes().recipes.find(
+    (recipe) => recipe.style === 'base' && recipe.name === 'separator-example',
+  ).source;
+  assert.match(source, /RegistryDescriptionList/);
+  assert.match(source, /RegistryDescriptionTerm/);
+  assert.match(source, /RegistryDescriptionDetails/);
+  assert.doesNotMatch(source, /<(?:dl|dt|dd)\b/);
 });

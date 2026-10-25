@@ -1,3 +1,27 @@
+# Native description lists and authored layout metrics — October 24, 2026
+
+Added native term/definition hosts for authored description lists, including nested
+lists, multiple terms/definitions, dynamic labels, native IDs/refs and individually
+accessible embedded controls. The initial labelled-by approach replaced definition
+values in accessible names; combined native term/value labels now preserve both.
+
+- Added the actual Base/Radix/Aria Separator example modules. Every authored section
+  renders under all eight newer styles. There are 437 component example modules and
+  702 native registry modules overall. Separator-example now has reviewed source
+  coverage; strict whole-registry completion still rejects 537 pending type/name groups.
+- Native typography retains font-size/line-height slash modifiers, extended source
+  sizes, explicit leading precedence and inherited leading resets. Authored flex boxes
+  use browser row defaults while explicit column directions remain authoritative.
+  Skeleton also safely wraps raw native text children.
+- Both full native suites passed 1,389 tests across 45 suites with unchanged thresholds;
+  strict generated types and both 702-module Hermes bundles passed. Root tests passed
+  625 with one existing optional skip. Lint, source contracts, security policy,
+  installed package smoke and packlist passed (1,000,654 compressed bytes).
+- Failed association/type/curation diagnostics and corrected results are retained
+  under .artifacts/native-ui/2026-10-25-native-descriptions/. Device screen-reader and
+  visual matrix acceptance remain separate; no additional physical device acceptance
+  is inferred from this source promotion. No publication or deployment occurred.
+
 # Native Skeleton source styles and layout primitives — October 24, 2026
 
 Skeleton retains all eight newer presets and three frozen source styles. Source hashes

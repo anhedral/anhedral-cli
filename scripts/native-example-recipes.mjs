@@ -266,8 +266,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       origins.push(`apps/v4/registry/bases/${base}/examples/breadcrumb-example.tsx`);
       origins.push(`apps/v4/registry/bases/${base}/examples/badge-example.tsx`);
     }
-    for (const base of ['base', 'radix', 'aria'])
+    for (const base of ['base', 'radix', 'aria']) {
       origins.push(`apps/v4/registry/bases/${base}/examples/aspect-ratio-example.tsx`);
+      origins.push(`apps/v4/registry/bases/${base}/examples/separator-example.tsx`);
+    }
     // Published legacy examples are separate authored inputs, even when their names
     // match a maintained modern recipe. Never substitute modern source for them.
     const maintainedNames = new Set(origins.map((origin) => path.basename(origin, '.tsx')));

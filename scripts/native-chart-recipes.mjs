@@ -145,6 +145,9 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     hostNames = new Set();
   const hosts = {
     div: 'RegistryView',
+    dl: 'RegistryDescriptionList',
+    dt: 'RegistryDescriptionTerm',
+    dd: 'RegistryDescriptionDetails',
     span: 'RegistryText',
     p: 'RegistryText',
     h1: 'RegistryH1',

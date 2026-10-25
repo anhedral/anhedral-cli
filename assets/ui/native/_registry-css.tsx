@@ -126,9 +126,33 @@ export function registryStyle(
     }
     return Math.max(0, number(value));
   };
+  let leadingPriority = 0,
+    leadingPixels: number | undefined;
+  const applyLeading = (value: string, priority: number) => {
+    if (priority < leadingPriority) return;
+    leadingPriority = priority;
+    const multipliers: Readonly<Record<string, number>> = {
+      none: 1,
+      tight: 1.25,
+      snug: 1.375,
+      normal: 1.5,
+      relaxed: 1.625,
+      loose: 2,
+    };
+    if (Object.hasOwn(multipliers, value)) {
+      paint.lineHeightMultiplier = multipliers[value]!;
+      leadingPixels = undefined;
+      delete text.lineHeight;
+    } else {
+      leadingPixels = number(value);
+      paint.lineHeightMultiplier = 0;
+      text.lineHeight = leadingPixels;
+    }
+  };
   for (const original of (classes?.split(/\s+/).filter(Boolean) ?? []).sort(
     (a, b) => Number(/(?:^|:)!|!$/.test(a)) - Number(/(?:^|:)!|!$/.test(b)),
   )) {
+    const important = /(?:^|:)!|!$/.test(original) ? 2 : 0;
     let token = original.replace(/^!|!$/g, '');
     if (token.startsWith('dark:')) {
       if (options.mode !== 'dark') continue;
@@ -290,7 +314,10 @@ export function registryStyle(
     if (token === 'pointer-events-none') paint.pointerEvents = 'none';
     else if (token === 'pointer-events-auto') paint.pointerEvents = 'auto';
     else if (token === 'hidden') view.display = 'none';
-    else if (token === 'flex' || token === 'block') view.display = 'flex';
+    else if (token === 'flex') {
+      view.display = 'flex';
+      view.flexDirection ??= 'row';
+    } else if (token === 'block') view.display = 'flex';
     else if (token === 'grid') {
       view.display = 'flex';
       view.flexDirection = 'column';
@@ -313,8 +340,10 @@ export function registryStyle(
     else if (token === 'flex-none') {
       view.flexGrow = 0;
       view.flexShrink = 0;
-    } else if (token === 'inline-flex' || token === 'inline-block' || token === 'inline')
+    } else if (token === 'inline-flex') {
       view.display = 'flex';
+      view.flexDirection ??= 'row';
+    } else if (token === 'inline-block' || token === 'inline') view.display = 'flex';
     else if (token === 'shrink-0') view.flexShrink = 0;
     else if (token === 'basis-full') view.flexBasis = '100%';
     else if (/^basis-[1-9]\/[1-9]$/.test(token)) {
@@ -580,11 +609,7 @@ export function registryStyle(
               : token === 'font-medium'
                 ? '500'
                 : '400';
-    else if (/^leading-\d+$/.test(token)) text.lineHeight = number(token.slice(8));
-    else if (token === 'leading-none') paint.lineHeightMultiplier = 1;
-    else if (token === 'leading-tight') paint.lineHeightMultiplier = 1.25;
-    else if (token === 'leading-normal') paint.lineHeightMultiplier = 1.5;
-    else if (token === 'leading-relaxed') paint.lineHeightMultiplier = 1.625;
+    else if (token.startsWith('leading-')) applyLeading(token.slice(8), 2 + important);
     else if (token === 'tracking-normal') text.letterSpacing = 0;
     else if (token === 'tracking-tight') paint.letterSpacingEm = -0.025;
     else if (token === 'tracking-wide') paint.letterSpacingEm = 0.05;
@@ -603,22 +628,31 @@ export function registryStyle(
     else if (token === 'uppercase' || token === 'lowercase') text.textTransform = token;
     else if (token.startsWith('text-')) {
       const value = token.slice(5),
+        [fontSizeValue, leadingValue] = value.split('/'),
         sizes = {
           xs: [12, 16],
           sm: [14, 20],
+          base: [16, 24],
           lg: [18, 28],
           xl: [20, 28],
           '2xl': [24, 32],
           '3xl': [30, 36],
           '4xl': [36, 40],
+          '5xl': [48, 48],
+          '6xl': [60, 60],
+          '7xl': [72, 72],
+          '8xl': [96, 96],
+          '9xl': [128, 128],
         };
-      if (value in sizes) {
-        const [fontSize, lineHeight] = sizes[value as keyof typeof sizes];
+      if (fontSizeValue! in sizes || /^\[\d+(?:\.\d+)?(?:rem|px)\]$/.test(fontSizeValue!)) {
+        const [fontSize, lineHeight] =
+          fontSizeValue! in sizes
+            ? sizes[fontSizeValue as keyof typeof sizes]
+            : [number(fontSizeValue!), number(fontSizeValue!) * 1.5];
         text.fontSize = fontSize;
         text.lineHeight = lineHeight;
-      } else if (/^\[\d+(?:\.\d+)?(?:rem|px)\]$/.test(value)) {
-        text.fontSize = number(value);
-        text.lineHeight = text.fontSize * 1.5;
+        if (leadingPriority === 0) paint.lineHeightMultiplier = lineHeight! / fontSize!;
+        if (leadingValue !== undefined) applyLeading(leadingValue, 1 + important);
       } else if (value === 'left' || value === 'center' || value === 'right' || value === 'justify')
         text.textAlign = value;
       else text.color = options.color(value);
@@ -669,7 +703,12 @@ export function registryStyle(
       ...((view.boxShadow as []) ?? []),
     ];
   }
-  if (typeof paint.lineHeightMultiplier === 'number' && text.fontSize)
+  if (leadingPixels !== undefined) text.lineHeight = leadingPixels;
+  else if (
+    typeof paint.lineHeightMultiplier === 'number' &&
+    paint.lineHeightMultiplier > 0 &&
+    text.fontSize
+  )
     text.lineHeight = text.fontSize * paint.lineHeightMultiplier;
   return result;
 }

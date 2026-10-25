@@ -224,3 +224,41 @@ test('native animation metadata preserves pulse and lets explicit animate-none c
     spin: 0,
   });
 });
+
+test('font-size line-height modifiers retain source metrics, leading precedence and color opacity', () => {
+  for (const [classes, fontSize, lineHeight] of [
+    ['text-xs/relaxed', 12, 19.5],
+    ['text-sm/6', 14, 24],
+    ['text-base/normal', 16, 24],
+    ['text-9xl/none', 128, 128],
+    ['text-[0.875rem]/[1.25rem]', 14, 20],
+    ['text-xs/relaxed leading-7', 12, 28],
+    ['leading-7 text-xs/relaxed', 12, 28],
+    ['!text-xs/relaxed leading-7', 12, 19.5],
+    ['text-xs leading-7 leading-none', 12, 12],
+    ['text-sm leading-[18px]', 14, 18],
+  ])
+    assert.deepEqual(registryStyle(classes, options).text, { fontSize, lineHeight }, classes);
+  assert.equal(registryStyle('text-primary/50', options).text.color, 'color:primary/50');
+  assert.throws(
+    () => registryStyle('text-sm/unknown', options),
+    /Unsupported native registry length/,
+  );
+});
+
+test('authored flex boxes retain browser row defaults while explicit directions win in either class order', () => {
+  for (const classes of ['flex', 'inline-flex', 'hidden md:flex'])
+    assert.equal(registryStyle(classes, options).view.flexDirection, 'row');
+  for (const classes of [
+    'flex flex-col',
+    'flex-col flex',
+    'inline-flex flex-col',
+    'flex-col inline-flex',
+  ])
+    assert.equal(registryStyle(classes, options).view.flexDirection, 'column');
+  assert.equal(registryStyle('flex-col md:flex-row', options).view.flexDirection, 'row');
+  assert.equal(
+    registryStyle('flex-col md:flex-row', { ...options, width: 320 }).view.flexDirection,
+    'column',
+  );
+});

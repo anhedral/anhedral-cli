@@ -202,3 +202,8 @@ for (const base of ['base', 'radix', 'aria'])
         expect(screen.getByText(title)).toBeOnTheScreen();
       expect(screen.getAllByLabelText('Loading content').length).toBeGreaterThan(5);
     });
+
+test('Skeleton safely renders authored native text children', async () => {
+  await mount(<UI.Skeleton>Pending content</UI.Skeleton>);
+  expect(screen.getByText('Pending content')).toBeOnTheScreen();
+});

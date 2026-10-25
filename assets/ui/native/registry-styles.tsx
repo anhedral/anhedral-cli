@@ -54,6 +54,11 @@ import { nativePresetMetrics } from './_preset-metrics';
 import { useNativeReducedMotion, useNativePulse } from './_animation';
 import { NativeRegistryImage } from './registry-image';
 import { NativeLink } from './navigation';
+import {
+  NativeDescriptionList,
+  NativeDescriptionTerm,
+  NativeDescriptionDetails,
+} from './_description-list';
 import { LinkButton } from './button';
 import { nativeTextPressRetentionOffset } from './_slot';
 
@@ -231,7 +236,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
     }
     const paint = { ...inheritedPaint, ...translated.paint };
     const text = { ...StyleSheet.flatten(inherited.style), ...translated.text };
-    if (typeof paint.lineHeightMultiplier === 'number')
+    if (typeof paint.lineHeightMultiplier === 'number' && paint.lineHeightMultiplier > 0)
       text.lineHeight = (text.fontSize ?? 14) * paint.lineHeightMultiplier;
     if (typeof paint.letterSpacingEm === 'number')
       text.letterSpacing = (text.fontSize ?? 14) * paint.letterSpacingEm;
@@ -669,6 +674,9 @@ export const RegistryLink = withRegistryStyles(NativeLink, 'link');
 export const RegistryImage = withRegistryStyles(NativeRegistryImage);
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
+export const RegistryDescriptionList = withRegistryStyles(NativeDescriptionList);
+export const RegistryDescriptionTerm = withRegistryStyles(NativeDescriptionTerm, 'text');
+export const RegistryDescriptionDetails = withRegistryStyles(NativeDescriptionDetails);
 const Heading = ({ style, ...props }: ComponentProps<typeof LabelText>) => (
   <LabelText accessibilityRole="header" {...props} style={[{ fontWeight: '700' }, style]} />
 );
