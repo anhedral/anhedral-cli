@@ -1,3 +1,23 @@
+# Reproducible native iOS acceptance harness — October 24, 2026
+
+The maintained command `pnpm test:native-ui:ios -- --device <dedicated UUID>`
+builds an isolated Release application, strictly typechecks all 484 rendered
+story exports, and runs native XCTest interactions. Its application and simulator
+identity are separate from generated products. `--prepare-only` validates the
+story gallery without building native code. Dated logs and result bundles remain
+under `.artifacts/native-ui-ios/`.
+
+- The full command passed both XCTest cases on iOS 26.5: authored pagination
+  changed selection and disabled its end boundaries; the authored bookmark toggle
+  changed native accessibility selection. Result: `.artifacts/native-ui-ios/2026-10-25T02-32-32-912Z/results.xcresult`.
+- Export selection tests cover default functions, named chart and Demo exports,
+  ambiguous/missing exports, safe paths and actual published UI helpers. These
+  contracts prevent the gallery-only errors found in the initial manual attempt.
+- Lint and static security policy passed. This adds OS interaction evidence for
+  the two named stories; it does not mark all components or styles device-tested.
+- The documented Expo 57 / iOS 27 scene-lifecycle incompatibility remains open.
+  No iOS 27 acceptance, Android device acceptance or full registry parity is claimed.
+
 # Native registry carousel and resizable source APIs — October 24, 2026
 
 Added seven authored resizable examples and the authored carousel API example:

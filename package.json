@@ -105,7 +105,8 @@
     "native-ui:fonts": "node scripts/shadcn-fonts.mjs",
     "native-ui:fonts:verify": "node scripts/shadcn-fonts.mjs --verify-assets",
     "native-ui:themes": "node scripts/shadcn-themes.mjs",
-    "test:native-ui:bundle": "pnpm build && node scripts/native-ui-bundle.mjs"
+    "test:native-ui:bundle": "pnpm build && node scripts/native-ui-bundle.mjs",
+    "test:native-ui:ios": "pnpm build && node scripts/native-ui-ios.mjs"
   },
   "keywords": [
     "cli",

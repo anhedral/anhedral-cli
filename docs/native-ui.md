@@ -16,6 +16,18 @@ Menus, popovers, sheets and preview cards use native Modal surfaces; hover/conte
 
 Calendar supports local-date single, multiple and range selection, locale labels and disabled bounds/predicates. DatePicker adds a modal trigger. DataTable owns native sorting/filtering/pagination and stable row IDs, with native column renderers. Chart accepts `data: { label: string; value: number }[]` and bar/line/area/pie/radar/radial renderers using Expo-compatible SVG; it does not execute browser chart components. CodeBlock preserves source bytes, renders offline lexical syntax/diff tokens and uses Expo Clipboard. It does not execute code or claim language-server tokenization. MessageScroller follows new content only while the reader is at the bottom. Questionnaire supports single/multiple/text steps, back/skip and validated submission.
 
+## Native OS acceptance
+
+Run `pnpm test:native-ui:ios -- --device <dedicated simulator UUID>` on a Mac with
+Xcode and CocoaPods. The maintained gallery selects every authored default or named
+component export, typechecks its UI helpers, and runs actual native XCTest controls.
+Use `node scripts/native-ui-ios.mjs --prepare-only` for gallery/type validation.
+The generated QA application has its own bundle ID; dated Xcode logs and result
+bundles remain under `.artifacts/native-ui-ios/`. Keep native preparation/test
+commands serial because they regenerate the shared harness source directory.
+Expo 57's scene lifecycle is incompatible with iOS 27/Xcode 27; use a compatible
+runtime for current acceptance and retain that SDK compatibility gap explicitly.
+
 ## Official registry assets and recipes
 
 The authored component example overlay currently includes 223 reviewed source modules,

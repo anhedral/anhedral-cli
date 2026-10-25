@@ -52,7 +52,7 @@ jobs:
         run: pnpm format:check && pnpm check:hygiene && pnpm check:security && pnpm check:release-policy
       - name: Fast contract smoke tests
         if: steps.scope.outputs.full == 'true'
-        run: node --test tests/test-cli-validation.test.mjs tests/test-ci-scope.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-util-exec.test.mjs tests/test-native-ui-catalog.test.mjs tests/test-official-shadcn-registry.test.mjs tests/test-native-fonts.test.mjs tests/test-native-themes.test.mjs tests/test-native-chart-recipes.test.mjs tests/test-native-form-recipes.test.mjs tests/test-native-example-recipes.test.mjs tests/test-native-icons.test.mjs tests/test-native-colors.test.mjs tests/test-native-registry-css.test.mjs tests/test-native-overlay.test.mjs
+        run: node --test tests/test-cli-validation.test.mjs tests/test-ci-scope.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-util-exec.test.mjs tests/test-native-ui-catalog.test.mjs tests/test-native-ios.test.mjs tests/test-official-shadcn-registry.test.mjs tests/test-native-fonts.test.mjs tests/test-native-themes.test.mjs tests/test-native-chart-recipes.test.mjs tests/test-native-form-recipes.test.mjs tests/test-native-example-recipes.test.mjs tests/test-native-icons.test.mjs tests/test-native-colors.test.mjs tests/test-native-registry-css.test.mjs tests/test-native-overlay.test.mjs
       - name: Native component contracts when their source changes
         if: steps.scope.outputs.native == 'true'
         run: |

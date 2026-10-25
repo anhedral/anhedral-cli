@@ -195,6 +195,8 @@ test('native component CI covers owned source, consumers and its harness without
     'assets/ui/native-icons.json.gz',
     'scripts/native-example-recipes.mjs',
     'scripts/native-icons.mjs',
+    'scripts/native-ui-ios.mjs',
+    'tests/test-native-ios.test.mjs',
     'tests/test-native-example-recipes.test.mjs',
     'tests/test-native-icons.test.mjs',
     'scripts/native-form-recipes.mjs',
