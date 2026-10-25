@@ -168,6 +168,7 @@ const reset = {
 };
 export function Select({
   value,
+  nativePreset = true,
   defaultValue,
   onValueChange,
   disabled: requestedDisabled = false,
@@ -185,6 +186,7 @@ export function Select({
   ...overlay
 }: OverlayProps & {
   value?: unknown;
+  /** @internal A sibling primitive owns the root paint. */ nativePreset?: boolean;
   defaultValue?: unknown;
   onValueChange?: SelectChange;
   disabled?: boolean;
@@ -285,7 +287,11 @@ export function Select({
         setQuery,
       }}
     >
-      {source.source === 'aria' ? <View style={[source.view, style]}>{body}</View> : body}
+      {nativePreset && source.source === 'aria' ? (
+        <View style={[source.view, style]}>{body}</View>
+      ) : (
+        body
+      )}
     </SelectContext.Provider>
   );
 }
@@ -294,13 +300,19 @@ export function SelectTrigger({
   style,
   textStyle,
   size = 'default',
+  nativePreset = true,
+  nativeHideIcon = false,
   children,
   onFocus,
   onBlur,
   onHoverIn,
   onHoverOut,
   ...props
-}: Omit<ButtonProps, 'size'> & { size?: 'default' | 'sm'; invalid?: boolean }) {
+}: Omit<ButtonProps, 'size'> & {
+  size?: 'default' | 'sm';
+  invalid?: boolean;
+  /** @internal A sibling source primitive owns this surface. */ nativeHideIcon?: boolean;
+}) {
   const theme = useTheme(),
     inherited = useContext(NativeTextStyleContext);
   const state = useSelect(),
@@ -321,13 +333,17 @@ export function SelectTrigger({
       placeholder: empty,
     }),
     icon = useSelectStyle('SelectTrigger', { size }, 1);
-  const ownText = StyleSheet.flatten([inherited.style, source.text, textStyle]);
+  const ownText = StyleSheet.flatten([
+    inherited.style,
+    nativePreset ? source.text : undefined,
+    textStyle,
+  ]);
   const foreground =
     props.textColor ??
     (typeof ownText?.color === 'string' ? ownText.color : theme.colors.foreground);
   useNativeFieldActivation(() => overlay.set(true), disabled, false, id);
   return (
-    <ValuePaint.Provider value={source.value}>
+    <ValuePaint.Provider value={nativePreset ? source.value : null}>
       <OverlayTrigger
         variant="ghost"
         nativePreset={false}
@@ -359,8 +375,12 @@ export function SelectTrigger({
           onHoverOut?.(event);
         }}
         textColor={foreground}
-        textStyle={[source.text, textStyle]}
-        style={(event) => [reset, source.view, typeof style === 'function' ? style(event) : style]}
+        textStyle={[nativePreset ? source.text : undefined, textStyle]}
+        style={(event) => [
+          reset,
+          nativePreset ? source.view : undefined,
+          typeof style === 'function' ? style(event) : style,
+        ]}
       >
         {props.asChild ? (
           children
@@ -368,19 +388,23 @@ export function SelectTrigger({
           <>
             <NativeButtonIconSize.Provider value={source.iconSize}>
               <NativeDescendantStyleContext.Provider value={{ iconColor: source.iconColor }}>
-                <NativeTextStyleProvider value={{ style: source.text }}>
+                <NativeTextStyleProvider
+                  value={{ style: [nativePreset ? source.text : undefined, textStyle] }}
+                >
                   {content(children)}
                 </NativeTextStyleProvider>
               </NativeDescendantStyleContext.Provider>
             </NativeButtonIconSize.Provider>
-            <ChevronDown
-              testID={props.testID ? props.testID + '-icon' : undefined}
-              accessible={false}
-              accessibilityElementsHidden
-              size={source.iconSize ?? Number(icon.view.width ?? icon.view.height ?? 16)}
-              color={source.iconColor ?? icon.foreground ?? foreground}
-              style={icon.view}
-            />
+            {!nativeHideIcon && (
+              <ChevronDown
+                testID={props.testID ? props.testID + '-icon' : undefined}
+                accessible={false}
+                accessibilityElementsHidden
+                size={source.iconSize ?? Number(icon.view.width ?? icon.view.height ?? 16)}
+                color={source.iconColor ?? icon.foreground ?? foreground}
+                style={icon.view}
+              />
+            )}
           </>
         )}
       </OverlayTrigger>

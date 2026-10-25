@@ -204,6 +204,7 @@ test.each(['default', 'sm'] as const)(
           <UI.NativeSelectOption value="one">One</UI.NativeSelectOption>
         </UI.NativeSelectOptGroup>
         <UI.NativeSelectOptGroup label="Available">
+          <UI.NativeSelectOption value="initial">Initial</UI.NativeSelectOption>
           <UI.NativeSelectOption value="two">Two</UI.NativeSelectOption>
         </UI.NativeSelectOptGroup>
       </UI.NativeSelect>,

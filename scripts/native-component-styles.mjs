@@ -422,6 +422,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeSelectPresets(inventory),
     source: await nativeSelectPresetSource(inventory),
   });
+  const { nativeSelectControlPresets, nativeSelectControlPresetSource } =
+    await import('./native-select-control-presets.mjs');
+  outputs.push({
+    component: 'native-select',
+    target: target('native-select'),
+    data: nativeSelectControlPresets(inventory),
+    source: await nativeSelectControlPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({

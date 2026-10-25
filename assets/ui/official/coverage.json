@@ -3313,64 +3313,100 @@
       }
     },
     "registry:example/native-select-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 example retains its source options, grouping, disabled/invalid state and dimensions through the reviewed Native Select source slots. Native View/Modal/radio selection and onValueChange replace browser select/option hosts and DOM events. All source examples compile and render on both platforms; focused native OS acceptance verifies source sizes, intrinsic width and option semantics.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/native-select.tsx",
+        "assets/ui/native/_native-select-presets.tsx",
+        "assets/ui/native/_preset-native-select-style.tsx",
+        "assets/ui/native/_select.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-native-select.test.tsx",
+        "tests/native-ui/registry-native-select-presets.test.tsx",
+        "tests/test-native-select-control-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "8e2db7ac6edda0e9a6b684cb848b4a24069ef963dcad7e98444d190746e660ad"
       }
     },
     "registry:example/native-select-disabled": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 example retains its source options, grouping, disabled/invalid state and dimensions through the reviewed Native Select source slots. Native View/Modal/radio selection and onValueChange replace browser select/option hosts and DOM events. All source examples compile and render on both platforms; focused native OS acceptance verifies source sizes, intrinsic width and option semantics.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/native-select.tsx",
+        "assets/ui/native/_native-select-presets.tsx",
+        "assets/ui/native/_preset-native-select-style.tsx",
+        "assets/ui/native/_select.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-native-select.test.tsx",
+        "tests/native-ui/registry-native-select-presets.test.tsx",
+        "tests/test-native-select-control-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "f2fdf8b3574db62c38ef91f2c8a47cc0df4fd7952dd502deea0f412cd763da6a"
       }
     },
     "registry:example/native-select-groups": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 example retains its source options, grouping, disabled/invalid state and dimensions through the reviewed Native Select source slots. Native View/Modal/radio selection and onValueChange replace browser select/option hosts and DOM events. All source examples compile and render on both platforms; focused native OS acceptance verifies source sizes, intrinsic width and option semantics.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/native-select.tsx",
+        "assets/ui/native/_native-select-presets.tsx",
+        "assets/ui/native/_preset-native-select-style.tsx",
+        "assets/ui/native/_select.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-native-select.test.tsx",
+        "tests/native-ui/registry-native-select-presets.test.tsx",
+        "tests/test-native-select-control-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "e3091e632a391629aea8a86c511e5c55fb8a39365857f46ae39604ab8c326047"
       }
     },
     "registry:example/native-select-invalid": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 example retains its source options, grouping, disabled/invalid state and dimensions through the reviewed Native Select source slots. Native View/Modal/radio selection and onValueChange replace browser select/option hosts and DOM events. All source examples compile and render on both platforms; focused native OS acceptance verifies source sizes, intrinsic width and option semantics.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/native-select.tsx",
+        "assets/ui/native/_native-select-presets.tsx",
+        "assets/ui/native/_preset-native-select-style.tsx",
+        "assets/ui/native/_select.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-example-recipes.test.mjs",
+        "tests/native-ui/registry-native-select.test.tsx",
+        "tests/native-ui/registry-native-select-presets.test.tsx",
+        "tests/test-native-select-control-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "new-york-v4": "74882f26432bc0076380eb5ab03184ec551933695550a5ed9a72b57a61fb9c45"
@@ -9851,6 +9887,50 @@
         "radix-sera": "15770786bed72fe59efa19a269d9fc438d4a6d86636895a28e6aa21053c4e6c6",
         "radix-vega": "0d52a81c2ec0a6a3afcef7079045d2c7ebff25672379c6f5fd023f56d140cde7"
       }
+    },
+    "registry:ui/native-select": {
+      "status": "ported",
+      "reason": "All four actual Native Select source publications retain twenty wrapper/control/icon/option/optgroup class slots and nine official style families, including source sizes, start-aligned text, focus/invalid/disabled paint, one disabled opacity and Mira's small-icon offset. Native intrinsic measurement sizes the widest option, font scaling and explicit type metrics preserve label height, and caller control styles/refs remain native. Empty/omitted values, first eligible options, disabled groups, controlled values, label activation and removed-option fallback are tested; fallback does not emit user changes. Native Modal collection replaces the HTML system picker; Canvas/CanvasText map to native popover colors and DOM events/form/keyboard behavior remains an explicit platform boundary. Both OS cases verify nine source geometries and native option behavior.",
+      "nativeFiles": [
+        "assets/ui/native/native-select.tsx",
+        "assets/ui/native/_native-select-presets.tsx",
+        "assets/ui/native/_preset-native-select-style.tsx",
+        "assets/ui/native/_select.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-native-select.test.tsx",
+        "tests/native-ui/registry-native-select-presets.test.tsx",
+        "tests/test-native-select-control-presets.test.mjs",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "94ca47bb8c0287ec9dab5ed00011bc18320e1de50fa918e9118267eb183e5330",
+        "aria-lyra": "c1b6a69b62dd0ba619b32ca32ca5a42bf535f052cc071fce206407768d9a2434",
+        "aria-maia": "22fe9394a5743ec79b1d7ce9f3b80be279e3710a657be3cd4635f65da76bfae7",
+        "aria-mira": "8e86dab36ccfa1e36f26c9250ac9805c4c91ce469df0f3e13dca2bf9c0af9532",
+        "aria-nova": "abf32bcf527dfec50a6809fb3a8adfff4f5a16c3a6d9b288925eef8ce3a73554",
+        "aria-rhea": "12ef69ce4eb4e248d0d90df714336fab9866a7bd26e2b4f01a82c9561ed4e75c",
+        "aria-sera": "e05c8277b46ae1ba83e4380d0dd7fda2dfd4ed51f88141c6a092e22795260728",
+        "aria-vega": "6075fcff4c97b7f0400f1e7358fb7c7b83c9c6181985f67d9c2aa27aa407f1b0",
+        "base-luma": "33b4b62d09a3bd8a4dcbab9c4d36225c8cd610bd00cec84e75ee0025a9bd0bea",
+        "base-lyra": "6150ee8484de1b9e6b3a66942111f926a7a050a90cb1c535e8b1e3e39f83d165",
+        "base-maia": "dbab92eb409e5bc392c610104edba32d8d5d1f222d978e41e66cd5c674d47960",
+        "base-mira": "6e43fb62a5914428f608509637974e1acef0107542b3176f59e6d375b17c97e8",
+        "base-nova": "75c7fb2f8a9d5d1b65dd1ee7d962558cab462428882a7d647934349ac3389092",
+        "base-rhea": "e765fcb5249922b53ab873079072c9f1315a0da0a746219020e8e78d95cdf34b",
+        "base-sera": "bd42644237949e2c652119d99b80b7a2fd41640251aec1b00247b0d856d2ded5",
+        "base-vega": "291dbb58139d43f02fc8236567675d2751fd15575f299b2e36fcca34d1488ffe",
+        "new-york-v4": "ef9930976ccf4f6d8415c5d944eea4c11c090536ba9659ec5ade0918424693a9",
+        "radix-luma": "5b379ecbbb2d38caa8383179807fe1ee7ccbace943440dcb1833798c45920b01",
+        "radix-lyra": "cb7aa11dcc5af7b53095f6a0a07a5ddb439698eed1635615eae6cdd071cc3f5e",
+        "radix-maia": "9811a17d7f1707fa7d017366130e5bf2f4d53f064c3d3629edd1be8fb6efd439",
+        "radix-mira": "a97a09cceceb8c58972da23552fcc608d7f7ff4f5f8dbb96343d4d80c851fdca",
+        "radix-nova": "90ab69a2b6ffe99dbe9e1f575fe61e02f73a056726ad6d43f821696a2658e966",
+        "radix-rhea": "0263f075d6703400b932552f68ec791ae11240c5bb84b6d5489e4791a1b18281",
+        "radix-sera": "8b766637d9586b141250648203aa382d78389dc65ffe95c8b1b188d6a4a40f0e",
+        "radix-vega": "e63389c792caf053ad77333800ee6c1c6c9528cc93705f94f428ff1f7ee2d398"
+      }
     }
   },
   "webSpecific": [
@@ -9947,7 +10027,12 @@
     {
       "feature": "ChartStyle CSS injection, chart DOM/SVG selectors and Recharts animation internals",
       "adaptation": "Keep ChartStyle in the upstream web implementation. Native ChartContainer scopes light/dark series colors in React context; the native SVG renderer paints source grid/axis/cursor/marker rules and exposes explicit selection. Native View refs, textStyle and labelStyle replace DOM refs/classes. Browser Recharts rendering/animation internals and its entire external package API are not native exports.",
-      "status": "Six source implementations, eleven tooltip style families, all three indicators, custom icons/formatters, legend policies, scoped colors, real layout and every authored chart module have native tests. Interactive area and pie blocks retain pending Select preset coverage."
+      "status": "Six source implementations, eleven tooltip style families, all three indicators, custom icons/formatters, legend policies, scoped colors, real layout and every authored chart module have native tests. Interactive area and pie blocks use the reviewed native Select presets and retain authored selection callbacks."
+    },
+    {
+      "feature": "HTML native select picker, Canvas colors, option values and DOM form events",
+      "adaptation": "Use the native Modal collection with source-owned select control/icon slots, native View refs and onValueChange. Native text measurement sizes the widest option; source sizes and start alignment remain literal. Canvas/CanvasText use native popover tokens. First eligible, empty/omitted values and disabled groups retain selection semantics; browser form submission/constraint validation, system picker appearance, keyboard/typeahead and CSS transition timing remain platform-specific.",
+      "status": "All four source publications, twenty class slots and nine official styles have strict source/style integrity and native renderer tests. Native OS cases pass source geometry, intrinsic width and option selection. The old Default/New York registries have no Native Select publication; their optional native extension uses New York v4 metrics. Screen-reader and physical-keyboard acceptance remain separate."
     }
   ]
 }

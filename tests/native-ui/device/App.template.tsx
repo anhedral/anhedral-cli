@@ -18,6 +18,84 @@ import {
 } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+function NativeSelectControlMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'new-york-v4',
+  ] as const;
+  const [index, setIndex] = useState(0),
+    [normal, setNormal] = useState(0),
+    [small, setSmall] = useState(0),
+    [width, setWidth] = useState(0),
+    [choice, setChoice] = useState(''),
+    [changes, setChanges] = useState(0);
+  const preset = presets[index]!;
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Native control preset: ' + preset}</UI.Text>
+      <UI.Text>{'Native control geometry: ' + preset + ':' + normal + ':' + small}</UI.Text>
+      <UI.Button onPress={() => setIndex((index + 1) % presets.length)}>
+        Next native control preset
+      </UI.Button>
+      <NativeRegistryPalette
+        source={preset === 'new-york-v4' ? preset : 'aria'}
+        generation="modern"
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <UI.NativeSelect
+            key={preset + 'normal'}
+            accessibilityLabel="Native default control"
+            style={{ width: 240 }}
+            onLayout={({ nativeEvent: { layout } }) => setNormal(Math.round(layout.height))}
+            options={[{ value: 'a', label: 'Alpha' }]}
+          />
+          <UI.NativeSelect
+            key={preset + 'small'}
+            size="sm"
+            accessibilityLabel="Native small control"
+            style={{ width: 240 }}
+            onLayout={({ nativeEvent: { layout } }) => setSmall(Math.round(layout.height))}
+            options={[{ value: 'a', label: 'Alpha' }]}
+          />
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+      <UI.Text>{'Native intrinsic width: ' + width}</UI.Text>
+      <UI.NativeSelect
+        accessibilityLabel="Native intrinsic control"
+        onLayout={({ nativeEvent: { layout } }) => setWidth(Math.round(layout.width))}
+      >
+        <UI.NativeSelectOption value="s">Short</UI.NativeSelectOption>
+        <UI.NativeSelectOption value="l">A substantially longer option</UI.NativeSelectOption>
+      </UI.NativeSelect>
+      <UI.Text>{'Native control selected: ' + choice + '; changes=' + changes}</UI.Text>
+      <UI.NativeSelect
+        accessibilityLabel="Native option control"
+        onValueChange={(value) => {
+          setChoice(value);
+          setChanges((count) => count + 1);
+        }}
+      >
+        <UI.NativeSelectOptGroup disabled label="Unavailable">
+          <UI.NativeSelectOption value="blocked">Native blocked option</UI.NativeSelectOption>
+        </UI.NativeSelectOptGroup>
+        <UI.NativeSelectOption value="" label="Native empty choice" />
+        <UI.NativeSelectOption>Native text option</UI.NativeSelectOption>
+      </UI.NativeSelect>
+      <UI.NativeSelect
+        disabled
+        accessibilityLabel="Native disabled control"
+        options={[{ value: 'a', label: 'Disabled native control' }]}
+      />
+    </View>
+  );
+}
 function NativeSelectMatrix() {
   const presets = [
     'nova',

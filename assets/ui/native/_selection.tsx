@@ -40,69 +40,7 @@ export {
   SelectEmpty,
   type SelectOption,
 } from './_select';
-export function NativeSelect({
-  nativeID,
-  options,
-  invalid,
-  value,
-  defaultValue,
-  onValueChange,
-  placeholder,
-  disabled,
-  accessibilityLabel,
-  size = 'default',
-  children,
-}: {
-  options?: SelectOption[];
-  nativeID?: string;
-  invalid?: boolean;
-  children?: ReactNode;
-  size?: 'default' | 'sm';
-  value?: string;
-  defaultValue?: string;
-  onValueChange?: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  accessibilityLabel?: string;
-}) {
-  return (
-    <Select
-      invalid={invalid}
-      value={value}
-      defaultValue={defaultValue}
-      onValueChange={onValueChange}
-      disabled={disabled}
-    >
-      <SelectTrigger nativeID={nativeID} size={size} accessibilityLabel={accessibilityLabel}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options?.map((item) => (
-          <SelectItem key={item.value} value={item.value} disabled={item.disabled}>
-            {item.label}
-          </SelectItem>
-        ))}
-        {children}
-      </SelectContent>
-    </Select>
-  );
-}
-export const NativeSelectOption = SelectItem;
-export function NativeSelectOptGroup({
-  label,
-  children,
-  ...props
-}: Omit<React.ComponentProps<typeof SelectGroup>, 'children'> & {
-  label?: ReactNode;
-  children?: ReactNode;
-}) {
-  return (
-    <SelectGroup {...props}>
-      {label && <SelectLabel>{label}</SelectLabel>}
-      {children}
-    </SelectGroup>
-  );
-}
+export { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from './native-select';
 export function Combobox({
   options,
   value,

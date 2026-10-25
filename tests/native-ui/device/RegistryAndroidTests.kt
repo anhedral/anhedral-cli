@@ -62,6 +62,27 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun nativeSelectControlsRetainSourceGeometryAndOptionSemantics() = uiAutomator {
+    openStory("native/native-select-contract")
+    fun press(name:String) { label(name).apply {waitForStable();click()} }
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","new-york-v4")
+    val heights=listOf(32,36,36,32,28,36,40,32,36)
+    for ((index,preset) in presets.withIndex()) {
+      label("Native control geometry: "+preset+":"+heights[index]+":"+(heights[index]-4))
+      press("Next native control preset")
+    }
+    val geometry=onElement { textAsString()?.startsWith("Native intrinsic width: ")==true && (textAsString()?.substringAfterLast(": ")?.toIntOrNull() ?: 0)>150 }
+    assertTrue((geometry.text?.substringAfterLast(": ")?.toIntOrNull() ?: 0)>150)
+    press("Native option control")
+    // A Modal has its own window; its rows are not clipped to the underlying story ScrollView.
+    fun option(name:String)=onElement { named(name) && isVisibleToUser }
+    val blocked=option("Native blocked option");assertFalse(blocked.isEnabled)
+    option("Native text option").apply {waitForStable();click()}
+    label("Native control selected: Native text option; changes=1")
+    press("Native option control");option("Native empty choice").apply {waitForStable();click()}
+    label("Native control selected: ; changes=2")
+    assertFalse(label("Native disabled control").isEnabled)
+  }
   @Test fun selectPresetsRetainNativeSelectionCollectionsAndSearch() = uiAutomator {
     openStory("native/select-contract")
     fun press(name:String) { label(name).apply { waitForStable(); click() } }

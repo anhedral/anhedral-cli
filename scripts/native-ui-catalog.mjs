@@ -235,6 +235,21 @@ boundaries. Native surfaces retain source alpha, native shadows and direct state
 The native API uses View/Text/ScrollView refs and native press/focus/scroll events;
 it does not install the browser primitive libraries or emulate DOM objects.
 
+NativeSelect owns all four actual upstream source definitions and all nine published
+style families (the older Default/New York registries do not publish this component).
+Its wrapper, control, icon, option and optgroup slots retain source typography, size,
+focus/invalid/disabled paint and Mira's asymmetric small-icon offset. Native font
+scaling grows compact controls. Intrinsic width measures the widest option label;
+explicit wrapper width remains caller-owned. Empty option values, omitted value/text
+normalization, first eligible selection, disabled groups, controlled ownership and
+removed-option fallback are tested. A fallback reset does not emit a user callback.
+Native refs, press events and onValueChange replace HTMLSelectElement/onChange.
+The popup uses the maintained native Modal collection; HTML system picker rendering,
+Canvas/CanvasText system colors, browser form submission/validation, keyboard/typeahead
+and CSS transitions remain explicit platform differences. Canvas colors map to the
+native popover tokens. Older frozen style names are optional native extensions using
+New York v4 metrics, rather than additional upstream publications.
+
 The authored copy example uses the OS clipboard through Expo Clipboard, with success,
 rejection, timeout and unmount handling. Its companion upstream hook, outside the
 published registry index, has an explicit source path, pin and SHA-256; changing the

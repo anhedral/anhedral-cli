@@ -101,6 +101,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/chart-contract",Component:NativeChartMatrix}',
           '{id: "native/input-group-contract",Component:NativeInputGroupMatrix}',
           '{id: "native/select-contract",Component:NativeSelectMatrix}',
+          '{id: "native/native-select-contract",Component:NativeSelectControlMatrix}',
         ].join(',\n') +
         '];',
     );

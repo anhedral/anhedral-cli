@@ -1,6 +1,36 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testNativeSelectControlsRetainSourceGeometryAndOptionSemantics() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch();openStory("native/native-select-contract",in:app)
+    let scroll=storyScroll(app)
+    func target(_ name:String)->XCUIElement {app.descendants(matching:.any).matching(identifier:name).firstMatch}
+    func press(_ name:String) {
+      let element=target(name)
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeUp()}
+      for _ in 0..<12 {if element.exists && element.isHittable {break};scroll.swipeDown()}
+      XCTAssertTrue(element.isHittable,name);element.tap()
+    }
+    let presets=["nova","vega","maia","lyra","mira","luma","sera","rhea","new-york-v4"],heights=[32,36,36,32,28,36,40,32,36]
+    for (index,preset) in presets.enumerated() {
+      XCTAssertTrue(app.staticTexts["Native control geometry: "+preset+":"+String(heights[index])+":"+String(heights[index]-4)].waitForExistence(timeout:10))
+      if preset == "mira" {
+        let image=XCTAttachment(screenshot:app.screenshot());image.name="Native Select Mira compact source controls";image.lifetime = .keepAlways;add(image)
+      }
+      press("Next native control preset")
+    }
+    let intrinsic=target("Native intrinsic control")
+    XCTAssertTrue(intrinsic.exists);XCTAssertGreaterThan(intrinsic.frame.width,150)
+    press("Native option control")
+    let blocked=target("Native blocked option");XCTAssertTrue(blocked.waitForExistence(timeout:10));XCTAssertFalse(blocked.isEnabled)
+    press("Native text option")
+    XCTAssertTrue(app.staticTexts["Native control selected: Native text option; changes=1"].waitForExistence(timeout:10))
+    press("Native option control");press("Native empty choice")
+    XCTAssertTrue(app.staticTexts["Native control selected: ; changes=2"].waitForExistence(timeout:10))
+    XCTAssertFalse(target("Native disabled control").isEnabled)
+    let image=XCTAttachment(screenshot:app.screenshot());image.name="Native Select source labels and option semantics";image.lifetime = .keepAlways;add(image)
+  }
   func testSelectPresetsRetainNativeSelectionCollectionsAndSearch() {
     let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
     app.launch();openStory("native/select-contract",in:app)

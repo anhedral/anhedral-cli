@@ -1,3 +1,61 @@
+# Native Select source slots, intrinsic sizing and native hit testing — October 25, 2026
+
+Native Select now owns all four actual pinned upstream definitions and all nine
+published style families. Default and New York have no upstream Native Select;
+their optional native extensions use New York v4 metrics. The review retains all
+twenty wrapper/control/icon/option/optgroup class slots, including Mira's small
+icon offset, source heights, start-aligned text and one disabled wrapper opacity.
+Source/global/style integrity guards reject unreviewed changes. The renderer audit
+consumes every slot. Native font scaling and explicit type metrics grow compact
+controls, while an invisible, non-interactive View measures the widest option.
+
+Empty values, option label/value normalization, first enabled selection, disabled
+groups, controlled ownership and removed-option fallback have behavior tests.
+Fallback does not emit a user callback. Native label activation and invalid field
+state remain associated with the actual control. Native Select owns label paint
+and value rendering, avoiding the custom Aria Select render-state contract.
+Browser system picker/Canvas colors, form submission/validation, DOM events,
+keyboard/typeahead and CSS transition timing have explicit native/platform decisions
+in the registry checklist. The broad modern native-select-example remains partial
+until its separate Field/composition dependencies are reviewed.
+
+Both final native cases passed on the dedicated Android emulator and iOS 26.5
+simulator, exercising all nine normal/small source geometries, intrinsic width,
+disabled groups, omitted/empty values and real option callbacks. These are focused
+cases; the newly expanded 21-case OS suites were not run in full for this slice.
+The preceding Select full-suite results belong to their recorded earlier binaries.
+Both device application copies match all 149 canonical native TypeScript modules;
+compiled driver sources match the maintained 725-root catalog substitution. Evidence:
+
+- Android: `.artifacts/native-ui-android/2026-10-25T18-39-13-996Z/`, application
+  SHA-256 `c187cb31474e977e21372401251ed53755fbebe671ab01dc1a34e3e80abd4170`,
+  test APK `d5d282b8ebc858dd4965c2d929f13bc3c68f269484886b11333f957408e3fef6`.
+- iOS: `.artifacts/native-ui-ios/2026-10-25T18-40-55-338Z/`; source/test equivalence
+  is retained in `.artifacts/native-ui/2026-10-25-native-select/final-device-source-equivalence.json`.
+- Android's final screen and iOS's Mira compact-control attachment were inspected.
+  They show source dimensions, start alignment, correct intrinsic width and visible
+  disabled paint. OS screen-reader/physical-keyboard acceptance stays separate.
+
+Retained Android failures at `2026-10-25T18-27-32-280Z` and
+`2026-10-25T18-34-51-984Z` exposed two issues. Modal rows need their own native
+window visibility checks, rather than the underlying story ScrollView bounds.
+The second run isolated an actual Android hit-testing defect: Text does not implement
+the pointer-events setting used by the hidden measurement node. A native View now
+owns that setting. The final passing run uses the identical test APK as the second
+failure, isolating the production fix. Screenshot review also caught inherited
+button centering; explicit start alignment now has LTR/RTL regression tests.
+
+Validation: all 66 native suites / 1,836 tests pass on each platform, and all 729
+registry modules compile as iOS and Android Hermes bytecode. Generated consumer
+typecheck and focused source/behavior tests also pass (51 per platform). CLI unit tests pass 678 with one existing optional skip
+(679 total), with lint, static security, source/driver integrity and packed-consumer
+checks passing. The runtime pack contained 249 files and remains below unchanged 1.25 MB packed /
+3 MB unpacked limits. Complete source/behavior, Hermes, native OS and failed-run logs
+are retained under `.artifacts/native-ui/2026-10-25-native-select/` and the OS evidence
+directories above. The checklist now records
+197 ported groups plus one web-specific group, with 421 groups unfinished; this is
+not a full-registry completion claim. Nothing was merged, released or deployed.
+
 # Select source slots, collections and native popup behavior — October 25, 2026
 
 Select now retains six source implementations and eleven style families, with a

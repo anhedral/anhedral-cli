@@ -1198,6 +1198,8 @@
     "_select.tsx",
     "registry-aria-select.tsx",
     "_select-presets.tsx",
+    "_native-select-presets.tsx",
+    "_preset-native-select-style.tsx",
     "_preset-select-style.tsx",
     "form.tsx",
     "highlighter.tsx",
