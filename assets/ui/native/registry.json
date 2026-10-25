@@ -1223,7 +1223,8 @@
     "_registry-context.tsx",
     "registry-icons.tsx",
     "registry-slider.tsx",
-    "registry-aria-overlay.tsx"
+    "registry-aria-overlay.tsx",
+    "registry-image.tsx"
   ],
   "supportModules": [
     {

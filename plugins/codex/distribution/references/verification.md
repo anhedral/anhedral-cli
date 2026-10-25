@@ -1,3 +1,29 @@
+# Native authored image recipes — October 24, 2026
+
+The Expo overlay now retains all four reviewed aspect-ratio example modules:
+227 component example modules and 492 native registry modules overall. Next Image
+imports become native image sources with the original HTTPS URL, alt text,
+dimensions, crop and authored aspect ratios. Native SVG applies grayscale and
+brightness together. Next server optimization, browser srcset and preload remain
+web-specific; unported local paths fail explicitly rather than silently disappearing.
+
+- Native bitmap and filtered-renderer readiness are tracked separately. Loading,
+  failure, retry and a 30-second stalled-renderer timeout stay visible. Old source
+  and old retry callbacks cannot change the new image. Decorative images remain
+  outside accessibility; authored image names become native image labels.
+- Full suites: 965 tests per platform, 37 suites each, with unchanged coverage
+  thresholds. Strict generated typecheck passed. Focused suites: 235 per platform.
+  Five source/generator contracts and lint passed. Root: 597 passed, one existing
+  optional skip. Installed packed CLI smoke and packlist passed (249 files,
+  945,870 compressed bytes). Both production Hermes bundles include all 492 modules.
+- Initial focused checks found the removed React Native absoluteFillObject API,
+  an unported 4xl container length and missing explicit native image role. The
+  adapter now uses native inset positioning, reviewed container lengths and the
+  explicit role. Those failures remain in local dated logs.
+- No new image device/visual or offline network acceptance is claimed. Whole
+  registry coverage remains incomplete, including component style presets and
+  the recorded Expo 57 / iOS 27 lifecycle gap. No release or deployment occurred.
+
 # Lossless dependency patch packaging — October 24, 2026
 
 The maintained node-forge security patch now ships as bounded Brotli data. Source

@@ -35,11 +35,17 @@ runtime for current acceptance and retain that SDK compatibility gap explicitly.
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 223 reviewed source modules,
+The authored component example overlay currently includes 227 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 \`node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`
 and \`node scripts/native-icons.mjs --check\`. Their coverage remains partial while
 component preset/API parity is unfinished.
+
+Authored image recipes use native image caching and SVG grayscale/brightness filters.
+They retain source HTTPS URLs, alt text, crop, dimensions and aspect ratios, with visible
+loading, failure and retry. Next server optimization, browser srcset and preload are
+web-specific. Unported local image paths fail explicitly; remote media availability is
+not an offline guarantee. A native renderer stalled for 30 seconds exposes retry.
 
 The native package includes the reviewed font and theme catalogs. \`NativeFontProvider\`
 loads selected body/heading/serif/monospace roles through Expo Font; \`useNativeFonts\`

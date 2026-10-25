@@ -251,6 +251,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'apps/v4/registry/bases/radix/examples/resizable-example.tsx',
       'apps/v4/registry/bases/aria/examples/resizable-example.tsx',
     );
+    origins.push('apps/v4/registry/new-york-v4/examples/aspect-ratio-demo.tsx');
+    for (const base of ['base', 'radix', 'aria'])
+      origins.push(`apps/v4/registry/bases/${base}/examples/aspect-ratio-example.tsx`);
     for (const origin of origins) {
       const name = path.basename(origin, '.tsx');
       const input = inventory.sources[origin];

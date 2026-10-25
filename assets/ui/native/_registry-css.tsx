@@ -296,19 +296,26 @@ export function registryStyle(
                 ? 320
                 : match[3] === 'full'
                   ? '100%'
-                  : match[3] === '3xl'
-                    ? 768
-                    : match[3] === '2xl'
-                      ? 672
-                      : match[3] === 'xl'
-                        ? 576
-                        : match[3] === 'md'
-                          ? 448
-                          : match[3] === 'sm'
-                            ? 384
-                            : match[3] === 'lg'
-                              ? 512
-                              : number(match[3]!);
+                  : /^(4|5|6|7)xl$/.test(match[3]!)
+                    ? (
+                        { '4xl': 1024, '5xl': 1152, '6xl': 1280, '7xl': 1440 } as Record<
+                          string,
+                          number
+                        >
+                      )[match[3]!]!
+                    : match[3] === '3xl'
+                      ? 768
+                      : match[3] === '2xl'
+                        ? 672
+                        : match[3] === 'xl'
+                          ? 576
+                          : match[3] === 'md'
+                            ? 448
+                            : match[3] === 'sm'
+                              ? 384
+                              : match[3] === 'lg'
+                                ? 512
+                                : number(match[3]!);
       for (let name of names) {
         if (match[1]) name = match[1].slice(0, -1) + name[0]!.toUpperCase() + name.slice(1);
         Object.assign(view, { [name]: value });
@@ -399,6 +406,10 @@ export function registryStyle(
     else if (token.startsWith('ring-')) paint.ringColor = options.color(token.slice(5));
     else if (token === 'italic') text.fontStyle = 'italic';
     else if (token === 'grayscale') paint.grayscale = 1;
+    else if (/^brightness-(?:\d+|\[\d+(?:\.\d+)?\])$/.test(token)) {
+      const value = token.slice(11);
+      paint.brightness = value.startsWith('[') ? Number(value.slice(1, -1)) : Number(value) / 100;
+    } else if (/^object-(cover|contain|fill)$/.test(token)) paint.objectFit = token.slice(7);
     else if (token === 'animate-spin') paint.spin = 1;
     else if (token.startsWith('hover:bg-')) paint.hoverBackground = options.color(token.slice(9));
     else if (token.startsWith('hover:text-'))

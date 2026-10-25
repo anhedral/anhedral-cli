@@ -122,6 +122,8 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     small: 'RegistrySmall',
     blockquote: 'RegistryText',
     figure: 'RegistryView',
+    figcaption: 'RegistryText',
+    img: 'RegistryImage',
     button: 'RegistryButton',
     defs: 'Defs',
     linearGradient: 'LinearGradient',
@@ -183,6 +185,26 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       if (ts.isImportDeclaration(node)) {
         const module = node.moduleSpecifier.text;
         if (module === 'react') return node;
+        if (module === 'next/image') {
+          if (!node.importClause?.name || node.importClause.namedBindings)
+            throw Error('Only the reviewed default Next image import is supported.');
+          return f.createImportDeclaration(
+            undefined,
+            f.createImportClause(
+              false,
+              undefined,
+              f.createNamedImports([
+                f.createImportSpecifier(
+                  false,
+                  f.createIdentifier('RegistryImage'),
+                  node.importClause.name,
+                ),
+              ]),
+            ),
+            f.createStringLiteral('../../native/registry-styles'),
+            undefined,
+          );
+        }
         if (nativeActions && /^\.\/form-next-/.test(module)) return node;
         if (nativeActions && module === 'next/form')
           return f.createImportDeclaration(

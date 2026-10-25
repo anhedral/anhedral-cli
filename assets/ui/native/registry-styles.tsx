@@ -48,6 +48,7 @@ import {
   useRegistryPalette,
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
+import { NativeRegistryImage } from './registry-image';
 
 const RegistryLocalPaint = createContext<Record<string, string | number>>({});
 export const RegistryPaintContext = createContext<Record<string, string | number>>({});
@@ -294,6 +295,14 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         props[nativeLayoutProp]?.(event);
       };
     delete forwarded['data-active'];
+    if (translated.paint.brightness !== undefined || translated.paint.objectFit !== undefined) {
+      if (!('nativeRegistryMedia' in Component))
+        throw Error('Native image paint requires a supported media component.');
+      if (translated.paint.brightness !== undefined)
+        forwarded.brightness = translated.paint.brightness;
+      if (translated.paint.objectFit !== undefined)
+        forwarded.objectFit = translated.paint.objectFit;
+    }
     if (translated.paint.grayscale) {
       if (!('nativeRegistryImage' in Component))
         throw Error('Native grayscale requires a supported image component.');
@@ -504,6 +513,7 @@ function RecipeButton({ children, ...props }: PressableProps) {
     </Pressable>
   );
 }
+export const RegistryImage = withRegistryStyles(NativeRegistryImage);
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
 const Heading = ({ style, ...props }: ComponentProps<typeof LabelText>) => (
