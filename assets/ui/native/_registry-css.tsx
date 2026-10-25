@@ -181,6 +181,15 @@ export function registryStyle(
         continue;
       token = responsive[2]!.replace(/^!|!$/g, '');
     }
+    const edgeSpacing = /^(first|last):((?:mb|pb)-\d+)$/.exec(token);
+    if (edgeSpacing) {
+      const matches =
+        edgeSpacing[1] === 'first'
+          ? options.index === 0
+          : options.count !== undefined && options.index === options.count - 1;
+      if (!matches) continue;
+      token = edgeSpacing[2]!;
+    }
     if (token.startsWith('[&:not(:first-child)]:')) {
       if ((options.index ?? 0) === 0) continue;
       token = token.slice('[&:not(:first-child)]:'.length);
@@ -339,6 +348,11 @@ export function registryStyle(
       view.flexDirection = 'row';
       view.flexWrap = 'wrap';
       paint.columns = Number(token.slice(10));
+    } else if (token === 'grid-cols-[25px_1fr]') {
+      view.flexDirection = 'row';
+      view.flexWrap = 'wrap';
+      paint.columns = 2;
+      paint.firstColumnWidth = 25;
     } else if (token === 'grid-cols-subgrid') {
       paint.subgrid = 1;
     } else if (/^col-span-(full|[1-9])$/.test(token)) {
@@ -602,6 +616,7 @@ export function registryStyle(
       paint.pulse = 0;
       paint.spin = 0;
     } else if (token === 'animate-spin') paint.spin = 1;
+    else if (token === 'hover:underline') paint.hoverUnderline = 1;
     else if (token.startsWith('hover:bg-')) paint.hoverBackground = options.color(token.slice(9));
     else if (token.startsWith('hover:text-'))
       paint.hoverForeground = options.color(token.slice(11));
@@ -609,6 +624,7 @@ export function registryStyle(
       paint.turnTransition = 1;
       paint.transitionDuration = 150;
     } else if (token === 'rotate-90') paint.turnAngle = 90;
+    else if (token === 'translate-y-1') view.transform = [{ translateY: 4 }];
     else if (token === 'translate-y-[1px]') view.transform = [{ translateY: 1 }];
     else if (token === 'transition-none') paint.transitionDuration = 0;
     else if (token === 'transition-all') paint.transitionDuration = 150;
@@ -639,6 +655,9 @@ export function registryStyle(
     else if (token === 'tracking-wide') paint.letterSpacingEm = 0.025;
     else if (token === 'tracking-wider') paint.letterSpacingEm = 0.05;
     else if (token === 'tracking-widest') paint.letterSpacingEm = 0.1;
+    else if (/^inset-\d+(?:\.\d+)?$/.test(token)) view.inset = number(token.slice(6));
+    else if (/^underline-offset-\d+$/.test(token))
+      paint.nativeUnderlineOffset = Number(token.slice(17));
     else if (token === 'underline') text.textDecorationLine = 'underline';
     else if (token === 'shadow-xs') {
       view.boxShadow = [
@@ -694,13 +713,18 @@ export function registryStyle(
       view.transform = [...((view.transform as []) ?? []), { translateY: -8 }];
     else if (token === 'rotate-[-40deg]')
       view.transform = [...((view.transform as []) ?? []), { rotate: '-40deg' }];
-    else if (token === 'mix-blend-luminosity') view.mixBlendMode = 'luminosity';
+    else if (token === 'mix-blend-luminosity' || token === 'mix-blend-color')
+      view.mixBlendMode = token.slice(10) as 'luminosity' | 'color';
     else if (token.startsWith('-space-x-')) paint.childMarginStart = -number(token.slice(9));
     else if (token.startsWith('space-x-')) view.columnGap = number(token.slice(8));
     else if (token.startsWith('space-y-')) view.rowGap = number(token.slice(8));
     else if (token === 'overflow-hidden' || token === 'overflow-visible')
       view.overflow = token === 'overflow-hidden' ? 'hidden' : 'visible';
-    else if (token === 'overflow-x-auto') paint.scrollHorizontal = 1;
+    else if (token === 'overflow-x-auto' || token === 'overflow-x-scroll')
+      paint.scrollHorizontal = 1;
+    else if (token === 'overflow-y-auto' || token === 'overflow-y-scroll') paint.scrollVertical = 1;
+    else if (token === 'list-decimal' || token === 'list-disc' || token === 'list-none')
+      paint.listMarker = token.slice(5);
     else if (token === 'resize-none') paint.nativeResize = 'none';
     else throw Error(`Unreviewed native registry utility: ${original}`);
   }

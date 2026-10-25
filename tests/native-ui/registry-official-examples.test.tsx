@@ -65,3 +65,47 @@ test('recipe style conditions change layout through the explicit preview context
     padding: 8,
   });
 });
+
+for (const source of ['base', 'radix', 'aria'])
+  for (const style of ['vega', 'nova', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea'] as const)
+    test(`${source}/${style} authored Card examples retain all sections, selection, lists and inert unassociated submission`, async () => {
+      const Component = require(`./.generated/src/examples/${source}/card-example`).default;
+      const { NativeExampleOptions } = require('./.generated/src/native/_registry-context');
+      await render(
+        <UI.ThemeProvider>
+          <NativeExampleOptions style={style}>
+            <Component />
+          </NativeExampleOptions>
+        </UI.ThemeProvider>,
+      );
+      for (const name of [
+        'Default Size',
+        'Small Size',
+        'Content Edge to Edge',
+        'Custom Spacing',
+        'Header with Border',
+        'Footer with Border',
+        'Header with Border (Small)',
+        'Footer with Border (Small)',
+        'With Image',
+        'With Image (Small)',
+        'Meeting Notes',
+        'Login',
+      ])
+        expect(screen.getAllByText(name).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole('listitem')).toHaveLength(5);
+      expect(
+        screen.getByRole('listitem', { name: '1. New analytics widgets for daily/weekly metrics' }),
+      ).toBeTruthy();
+      const spacing = screen.getByRole('button', { name: '24px' });
+      await fireEvent.press(spacing);
+      expect(screen.getByRole('button', { name: '24px' }).props.accessibilityState.selected).toBe(
+        true,
+      );
+      expect(screen.getByRole('button', { name: '16px' }).props.accessibilityState.selected).toBe(
+        false,
+      );
+      await fireEvent.press(screen.getByRole('button', { name: 'Login' }));
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(screen.getByLabelText('Email').props.accessibilityHint).toContain('Required');
+    });

@@ -15,7 +15,7 @@ type DescriptionProps = ViewProps & {
   ref?: Ref<View>;
   descriptionTerms?: string;
 };
-function isTextContent(nodes: ReactNode): boolean {
+export function isNativeTextContent(nodes: ReactNode): boolean {
   const children = Children.toArray(nodes);
   return (
     children.length > 0 &&
@@ -43,7 +43,7 @@ function isTextContent(nodes: ReactNode): boolean {
           component === LabelText ||
           component === ThemedText ||
           kind === 'text') &&
-        isTextContent(child.props.children)
+        isNativeTextContent(child.props.children)
       );
     })
   );
@@ -89,7 +89,7 @@ export function NativeDescriptionDetails({
   ...props
 }: DescriptionProps) {
   const value = plainText(children),
-    interactive = !isTextContent(children);
+    interactive = !isNativeTextContent(children);
   return (
     <View
       {...props}

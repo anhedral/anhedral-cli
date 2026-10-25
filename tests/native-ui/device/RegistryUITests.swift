@@ -154,4 +154,36 @@ final class RegistryUITests: XCTestCase {
     add(screenshot)
   }
 
+  func testAuthoredCardControlsAndListOnNativeOS() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("base/card-example", in: app)
+    let scroll = app.scrollViews.firstMatch
+    func reveal(_ value: XCUIElement) {
+      for _ in 0..<48 {
+        if value.exists && !value.frame.isEmpty && scroll.frame.contains(value.frame) { return }
+        let up = value.exists && value.frame.midY < scroll.frame.minY
+        let start = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.98,dy:up ? 0.3 : 0.7))
+        let end = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.98,dy:up ? 0.7 : 0.3))
+        start.press(forDuration:0.1,thenDragTo:end,withVelocity:.slow,thenHoldForDuration:0.1)
+      }
+      XCTFail("Missing visible Card content: " + value.label)
+    }
+    let spacing = app.buttons["24px"]
+    reveal(spacing)
+    spacing.tap()
+    XCTAssertTrue(spacing.isSelected)
+    XCTAssertFalse(app.buttons["16px"].isSelected)
+    let item = app.descendants(matching:.any).matching(identifier:"1. New analytics widgets for daily/weekly metrics").firstMatch
+    reveal(item)
+    XCTAssertTrue(item.exists)
+    let last = app.descendants(matching:.any).matching(identifier:"5. Follow-up meeting scheduled for next Tuesday").firstMatch
+    reveal(last)
+    XCTAssertTrue(last.exists)
+    let screenshot = XCTAttachment(screenshot:app.screenshot())
+    screenshot.name = "Authored Card list and spacing controls"
+    screenshot.lifetime = .keepAlways
+    add(screenshot)
+  }
+
 }

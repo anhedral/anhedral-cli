@@ -5983,7 +5983,7 @@
     },
     "registry:ui/button": {
       "status": "partial",
-      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Default, New York and New York v4 retain their pinned CVA geometry and paint; all eleven style families are tested. Native link composition is tested. Browser paint/transition differences and expanded native device acceptance remain separately accounted for; complete component parity is not asserted.",
+      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Default, New York and New York v4 retain their pinned CVA geometry and paint; all eleven style families are tested. Native link composition is tested. Browser paint/transition differences and expanded native device acceptance remain separately accounted for; complete component parity is not asserted. Authored registry Button wrappers retain source-specific implicit submit defaults; internal compound controls keep native button defaults. Function-render and Aria children callback parity remain pending.",
       "nativeFiles": [
         "assets/ui/native/button.tsx",
         "assets/ui/native/_preset-button-style.tsx",
@@ -5993,7 +5993,8 @@
       "tests": [
         "tests/native-ui/registry-button-presets.test.tsx",
         "tests/test-native-component-styles.test.mjs",
-        "tests/native-ui/registry-navigation.test.tsx"
+        "tests/native-ui/registry-navigation.test.tsx",
+        "tests/native-ui/registry-native-constraints.test.tsx"
       ],
       "reviewedInputs": {
         "aria-luma": "7ac97a25771eb77ff7b1fc899aa35e4d23c998f273e1db05ac0df77bd200a758",
@@ -6520,6 +6521,93 @@
         "radix-sera": "cce5cee1c526f8e4ee98281643868951cf9a18e04c1357a429adf3510a447b5e",
         "radix-vega": "63ca7acf30683ad9dcc66b0fd718b010e245f36e5d29bda03abffdd0ed192039"
       }
+    },
+    "registry:example/card-example": {
+      "status": "partial",
+      "reason": "All authored modern and frozen sources are translated, including scrollable terms, scoped lists, spacing selections, images and form controls. Interaction tests cover all eight modern styles across Base, Radix and Aria. Browser form navigation without an action and the unassociated Login button remain explicit source behavior. Whole-item visual parity still requires the remaining Input, Field, Avatar, ToggleGroup and Select source presets.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_list.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/native-form.tsx",
+        "assets/ui/native/registry-form-controls.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-native-lists.test.tsx",
+        "tests/native-ui/registry-native-constraints.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "ce904b55bf5ded0ea41654af22256b09bf32844cf407fa5d9544c43529df2238",
+        "aria-lyra": "ce9d8b587677b0fa8d2725c8957113eef218697a47ac01f5d62289f09927ebf7",
+        "aria-maia": "4f309e81f2c08d9d147a1ba7eb990948297df4d8885bf3e8cd9964cc8df68399",
+        "aria-mira": "10f964e84c08683559fc6e4cd996ff5a9c4cd838a39613013c8e164034d86ed8",
+        "aria-nova": "761ec78898bdea92249e41a20e728cf176c991dda77eb7edf260aa93766c622e",
+        "aria-rhea": "e4fbfaf3a9c568024d7809d51652feafa191c7566cf5eec72ff3e7dd6c5667c9",
+        "aria-sera": "fe25f6bad0bde1dd592ddc1aed813a7a39820f92d960eadfc47a7af2dbf7ebec",
+        "aria-vega": "d14db70cdba938246aceba12831d1fbb747853fe68e210c8bf74426a51670603",
+        "base-luma": "4f937078c0cea1c77a30b5776f3206fa9a430014cbf87f401604c47cde924a5c",
+        "base-lyra": "7cfc0f2d3dd646fac24d516a601100f628f85e6f245fa1ae518d5aea3d4f9c5b",
+        "base-maia": "7b2deddb5534173eb6c39add9890d7b7c9c2e22cd5dd5a5f62b1b1363d83b33a",
+        "base-mira": "7b9a6ef3fa3d1eafe608ae33b08142c0b0f73c09e95905fe4a1edd3f5940289d",
+        "base-nova": "629e8d132757a5f6f5d78fdc92a5cee3b88ebf1a6aaf013eb2187e6e661ebbeb",
+        "base-rhea": "a930d607bd9bea5934ed42eee132e003e44dfcaa3dd37442fb61c5b273d6c75d",
+        "base-sera": "cabfbac2eaf5eb277a1eba4344d983a2af6254bef9e9f6d77245bbdb5b37a686",
+        "base-vega": "c103247ebfc3849b7e25fe3a0c52a3a4efa2c8cbdde5072f1f4994636f1ce3a1",
+        "radix-luma": "7135d3216b3cd4319041b283497754efc531d38599798c3f91212aceeff23cd9",
+        "radix-lyra": "31c15184bc75c12c5b599ddb8913f37cb03be7518ffdca9a772b0666b9a50407",
+        "radix-maia": "402efb5a8a60c4b4410d733fe2485d3060dd03e9df1965e90856529c429469da",
+        "radix-mira": "0d52b44220fc338e828235608f7c6eff87cdb7e7b894bbb89cd4c06daf1c5bdb",
+        "radix-nova": "1f2f2f0465050936c1c88341d06cc00bb33c231e3f1251ee398c6895cb80f993",
+        "radix-rhea": "530643ca5a460acc601d6482dd45f313c706ab91c54df54c881f94d210dc906c",
+        "radix-sera": "477b9d3d80a5237c398c84a33d28e1e003f2503850f48efbb16212ba1e33c20b",
+        "radix-vega": "73ddf958f977ceb9c54fa5d1830ad819fd7a377bbe973128476c0ec673a3e6a0"
+      }
+    },
+    "registry:example/card-demo": {
+      "status": "partial",
+      "reason": "All authored modern and frozen sources are translated, including scrollable terms, scoped lists, spacing selections, images and form controls. Interaction tests cover all eight modern styles across Base, Radix and Aria. Browser form navigation without an action and the unassociated Login button remain explicit source behavior. Whole-item visual parity still requires the remaining Input, Field, Avatar, ToggleGroup and Select source presets.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_list.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/native-form.tsx",
+        "assets/ui/native/registry-form-controls.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-native-lists.test.tsx",
+        "tests/native-ui/registry-native-constraints.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "830c8ec6fd1c20e0b3915910be22c431dbadcb232cc845c7cc6eb2412093beda",
+        "new-york": "82ee2e0bcef002b9f6f86d6821e6c1900f1e4ef7863331e6d4cfb90b0dd30ff0",
+        "new-york-v4": "a32b7121f325aaad07ea6fa2aced6f63f356eed935c8872cc604b9e72244f7d2"
+      }
+    },
+    "registry:example/card-with-form": {
+      "status": "partial",
+      "reason": "All authored modern and frozen sources are translated, including scrollable terms, scoped lists, spacing selections, images and form controls. Interaction tests cover all eight modern styles across Base, Radix and Aria. Browser form navigation without an action and the unassociated Login button remain explicit source behavior. Whole-item visual parity still requires the remaining Input, Field, Avatar, ToggleGroup and Select source presets.",
+      "nativeFiles": [
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_list.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/native-form.tsx",
+        "assets/ui/native/registry-form-controls.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-native-lists.test.tsx",
+        "tests/native-ui/registry-native-constraints.test.tsx",
+        "tests/test-native-example-recipes.test.mjs"
+      ],
+      "reviewedInputs": {
+        "default": "66070f57c195a5489966f10de104014906028d44ffd26e59827257761085a063",
+        "new-york": "c9a4840facfec78fc4769f1bf7d86907df1216e45ec19c584978753d7c27218e",
+        "new-york-v4": "f8e44d7a2166f2e8aab0d32b367cd2191a2b1b90a41362bc3911abacfd03cc6a"
+      }
     }
   },
   "webSpecific": [
@@ -6577,6 +6665,11 @@
       "feature": "Legacy Tailwind animation plugin metadata",
       "adaptation": "The default and new-york index/style entries declare tailwindcss-animate as a browser build plugin. Preserve all four declarations; native animation implementations use React Native animation primitives. Do not invent a package version absent from the pinned upstream manifests and lockfile.",
       "status": "The sole unresolved npm package root is explicit in dependency review. This classification does not complete either legacy registry style group or its animation APIs."
+    },
+    {
+      "feature": "HTML ordered/unordered lists, scroll hosts and demonstration forms",
+      "adaptation": "Native lists retain counters, explicit values, reversal and independent nested scopes. Native ScrollView owns overflow axes and separates content padding/gaps from viewport bounds. Native constraints use registered fields, focus and accessible errors. Browser underline offsets use native text decoration placement. Native view mix-blend-color uses the OS compositor. Image title hover tooltips use the retained native alt accessibility name.",
+      "status": "Authored Card interactions and native counter/scroll/validation contracts are tested. Browser form navigation without an application handler is an explicit native integration error; the source Login button outside the form remains inert. Other dependent component presets and expanded screen-reader/visual acceptance remain pending."
     }
   ]
 }

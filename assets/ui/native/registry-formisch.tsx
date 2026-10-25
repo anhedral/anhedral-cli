@@ -64,5 +64,12 @@ export function Form<TSchema extends Schema>({
   of: FormStore<TSchema>;
   onSubmit: SubmitHandler<TSchema>;
 }) {
-  return <NativeForm {...props} onSubmit={handleSubmit(of, onSubmit)} onReset={() => reset(of)} />;
+  return (
+    <NativeForm
+      {...props}
+      noValidate={props.noValidate ?? true}
+      onSubmit={handleSubmit(of, onSubmit)}
+      onReset={() => reset(of)}
+    />
+  );
 }

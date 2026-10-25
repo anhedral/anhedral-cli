@@ -1,14 +1,17 @@
-import { useState, type ReactNode } from 'react';
-import { type TextInputProps } from 'react-native';
+import { useState, useRef, useMemo, type ReactNode } from 'react';
+import { TextInput, type TextInputProps } from 'react-native';
 import { Input, type InputProps } from './input';
 import { Textarea } from './textarea';
 import { InputGroupInput, InputGroupTextarea } from './input-group';
-import { useNativeFormAction } from './native-form';
+import { composeNativeRefs } from './_slot';
+import { useNativeFormConstraint, useNativeFormAction } from './native-form';
 import { useNativeActionControl } from './registry-action-form';
 
 export type RegistryInputProps = Omit<InputProps, 'onChange' | 'value' | 'defaultValue'> & {
   name?: string;
   pattern?: string;
+  required?: boolean;
+  minLength?: number;
   min?: number | string;
   max?: number | string;
   step?: number | string;
@@ -21,6 +24,9 @@ export type RegistryInputProps = Omit<InputProps, 'onChange' | 'value' | 'defaul
 };
 function useRegistryInput({
   name,
+  ref,
+  required,
+  minLength,
   defaultValue,
   rows,
   pattern,
@@ -38,6 +44,8 @@ function useRegistryInput({
 }: RegistryInputProps): InputProps {
   const form = useNativeFormAction();
   const [numeric, setNumeric] = useState(String(defaultValue ?? ''));
+  const inputRef = useRef<TextInput>(null);
+  const composedRef = useMemo(() => composeNativeRefs(ref, inputRef), [ref]);
   const numericValue = value === undefined ? numeric : String(value);
   const action = useNativeActionControl(
     name,
@@ -58,13 +66,45 @@ function useRegistryInput({
             ? 'numeric'
             : 'default';
   const change = (text: string) => {
-    if (type === 'number') setNumeric(text);
+    setNumeric(text);
     if (action.active) action.set(text);
     else if (onChangeText) onChangeText(text);
     else onChange?.(text);
   };
+  useNativeFormConstraint(
+    () => {
+      if (disabled || props.editable === false) return;
+      const current = String(action.active ? (action.value ?? '') : numericValue);
+      const label = props.accessibilityLabel ?? name ?? props.nativeID ?? 'Field';
+      if (required && !current) return `${label} is required.`;
+      if (!current) return;
+      if (minLength !== undefined && current.length < minLength)
+        return `${label} must contain at least ${minLength} characters.`;
+      if (
+        type === 'email' &&
+        !/^[a-zA-Z0-9.!#$%&\x27*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(
+          current,
+        )
+      )
+        return `${label} requires a valid email address.`;
+      if (type === 'url') {
+        try {
+          new URL(current);
+        } catch {
+          return `${label} requires a valid URL.`;
+        }
+      }
+      if (pattern && !new RegExp(`^(?:${pattern})$`, 'u').test(current))
+        return `${label} does not match the required format.`;
+    },
+    () => inputRef.current?.focus(),
+  );
   return {
     ...props,
+    ref: composedRef,
+    accessibilityHint:
+      [props.accessibilityHint, required ? 'Required' : undefined].filter(Boolean).join('. ') ||
+      undefined,
     value: action.active
       ? String(action.value ?? '')
       : type === 'number'

@@ -6,6 +6,7 @@ import path from 'node:path';
 import ts from 'typescript';
 import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
 import { NATIVE_UI_DEPENDENCIES, MOBILE_APP_DEPENDENCIES } from '../dist/dependencies.js';
+import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { nativeChecklist } from '../scripts/native-ui-catalog.mjs';
 const json = (file) => JSON.parse(readFileSync(file, 'utf8'));
 const registry = json('assets/ui/native/registry.json');
@@ -63,7 +64,16 @@ test('native catalog covers the independently pinned upstream IDs and every entr
     assert.ok(entry.adaptation.length > 20);
     assert.ok(['pending', 'rntl'].includes(entry.automated));
   }
-  assert.equal(readFileSync('docs/native-ui.md', 'utf8'), nativeChecklist(registry));
+  const checklist = nativeChecklist(registry);
+  assert.equal(readFileSync('docs/native-ui.md', 'utf8'), checklist);
+  const authored = loadNativeExampleRecipes().recipes;
+  assert.ok(checklist.includes(`includes ${authored.length} reviewed source modules`));
+  for (const style of ['default', 'new-york'])
+    assert.ok(
+      checklist.includes(
+        `includes ${authored.filter((recipe) => recipe.style === style).length} distinct published`,
+      ),
+    );
 });
 test('offline generator ships the entire port, its inventory and public module paths with aligned dependencies', async () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-native-catalog-'));

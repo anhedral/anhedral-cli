@@ -177,3 +177,31 @@ test('button link role, variants and disabled state survive native composition',
   await userEvent.press(link);
   expect(action).not.toHaveBeenCalled();
 });
+
+test('single toggle groups preserve array-valued source callbacks and single-selection ownership', async () => {
+  const change = jest.fn();
+  const tree = await mount(
+    <UI.ToggleGroup defaultValue={['16']} onValueChange={change}>
+      <UI.ToggleGroupItem value="16">16px</UI.ToggleGroupItem>
+      <UI.ToggleGroupItem value="24">24px</UI.ToggleGroupItem>
+    </UI.ToggleGroup>,
+  );
+  await fireEvent.press(screen.getByRole('button', { name: '24px' }));
+  expect(change).toHaveBeenLastCalledWith(['24']);
+  expect(screen.getByRole('button', { name: '16px' }).props.accessibilityState.selected).toBe(
+    false,
+  );
+  await fireEvent.press(screen.getByRole('button', { name: '24px' }));
+  expect(change).toHaveBeenLastCalledWith([]);
+  await tree.rerender(
+    <UI.ThemeProvider>
+      <UI.ToggleGroup value={['16']} onValueChange={change}>
+        <UI.ToggleGroupItem value="16">16px</UI.ToggleGroupItem>
+        <UI.ToggleGroupItem value="24">24px</UI.ToggleGroupItem>
+      </UI.ToggleGroup>
+    </UI.ThemeProvider>,
+  );
+  await fireEvent.press(screen.getByRole('button', { name: '24px' }));
+  expect(change).toHaveBeenLastCalledWith(['24']);
+  expect(screen.getByRole('button', { name: '16px' }).props.accessibilityState.selected).toBe(true);
+});

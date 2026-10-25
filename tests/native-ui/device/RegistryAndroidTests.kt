@@ -136,4 +136,13 @@ class RegistryAndroidTests {
     label("Card footer geometry: 160x105")
   }
 
+  @Test fun authoredCardControlsAndListRetainNativeSemantics() = uiAutomator {
+    openStory("base/card-example")
+    label("24px").click()
+    onElement { named("24px") && isSelected }
+    onElement { named("16px") && !isSelected }
+    label("1. New analytics widgets for daily/weekly metrics")
+    label("5. Follow-up meeting scheduled for next Tuesday")
+  }
+
 }

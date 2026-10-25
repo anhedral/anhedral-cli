@@ -1,3 +1,54 @@
+# Authored Card examples and native content semantics — October 25, 2026
+
+Nine more authored source modules retain the modern Card example, login Card and
+frozen notification/project examples. The overlay now has 446 component examples,
+34 form/support modules and 231 chart modules: 711 modules and 707 renderable authored
+stories. Both frozen registries retain 99 distinct component example modules. Catalog
+contracts now cross-check these documentation counts against the actual source catalog.
+
+- All twelve modern Card sections are tested across Base, Radix and Aria and all
+  eight presets. Spacing selections, five numbered notes, nested/counter lists,
+  native scroll content styles and source-specific form button defaults are tested.
+  Plain lists retain Tailwind preflight's absence of markers. Source grids with a
+  fixed icon track, last-item spacing, hover underline and image color composition
+  have explicit native adapters; image title hover tooltips use retained alt names.
+- Plain native forms register required/type/pattern/length constraints, focus the
+  first invalid field and report accessible errors. Disabled/unmounted controls
+  release constraints. Schema-owned RHF, TanStack, Formisch and action examples
+  retain their schema validation through explicit native noValidate policy.
+  Unassociated Login buttons remain inert as authored; forms without handlers
+  expose their integration boundary rather than inventing application actions.
+- Full generated tests: 1,471 passed on each platform, 48 suites each, with existing
+  coverage thresholds intact. All 711 modules compiled to iOS/Android Hermes.
+  Strengthened all-twelve-section tests passed in all 24 modern source/style cases
+  on each platform. Native generated typecheck, lint and static security passed.
+- CLI tests: 640 passed, one optional skip. Packed consumer installation passed;
+  packlist before this evidence entry: 249 files / 1,017,052 packed bytes. The first
+  root run caught a stale generated checklist template, which was corrected and
+  cross-checked against actual module counts before the passing full run.
+- Full native runs caught implicit submit defaults reaching internal select controls
+  and generic constraints replacing library schema errors. The authored Button
+  adapter now owns implicit HTML defaults, and schema-owned forms bypass native
+  browser constraints. The original failing logs remain in local dated evidence.
+- Android: all ten release instrumentation cases passed on the owned API 36 emulator.
+  Evidence: `.artifacts/native-ui-android/2026-10-25T08-14-07-964Z/`; APK SHA-256
+  e94ac4781cb4bc2e0092636374f3d09b6d30fb198b1bccc8a2a9e8ca9835d49c.
+  Test APK SHA-256 a832b47aae95b663c7c1b671dd742b172453d22a5dc4179d672203f3af493fa2.
+- iOS: all ten XCTest cases passed without skips in 271.553 seconds on the owned
+  iOS 26.5 simulator. Evidence: `.artifacts/native-ui-ios/2026-10-25T08-15-06-666Z/`.
+  Completed xcresult summary was validated; screenshot attachments were exported.
+  Both platforms' authored Card list screenshots were visually inspected. Native
+  source bytes match both device QA copies. XCTest keeps results/screenshots but
+  disables automatic full-system diagnostic collection after its prior stalls.
+- `.artifacts/native-ui/2026-10-25-card-examples/` retains source-equivalence and
+  package review evidence. Base UI 1.6.0, React Aria Components 1.20.0, React Aria
+  3.51.0 and Tailwind 4.3.0 archives were verified against pinned lock integrity.
+  Their button defaults and list preflight informed these adapters.
+
+Coverage remains 81 accounted / 535 pending. Card examples have explicit partial
+entries until dependent component presets/API behavior is complete. These tests do
+not establish full registry, screen-reader, physical-device or store acceptance.
+
 # Upstream package provenance — October 25, 2026
 
 Registry review now includes the exact pinned upstream package manifests, pnpm

@@ -47,6 +47,7 @@ export function NativeActionForm({
     <Fields.Provider value={{ fields, values }}>
       <NativeForm
         {...props}
+        noValidate={props.noValidate ?? true}
         accessibilityState={{ ...props.accessibilityState, busy: pending }}
         onSubmit={() => {
           const data = new NativeFormValues(

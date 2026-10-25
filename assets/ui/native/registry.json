@@ -1235,6 +1235,7 @@
     "_animation.tsx",
     "_layout.tsx",
     "_description-list.tsx",
+    "_list.tsx",
     "_skeleton-presets.tsx",
     "_preset-skeleton-style.tsx",
     "_badge.tsx",

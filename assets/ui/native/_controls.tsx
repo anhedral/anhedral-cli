@@ -226,21 +226,45 @@ export function ToggleGroup({
   style,
   ...props
 }: ViewProps & {
-  type?: 'single' | 'multiple';
   orientation?: 'horizontal' | 'vertical';
   variant?: 'default' | 'outline';
   size?: ButtonProps['size'];
-  value?: string | string[];
-  defaultValue?: string | string[];
-  onValueChange?: (value: string | string[]) => void;
   disabled?: boolean;
-}) {
+} & (
+    | {
+        type: 'multiple';
+        value?: string[];
+        defaultValue?: string[];
+        onValueChange?: (value: string[]) => void;
+      }
+    | {
+        type?: 'single';
+        value: string[];
+        defaultValue?: string[];
+        onValueChange?: (value: string[]) => void;
+      }
+    | {
+        type?: 'single';
+        value?: undefined;
+        defaultValue: string[];
+        onValueChange?: (value: string[]) => void;
+      }
+    | {
+        type?: 'single';
+        value?: string;
+        defaultValue?: string;
+        onValueChange?: (value: string) => void;
+      }
+  )) {
   const asArray = (input?: string | string[]) =>
     Array.isArray(input) ? input : input ? [input] : [];
   const [selected, set] = useControllable(
     value === undefined ? undefined : asArray(value),
     asArray(defaultValue),
-    (next) => onValueChange?.(type === 'multiple' ? next : (next[0] ?? '')),
+    (next) =>
+      (onValueChange as ((value: string | string[]) => void) | undefined)?.(
+        type === 'multiple' || Array.isArray(value ?? defaultValue) ? next : (next[0] ?? ''),
+      ),
   );
   return (
     <ToggleContext.Provider

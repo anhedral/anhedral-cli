@@ -286,3 +286,28 @@ test('native Card length variables preserve reviewed spacing formulas, negative 
     /Invalid native Card spacing/,
   );
 });
+
+test('authored Card list, scroll, fixed icon track and link utilities retain explicit native policies', () => {
+  const source = registryStyle(
+    'grid grid-cols-[25px_1fr] inset-0 translate-y-1 mix-blend-color underline-offset-4 hover:underline overflow-y-scroll list-decimal',
+    options,
+  );
+  assert.equal(source.paint.firstColumnWidth, 25);
+  assert.equal(source.paint.columns, 2);
+  assert.equal(source.view.inset, 0);
+  assert.deepEqual(source.view.transform, [{ translateY: 4 }]);
+  assert.equal(source.view.mixBlendMode, 'color');
+  assert.equal(source.paint.nativeUnderlineOffset, 4);
+  assert.equal(source.paint.hoverUnderline, 1);
+  assert.equal(source.paint.scrollVertical, 1);
+  assert.equal(source.paint.listMarker, 'decimal');
+  assert.equal(
+    registryStyle('mb-4 pb-4 last:mb-0 last:pb-0', { ...options, index: 2, count: 3 }).view
+      .marginBottom,
+    0,
+  );
+  assert.equal(
+    registryStyle('mb-4 last:mb-0', { ...options, index: 1, count: 3 }).view.marginBottom,
+    16,
+  );
+});

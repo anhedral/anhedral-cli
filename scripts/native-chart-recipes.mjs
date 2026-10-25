@@ -146,6 +146,9 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
   const hosts = {
     div: 'RegistryView',
     dl: 'RegistryDescriptionList',
+    ol: 'RegistryOrderedList',
+    ul: 'RegistryUnorderedList',
+    li: 'RegistryListItem',
     dt: 'RegistryDescriptionTerm',
     dd: 'RegistryDescriptionDetails',
     span: 'RegistryText',
@@ -596,6 +599,31 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
                 f.createArrayTypeNode(f.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)),
               ),
             ]);
+          if (
+            tag === 'ToggleGroup' &&
+            ['onValueChange', 'onSelectionChange'].includes(name) &&
+            param &&
+            !param.type
+          ) {
+            const attrs = node.parent.properties;
+            const arrayValue = attrs.some(
+              (attr) =>
+                ts.isJsxAttribute(attr) &&
+                (['selectedKeys', 'defaultSelectedKeys'].includes(attr.name.getText(file)) ||
+                  (['value', 'defaultValue'].includes(attr.name.getText(file)) &&
+                    attr.initializer &&
+                    ts.isJsxExpression(attr.initializer) &&
+                    attr.initializer.expression &&
+                    ts.isArrayLiteralExpression(attr.initializer.expression)) ||
+                  (attr.name.getText(file) === 'type' &&
+                    attr.initializer &&
+                    ts.isStringLiteral(attr.initializer) &&
+                    attr.initializer.text === 'multiple')),
+            );
+            type = arrayValue
+              ? f.createArrayTypeNode(f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword))
+              : f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+          }
           if (tag === 'Select' && name === 'itemToStringValue' && param && !param.type) {
             const items = node.parent.properties.find(
               (attr) => ts.isJsxAttribute(attr) && attr.name.getText(file) === 'items',
@@ -632,7 +660,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             );
             return f.updateJsxAttribute(
               node,
-              node.name,
+              name === 'onSelectionChange' ? f.createIdentifier('onValueChange') : node.name,
               f.updateJsxExpression(node.initializer, updated),
             );
           }
@@ -664,47 +692,57 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             f.createStringLiteral('header'),
           );
         const renamed =
-          name === 'isDisabled'
-            ? 'disabled'
-            : name === 'isInvalid'
-              ? 'invalid'
-              : ['selectedKey', 'defaultSelectedKey'].includes(name)
-                ? name === 'selectedKey'
-                  ? 'value'
-                  : 'defaultValue'
-                : name === 'onSelectionChange'
-                  ? 'onValueChange'
-                  : name === 'isExpanded'
-                    ? 'open'
-                    : name === 'defaultExpanded'
-                      ? 'defaultOpen'
-                      : name === 'onExpandedChange'
-                        ? 'onOpenChange'
-                        : name === 'minValue'
-                          ? 'min'
-                          : name === 'maxValue'
-                            ? 'max'
-                            : name === 'defaultSelected'
-                              ? ['Toggle', 'ToggleGroupItem'].includes(tag)
-                                ? 'defaultPressed'
-                                : 'defaultChecked'
-                              : name === 'isSelected'
-                                ? ['Toggle', 'ToggleGroupItem'].includes(tag)
-                                  ? 'pressed'
-                                  : 'checked'
-                                : ariaRecipe &&
-                                    name === 'onChange' &&
-                                    ['Switch', 'Checkbox'].includes(tag)
-                                  ? 'onCheckedChange'
-                                  : ariaRecipe && name === 'onChange' && tag === 'Toggle'
-                                    ? 'onPressedChange'
-                                    : ariaRecipe && name === 'onChange' && tag === 'Slider'
-                                      ? 'onValueChange'
-                                      : ariaRecipe &&
-                                          name === 'id' &&
-                                          ['TabsTrigger', 'TabsContent', 'SelectItem'].includes(tag)
-                                        ? 'value'
-                                        : undefined;
+          ariaRecipe &&
+          tag === 'ToggleGroup' &&
+          ['selectedKeys', 'defaultSelectedKeys'].includes(name)
+            ? name === 'selectedKeys'
+              ? 'value'
+              : 'defaultValue'
+            : ariaRecipe && tag === 'ToggleGroupItem' && name === 'id'
+              ? 'value'
+              : name === 'isDisabled'
+                ? 'disabled'
+                : name === 'isInvalid'
+                  ? 'invalid'
+                  : ['selectedKey', 'defaultSelectedKey'].includes(name)
+                    ? name === 'selectedKey'
+                      ? 'value'
+                      : 'defaultValue'
+                    : name === 'onSelectionChange'
+                      ? 'onValueChange'
+                      : name === 'isExpanded'
+                        ? 'open'
+                        : name === 'defaultExpanded'
+                          ? 'defaultOpen'
+                          : name === 'onExpandedChange'
+                            ? 'onOpenChange'
+                            : name === 'minValue'
+                              ? 'min'
+                              : name === 'maxValue'
+                                ? 'max'
+                                : name === 'defaultSelected'
+                                  ? ['Toggle', 'ToggleGroupItem'].includes(tag)
+                                    ? 'defaultPressed'
+                                    : 'defaultChecked'
+                                  : name === 'isSelected'
+                                    ? ['Toggle', 'ToggleGroupItem'].includes(tag)
+                                      ? 'pressed'
+                                      : 'checked'
+                                    : ariaRecipe &&
+                                        name === 'onChange' &&
+                                        ['Switch', 'Checkbox'].includes(tag)
+                                      ? 'onCheckedChange'
+                                      : ariaRecipe && name === 'onChange' && tag === 'Toggle'
+                                        ? 'onPressedChange'
+                                        : ariaRecipe && name === 'onChange' && tag === 'Slider'
+                                          ? 'onValueChange'
+                                          : ariaRecipe &&
+                                              name === 'id' &&
+                                              ['TabsTrigger', 'TabsContent', 'SelectItem'].includes(
+                                                tag,
+                                              )
+                                            ? 'value'
+                                            : undefined;
         if (renamed)
           return f.updateJsxAttribute(
             node,
@@ -790,6 +828,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             f.createIdentifier('registryIcon'),
             ts.visitNode(node.initializer, visit),
           );
+        if (name === 'title' && ['img', 'Image'].includes(tag)) return undefined;
         if (name === 'xmlns' || (name.startsWith('data-') && name !== 'data-active'))
           return undefined;
         if (
@@ -822,7 +861,18 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
         hostNames.add(name);
         const tag = f.createIdentifier(name);
         if (ts.isJsxClosingElement(node)) return f.updateJsxClosingElement(node, tag);
-        const attrs = ts.visitNode(node.attributes, visit);
+        let attrs = ts.visitNode(node.attributes, visit);
+        if (
+          original === 'form' &&
+          /form-(?:rhf|tanstack)-[a-z-]+\.tsx$/.test(filename) &&
+          !attrs.properties.some(
+            (attr) => ts.isJsxAttribute(attr) && attr.name.text === 'noValidate',
+          )
+        )
+          attrs = f.updateJsxAttributes(attrs, [
+            ...attrs.properties,
+            f.createJsxAttribute(f.createIdentifier('noValidate'), undefined),
+          ]);
         return ts.isJsxOpeningElement(node)
           ? f.updateJsxOpeningElement(node, tag, node.typeArguments, attrs)
           : f.updateJsxSelfClosingElement(node, tag, node.typeArguments, attrs);
@@ -889,7 +939,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             f.createNamedImports([
               f.createImportSpecifier(
                 false,
-                f.createIdentifier(name),
+                f.createIdentifier(name === 'NativeForm' ? 'NativeRecipeForm' : name),
                 f.createIdentifier('NativeHost' + name),
               ),
             ]),

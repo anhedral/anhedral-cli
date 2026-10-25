@@ -252,6 +252,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'apps/v4/registry/bases/aria/examples/resizable-example.tsx',
     );
     origins.push('apps/v4/registry/new-york-v4/examples/aspect-ratio-demo.tsx');
+    origins.push('apps/v4/registry/new-york-v4/examples/card-demo.tsx');
+    origins.push('apps/v4/registry/new-york-v4/examples/card-with-form.tsx');
     origins.push('apps/v4/registry/bases/base/examples/button-example.tsx');
     for (const name of [
       'button-as-child',
@@ -269,6 +271,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     for (const base of ['base', 'radix', 'aria']) {
       origins.push(`apps/v4/registry/bases/${base}/examples/aspect-ratio-example.tsx`);
       origins.push(`apps/v4/registry/bases/${base}/examples/separator-example.tsx`);
+      origins.push(`apps/v4/registry/bases/${base}/examples/card-example.tsx`);
     }
     // Published legacy examples are separate authored inputs, even when their names
     // match a maintained modern recipe. Never substitute modern source for them.

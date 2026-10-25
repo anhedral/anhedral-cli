@@ -13,7 +13,14 @@ import { LabelText, content } from './_core';
 import { useTheme } from '../theme';
 
 type Action = () => void | Promise<void>;
-type Entry = { id: string; pending: boolean; submit: Action; reset: Action };
+type Constraint = { validate: () => string | undefined; focus: () => void };
+type Entry = {
+  id: string;
+  pending: boolean;
+  submit: Action;
+  reset: Action;
+  controls: Map<string, Constraint>;
+};
 function createScope() {
   const entries = new Map<string, Entry>(),
     listeners = new Set<() => void>();
@@ -67,8 +74,29 @@ export function useNativeFormAction(form?: string) {
     reset: () => resolve().reset(),
   };
 }
+/** Constraint registration is scoped to the owning form, including dynamic field cleanup. */
+export function useNativeFormConstraint(
+  validate: Constraint['validate'],
+  focus: Constraint['focus'],
+) {
+  const owner = useContext(NearestForm),
+    id = useId(),
+    current = useRef({ validate, focus });
+  current.current = { validate, focus };
+  useLayoutEffect(() => {
+    if (!owner) return;
+    owner.controls.set(id, {
+      validate: () => current.current.validate(),
+      focus: () => current.current.focus(),
+    });
+    return () => {
+      owner.controls.delete(id);
+    };
+  }, [owner, id]);
+}
 export type NativeFormProps = ViewProps & {
   onSubmit: Action;
+  noValidate?: boolean;
   onReset?: Action;
   onError?: (error: unknown) => void;
 };
@@ -87,6 +115,7 @@ function FormBody({
   nativeID,
   children,
   onSubmit,
+  noValidate = false,
   onReset,
   onError,
   accessibilityState,
@@ -111,6 +140,14 @@ function FormBody({
     setError(null);
     const work = (async () => {
       try {
+        if (kind === 'submit' && !noValidate)
+          for (const control of current.controls.values()) {
+            const invalid = control.validate();
+            if (invalid) {
+              control.focus();
+              throw Error(invalid);
+            }
+          }
         const action = kind === 'submit' ? callbacks.current.onSubmit : callbacks.current.onReset;
         if (!action) throw Error('Native reset requires an explicit onReset callback.');
         await action();
@@ -143,6 +180,7 @@ function FormBody({
   entry.current ??= {
     id,
     pending: false,
+    controls: new Map(),
     submit: () => perform('submit'),
     reset: () => perform('reset'),
   };
@@ -187,5 +225,24 @@ function FormBody({
         )}
       </View>
     </NearestForm.Provider>
+  );
+}
+
+/** Browser examples without an action retain an explicit application-integration boundary. */
+export function NativeRecipeForm({
+  onSubmit,
+  ...props
+}: Omit<NativeFormProps, 'onSubmit'> & { onSubmit?: Action }) {
+  return (
+    <NativeForm
+      accessibilityHint={onSubmit ? undefined : 'Example form. No submission action is configured.'}
+      {...props}
+      onSubmit={
+        onSubmit ??
+        (() => {
+          throw Error('This example has no submission action configured.');
+        })
+      }
+    />
   );
 }

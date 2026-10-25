@@ -23,6 +23,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   type ViewProps,
+  type ViewStyle,
   type PressableProps,
   type TextStyle,
 } from 'react-native';
@@ -60,7 +61,8 @@ import {
   NativeDescriptionTerm,
   NativeDescriptionDetails,
 } from './_description-list';
-import { LinkButton } from './button';
+import { NativeOrderedList, NativeUnorderedList, NativeListItem } from './_list';
+import { Button, LinkButton } from './button';
 import { nativeTextPressRetentionOffset } from './_slot';
 
 const RegistryLocalPaint = createContext<Record<string, string | number>>({});
@@ -293,6 +295,11 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
                       Number(translated.view.gap ?? 0) * (span - 1),
                   }
                 : undefined;
+            if (gridStyle && span === 1 && typeof translated.paint.firstColumnWidth === 'number') {
+              const available = gridStyle.width * columns;
+              const first = Math.min(available, translated.paint.firstColumnWidth);
+              gridStyle.width = index % columns === 0 ? first : available - first;
+            }
             const gradientStop =
               kind === 'svg' &&
               'stopColor' in child.props &&
@@ -336,6 +343,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         props[nativeLayoutProp]?.(event);
       };
     delete forwarded['data-active'];
+    if (Component === Button) forwarded.nativeImplicitSubmit = true;
+    if (translated.paint.listMarker !== undefined) forwarded.marker = translated.paint.listMarker;
     if (translated.paint.pointerEvents && props.pointerEvents === undefined)
       forwarded.pointerEvents = translated.paint.pointerEvents;
     if (translated.paint.brightness !== undefined || translated.paint.objectFit !== undefined) {
@@ -417,11 +426,15 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       if (
         typeof props.style === 'function' ||
         translated.paint.hoverBackground ||
-        translated.paint.hoverForeground
+        translated.paint.hoverForeground ||
+        translated.paint.hoverUnderline
       ) {
         const base = forwarded.style;
         forwarded.style = (state: { pressed: boolean }) => [
           base,
+          kind === 'link' &&
+            (interaction.hovered || state.pressed) &&
+            translated.paint.hoverUnderline && { textDecorationLine: 'underline' },
           kind === 'link' &&
             (interaction.hovered || state.pressed) &&
             translated.paint.hoverForeground && { color: translated.paint.hoverForeground },
@@ -432,7 +445,11 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
           typeof props.style === 'function' ? props.style(state) : undefined,
         ];
       }
-      if (translated.paint.hoverBackground || translated.paint.hoverForeground) {
+      if (
+        translated.paint.hoverBackground ||
+        translated.paint.hoverForeground ||
+        translated.paint.hoverUnderline
+      ) {
         for (const [event, key, value] of [
           ['onHoverIn', 'hovered', true],
           ['onHoverOut', 'hovered', false],
@@ -636,6 +653,39 @@ function RecipeView({
 }: NativeRecipeViewProps) {
   const effects = useContext(RegistryLocalPaint);
   const body = primitiveText(children) ? <LabelText>{children}</LabelText> : content(children);
+  if (effects.scrollHorizontal || effects.scrollVertical) {
+    if (onPress || effects.hoverTranslateY !== undefined || effects.pulse === 1)
+      throw Error('Native scrolling recipe hosts require a separate pressable or motion child.');
+    if (effects.scrollHorizontal && effects.scrollVertical)
+      throw Error('Native scrolling recipe hosts require one explicit scroll axis.');
+    const outer = {
+      ...StyleSheet.flatten(typeof style === 'function' ? style({ pressed: false }) : style),
+    };
+    const layout: ViewStyle = {};
+    for (const key of Object.keys(outer)) {
+      if (
+        /^(?:padding|gap$|rowGap$|columnGap$|alignItems$|justifyContent$|flexDirection$|flexWrap$)/.test(
+          key,
+        )
+      ) {
+        Object.assign(layout, { [key]: outer[key as keyof typeof outer] });
+        delete outer[key as keyof typeof outer];
+      }
+    }
+    return (
+      <ScrollView
+        {...props}
+        ref={props.ref as unknown as Ref<ScrollView>}
+        horizontal={!!effects.scrollHorizontal}
+        nestedScrollEnabled
+        style={outer}
+        contentContainerStyle={[layout]}
+      >
+        {body}
+      </ScrollView>
+    );
+  }
+
   return effects.hoverTranslateY !== undefined || effects.pulse === 1 ? (
     <RecipeHover
       {...props}
@@ -690,6 +740,9 @@ export const RegistryLink = withRegistryStyles(NativeLink, 'link');
 export const RegistryImage = withRegistryStyles(NativeRegistryImage);
 export const RegistryView = withRegistryStyles(RecipeView);
 export const RegistryText = withRegistryStyles(LabelText, 'text');
+export const RegistryOrderedList = withRegistryStyles(NativeOrderedList);
+export const RegistryUnorderedList = withRegistryStyles(NativeUnorderedList);
+export const RegistryListItem = withRegistryStyles(NativeListItem);
 export const RegistryDescriptionList = withRegistryStyles(NativeDescriptionList);
 export const RegistryDescriptionTerm = withRegistryStyles(NativeDescriptionTerm, 'text');
 export const RegistryDescriptionDetails = withRegistryStyles(NativeDescriptionDetails);

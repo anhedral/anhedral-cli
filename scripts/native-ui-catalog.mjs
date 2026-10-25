@@ -76,6 +76,14 @@ registry styling wrappers preserve part identity. Dynamically mounted footers re
 with their owning Card and release membership. Native text inherits application metrics
 where the frozen source has no explicit size. Card examples that depend on other
 unfinished components remain pending independently of these reviewed source slots.
+The authored modern and frozen Card examples now retain scrollable terms, ordered
+meeting notes, array-valued single selections and form fields. Lists preserve start,
+reversed and explicit item counters with independent nested scopes; embedded controls
+remain accessible. Overflow hosts use native ScrollView with separate content padding
+and gap styles. Native underline placement follows OS text decoration rather than CSS
+underline offsets. Card image color blending uses the native compositor. These examples
+remain partial until their other component presets have full source parity.
+
 Skeleton retains all eleven source style families, including frozen New York primary
 transparency and New York v4 accent paint. Its native pulse follows the source two-second
 cubic easing cycle and half-opacity midpoint, responds to live reduced-motion changes,
@@ -114,11 +122,11 @@ paint/animation parity. Native device/keyboard/visual acceptance remains separat
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 434 reviewed source modules,
+The authored component example overlay currently includes 446 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 \`node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`
 and \`node scripts/native-icons.mjs --check\`. Their coverage remains partial while
-component preset/API parity is unfinished. The overlay includes 97 distinct published
+component preset/API parity is unfinished. The overlay includes 99 distinct published
 examples from each of the legacy Default and New York registries. Their original
 source files, color generation, controlled callbacks and hashes are retained;
 matching names never substitute the modern source. Filled legacy destructive buttons
@@ -188,6 +196,18 @@ external submit buttons and keyboard submission. Each screen uses a scoped
 \`NativeFormScope\`; form IDs do not become a global registry. Syntax-highlighted
 submitted JSON retains the actual values. Regenerate the catalog with
 \`node scripts/native-form-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`.
+
+Registry fields retain required, minimum length, pattern, email and URL constraints
+through scoped native form registrations. Schema-owned RHF, TanStack, Formisch and
+action forms opt out of the browser constraint layer and retain their existing schema
+errors; explicit noValidate overrides remain available. Submission focuses the first invalid field
+and exposes an accessible error; disabled and removed fields no longer block it. The
+registry Button adapter preserves HTML implicit submission for Radix and frozen sources;
+Base and Aria buttons default to button, as do public native Buttons and internal
+compound controls. Explicit unassociated submit buttons without a form ID are inert,
+matching the authored Card Login button outside its form. An explicit missing form ID
+still fails visibly. Demonstration forms without a handler report their missing action
+instead of inventing application authentication or browser page navigation.
 
 Formisch keeps its actual Valibot store and subscriptions; native bindings replace
 HTML Form and DOM event extraction. TanStack submit refreshes blur validation before

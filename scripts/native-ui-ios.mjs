@@ -5,7 +5,7 @@ import path from 'node:path';
 import { prepareNativeQAApp, nativeQASourceManifest } from './native-ui-device.mjs';
 export { nativeQAApp, nativeQAExport } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeIOSTestCount = 9;
+export const nativeIOSTestCount = 10;
 export function assertNativeIOSResult(summary, expected = nativeIOSTestCount, device) {
   if (
     !Number.isSafeInteger(expected) ||
@@ -101,6 +101,9 @@ scheme.test_action.build_configuration='Release';scheme.save_as(p,'AnhedralRegis
       path.join(root, '.artifacts/native-ui-ios/derived'),
       '-resultBundlePath',
       path.join(evidence, 'results.xcresult'),
+      // Keep XCTest results/screenshots; automatic full-system diagnostics can stall simulator completion.
+      '-collect-test-diagnostics',
+      'never',
       'ONLY_ACTIVE_ARCH=YES',
       'CODE_SIGNING_ALLOWED=NO',
       'test',

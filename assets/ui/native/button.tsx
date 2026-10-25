@@ -45,6 +45,8 @@ export type ButtonProps = Omit<PressableProps, 'children'> & {
   invalid?: boolean;
   /** @internal A compound primitive owns its own preset slots. */
   nativePreset?: boolean;
+  /** @internal Only the authored registry Button adapter inherits HTML submit defaults. */
+  nativeImplicitSubmit?: boolean;
   type?: 'button' | 'submit' | 'reset';
   form?: string;
   asChild?: boolean;
@@ -65,9 +67,10 @@ const sizes = {
 };
 export function Button({
   children,
-  type = 'button',
+  type: requestedType,
   invalid = false,
   nativePreset = true,
+  nativeImplicitSubmit = false,
   textColor,
   textStyle,
   form,
@@ -98,6 +101,13 @@ export function Button({
   const [hovered, setHovered] = useState(false),
     [focused, setFocused] = useState(false);
   const action = useNativeFormAction(form);
+  const htmlDefault =
+    nativeImplicitSubmit &&
+    !asChild &&
+    !render &&
+    (registrySource?.startsWith('radix') ||
+      ['default', 'new-york', 'new-york-v4'].includes(registrySource ?? ''));
+  const type = requestedType ?? (htmlDefault && action.available ? 'submit' : 'button');
   const blocked = disabled || (type !== 'button' && action.pending);
   const backgrounds = {
     default: colors.primary,
@@ -240,7 +250,12 @@ export function Button({
               accessibilityLabel={props.accessibilityLabel ?? (plainText(children) || undefined)}
               onPress={(event) => {
                 props.onPress?.(event);
-                if (blocked || event.isDefaultPrevented()) return;
+                if (
+                  blocked ||
+                  event.isDefaultPrevented() ||
+                  (!action.available && form === undefined)
+                )
+                  return;
                 if (type === 'submit') void action.submit();
                 else if (type === 'reset') void action.reset();
               }}
