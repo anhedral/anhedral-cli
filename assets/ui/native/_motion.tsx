@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { View, ScrollView, PanResponder, type ViewProps } from 'react-native';
+import { View, ScrollView, StyleSheet, PanResponder, type ViewProps } from 'react-native';
 import { Box, clamp, useControllable, useDirection, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
@@ -203,6 +203,20 @@ export function Slider({
     </View>
   );
 }
+export type NativePanelSize = number | `${number}%`;
+export type Layout = Record<string, number>;
+function panelPercent(value: NativePanelSize | undefined, fallback: number): number {
+  if (value === undefined) return fallback;
+  const numeric = typeof value === 'number' ? value : Number(value.slice(0, -1));
+  if (
+    (typeof value === 'string' && !/^(?:\d+(?:\.\d+)?)%$/.test(value)) ||
+    !Number.isFinite(numeric) ||
+    numeric < 0 ||
+    numeric > 100
+  )
+    throw new RangeError('Native panel sizes must be percentages from 0 to 100.');
+  return numeric;
+}
 type ResizeState = {
   sizes: number[];
   width: number;
@@ -211,37 +225,63 @@ type ResizeState = {
 };
 const ResizeContext = createContext<ResizeState | null>(null);
 export function ResizablePanelGroup({
-  direction = 'horizontal',
+  direction: requestedDirection,
+  orientation,
+  onLayoutChange,
+  onContainerLayout,
   onLayout: onSizes,
   children,
   style,
   ...props
 }: Omit<ViewProps, 'onLayout'> & {
   direction?: 'horizontal' | 'vertical';
+  orientation?: 'horizontal' | 'vertical';
+  onLayoutChange?: (layout: Layout) => void;
+  onContainerLayout?: ViewProps['onLayout'];
   onLayout?: (sizes: number[]) => void;
 }) {
+  const direction = orientation ?? requestedDirection ?? 'horizontal';
   const panels = Children.toArray(children).filter(
     (child) => isValidElement(child) && nativeComponent(child.type) === ResizablePanel,
-  ) as React.ReactElement<{ defaultSize?: number; minSize?: number; maxSize?: number }>[];
-  const initial = panels.map(
-    (panel) => panel.props.defaultSize ?? 100 / Math.max(1, panels.length),
+  ) as React.ReactElement<{
+    defaultSize?: NativePanelSize;
+    minSize?: NativePanelSize;
+    maxSize?: NativePanelSize;
+    id?: string;
+    nativeID?: string;
+  }>[];
+  const initial = panels.map((panel) =>
+    panelPercent(panel.props.defaultSize, 100 / Math.max(1, panels.length)),
   );
   const total = initial.reduce((sum, item) => sum + item, 0) || 100;
   const [sizes, set] = useState(initial.map((item) => (item / total) * 100));
   const [width, setWidth] = useState(1);
   const liveSizes = useRef(sizes);
   liveSizes.current = sizes;
+  const layoutOf = (values: number[]): Layout =>
+    Object.fromEntries(
+      values.map((size, index) => [
+        panels[index]?.props.nativeID ?? panels[index]?.props.id ?? String(index),
+        size,
+      ]),
+    );
+  const layoutCallback = useRef(onLayoutChange);
+  layoutCallback.current = onLayoutChange;
+  const layoutKey = JSON.stringify(layoutOf(sizes));
+  useEffect(() => {
+    layoutCallback.current?.(JSON.parse(layoutKey) as Layout);
+  }, [layoutKey]);
   const resize = (index: number, delta: number) => {
     if (!panels[index + 1]) return;
     const before = liveSizes.current;
     const available = before[index]! + before[index + 1]!;
     const min = Math.max(
-      panels[index]!.props.minSize ?? 10,
-      available - (panels[index + 1]!.props.maxSize ?? 100),
+      panelPercent(panels[index]!.props.minSize, 10),
+      available - panelPercent(panels[index + 1]!.props.maxSize, 100),
     );
     const max = Math.min(
-      panels[index]!.props.maxSize ?? 100,
-      available - (panels[index + 1]!.props.minSize ?? 10),
+      panelPercent(panels[index]!.props.maxSize, 100),
+      available - panelPercent(panels[index + 1]!.props.minSize, 10),
     );
     if (min > max) return;
     const next = [...before];
@@ -256,15 +296,16 @@ export function ResizablePanelGroup({
     <ResizeContext.Provider value={{ sizes, width, direction, resize }}>
       <View
         {...props}
-        onLayout={(event) =>
+        onLayout={(event) => {
+          onContainerLayout?.(event);
           setWidth(
             Math.max(
               1,
               event.nativeEvent.layout[direction === 'horizontal' ? 'width' : 'height'] -
                 Math.max(0, panels.length - 1) * 24,
             ),
-          )
-        }
+          );
+        }}
         style={[
           { flexDirection: direction === 'horizontal' ? 'row' : 'column', minHeight: 120 },
           style,
@@ -291,7 +332,13 @@ export function ResizablePanel({
   panelIndex = 0,
   style,
   ...props
-}: ViewProps & { defaultSize?: number; minSize?: number; maxSize?: number; panelIndex?: number }) {
+}: ViewProps & {
+  defaultSize?: NativePanelSize;
+  minSize?: NativePanelSize;
+  maxSize?: NativePanelSize;
+  panelIndex?: number;
+  id?: string;
+}) {
   const state = useContext(ResizeContext);
   if (!state) throw Error('ResizablePanel requires ResizablePanelGroup.');
   return (
@@ -366,12 +413,29 @@ export function ResizableHandle({
     </View>
   );
 }
+export type NativeCarouselApi = {
+  selectedScrollSnap: () => number;
+  scrollSnapList: () => number[];
+  canScrollNext: () => boolean;
+  canScrollPrev: () => boolean;
+  scrollNext: () => void;
+  scrollPrev: () => void;
+  scrollTo: (index: number) => void;
+  on: (event: 'select' | 'reInit', listener: (api: NativeCarouselApi) => void) => NativeCarouselApi;
+  off: (
+    event: 'select' | 'reInit',
+    listener: (api: NativeCarouselApi) => void,
+  ) => NativeCarouselApi;
+};
+export type CarouselApi = NativeCarouselApi | undefined;
 type CarouselState = {
   index: number;
   count: number;
   setCount: (count: number) => void;
   size: number;
   setSize: (size: number) => void;
+  offsets: number[];
+  setItemSize: (index: number, size: number) => void;
   move: (index: number) => void;
   selected: (index: number) => void;
   loop: boolean;
@@ -388,6 +452,7 @@ export function Carousel({
   index,
   defaultIndex = 0,
   onIndexChange,
+  setApi,
   opts,
   loop = opts?.loop ?? false,
   orientation = 'horizontal',
@@ -396,42 +461,107 @@ export function Carousel({
   index?: number;
   defaultIndex?: number;
   onIndexChange?: (index: number) => void;
+  setApi?: (api: NativeCarouselApi) => void;
   loop?: boolean;
   opts?: { align?: 'start'; loop?: boolean };
   orientation?: 'horizontal' | 'vertical';
 }) {
   if (opts?.align && opts.align !== 'start') throw Error('Unreviewed native carousel alignment.');
   const [selected, set] = useControllable(index, defaultIndex, onIndexChange);
-  const [count, setCount] = useState(0);
-  const [size, setSize] = useState(1);
+  const [items, setCount] = useState(0),
+    [size, setSize] = useState(1),
+    [itemSizes, setItemSizes] = useState<Record<number, number>>({});
   const scroll = useRef<ScrollView>(null);
-  const move = (next: number) => {
-    if (!count) return;
-    const target = loop ? (next + count) % count : clamp(next, 0, count - 1);
-    set(target);
+  let total = 0;
+  const starts: number[] = [];
+  for (let item = 0; item < items; item++) {
+    starts.push(total);
+    total += itemSizes[item] ?? size;
+  }
+  const maximum = Math.max(0, total - size),
+    offsets = [...new Set(starts.map((start) => Math.min(maximum, start)))];
+  const count = offsets.length,
+    current = clamp(selected, 0, Math.max(0, count - 1));
+  const live = useRef({ index: current, count, offsets, maximum, loop, orientation, set });
+  live.current = { index: current, count, offsets, maximum, loop, orientation, set };
+  function move(next: number) {
+    const state = live.current;
+    if (!state.count) return;
+    const target = state.loop
+      ? ((next % state.count) + state.count) % state.count
+      : clamp(next, 0, state.count - 1);
+    state.set(target);
     scroll.current?.scrollTo({
-      [orientation === 'horizontal' ? 'x' : 'y']: target * size,
+      [state.orientation === 'horizontal' ? 'x' : 'y']: state.offsets[target] ?? 0,
       animated: false,
     });
+  }
+  const listeners = useRef({
+    select: new Set<(api: NativeCarouselApi) => void>(),
+    reInit: new Set<(api: NativeCarouselApi) => void>(),
+  });
+  const apiRef = useRef<NativeCarouselApi | null>(null);
+  const api: NativeCarouselApi = apiRef.current ?? {
+    selectedScrollSnap: () => live.current.index,
+    scrollSnapList: () =>
+      live.current.offsets.map((offset) => offset / Math.max(1, live.current.maximum)),
+    canScrollNext: () =>
+      live.current.count > 0 && (live.current.loop || live.current.index < live.current.count - 1),
+    canScrollPrev: () => live.current.count > 0 && (live.current.loop || live.current.index > 0),
+    scrollNext: () => move(live.current.index + 1),
+    scrollPrev: () => move(live.current.index - 1),
+    scrollTo: move,
+    on: (event, listener) => {
+      listeners.current[event].add(listener);
+      return api;
+    },
+    off: (event, listener) => {
+      listeners.current[event].delete(listener);
+      return api;
+    },
   };
+  apiRef.current = api;
   useEffect(() => {
+    if (count > 0) setApi?.(api);
+  }, [count > 0, setApi, api]);
+  useEffect(() => {
+    for (const listener of listeners.current.select) listener(api);
+  }, [current, api]);
+  const geometry = offsets.join(',');
+  useEffect(() => {
+    for (const listener of listeners.current.reInit) listener(api);
+  }, [geometry, api]);
+  useEffect(
+    () => () => {
+      listeners.current.select.clear();
+      listeners.current.reInit.clear();
+    },
+    [],
+  );
+  useEffect(() => {
+    if (count > 0 && selected !== current) set(current);
     if (size > 1)
       scroll.current?.scrollTo({
-        [orientation === 'horizontal' ? 'x' : 'y']:
-          clamp(selected, 0, Math.max(0, count - 1)) * size,
+        [orientation === 'horizontal' ? 'x' : 'y']: offsets[current] ?? 0,
         animated: false,
       });
-  }, [selected, size, count, orientation]);
+  }, [current, selected, count, size, geometry, orientation]);
+  const setItemSize = (index: number, value: number) =>
+    setItemSizes((previous) =>
+      previous[index] === value ? previous : { ...previous, [index]: value },
+    );
   return (
     <CarouselContext.Provider
       value={{
-        index: selected,
-        selected: set,
+        index: current,
         count,
         setCount,
         size,
         setSize,
+        offsets,
+        setItemSize,
         move,
+        selected: (next) => set(clamp(next, 0, Math.max(0, count - 1))),
         loop,
         orientation,
         scroll,
@@ -444,48 +574,84 @@ export function Carousel({
 export function CarouselContent({
   children,
   style,
+  onLayout,
+  onMomentumScrollEnd,
   ...props
 }: React.ComponentProps<typeof ScrollView>) {
-  const carousel = useCarousel();
-  const count = Children.count(children);
+  const carousel = useCarousel(),
+    count = Children.count(children);
   useEffect(() => carousel.setCount(count), [count, carousel.setCount]);
   return (
     <ScrollView
       {...props}
       ref={carousel.scroll}
       horizontal={carousel.orientation === 'horizontal'}
-      pagingEnabled
-      onLayout={(event) =>
+      snapToOffsets={carousel.offsets}
+      decelerationRate="fast"
+      onLayout={(event) => {
+        onLayout?.(event);
         carousel.setSize(
-          event.nativeEvent.layout[carousel.orientation === 'horizontal' ? 'width' : 'height'],
-        )
-      }
-      onMomentumScrollEnd={(event) =>
-        carousel.selected(
-          Math.round(
-            event.nativeEvent.contentOffset[carousel.orientation === 'horizontal' ? 'x' : 'y'] /
-              carousel.size,
+          Math.max(
+            1,
+            event.nativeEvent.layout[carousel.orientation === 'horizontal' ? 'width' : 'height'],
           ),
-        )
-      }
+        );
+      }}
+      onMomentumScrollEnd={(event) => {
+        onMomentumScrollEnd?.(event);
+        const offset =
+          event.nativeEvent.contentOffset[carousel.orientation === 'horizontal' ? 'x' : 'y'];
+        const closest = carousel.offsets.reduce(
+          (best, value, index) =>
+            Math.abs(value - offset) < Math.abs(carousel.offsets[best]! - offset) ? index : best,
+          0,
+        );
+        carousel.selected(closest);
+      }}
       showsHorizontalScrollIndicator={false}
       style={[{ flexGrow: 0 }, style]}
     >
-      {children}
+      {Children.map(children, (child, index) =>
+        isValidElement<{ carouselIndex?: number }>(child) &&
+        nativeComponent(child.type) === CarouselItem
+          ? cloneElement(child, { carouselIndex: index })
+          : child,
+      )}
     </ScrollView>
   );
 }
-export function CarouselItem({ style, ...props }: ViewProps) {
-  const carousel = useCarousel();
+export function CarouselItem({
+  style,
+  carouselIndex = 0,
+  onLayout,
+  ...props
+}: ViewProps & { carouselIndex?: number }) {
+  const carousel = useCarousel(),
+    inline = StyleSheet.flatten(style) ?? {};
+  const axis = carousel.orientation === 'horizontal' ? 'width' : 'height',
+    basis = inline.flexBasis;
+  const fraction =
+    typeof basis === 'string' && /^\d+(?:\.\d+)?%$/.test(basis)
+      ? parseFloat(basis) / 100
+      : undefined;
+  const authored = inline[axis];
+  const extent =
+    typeof authored === 'number'
+      ? authored
+      : typeof basis === 'number'
+        ? basis
+        : carousel.size * (fraction ?? 1);
+  const { flexBasis: _basis, ...rest } = inline;
+  useEffect(() => carousel.setItemSize(carouselIndex, extent), [carouselIndex, extent]);
   return (
     <Box
       {...props}
-      style={[
-        carousel.orientation === 'horizontal'
-          ? { width: carousel.size }
-          : { height: carousel.size },
-        style,
-      ]}
+      onLayout={(event) => {
+        onLayout?.(event);
+        const measured = event.nativeEvent.layout[axis];
+        if (measured > 0) carousel.setItemSize(carouselIndex, measured);
+      }}
+      style={[{ [axis]: extent, flexShrink: 0 }, rest]}
     />
   );
 }

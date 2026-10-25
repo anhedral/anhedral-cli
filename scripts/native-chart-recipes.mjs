@@ -208,7 +208,11 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           );
         }
         let target;
-        if (ariaRecipe && /\/ui\/(alert-dialog|dialog|dropdown-menu|popover|tooltip)$/.test(module))
+        if (module === 'react-resizable-panels') target = '../../native/resizable';
+        else if (
+          ariaRecipe &&
+          /\/ui\/(alert-dialog|dialog|dropdown-menu|popover|tooltip)$/.test(module)
+        )
           target = '../../native/registry-aria-overlay';
         else if (/\/bases\/(base|aria)\/ui\/slider$/.test(module))
           target = '../../native/registry-slider';

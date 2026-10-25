@@ -1,5 +1,6 @@
 import {
   Children,
+  Fragment,
   cloneElement,
   createContext,
   isValidElement,
@@ -244,11 +245,13 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         setLocalSelected(value);
         props.onPressedChange?.(value);
       };
+    const nativeLayoutProp =
+      Component.name === 'ResizablePanelGroup' ? 'onContainerLayout' : 'onLayout';
     if (kind !== 'svg' && kind !== 'svg-root' && kind !== 'icon')
-      forwarded.onLayout = (event: { nativeEvent: { layout: { width: number } } }) => {
+      forwarded[nativeLayoutProp] = (event: { nativeEvent: { layout: { width: number } } }) => {
         const next = event.nativeEvent.layout.width;
         if (Number.isFinite(next) && next > 0) setMeasuredWidth(next);
-        props.onLayout?.(event);
+        props[nativeLayoutProp]?.(event);
       };
     delete forwarded['data-active'];
     if (translated.paint.grayscale) {
@@ -430,12 +433,28 @@ function RecipeHover({ children, style, ...props }: ViewProps) {
     </Animated.View>
   );
 }
+function primitiveText(children: ReactNode): boolean {
+  return (
+    Children.count(children) > 0 &&
+    Children.toArray(children).every(
+      (child) =>
+        typeof child === 'string' ||
+        typeof child === 'number' ||
+        typeof child === 'bigint' ||
+        (isValidElement<{ children?: ReactNode }>(child) &&
+          child.type === Fragment &&
+          primitiveText(child.props.children)),
+    )
+  );
+}
 function RecipeView({ children, ...props }: ViewProps) {
   const effects = useContext(RegistryLocalPaint);
   return effects.hoverTranslateY !== undefined ? (
     <RecipeHover {...props}>{children}</RecipeHover>
   ) : (
-    <View {...props}>{content(children)}</View>
+    <View {...props}>
+      {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
+    </View>
   );
 }
 function RecipeButton({ children, ...props }: PressableProps) {

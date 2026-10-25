@@ -389,3 +389,101 @@ test('recipe-local radius and typography preserve heading semantics and selected
   ).not.toBe(before);
   expect(before).toBe('transparent');
 });
+
+test('percentage resizable panels retain named layout callbacks and neighboring constraints', async () => {
+  const change = jest.fn();
+  await mount(
+    <UI.ResizablePanelGroup orientation="vertical" onLayoutChange={change}>
+      <UI.ResizablePanel nativeID="left" defaultSize="30%" minSize="20%" maxSize="40%">
+        Left
+      </UI.ResizablePanel>
+      <UI.ResizableHandle />
+      <UI.ResizablePanel nativeID="right" defaultSize="70%" minSize="30%">
+        Right
+      </UI.ResizablePanel>
+    </UI.ResizablePanelGroup>,
+  );
+  expect(change).toHaveBeenLastCalledWith({ left: 30, right: 70 });
+  for (let index = 0; index < 4; index++)
+    await fireEvent(screen.getByRole('adjustable'), 'accessibilityAction', {
+      nativeEvent: { actionName: 'increment' },
+    });
+  expect(change).toHaveBeenLastCalledWith({ left: 40, right: 60 });
+  expect(screen.getByRole('adjustable')).toHaveAccessibilityValue({ now: 40 });
+});
+test('the authored resizable example updates its displayed controlled percentages', async () => {
+  const Component = require('./.generated/src/examples/base/resizable-example').default;
+  await mount(<Component />);
+  const handles = screen.getAllByRole('adjustable');
+  await fireEvent(handles[handles.length - 1]!, 'accessibilityAction', {
+    nativeEvent: { actionName: 'increment' },
+  });
+  expect(screen.getByText('35%')).toBeOnTheScreen();
+  expect(screen.getByText('65%')).toBeOnTheScreen();
+});
+
+test('fractional carousel cards compute real snap positions and preserve source API subscriptions', async () => {
+  let api: import('./.generated/src/native/carousel').NativeCarouselApi | undefined;
+  const StyledItem = withRegistryStyles(UI.CarouselItem);
+  await mount(
+    <UI.Carousel
+      setApi={(value) => {
+        api = value;
+      }}
+    >
+      <UI.CarouselContent testID="viewport">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <StyledItem key={value} className="basis-1/2">
+            <Text>{value}</Text>
+          </StyledItem>
+        ))}
+      </UI.CarouselContent>
+      <UI.CarouselNext />
+      <UI.CarouselPrevious />
+    </UI.Carousel>,
+  );
+  await fireEvent(screen.getByTestId('viewport'), 'layout', {
+    nativeEvent: { layout: { width: 300, height: 200, x: 0, y: 0 } },
+  });
+  expect(screen.getByTestId('viewport').props.snapToOffsets).toEqual([0, 150, 300, 450]);
+  expect(api?.scrollSnapList()).toEqual([0, 1 / 3, 2 / 3, 1]);
+  const select = jest.fn(),
+    reInit = jest.fn();
+  api!.on('select', select).on('reInit', reInit);
+  for (let index = 0; index < 3; index++)
+    await fireEvent.press(screen.getByRole('button', { name: 'Next slide' }));
+  expect(api!.selectedScrollSnap()).toBe(3);
+  expect(api!.canScrollNext()).toBe(false);
+  expect(select).toHaveBeenCalledTimes(3);
+  expect(screen.getByRole('button', { name: 'Next slide' })).toBeDisabled();
+  api!.off('select', select);
+  await act(() => api!.scrollPrev());
+  expect(select).toHaveBeenCalledTimes(3);
+  expect(api!.selectedScrollSnap()).toBe(2);
+  await fireEvent(screen.getByTestId('viewport'), 'layout', {
+    nativeEvent: { layout: { width: 600, height: 200, x: 0, y: 0 } },
+  });
+  expect(reInit).toHaveBeenCalled();
+  expect(screen.getByTestId('viewport').props.snapToOffsets).toEqual([0, 300, 600, 900]);
+});
+test('the authored carousel API example exposes one inline counter and tracks native selection', async () => {
+  const Component = require('./.generated/src/examples/new-york-v4/carousel-api').default;
+  await mount(<Component />);
+  expect(screen.getByText('Slide 1 of 5')).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Next slide' }));
+  expect(screen.getByText('Slide 2 of 5')).toBeOnTheScreen();
+});
+test('carousel default selection survives the initial empty collection commit', async () => {
+  await mount(
+    <UI.Carousel defaultIndex={1}>
+      <UI.CarouselContent>
+        <UI.CarouselItem>First</UI.CarouselItem>
+        <UI.CarouselItem>Second</UI.CarouselItem>
+      </UI.CarouselContent>
+      <UI.CarouselNext />
+      <UI.CarouselPrevious />
+    </UI.Carousel>,
+  );
+  expect(screen.getByRole('button', { name: 'Next slide' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Previous slide' })).not.toBeDisabled();
+});

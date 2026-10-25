@@ -242,6 +242,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       'apps/v4/registry/new-york-v4/examples/typography-p.tsx',
       'apps/v4/registry/new-york-v4/examples/typography-small.tsx',
       'apps/v4/registry/bases/radix/examples/sonner-example.tsx',
+      'apps/v4/registry/new-york-v4/examples/carousel-api.tsx',
+      'apps/v4/registry/new-york-v4/examples/resizable-demo.tsx',
+      'apps/v4/registry/new-york-v4/examples/resizable-demo-with-handle.tsx',
+      'apps/v4/registry/new-york-v4/examples/resizable-vertical.tsx',
+      'apps/v4/registry/new-york-v4/examples/resizable-handle.tsx',
+      'apps/v4/registry/bases/base/examples/resizable-example.tsx',
+      'apps/v4/registry/bases/radix/examples/resizable-example.tsx',
+      'apps/v4/registry/bases/aria/examples/resizable-example.tsx',
     );
     for (const origin of origins) {
       const name = path.basename(origin, '.tsx');

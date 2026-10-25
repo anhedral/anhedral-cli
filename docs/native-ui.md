@@ -18,7 +18,7 @@ Calendar supports local-date single, multiple and range selection, locale labels
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 215 reviewed source modules,
+The authored component example overlay currently includes 223 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 `node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`
 and `node scripts/native-icons.mjs --check`. Their coverage remains partial while

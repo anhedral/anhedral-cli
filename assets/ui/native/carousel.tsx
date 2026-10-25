@@ -6,3 +6,5 @@ export {
   CarouselNext,
   useCarousel,
 } from './_motion';
+
+export type { CarouselApi, NativeCarouselApi } from './_motion';

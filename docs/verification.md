@@ -1,3 +1,29 @@
+# Native registry carousel and resizable source APIs — October 24, 2026
+
+Added seven authored resizable examples and the authored carousel API example:
+223 component example modules and 488 native registry modules overall. Native
+percentage sizes retain orientation, named layout records and neighboring bounds.
+Carousels retain fractional widths, measured snaps, source selection subscriptions,
+unsubscribe, reinitialization notifications and initial selection. Primitive text
+sequences now render as one native text run.
+
+- Full native suites: 949 tests on iOS and 949 on Android, 36 suites each. Strict
+  generated typecheck passed. Root: 589 passed, one existing optional skip. Lint,
+  packlist and installed packed CLI smoke passed. Packed size: 1,175,628 bytes.
+  Production Hermes bundles include all 488 modules on both platforms.
+- Behavior tests found and fixed a collision between native View layout events
+  and the legacy resizable size-array callback. The authored example updates
+  displayed percentages through its actual onLayoutChange callback.
+- An isolated, strictly typechecked iOS gallery contains 484 renderable stories.
+  XCTest uncovered gallery-only missing helpers/export selection and query-name
+  issues, which were corrected. No OS interaction pass is claimed yet.
+- The pinned Expo 57.0.8 template fails before JavaScript on iOS 27 when built
+  with Xcode 27 because it lacks UIScene lifecycle support. iOS 26.5 launches it.
+  Expo SDK 58 documents the migration at https://expo.dev/changelog/sdk-58.
+  This compatibility gap remains open; bundle success does not resolve it.
+- Registry coverage remains partial while component style presets, remaining APIs
+  and authored sources are unfinished. No release or full parity is asserted.
+
 # Native typography, utility palettes and more authored examples — October 24, 2026
 
 Expanded the authored component example overlay from 152 to 215 source modules.

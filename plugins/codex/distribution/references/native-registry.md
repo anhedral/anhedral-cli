@@ -37,6 +37,7 @@ These decisions describe the named native boundary; they do not mark an entire c
 | Aria trigger/content ownership and DOM slots | Explicit native overlay composition, scalar/range slider adapters and native object/multiple selection | Authored source and behavior tests; nativeButton DOM dispatch and alignItemWithTrigger browser geometry are omitted. Aria table selection slots remain pending. |
 | Trigger CSS variables, hash pagination and HTML numeric bounds | Native onLayout measurements, page state/navigation callbacks and numeric min/max/step on blur | Native upstream control tests cover measured popup width, page transitions and bounds. |
 | CSS grayscale, generated borders, motion and paragraph utilities | Native SVG saturation filter, native borders, reduced-motion animations and OS text breaking | Image loading/source identity tests and interaction tests. CSS pseudo-element mix-blend compositing remains web-specific and is not reproduced by native borders. |
+| Embla browser carousel and resizable DOM geometry | Native ScrollView snap offsets, fractional cards, selection subscriptions and percentage panels | Authored counter/API and named-layout/bounds tests. DOM node access, browser plugins and cyclic cloned-slide animation remain outside these reviewed native APIs. |
 | HTML file inputs, web routing and SSR examples | Require explicit native controls, file picking, submit/navigation callbacks and Expo screen composition | Remaining native examples/blocks and provider-independent bindings remain pending in the inventory below; a no-op callback is not completion. |
 
 ## Registry coverage
@@ -340,7 +341,7 @@ Every row applies to all listed registries. The machine inventory retains each s
 | card-demo | example | S2 | pending | Needs item, variant and dependency review. |
 | card-example | example | S4 | pending | Needs item, variant and dependency review. |
 | card-with-form | example | S2 | pending | Needs item, variant and dependency review. |
-| carousel-api | example | S2 | pending | Needs item, variant and dependency review. |
+| carousel-api | example | S2 | partial | Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending. |
 | carousel-demo | example | S2 | partial | Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending. |
 | carousel-example | example | S4 | partial | Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending. |
 | carousel-orientation | example | S2 | partial | Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending. |
@@ -513,11 +514,11 @@ Every row applies to all listed registries. The machine inventory retains each s
 | radio-group-demo | example | S2 | partial | Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending. |
 | radio-group-example | example | S4 | partial | Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending. |
 | radio-group-form | example | S1 | pending | Needs item, variant and dependency review. |
-| resizable-demo | example | S2 | pending | Needs item, variant and dependency review. |
-| resizable-demo-with-handle | example | S2 | pending | Needs item, variant and dependency review. |
-| resizable-example | example | S4 | pending | Needs item, variant and dependency review. |
-| resizable-handle | example | S2 | pending | Needs item, variant and dependency review. |
-| resizable-vertical | example | S2 | pending | Needs item, variant and dependency review. |
+| resizable-demo | example | S2 | partial | Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending. |
+| resizable-demo-with-handle | example | S2 | partial | Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending. |
+| resizable-example | example | S4 | partial | Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending. |
+| resizable-handle | example | S2 | partial | Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending. |
+| resizable-vertical | example | S2 | partial | Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending. |
 | scroll-area-demo | example | S2 | partial | Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending. |
 | scroll-area-example | example | S4 | pending | Needs item, variant and dependency review. |
 | scroll-area-horizontal-demo | example | S2 | pending | Needs item, variant and dependency review. |

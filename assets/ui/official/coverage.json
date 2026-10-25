@@ -5848,6 +5848,111 @@
         "new-york": "3082720cbdd8942a0a635e0b22728506ff9e150af1bf583d4848e072e5f4dadf",
         "new-york-v4": "a2ebbd6c4bb3aedf69205f30c27df8313b3da57ba549f02990fa81c73df0230a"
       }
+    },
+    "registry:example/carousel-api": {
+      "status": "partial",
+      "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "tests": [
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "default": "4dfff0ac4de425764a8421179df161c5cc1044aede3c3b99c77858b56d92edf6",
+        "new-york": "84bdd692d48917de8077f6bf21c6232967caf6720428168849b9c5ebce9d8be4",
+        "new-york-v4": "3e51b533b52e458ffecc603f1fbc2b0d2900c10c1c5e4ac9481969e73bcbe82d"
+      }
+    },
+    "registry:example/resizable-demo": {
+      "status": "partial",
+      "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "tests": [
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "default": "d68627fc0124431ecac60a3213dfdea14c94c9ccc09f2b2ccb5cc60e83e99590",
+        "new-york": "bd9f7a555f34661efa8ad96cbd4c8f40a3c528173e1e5b12f63c6f40fb743cb5",
+        "new-york-v4": "ea725d58283fc392da9eb242ce66312463d230131db16ddde5c3c82cb144f031"
+      }
+    },
+    "registry:example/resizable-demo-with-handle": {
+      "status": "partial",
+      "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "tests": [
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "default": "ad3cf28305470cf132a0bf3d3864c55c9142ab4bc1d85d3b0d85b109a7c47f30",
+        "new-york": "9df7fb517334e107e4d2549e49b9c20e71d401ba6a904f99f19fd89685e3243d",
+        "new-york-v4": "1aae2bfdf209a9feb2fbf660d0c67373bea13b8882799a4e5cf93f1546a81671"
+      }
+    },
+    "registry:example/resizable-vertical": {
+      "status": "partial",
+      "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "tests": [
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "default": "4d690e2dca88ac54564d09d4fbea70fa82be5652cac21e1e2d77054e4beb854d",
+        "new-york": "68e281f84a2858098d39fbbe9246e281ec18c02a9ea4a17ab397897155b99346",
+        "new-york-v4": "997a8c2e1b80de6f0983a8a4e84a2fd2b06fb46ac93cac7146f4900a88e22893"
+      }
+    },
+    "registry:example/resizable-handle": {
+      "status": "partial",
+      "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "tests": [
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "default": "db3aa34499f5257c94b84ede04d3c40aa40e379fb0601e736446bcc3467f72d1",
+        "new-york": "54ee4c74e87e357aef2f039be9165d992951cc33f254372397729daa0b6127d4",
+        "new-york-v4": "3fe400e05d2f084479fcc4b9e7e9baf8be8d8308c3d29f5bb1383def2eff1301"
+      }
+    },
+    "registry:example/resizable-example": {
+      "status": "partial",
+      "reason": "Authored source is ported with native percentage layout, bounds, carousel snapping and selection API tests. Complete component preset/API and device acceptance remain pending.",
+      "nativeFiles": ["assets/ui/native-example-recipes.json.gz", "assets/ui/native/_motion.tsx"],
+      "tests": [
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "a3982ac6eeabb73ffb27b062729b172bd724042b710fe0d98717e40f1db4211b",
+        "aria-lyra": "3a459a9f1903e65d4f413a50e3c4076ab68fb8a73fc84d30161befc8c5e75350",
+        "aria-maia": "3195e3edef4fc7afd56ed0b68afed6a5aff18a299f19c365404d2f9722bb7af4",
+        "aria-mira": "13e7ebb3b45aef5be3a57bb28e50c24a6aa8ad5355b4dfb95a10b048f5c0ace3",
+        "aria-nova": "ce96537053c468bac9d79e9ceca4be6aae5d7c3429aea059c9c68fede68c712a",
+        "aria-rhea": "1e126252fc2e797d76fe98bca941b36b7c1ad17d2bfa5fc82f2c991ed475d5f4",
+        "aria-sera": "124c2b2977b15ff2e2418d90e24b126310b8cb5c91451e6afad90b584a38e13b",
+        "aria-vega": "658614421a4d3f4cf3277bd052740593ba7d602d77262d6c079254c25fc559e7",
+        "base-luma": "0fdc24e7e7bf1c9a0e6478fa07eace068e317be54fc6c1fdd2d648a9c4a823b7",
+        "base-lyra": "67a25b4e8ab54d07ad28154f334c4425076b246347e9397507a500be3d8d0554",
+        "base-maia": "9849a6cd42235b06f0d0a8475bef7b30df67ec114bb134d0cac8b0123cb3fee8",
+        "base-mira": "41968d38f1cda49c8bf7c55bea42eb405d2bc3700477e99152fbab1637c063d2",
+        "base-nova": "7a030ebc5c50bd193b0c3fa05fa1ef3cb2d79ff2b0bf67e41b58755fab45d071",
+        "base-rhea": "dcc77464661f8aba82a1091ab49a20edd01c6e91dc99988e6c7c4763c5e5bbe9",
+        "base-sera": "09ffd13ec20b235fbb54f57347bb06c3dd6fae905fb1f2e676f855888785a0e5",
+        "base-vega": "80c2a7ed2c3f582d08409e89e1d389c03b6f1c609e568caf7eccf3a2b3378ec5",
+        "radix-luma": "14d2e90b398e33c21bf9323feb5290e5fcd19bbd5d4605dea27988be3f75297a",
+        "radix-lyra": "4b457d8e4b31d6f7e8d6675039ac6ea4c23d1a1cec98f31a112b5b6d18751775",
+        "radix-maia": "77d8dccb2ced7093be455cef659dfc56e4a7aadcfda4362f9f8339b6ff94f18f",
+        "radix-mira": "c1b4f7483a24b02130c04521e85acb80871bcc64f964c617bae0cde4dc431f29",
+        "radix-nova": "26b4c727edb0a23403203a409182f6d287f7486de7a73492bbbba66f4232478f",
+        "radix-rhea": "34a9c9207bcedc6664b52ce0430ee95a9ed6afd3547edad8a0c4e3ce492a7fa9",
+        "radix-sera": "97b9322351b65c8e7d954c587e2cf09f863e4c0193522c6a202cf6d84a0ec78a",
+        "radix-vega": "f2d106eee197cf5aad5c0c0973913f6711321e58eabb64f8b19142f1eb196d0c"
+      }
     }
   },
   "webSpecific": [
