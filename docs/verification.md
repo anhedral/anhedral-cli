@@ -1,3 +1,39 @@
+# Native Button callback and form composition — October 25, 2026
+
+Button now supports element/function render hosts and live children state, including
+hover, press, focus, disabled and pending values. Native views and text preserve
+refs, consumer styles and centered source typography. Callback-added glyphs affect
+source spacing; nested Buttons retain their own CVA. Child-first cancellation and
+form/type ownership prevent duplicate submissions and unintended select/link submits.
+Native focus supplies focus-visible; disabled and pending focus follows OS policy.
+DOM tab-order/nativeButton flags remain explicit platform boundaries.
+
+- Native suites: 1,488 passed on each platform across 50 suites, with unchanged
+  coverage thresholds. All 711 source modules compiled to both Hermes targets.
+  Focused CLI native-driver/gallery contracts: six passed. Lint/static security and
+  packed-consumer smoke passed; packlist: 249 files / 1,019,953 bytes before this
+  evidence entry. The preceding full CLI run passed 640 tests with one optional skip.
+- Android: eleven release instrumentation cases passed on the owned API 36 emulator.
+  Evidence: `.artifacts/native-ui-android/2026-10-25T09-33-43-990Z/`.
+  APK SHA-256 101321ce0196cdc10df28ad08c2dbcd0529d7debe57674e02aa887a497426d36;
+  test APK fa3a7848a52cd7908f1402b40205b36f4ad439cd8811a6b3e9ae3318c899bf8b.
+- iOS: all eleven XCTest cases passed without skips in 356.901 seconds on the owned
+  iOS 26.5 simulator. Evidence: `.artifacts/native-ui-ios/2026-10-25T09-31-41-145Z/`.
+  Completed xcresult summary was validated and attachments exported. Callback-control
+  screenshots on both platforms were inspected; counters, source geometry and
+  distinct pending paint are visible. All 122 native source files matched both QA
+  copies before the next component work began.
+- Prior failed runs remain retained. Android busy labels include an OS suffix;
+  XCTest exposes a combobox outside its Button query. Scroll helpers now target the
+  owned gallery viewport, allow native mount/gesture settling and reveal clipped
+  content by its leading edge. Required cases and assertions were preserved.
+- Dated local source equivalence, patch and logs:
+  `.artifacts/native-ui/2026-10-25-button-callbacks/`.
+
+Button's reviewed component group is now accounted for: 82 groups accounted / 534
+pending. Dependent example groups remain independently pending. This does not
+establish full registry, physical-device, store or screen-reader acceptance.
+
 # Authored Card examples and native content semantics — October 25, 2026
 
 Nine more authored source modules retain the modern Card example, login Card and

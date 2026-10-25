@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { View, type ViewProps, type TextProps, type TextInputProps } from 'react-native';
 import { Box, LabelText, Muted, row, plainText, useControllable, nativeComponent } from './_core';
-import { Button, type ButtonProps } from './button';
+import { Button, type NativeControlButtonProps as ButtonProps } from './button';
 import { useTheme } from '../theme';
 import { Input } from './input';
 import { Checkbox, RadioGroup, RadioGroupItem } from './_controls';

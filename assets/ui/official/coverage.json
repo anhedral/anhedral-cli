@@ -5982,19 +5982,26 @@
       }
     },
     "registry:ui/button": {
-      "status": "partial",
-      "reason": "Source-driven native Button slots retain all eight component presets, six variants and eight sizes, with hover/focus, invalid/expanded/disabled states, icon sizing/placement, group radii and native touch bounds. Default, New York and New York v4 retain their pinned CVA geometry and paint; all eleven style families are tested. Native link composition is tested. Browser paint/transition differences and expanded native device acceptance remain separately accounted for; complete component parity is not asserted. Authored registry Button wrappers retain source-specific implicit submit defaults; internal compound controls keep native button defaults. Function-render and Aria children callback parity remain pending.",
+      "status": "ported",
+      "reason": "Source-driven native slots retain all eleven style families, authored variants/sizes, hover/focus/invalid/expanded/disabled paint, icon placement and group radii. Native element/function render hosts and live Aria children state preserve refs, child-first cancellation, pending paint, typography and one form action. Source-specific implicit submit defaults stay on authored wrappers. All 1,488 native tests pass per platform; Android and iOS pass all eleven OS cases. Native focus supplies focus-visible, disabled/pending focus follows OS policy, and DOM tabIndex/nativeButton/focusableWhenDisabled remain explicit browser boundaries; browser paint/transition differences and physical-device/screen-reader acceptance stay separate.",
       "nativeFiles": [
         "assets/ui/native/button.tsx",
         "assets/ui/native/_preset-button-style.tsx",
         "assets/ui/native/_button-presets.tsx",
-        "assets/ui/native/navigation.tsx"
+        "assets/ui/native/navigation.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/_overlay.tsx",
+        "assets/ui/native/native-form.tsx"
       ],
       "tests": [
         "tests/native-ui/registry-button-presets.test.tsx",
         "tests/test-native-component-styles.test.mjs",
         "tests/native-ui/registry-navigation.test.tsx",
-        "tests/native-ui/registry-native-constraints.test.tsx"
+        "tests/native-ui/registry-native-constraints.test.tsx",
+        "tests/native-ui/registry-button-callbacks.test.tsx",
+        "tests/native-ui/registry-button-form-composition.test.tsx",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
+        "tests/native-ui/device/RegistryUITests.swift"
       ],
       "reviewedInputs": {
         "aria-luma": "7ac97a25771eb77ff7b1fc899aa35e4d23c998f273e1db05ac0df77bd200a758",
@@ -6670,6 +6677,11 @@
       "feature": "HTML ordered/unordered lists, scroll hosts and demonstration forms",
       "adaptation": "Native lists retain counters, explicit values, reversal and independent nested scopes. Native ScrollView owns overflow axes and separates content padding/gaps from viewport bounds. Native constraints use registered fields, focus and accessible errors. Browser underline offsets use native text decoration placement. Native view mix-blend-color uses the OS compositor. Image title hover tooltips use the retained native alt accessibility name.",
       "status": "Authored Card interactions and native counter/scroll/validation contracts are tested. Browser form navigation without an application handler is an explicit native integration error; the source Login button outside the form remains inert. Other dependent component presets and expanded screen-reader/visual acceptance remain pending."
+    },
+    {
+      "feature": "Browser Button render hosts, focus-visible heuristics and disabled tab order",
+      "adaptation": "Native Button supports one native render element/callback and live children state. Native focus supplies focus-visible; OS policy owns disabled/pending focus. Native views use Pressable and native props; DOM tabIndex, nativeButton and focusableWhenDisabled flags have no direct native counterpart.",
+      "status": "Element/callback hosts, pending state, child-first cancellation, refs, typography and one form dispatch are tested. All eleven Android/iOS acceptance cases passed; physical devices and expanded screen-reader acceptance remain separate."
     }
   ]
 }

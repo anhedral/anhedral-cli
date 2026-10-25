@@ -106,7 +106,7 @@ final class RegistryUITests: XCTestCase {
       let value = app.descendants(matching:.any).matching(identifier:"Item " + String(index) + ": Value " + String(index)).firstMatch
       for _ in 0..<4 {
         if value.exists && value.isHittable { break }
-        app.scrollViews.firstMatch.swipeUp()
+        app.scrollViews["registry-story-scroll"].swipeUp()
       }
       XCTAssertTrue(value.exists)
       XCTAssertTrue(value.isHittable)
@@ -121,7 +121,7 @@ final class RegistryUITests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()
     openStory("native/card-metrics", in:app)
-    let scroll = app.scrollViews.firstMatch
+    let scroll = app.scrollViews["registry-story-scroll"]
     // Passive measurement labels require a nonempty frame entirely within the native
     // viewport. Touch activation is exercised separately by the action cases.
     func visible(_ value: XCUIElement) -> Bool {
@@ -132,7 +132,7 @@ final class RegistryUITests: XCTestCase {
     func reveal(_ value: XCUIElement) {
       for _ in 0..<24 {
         if visible(value) { break }
-        let down = value.exists && value.frame.midY < scroll.frame.minY
+        let down = value.exists && !value.frame.isEmpty && value.frame.minY < scroll.frame.minY
         let start = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.5,dy:down ? 0.3 : 0.7))
         let end = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.5,dy:down ? 0.7 : 0.3))
         start.press(forDuration:0.1,thenDragTo:end,withVelocity:.slow,thenHoldForDuration:0.1)
@@ -158,11 +158,12 @@ final class RegistryUITests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()
     openStory("base/card-example", in: app)
-    let scroll = app.scrollViews.firstMatch
+    let scroll = app.scrollViews["registry-story-scroll"]
     func reveal(_ value: XCUIElement) {
       for _ in 0..<48 {
         if value.exists && !value.frame.isEmpty && scroll.frame.contains(value.frame) { return }
-        let up = value.exists && value.frame.midY < scroll.frame.minY
+        if value.exists { print("Card reveal frame: " + value.label + " " + String(describing:value.frame) + " viewport " + String(describing:scroll.frame)) }
+        let up = value.exists && !value.frame.isEmpty && value.frame.minY < scroll.frame.minY
         let start = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.98,dy:up ? 0.3 : 0.7))
         let end = scroll.coordinate(withNormalizedOffset: CGVector(dx:0.98,dy:up ? 0.7 : 0.3))
         start.press(forDuration:0.1,thenDragTo:end,withVelocity:.slow,thenHoldForDuration:0.1)
@@ -182,6 +183,42 @@ final class RegistryUITests: XCTestCase {
     XCTAssertTrue(last.exists)
     let screenshot = XCTAttachment(screenshot:app.screenshot())
     screenshot.name = "Authored Card list and spacing controls"
+    screenshot.lifetime = .keepAlways
+    add(screenshot)
+  }
+
+  func testCallbackButtonsAndComposedControlsOnNativeOS() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/button-callbacks", in:app)
+    func reveal(_ value:XCUIElement, _ name:String) {
+      let scroll=app.scrollViews["registry-story-scroll"]
+      for _ in 0..<12 {
+        if value.exists && value.isHittable { return }
+        let up=value.exists && !value.frame.isEmpty && value.frame.minY < scroll.frame.minY
+        let start=scroll.coordinate(withNormalizedOffset:CGVector(dx:0.98,dy:up ? 0.3 : 0.7))
+        let end=scroll.coordinate(withNormalizedOffset:CGVector(dx:0.98,dy:up ? 0.7 : 0.3))
+        start.press(forDuration:0.1,thenDragTo:end,withVelocity:.slow,thenHoldForDuration:0.1)
+      }
+      XCTFail("Missing callback control: " + name)
+    }
+    func tap(_ name:String) { let value=app.descendants(matching:.any).matching(identifier:name).firstMatch; reveal(value,name); value.tap() }
+    tap("Open composed callback select")
+    let plan=app.descendants(matching:.any).matching(identifier:"Team callback plan").firstMatch
+    XCTAssertTrue(plan.waitForExistence(timeout:10)); plan.tap()
+    XCTAssertTrue(app.staticTexts.matching(identifier:"Callback selected plan: two").firstMatch.exists)
+    XCTAssertTrue(app.staticTexts.matching(identifier:"Callback submits: 0").firstMatch.exists)
+    tap("Callback view action")
+    tap("Callback text action")
+    XCTAssertTrue(app.staticTexts.matching(identifier:"Callback view count: 1").firstMatch.exists)
+    XCTAssertTrue(app.staticTexts.matching(identifier:"Callback text count: 1").firstMatch.exists)
+    tap("Submit callback form")
+    XCTAssertTrue(app.staticTexts.matching(identifier:"Callback submits: 1").firstMatch.exists)
+    tap("Begin callback pending")
+    let pending=app.buttons["Callback pending"]
+    XCTAssertTrue(pending.exists); XCTAssertFalse(pending.isEnabled)
+    let screenshot=XCTAttachment(screenshot:app.screenshot())
+    screenshot.name="Native callback controls and source form semantics"
     screenshot.lifetime = .keepAlways
     add(screenshot)
   }

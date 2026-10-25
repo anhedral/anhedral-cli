@@ -3,7 +3,7 @@ import { ScrollView, View, type ViewProps, type TextInputProps } from 'react-nat
 import { Combobox as LegacyCombobox } from './_selection';
 import { Box, LabelText, Muted, plainText, row, useControllable, nativeComponent } from './_core';
 import { OverlayRoot, OverlayTrigger, OverlayContent } from './_overlay';
-import { Button, type ButtonProps } from './button';
+import { Button, type NativeControlButtonProps as ButtonProps } from './button';
 import { Input } from './input';
 import { Separator } from './_display';
 

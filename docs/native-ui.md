@@ -28,7 +28,7 @@ commands serial because they regenerate the shared harness source directory.
 For Android, set `JAVA_HOME` and `ANDROID_HOME` for the pinned React Native
 runtime and start a dedicated emulator. Run `pnpm test:native-ui:android -- --device emulator-5558`.
 The runner builds a release app and AndroidX UI Automator instrumentation, then checks
-all eight required native cases. Skipped, aborted and incomplete runs fail. Source
+all eleven required native cases. Skipped, aborted and incomplete runs fail. Source
 hashes, retained APKs, native screenshots, hierarchy dumps and logs remain under
 `.artifacts/native-ui-android/`. Both platforms use one owned QA preparation path;
 unrelated directories and symlinked outputs are rejected. Keep harness preparation
@@ -100,6 +100,22 @@ Use a native container or separate components for fragment/multiple-root output.
 Default Text inherits surrounding native typography; an explicit variant or style can
 override it. Event composition preserves child-first cancellation, pointer/touch
 callbacks and stable ref lifetimes during press feedback.
+
+Button accepts an element or a native render callback with normalized host props,
+disabled state and an optional owning-overlay open state. Stateful children receive
+live hover, press, focus, disabled and pending values. Pending blocks activation and
+exposes busy while keeping source pending paint distinct from disabled paint. Native
+Button children recompute their own source slots and typography; composition forwards
+form/type associations and dispatches a form action only once. Callback-added glyphs
+participate in the source's icon spacing rules. Native Text render hosts retain centered
+alignment and native text metrics. Explicit child styling remains authoritative.
+
+Native focus events supply the focus-visible flag. Disabled and pending focus follows
+OS policy; browser tabIndex and Base UI focusableWhenDisabled tab-order overrides have
+no direct native counterpart. DOM nativeButton flags are omitted, and native views
+with actions become real Pressables. These are deliberate platform boundaries, not a
+browser host-prop compatibility layer. Keyboard/screen-reader device acceptance remains
+separately recorded.
 
 Small visual buttons retain expanded touch targets
 through hitSlop; parent layout must allow those touch bounds.

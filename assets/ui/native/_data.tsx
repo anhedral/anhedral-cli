@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { ScrollView, StyleSheet, type ViewProps } from 'react-native';
 import { Box, LabelText, Muted, row, useControllable, plainText, nativeComponent } from './_core';
-import { Button, LinkButton, type ButtonProps } from './button';
+import { Button, LinkButton, type NativeControlButtonProps as ButtonProps } from './button';
 import { Input } from './input';
 import { Checkbox } from './_controls';
 export const ScrollArea = ({ children, ...props }: React.ComponentProps<typeof ScrollView>) => (

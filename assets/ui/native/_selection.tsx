@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { View, ScrollView, type ViewProps, type TextInputProps } from 'react-native';
 import { Box, LabelText, Muted, row, useControllable, content, nativeComponent } from './_core';
-import { Button, type ButtonProps } from './button';
+import { Button, type NativeControlButtonProps as ButtonProps } from './button';
 import { Input } from './input';
 import { useTheme } from '../theme';
 import { useNativeField, useNativeFieldActivation } from './_field-context';

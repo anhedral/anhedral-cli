@@ -5,7 +5,7 @@ import path from 'node:path';
 import { prepareNativeQAApp, nativeQASourceManifest } from './native-ui-device.mjs';
 export { nativeQAApp, nativeQAExport } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeIOSTestCount = 10;
+export const nativeIOSTestCount = 11;
 export function assertNativeIOSResult(summary, expected = nativeIOSTestCount, device) {
   if (
     !Number.isSafeInteger(expected) ||

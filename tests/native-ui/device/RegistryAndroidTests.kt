@@ -40,14 +40,19 @@ class RegistryAndroidTests {
     for (direction in listOf(Direction.DOWN, Direction.UP)) {
       for (attempt in 0..24) {
         try {
-          val container = onElementOrNull(timeoutMs = 200) { isScrollable }
+          val container = onElementOrNull(timeoutMs = 200) { viewIdResourceName == "registry-story-scroll" }
           val viewport = container?.visibleBounds ?: Rect(0, 0, device.displayWidth, device.displayHeight)
           val visible: AccessibilityNodeInfo.() -> Boolean = {
             val bounds = Rect().also { getBoundsInScreen(it) }
             named(name) && isVisibleToUser && !bounds.isEmpty && viewport.contains(bounds.centerX(), bounds.centerY())
           }
           onElementOrNull(timeoutMs = 250, block = visible)?.let { return it }
-          if (container == null || !container.scroll(direction, 0.6f)) break
+          if (container == null) break
+          // A false scroll result can race the freshly mounted native layout. Keep
+          // resolving the owned story viewport and allow the injected gesture to settle.
+          val moved = container.scroll(direction, 0.6f)
+          Thread.sleep(150)
+          println("Registry reveal: " + name + " " + direction + " moved=" + moved + " viewport=" + viewport)
         } catch (_: StaleObjectException) {
           // Layout state and navigation can replace nodes. Resolve fresh native objects
           // before the next assertion or gesture instead of retaining a stale container.
@@ -143,6 +148,22 @@ class RegistryAndroidTests {
     onElement { named("16px") && !isSelected }
     label("1. New analytics widgets for daily/weekly metrics")
     label("5. Follow-up meeting scheduled for next Tuesday")
+  }
+
+  @Test fun callbackButtonsAndComposedControlsPreserveNativeActions() = uiAutomator {
+    openStory("native/button-callbacks")
+    label("Open composed callback select").click()
+    label("Team callback plan").click()
+    label("Callback selected plan: two")
+    label("Callback submits: 0")
+    label("Callback view action").click()
+    label("Callback text action").click()
+    label("Callback view count: 1")
+    label("Callback text count: 1")
+    label("Submit callback form").click()
+    label("Callback submits: 1")
+    label("Begin callback pending").click()
+    onElement { contentDescription?.toString()?.startsWith("Callback pending") == true && !isEnabled }
   }
 
 }

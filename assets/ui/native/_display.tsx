@@ -46,7 +46,7 @@ import {
   plainText,
   content,
 } from './_core';
-import { Button, LinkButton, type ButtonProps } from './button';
+import { Button, LinkButton, type NativeControlButtonProps as ButtonProps } from './button';
 import { NativeSlot } from './_slot';
 import { NativeLayout, type NativeLayoutProps } from './_layout';
 import Svg, { Defs, Filter, FeColorMatrix, Image as SvgImage } from 'react-native-svg';

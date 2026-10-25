@@ -13,11 +13,13 @@ import {
 import {
   Pressable,
   View,
+  StyleSheet,
   type PressableProps,
   type PressableStateCallbackType,
   type StyleProp,
   type ViewStyle,
   type TextProps,
+  type TextStyle,
 } from 'react-native';
 import { nativeComponent, content } from './_core';
 type NativeProps = PressableProps & {
@@ -26,7 +28,28 @@ type NativeProps = PressableProps & {
   variant?: string;
   size?: string;
   inline?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  form?: string;
+  pending?: boolean;
+  invalid?: boolean;
+  nativePreset?: boolean;
+  textColor?: string;
+  textStyle?: StyleProp<TextStyle>;
 };
+type ButtonSlotOptions = Pick<
+  NativeProps,
+  | 'variant'
+  | 'size'
+  | 'type'
+  | 'form'
+  | 'disabled'
+  | 'pending'
+  | 'style'
+  | 'invalid'
+  | 'nativePreset'
+  | 'textColor'
+  | 'textStyle'
+>;
 function prevented(event: unknown) {
   return (
     !!event &&
@@ -86,6 +109,7 @@ export function NativeSlot({
   children,
   slotVariant,
   slotSize,
+  slotButton,
   slotStyle = 'pressable',
   slotInheritedStyle,
   ...props
@@ -94,6 +118,7 @@ export function NativeSlot({
   ref?: Ref<View>;
   slotVariant?: string;
   slotSize?: string;
+  slotButton?: ButtonSlotOptions;
   slotStyle?: 'pressable' | 'static';
   slotInheritedStyle?: StyleProp<ViewStyle>;
 }) {
@@ -160,8 +185,9 @@ export function NativeSlot({
         },
       });
   }
+  const inheritedStyle = buttonLike && slotButton ? slotButton.style : props.style;
   const resolveStyle = (state: PressableStateCallbackType) => [
-    typeof props.style === 'function' ? props.style(state) : props.style,
+    typeof inheritedStyle === 'function' ? inheritedStyle(state) : inheritedStyle,
     removeInheritedStyle(
       typeof own.style === 'function' ? own.style(state) : own.style,
       slotInheritedStyle,
@@ -174,8 +200,20 @@ export function NativeSlot({
         })
       : resolveStyle;
   if (buttonLike) {
-    merged.variant = own.variant ?? slotVariant;
-    merged.size = own.size ?? slotSize;
+    merged.variant = own.variant ?? slotButton?.variant ?? slotVariant;
+    merged.size = own.size ?? slotButton?.size ?? slotSize;
+    if (slotButton) {
+      merged.type = own.type ?? slotButton.type;
+      merged.form = own.form ?? slotButton.form;
+      merged.disabled = own.disabled || slotButton.disabled;
+      merged.pending = own.pending || slotButton.pending;
+      merged.invalid = own.invalid ?? slotButton.invalid;
+      merged.nativePreset = own.nativePreset ?? slotButton.nativePreset;
+      merged.textStyle = [slotButton.textStyle, own.textStyle];
+      merged.textColor =
+        own.textColor ??
+        (StyleSheet.flatten(own.textStyle)?.color === undefined ? slotButton.textColor : undefined);
+    }
   }
   if (
     component &&

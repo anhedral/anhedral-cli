@@ -691,6 +691,12 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             f.createIdentifier('accessibilityRole'),
             f.createStringLiteral('header'),
           );
+        if (ariaRecipe && tag === 'Button' && name === 'isPending')
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier('pending'),
+            ts.visitNode(node.initializer, visit),
+          );
         const renamed =
           ariaRecipe &&
           tag === 'ToggleGroup' &&

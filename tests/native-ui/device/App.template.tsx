@@ -2,10 +2,63 @@ import React, { useState } from 'react';
 import { View, FlatList, ScrollView, Text, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
-import { RegistryView } from './.generated/src/native/registry-styles';
+import { NativeRegistryPalette } from './.generated/src/native/_registry-context';
+import { withRegistryStyles, RegistryView } from './.generated/src/native/registry-styles';
 import { NativeExampleOptions } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+const SourceCallbackButton = withRegistryStyles(UI.Button, 'button');
+function NativeButtonCallbackMatrix() {
+  const [plan, setPlan] = useState('one'),
+    [views, setViews] = useState(0),
+    [texts, setTexts] = useState(0),
+    [submits, setSubmits] = useState(0),
+    [pending, setPending] = useState(false);
+  return (
+    <NativeRegistryPalette source="radix" generation="modern">
+      <UI.NativeForm onSubmit={() => setSubmits((n) => n + 1)} style={{ gap: 12 }}>
+        <UI.Text>{'Callback submits: ' + submits}</UI.Text>
+        <UI.Text>{'Callback view count: ' + views}</UI.Text>
+        <UI.Text>{'Callback text count: ' + texts}</UI.Text>
+        <UI.Text>{'Callback selected plan: ' + plan}</UI.Text>
+        <UI.Select value={plan} onValueChange={(value) => setPlan(String(value))}>
+          <UI.SelectTrigger asChild>
+            <SourceCallbackButton accessibilityLabel="Open composed callback select">
+              Choose plan
+            </SourceCallbackButton>
+          </UI.SelectTrigger>
+          <UI.SelectContent>
+            <UI.SelectItem value="one">Personal callback plan</UI.SelectItem>
+            <UI.SelectItem value="two">Team callback plan</UI.SelectItem>
+          </UI.SelectContent>
+        </UI.Select>
+        <SourceCallbackButton
+          type="button"
+          accessibilityLabel="Callback view action"
+          onPress={() => setViews((n) => n + 1)}
+          render={(props) => <View {...props} />}
+        >
+          View callback
+        </SourceCallbackButton>
+        <SourceCallbackButton
+          type="button"
+          accessibilityLabel="Callback text action"
+          onPress={() => setTexts((n) => n + 1)}
+          render={(props) => <Text {...props} />}
+        >
+          Text callback
+        </SourceCallbackButton>
+        <SourceCallbackButton type="submit">Submit callback form</SourceCallbackButton>
+        <UI.Button type="button" onPress={() => setPending(true)}>
+          Begin callback pending
+        </UI.Button>
+        <UI.Button pending={pending}>
+          {(state) => (state.isPending ? 'Callback pending' : 'Callback ready')}
+        </UI.Button>
+      </UI.NativeForm>
+    </NativeRegistryPalette>
+  );
+}
 function NativeButtonPresetMatrix() {
   const [selected, setSelected] = useState('none');
   return (
@@ -202,6 +255,7 @@ function Gallery() {
       </View>
       {active ? (
         <ScrollView
+          testID="registry-story-scroll"
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: 16 }}
           keyboardShouldPersistTaps="handled"

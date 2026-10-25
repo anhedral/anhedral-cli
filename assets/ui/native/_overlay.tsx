@@ -20,9 +20,7 @@ import {
   type ViewProps,
 } from 'react-native';
 import { Box, LabelText, Muted, row, content, useControllable, useDirection } from './_core';
-import { Button, type ButtonProps } from './button';
-import { NativeSlot } from './_slot';
-import { cloneElement } from 'react';
+import { Button, type NativeControlButtonProps as ButtonProps } from './button';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 
@@ -81,14 +79,15 @@ function focus(ref: RefObject<View | null>) {
   if (node) AccessibilityInfo.setAccessibilityFocus(node);
 }
 export function OverlayTrigger({ onPress, asChild, render, children, ...props }: ButtonProps) {
-  const Host = asChild || render ? NativeSlot : Button;
-  const body = render
-    ? cloneElement(render, { children: children ?? render.props.children })
-    : children;
+  const Host = Button;
+  const body = children;
   const state = useOverlay();
   return (
     <Host
       {...props}
+      nativeBare={asChild || !!render}
+      asChild={asChild}
+      render={render}
       ref={state.trigger}
       onLayout={(event) => {
         props.onLayout?.(event);
@@ -111,14 +110,15 @@ export function LongPressTrigger({
   children,
   ...props
 }: ButtonProps) {
-  const Host = asChild || render ? NativeSlot : Button;
-  const body = render
-    ? cloneElement(render, { children: children ?? render.props.children })
-    : children;
+  const Host = Button;
+  const body = children;
   const state = useOverlay();
   return (
     <Host
       {...props}
+      nativeBare={asChild || !!render}
+      asChild={asChild}
+      render={render}
       ref={state.trigger}
       onLayout={(event) => {
         props.onLayout?.(event);
@@ -142,14 +142,15 @@ export function LongPressTrigger({
   );
 }
 export function OverlayClose({ onPress, asChild, render, children, ...props }: ButtonProps) {
-  const Host = asChild || render ? NativeSlot : Button;
-  const body = render
-    ? cloneElement(render, { children: children ?? render.props.children })
-    : children;
+  const Host = Button;
+  const body = children;
   const state = useOverlay();
   return (
     <Host
       {...props}
+      nativeBare={asChild || !!render}
+      asChild={asChild}
+      render={render}
       onPress={(event) => {
         onPress?.(event);
         if (!event.isDefaultPrevented()) state.set(false);
