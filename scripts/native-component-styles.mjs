@@ -390,6 +390,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeKbdPresets(inventory),
     source: await nativeKbdPresetSource(inventory),
   });
+  const { nativeLabelPresets, nativeLabelPresetSource } =
+    await import('./native-label-presets.mjs');
+  outputs.push({
+    component: 'label',
+    target: target('label'),
+    data: nativeLabelPresets(inventory),
+    source: await nativeLabelPresetSource(inventory),
+  });
   outputs.push({
     component: 'metrics',
     target: metricsTarget,

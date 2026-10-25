@@ -76,3 +76,29 @@ test('system picker fixtures are idempotent and preserve unrelated files and sym
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('native instrumentation binds its required sweep total to unique copied authored roots', async () => {
+  const { nativeQAStoryCountSource } = await import('../scripts/native-ui-device.mjs');
+  const source = 'private let count = 0 // ANHEDRAL_AUTHORED_STORY_COUNT';
+  const catalog = {
+    recipes: [
+      { kind: 'example', style: 'base', name: 'one' },
+      { kind: 'block', style: 'native', name: 'two' },
+      { kind: 'support', style: 'base', name: 'helper' },
+    ],
+  };
+  assert.match(
+    nativeQAStoryCountSource(source, catalog),
+    /count = 2 \/\/ ANHEDRAL_AUTHORED_STORY_COUNT/,
+  );
+  assert.throws(() => nativeQAStoryCountSource('', catalog), /marker/);
+  assert.throws(() => nativeQAStoryCountSource(source + source, catalog), /marker/);
+  assert.throws(
+    () => nativeQAStoryCountSource(source, { recipes: [] }),
+    /requires authored stories/,
+  );
+  assert.throws(
+    () => nativeQAStoryCountSource(source, { recipes: [catalog.recipes[0], catalog.recipes[0]] }),
+    /Duplicate/,
+  );
+});

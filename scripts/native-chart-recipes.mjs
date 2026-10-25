@@ -774,6 +774,19 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           );
         if (nativeForms && ['htmlFor', 'aria-describedby', 'aria-errormessage'].includes(name))
           return undefined;
+        if (nativeForms && name === 'data-disabled' && ['Field', 'FieldSet'].includes(tag))
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier('disabled'),
+            node.initializer &&
+              ts.isStringLiteral(node.initializer) &&
+              ['true', 'false'].includes(node.initializer.text)
+              ? f.createJsxExpression(
+                  undefined,
+                  node.initializer.text === 'true' ? f.createTrue() : f.createFalse(),
+                )
+              : ts.visitNode(node.initializer, visit),
+          );
         if (nativeForms && ['id', 'aria-invalid', 'data-invalid'].includes(name))
           return f.updateJsxAttribute(
             node,

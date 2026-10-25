@@ -76,7 +76,7 @@ export function nativeQAApp(catalog, sourceFor) {
     imports.push(`import * as Story${index} from '${module}';`);
     const exported = nativeQAExport(sourceFor(recipe, module), recipe.export);
     stories.push(
-      `{id:${JSON.stringify(recipe.style + '/' + recipe.name)},Component:Story${index}.${exported}}`,
+      `{id:${JSON.stringify(recipe.style + '/' + recipe.name)},authored:true,Component:Story${index}.${exported}}`,
     );
   }
   return template
@@ -96,6 +96,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/input-metrics",Component:NativeInputMatrix}',
           '{id: "native/file-input",Component:NativeFileMatrix}',
           '{id: "native/temporal-input",Component:NativeTemporalMatrix}',
+          '{id: "native/runtime-sweep",Component:NativeRuntimeSweep}',
         ].join(',\n') +
         '];',
     );
@@ -128,6 +129,18 @@ export function validateNativeQADirectory(qa, directoryRoot = root) {
     )
       throw Error('Refusing to overwrite an unrelated QA application.');
   }
+}
+/** Bind instrumentation to the private copied catalog, never a hardcoded story total. */
+export function nativeQAStoryCountSource(source, catalog) {
+  const marker = '= 0 // ANHEDRAL_AUTHORED_STORY_COUNT';
+  if (source.split(marker).length !== 2) throw Error('Native story count marker requires review.');
+  const authored = catalog.recipes.filter((recipe) => recipe.kind !== 'support');
+  const count = authored.length;
+  const identities = authored.map((recipe) => recipe.style + '/' + recipe.name);
+  if (new Set(identities).size !== count) throw Error('Duplicate native authored story identity.');
+  if (!Number.isSafeInteger(count) || count <= 0)
+    throw Error('Native runtime sweep requires authored stories.');
+  return source.replace(marker, '= ' + count + ' // ANHEDRAL_AUTHORED_STORY_COUNT');
 }
 export function nativeQASourceManifest(qa) {
   const files = {};

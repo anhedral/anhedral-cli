@@ -14,6 +14,7 @@ import {
   NativeTextStyleContext,
   TextToneProvider,
   content,
+  useTextTone,
 } from './_core';
 import {
   useNativeComponentStyle,
@@ -54,6 +55,7 @@ function NativeKbd({ part, children, style, ...props }: KbdProps & { part: 'Kbd'
     generation = useRegistryPalette(),
     surface = useContext(NativeKbdSurfaceContext),
     inherited = useContext(NativeTextStyleContext),
+    inheritedTone = useTextTone(),
     inheritedIconSize = useContext(NativeButtonIconSize),
     { fontScale } = useWindowDimensions();
   const preset =
@@ -102,7 +104,9 @@ function NativeKbd({ part, children, style, ...props }: KbdProps & { part: 'Kbd'
       }}
     >
       <TextToneProvider
-        value={typeof ownText.color === 'string' ? ownText.color : adapted.foreground}
+        value={
+          typeof ownText.color === 'string' ? ownText.color : (adapted.foreground ?? inheritedTone)
+        }
       >
         <NativeButtonIconSize.Provider value={adapted.iconSize ?? inheritedIconSize}>
           <View

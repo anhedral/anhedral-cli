@@ -16,10 +16,15 @@ import { composeNativeRefs } from './_slot';
 
 type Part = 'label' | 'description' | 'error';
 type RecordPart = { kind: Part; text: string; nativeID: string; targetID?: string };
+export type NativeControlSlot = 'input' | 'checkbox' | 'switch' | 'radio-group-item' | 'control';
+type ControlProperties = { nativeID?: string; slot: NativeControlSlot; disabled: boolean };
 type NativeFieldControl = { focus?: () => void; activate?: () => void };
 type FieldState = {
   id: string;
   invalid: boolean;
+  disabled: boolean;
+  controlPropertiesFor: (id?: string) => ControlProperties | undefined;
+  registerControlProperties: (key: string, value: ControlProperties) => () => void;
   label: string;
   labelIDs: string[];
   labelFor: (id?: string) => string;
@@ -35,15 +40,34 @@ export const useNativeField = () => useContext(Field);
 export function NativeFieldProvider({
   id,
   invalid,
+  disabled = false,
   children,
 }: {
   id: string;
   invalid: boolean;
+  disabled?: boolean;
   children?: ReactNode;
 }) {
   const [parts, setParts] = useState<Record<string, RecordPart>>({}),
     control = useRef<NativeFieldControl | null>(null),
     controls = useRef(new Map<string, NativeFieldControl>());
+  const [controlProperties, setControlProperties] = useState<Record<string, ControlProperties>>({});
+  const registerControlProperties = useCallback((key: string, value: ControlProperties) => {
+    setControlProperties((previous) =>
+      previous[key]?.nativeID === value.nativeID &&
+      previous[key]?.slot === value.slot &&
+      previous[key]?.disabled === value.disabled
+        ? previous
+        : { ...previous, [key]: value },
+    );
+    return () =>
+      setControlProperties((previous) => {
+        if (!Object.hasOwn(previous, key)) return previous;
+        const next = { ...previous };
+        delete next[key];
+        return next;
+      });
+  }, []);
   const register = useCallback((key: string, part: RecordPart) => {
     if (!part.text) return () => {};
     setParts((previous) =>
@@ -72,6 +96,16 @@ export function NativeFieldProvider({
     return {
       id,
       invalid,
+      disabled,
+      registerControlProperties,
+      controlPropertiesFor: (target?: string) => {
+        const entries = Object.values(controlProperties);
+        return target
+          ? entries.find((entry) => entry.nativeID === target)
+          : entries.length === 1
+            ? entries[0]
+            : undefined;
+      },
       control,
       register,
       controls,
@@ -95,7 +129,7 @@ export function NativeFieldProvider({
       description: text('description'),
       error: text('error'),
     };
-  }, [id, invalid, parts, register]);
+  }, [id, invalid, disabled, parts, register, controlProperties, registerControlProperties]);
   return <Field.Provider value={value}>{children}</Field.Provider>;
 }
 NativeFieldProvider.nativeRegistryTransparent = true;
@@ -117,13 +151,35 @@ export function useNativeFieldPart(
   );
   return { field, nativeID };
 }
+/** Declarative state stays reactive; native ref registration remains imperative. */
+export function useNativeFieldControlProperties(
+  slot: NativeControlSlot,
+  disabled: boolean,
+  nativeID?: string,
+) {
+  const field = useNativeField(),
+    key = useId(),
+    register = field?.registerControlProperties;
+  useLayoutEffect(
+    () => register?.(key, { nativeID, slot, disabled }),
+    [register, key, nativeID, slot, disabled],
+  );
+}
 export function useNativeFieldInput(props: InputProps): InputProps {
+  useNativeFieldControlProperties(
+    'input',
+    !!(props.accessibilityState?.disabled ?? (props.editable === false && !props.readOnly)),
+    props.nativeID,
+  );
   const field = useNativeField(),
     control = field?.control,
     controls = field?.controls;
-  const editable = useRef(props.editable),
+  const disabled = useRef(
+      props.accessibilityState?.disabled ?? (props.editable === false && !props.readOnly),
+    ),
     association = useRef<NativeFieldControl | null>(null);
-  editable.current = props.editable;
+  disabled.current =
+    props.accessibilityState?.disabled ?? (props.editable === false && !props.readOnly);
   const assign = useCallback(
     (node: TextInput | null) => {
       const previous = association.current;
@@ -136,7 +192,7 @@ export function useNativeFieldInput(props: InputProps): InputProps {
       }
       const entry = {
         focus: () => {
-          if (editable.current !== false) node.focus();
+          if (!disabled.current) node.focus();
         },
       };
       association.current = entry;
@@ -179,7 +235,9 @@ export function useNativeFieldActivation(
   disabled = false,
   checked = false,
   nativeID?: string,
+  slot: NativeControlSlot = 'control',
 ) {
+  useNativeFieldControlProperties(slot, disabled, nativeID);
   const field = useNativeField(),
     choice = useContext(NativeChoiceLabelContext),
     latest = useRef({ activate, disabled });

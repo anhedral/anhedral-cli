@@ -17,9 +17,10 @@ import {
   seedNativeQADocument,
   nativeQADocumentName,
   nativeQADocumentContent,
+  nativeQAStoryCountSource,
 } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeAndroidTestCount = 15;
+export const nativeAndroidTestCount = 16;
 const start = '// BEGIN ANHEDRAL NATIVE REGISTRY QA',
   end = '// END ANHEDRAL NATIVE REGISTRY QA';
 export function nativeAndroidTestGradle(source) {
@@ -93,10 +94,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   mkdirSync(evidence, { recursive: true });
   copyFileSync(path.join(qa, 'QA-SOURCE.json'), path.join(evidence, 'source-manifest.json'));
   copyFileSync(fileURLToPath(import.meta.url), path.join(evidence, 'runner-source.mjs'));
-  copyFileSync(
-    path.join(root, 'tests/native-ui/device/RegistryAndroidTests.kt'),
-    path.join(evidence, 'test-source.kt'),
+  const testSource = nativeQAStoryCountSource(
+    readFileSync(path.join(root, 'tests/native-ui/device/RegistryAndroidTests.kt'), 'utf8'),
+    JSON.parse(readFileSync(path.join(qa, '.generated/NATIVE_RECIPES.json'))),
   );
+  writeFileSync(path.join(evidence, 'test-source.kt'), testSource);
   const state = {
     schemaVersion: 1,
     device,
@@ -144,10 +146,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     writeFileSync(gradle, nativeAndroidTestGradle(readFileSync(gradle, 'utf8')));
     const testDirectory = path.join(qa, 'android/app/src/androidTest/java/dev/anhedral/registryqa');
     mkdirSync(testDirectory, { recursive: true });
-    writeFileSync(
-      path.join(testDirectory, 'RegistryAndroidTests.kt'),
-      readFileSync(path.join(root, 'tests/native-ui/device/RegistryAndroidTests.kt')),
-    );
+    writeFileSync(path.join(testDirectory, 'RegistryAndroidTests.kt'), testSource);
     state.phase = 'build';
     save();
     capture(

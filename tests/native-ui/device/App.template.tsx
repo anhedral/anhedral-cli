@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, FlatList, ScrollView, Text, Keyboard, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
@@ -332,10 +332,16 @@ function NativeCardMatrix() {
     </View>
   );
 }
-class Boundary extends React.Component<{ children: React.ReactNode }, { error: string | null }> {
+class Boundary extends React.Component<
+  { children: React.ReactNode; onError?: (message: string) => void },
+  { error: string | null }
+> {
   state = { error: null };
   static getDerivedStateFromError(error: Error) {
     return { error: error.message };
+  }
+  componentDidCatch(error: Error) {
+    this.props.onError?.(error.message);
   }
   render() {
     return this.state.error ? (
@@ -344,6 +350,71 @@ class Boundary extends React.Component<{ children: React.ReactNode }, { error: s
       this.props.children
     );
   }
+}
+/** Each step waits for a real native layout and subsequent frames before unmounting. */
+function NativeRuntimeSweep() {
+  const authored = stories.filter((story) => 'authored' in story && story.authored);
+  const [index, setIndex] = useState(0),
+    [committed, setCommitted] = useState(-1),
+    [errors, setErrors] = useState<Record<string, string>>({});
+  const active = authored[index];
+  useEffect(() => {
+    if (!active || committed !== index) return;
+    let second: number | undefined, timer: ReturnType<typeof setTimeout> | undefined;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        timer = setTimeout(
+          () => setIndex((previous) => (previous === index ? previous + 1 : previous)),
+          200,
+        );
+      });
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      if (second !== undefined) cancelAnimationFrame(second);
+      if (timer !== undefined) clearTimeout(timer);
+    };
+  }, [index, committed, active]);
+  const complete = index === authored.length;
+  return (
+    <View style={{ gap: 12 }}>
+      <UI.Text>{'Runtime sweep planned: ' + authored.length}</UI.Text>
+      <UI.Text testID="native-runtime-sweep-status">
+        {complete
+          ? Object.keys(errors).length
+            ? 'Runtime sweep failed: ' + Object.keys(errors).length + ' of ' + authored.length
+            : 'Runtime sweep passed: ' + index + '/' + authored.length
+          : 'Runtime sweep progress: ' + index + '/' + authored.length}
+      </UI.Text>
+      <UI.Text>{active?.id ?? 'All authored stories visited'}</UI.Text>
+      {Object.entries(errors).map(([id, message]) => (
+        <UI.Text key={id} accessibilityRole="alert">
+          {id + ': ' + message}
+        </UI.Text>
+      ))}
+      {active && (
+        <View
+          key={active.id}
+          style={{ width: '100%', minHeight: 1 }}
+          onLayout={({ nativeEvent: { layout } }) => {
+            if (
+              Number.isFinite(layout.width) &&
+              layout.width > 0 &&
+              Number.isFinite(layout.height) &&
+              layout.height >= 0
+            )
+              setCommitted(index);
+          }}
+        >
+          <Boundary
+            onError={(message) => setErrors((previous) => ({ ...previous, [active.id]: message }))}
+          >
+            <active.Component />
+          </Boundary>
+        </View>
+      )}
+    </View>
+  );
 }
 function Gallery() {
   const [index, setIndex] = useState<number | null>(null),

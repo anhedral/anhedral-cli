@@ -18,6 +18,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class RegistryAndroidTests {
   @get:Rule val testName = TestName()
+  private val authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
   private val packageName = "dev.anhedral.registryqa"
   private fun AccessibilityNodeInfo.named(name: String): Boolean =
     textAsString()?.trim() == name || contentDescription?.toString()?.trim() == name
@@ -61,6 +62,15 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun everyAuthoredStoryCommitsOnTheNativeRenderer() = uiAutomator {
+    assertTrue("Missing private catalog story count", authoredStoryCount > 0)
+    openStory("native/runtime-sweep")
+    onElement { named("Runtime sweep planned: " + authoredStoryCount) }
+    val finished = onElement(timeoutMs = 600_000) {
+      textAsString()?.startsWith("Runtime sweep passed: ") == true || textAsString()?.startsWith("Runtime sweep failed: ") == true
+    }
+    assertEquals("Runtime sweep passed: " + authoredStoryCount + "/" + authoredStoryCount, finished.text?.trim())
+  }
   @After fun captureNativeEvidence() {
     val instrumentation = InstrumentationRegistry.getInstrumentation()
     val run = InstrumentationRegistry.getArguments().getString("evidenceRun") ?: "local"
@@ -91,8 +101,8 @@ class RegistryAndroidTests {
     val bounds = input.visibleBounds
     val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
     // The associated label is excluded from duplicate accessibility traversal. Touch its authored
-    // 20dp line above the input's 12dp gap, then prove focus before sending any text.
-    device.click(bounds.centerX(), bounds.top - (22 * density).toInt())
+    // 14dp source line above the input's 12dp gap, then prove focus before sending any text.
+    device.click(bounds.centerX(), bounds.top - (19 * density).toInt())
     onElement { named("Email") && className == "android.widget.EditText" && isFocused }
     type("native@example.com")
     onElement { named("Email") && textAsString() == "native@example.com" }

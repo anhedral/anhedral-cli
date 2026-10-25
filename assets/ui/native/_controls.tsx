@@ -69,6 +69,7 @@ export function Checkbox({
     !!disabled,
     value === true,
     props.nativeID,
+    'checkbox',
   );
   return (
     <Pressable
@@ -140,7 +141,7 @@ export function Switch({
   const [value, set] = useControllable(checked, defaultChecked, onCheckedChange);
   const { colors } = useTheme();
   const field = useNativeField();
-  useNativeFieldActivation(() => set(!value), !!props.disabled, value, props.nativeID);
+  useNativeFieldActivation(() => set(!value), !!props.disabled, value, props.nativeID, 'switch');
   return (
     <NativeSwitch
       accessible
@@ -359,6 +360,7 @@ export function RadioGroupItem({
     !!(disabled || group.disabled),
     group.value === value,
     props.nativeID,
+    'radio-group-item',
   );
   return (
     <Button
@@ -612,16 +614,21 @@ export const AccordionTrigger = CollapsibleTrigger;
 export const AccordionContent = CollapsibleContent;
 export function Field({
   invalid = false,
+  disabled = false,
   orientation = 'vertical',
   style,
   ...props
-}: ViewProps & { invalid?: boolean; orientation?: 'horizontal' | 'vertical' | 'responsive' }) {
+}: ViewProps & {
+  invalid?: boolean;
+  disabled?: boolean;
+  orientation?: 'horizontal' | 'vertical' | 'responsive';
+}) {
   const { width: windowWidth } = useWindowDimensions();
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const width = containerWidth ?? windowWidth;
   const id = useId();
   return (
-    <NativeFieldProvider invalid={invalid} id={id}>
+    <NativeFieldProvider invalid={invalid} disabled={disabled} id={id}>
       <Box
         {...props}
         onLayout={(event) => {
@@ -643,7 +650,7 @@ export function Field({
   );
 }
 export const FieldGroup = Box;
-export function FieldSet(props: ViewProps & { invalid?: boolean }) {
+export function FieldSet(props: ViewProps & { invalid?: boolean; disabled?: boolean }) {
   return <Field {...props} />;
 }
 export const FieldContent = Box;

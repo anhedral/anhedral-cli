@@ -6,10 +6,11 @@ import {
   prepareNativeQAApp,
   nativeQASourceManifest,
   seedNativeQADocument,
+  nativeQAStoryCountSource,
 } from './native-ui-device.mjs';
 export { nativeQAApp, nativeQAExport } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeIOSTestCount = 15;
+export const nativeIOSTestCount = 16;
 export function nativeIOSTestSelection(source, requested) {
   const available = [...source.matchAll(/^\s*func (test[A-Za-z0-9]+)\(/gm)].map(
     (match) => match[1],
@@ -61,9 +62,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     throw Error(
       'Pass --device <dedicated simulator UUID>. Expo 57 requires a supported runtime; iOS 27 scene lifecycle remains unresolved.',
     );
-  const source = readFileSync(
-    path.join(root, 'tests/native-ui/device/RegistryUITests.swift'),
-    'utf8',
+  const source = nativeQAStoryCountSource(
+    readFileSync(path.join(root, 'tests/native-ui/device/RegistryUITests.swift'), 'utf8'),
+    JSON.parse(readFileSync(path.join(qa, '.generated/NATIVE_RECIPES.json'))),
   );
   const selectionIndex = process.argv.indexOf('--tests');
   if (selectionIndex >= 0 && process.argv[selectionIndex + 1] === undefined)

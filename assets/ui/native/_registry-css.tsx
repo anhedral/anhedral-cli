@@ -656,8 +656,10 @@ export function registryStyle(
                 ? '500'
                 : '400';
     else if (token.startsWith('leading-')) applyLeading(token.slice(8), 2 + important);
-    else if (token === 'tracking-normal') text.letterSpacing = 0;
-    else if (token === 'tracking-tight') paint.letterSpacingEm = -0.025;
+    else if (token === 'tracking-normal') {
+      text.letterSpacing = 0;
+      paint.letterSpacingEm = 0;
+    } else if (token === 'tracking-tight') paint.letterSpacingEm = -0.025;
     else if (token === 'tracking-wide') paint.letterSpacingEm = 0.025;
     else if (token === 'tracking-wider') paint.letterSpacingEm = 0.05;
     else if (token === 'tracking-widest') paint.letterSpacingEm = 0.1;

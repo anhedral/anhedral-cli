@@ -3156,16 +3156,27 @@
       }
     },
     "registry:example/input-with-label": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Each frozen source retains its own label/control layout and source styles. Native associations focus/activate only the owned control, preserve state/cancellation and supply its accessible name. File inputs use the real native system picker with explicit metadata rather than browser FileList. Source/style/native tests cover the composed parts; device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/label.tsx",
+        "assets/ui/native/_label-presets.tsx",
+        "assets/ui/native/_preset-label-style.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_controls.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/file-input.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-label-presets.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-label-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx"
       ],
       "reviewedInputs": {
         "default": "edcb76f94219b5ab4b91bde9ba05bdf4f9787e573c0c447f8d874ae0fab861fb",
@@ -3730,16 +3741,27 @@
       }
     },
     "registry:example/textarea-with-label": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "Each frozen source retains its own label/control layout and source styles. Native associations focus/activate only the owned control, preserve state/cancellation and supply its accessible name. File inputs use the real native system picker with explicit metadata rather than browser FileList. Source/style/native tests cover the composed parts; device/screen-reader acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/label.tsx",
+        "assets/ui/native/_label-presets.tsx",
+        "assets/ui/native/_preset-label-style.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_controls.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/file-input.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-label-presets.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
         "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-label-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx"
       ],
       "reviewedInputs": {
         "default": "72b857dde18bb8cf658f91f70e736c9d5e5fe6adc853aa2e8803cd3621fb0692",
@@ -6995,28 +7017,27 @@
       }
     },
     "registry:example/input-file": {
-      "status": "partial",
-      "reason": "The authored layouts, native text/file/date/time controls, field associations, source typography and user value handling are retained and tested. Dependent Label/Field/Select/NativeSelect preset review remains pending; initial rendering and a functional picker do not complete their source presentation.",
+      "status": "ported",
+      "reason": "Each frozen source retains its own label/control layout and source styles. Native associations focus/activate only the owned control, preserve state/cancellation and supply its accessible name. File inputs use the real native system picker with explicit metadata rather than browser FileList. Source/style/native tests cover the composed parts; device/screen-reader acceptance remains separate.",
       "nativeFiles": [
-        "assets/ui/native/input.tsx",
-        "assets/ui/native/_input-appearance.tsx",
-        "assets/ui/native/_input-presets.tsx",
-        "assets/ui/native/_textarea-presets.tsx",
-        "assets/ui/native/_preset-input-style.tsx",
-        "assets/ui/native/registry-form-controls.tsx",
-        "assets/ui/native/file-input.tsx",
-        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/_input-border.tsx"
+        "assets/ui/native/label.tsx",
+        "assets/ui/native/_label-presets.tsx",
+        "assets/ui/native/_preset-label-style.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_controls.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_registry-css.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/file-input.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-input-presets.test.tsx",
-        "tests/native-ui/registry-input-examples.test.tsx",
-        "tests/native-ui/registry-file-input.test.tsx",
-        "tests/native-ui/registry-temporal-input.test.tsx",
-        "tests/test-native-input-presets.test.mjs",
-        "tests/native-ui/device/RegistryUITests.swift",
-        "tests/native-ui/device/RegistryAndroidTests.kt"
+        "tests/native-ui/registry-label-presets.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-label-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx"
       ],
       "reviewedInputs": {
         "default": "7c2be85b8d7f84d8f35f47dc73da2c78c132641989be5967f1d3fa003ea7cdd8",
@@ -7116,6 +7137,54 @@
         "radix-sera": "445686385e8c3c8b702073091ceb0652bff74c24c14b730b4cf3d2dfb58e00cd",
         "radix-vega": "19f048b94cbafa5bebf332444ef81089bc115e5fa155b021e3c3332493714c72"
       }
+    },
+    "registry:ui/label": {
+      "status": "ported",
+      "reason": "Six source implementations and sixteen theme slots retain source type, line height, peer/group disabled opacity and Sera choice-control typography. Native field metadata/controlID replace DOM lookup, sibling selectors and vendor LabelContext. Reactive state, caller overrides, native refs, cancellation, read-only focus, independent targets and cleanup are tested. OS pointer cursor policy and DOM host props are native boundaries; device/screen-reader acceptance is separate.",
+      "nativeFiles": [
+        "assets/ui/native/label.tsx",
+        "assets/ui/native/_label-presets.tsx",
+        "assets/ui/native/_preset-label-style.tsx",
+        "assets/ui/native/_field-context.tsx",
+        "assets/ui/native/_controls.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/_registry-css.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-label-presets.test.tsx",
+        "tests/native-ui/registry-field-accessibility.test.tsx",
+        "tests/native-ui/registry-upstream-controls.test.tsx",
+        "tests/test-native-label-presets.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "ad05573be3ed3d488f950c5ddc5af94829266af912f764808e3deb8d65172859",
+        "aria-lyra": "9ab31a5e1ea7a120d6b5b0d9541c12761be75d822aed3fc7ffacb3ec1c4c7e95",
+        "aria-maia": "969949e9bd3821ce6db33d0ac9a8c338003694d26dfc65d6cbea2d35dd4aa770",
+        "aria-mira": "143ce51c6bcab901754bda768695ef33c5e25754ff56d6c7e44f3af6929c6bbb",
+        "aria-nova": "cf000c8540bce738e174d9cb0731219fdb75bfb3208045e60626bd23efc24e47",
+        "aria-rhea": "e2462b59675ef5c9e29223ba75a2916e0f4612942b19327d97090eca7325b5f1",
+        "aria-sera": "fabff0e75b1e12eab71972883a33b1e55843e6252722a959456e5e8660ad1cfa",
+        "aria-vega": "ba02717235d3a3f9ca5291ab705584862aa349383dda6920b73768c4c3428386",
+        "base-luma": "58c6935cde49c7179d23192c128e5db0ebe188c6d9f67997b03225b585592466",
+        "base-lyra": "e16cd5c356aeeb027645e28add3ce6c274e0598bc09dfb9a1563fb35597396f2",
+        "base-maia": "3ef39d9803bca61db60b0090627287cecc95c657de41b89b72e5c80a4db6b9ce",
+        "base-mira": "9e46340eb78d23aaab48d7611371d988910986c3ed54a97641ec11cd0cc04a33",
+        "base-nova": "77b407a7de11276434dc0fb00f5111dceb576185e01b26aa85caf0e3a19bd473",
+        "base-rhea": "25a66bead3bd2f141db8b5a6e9290b2a86ab6e5204702a181fb60072d42737c3",
+        "base-sera": "4779970be4eaacd0e080f0b783f43e5041eb779a307823050f88d2f7a348f320",
+        "base-vega": "29b4a9a64b751f01f4fd8064f7831ab716d01ab8b849345a8cda10876462cabc",
+        "default": "174e593910d3f7bd4473cba0be63f49ba0080083f189185e255180dc50061630",
+        "new-york": "6cb72cfe08916acfd25f19fd0ed4fbef685e00ddc60ec2b7b893d32155fa00c0",
+        "new-york-v4": "88324fe865680d8fdb9e2f021b839893f0d3e0756e6b885fde4e68cf6e5993a7",
+        "radix-luma": "dc92ea785a9003f29b2cb83389076bd55a1425d9f90f8c4c0c7fea874f925d9e",
+        "radix-lyra": "4f67acec06bdf1d0331cb201c0f9e145678545f531818ef19436e61d248c1aff",
+        "radix-maia": "74215f06bc314084e3e8f015f83a69f5c869bde9dafc812c2e0e19040d672188",
+        "radix-mira": "c5c91eda0999c20923835744ddaa17658b5a5d0a9c86ce7442e1650d1fd91d00",
+        "radix-nova": "4bdd8480aa353a25a1fa71e30a315bea0fca12b9baa6e4cebf064ee6d7c5e652",
+        "radix-rhea": "19bc660ed0cfd7a4c130c74b9051fc20c4c1dc4d90f4ab9f8088154a282e9f4e",
+        "radix-sera": "f59059041c6707dd28a38e0ed3a06f54d5ac628b5c0bb38c6c332af53f66d0d3",
+        "radix-vega": "fb9b9a201172f1d63e9fa21220890cdc6cc3d5e4c6bbd280f7a108db35ee9745"
+      }
     }
   },
   "webSpecific": [
@@ -7203,6 +7272,11 @@
       "feature": "HTML kbd/samp, CSS keyboard ancestry and shortcut hints",
       "adaptation": "Render read-only native View/Text groups with source Sans key typography and monospace sample output. Explicit native contexts model tooltip/input-group ancestry and reset at physical modal boundaries. Native font scaling grows compact source boxes; explicit text/icon styles win. Application shortcut binding is application-owned.",
       "status": "All eleven source families, light/dark modes and scoped ancestor combinations are covered by native tests. All authored keyboard examples compile. InputGroup/Tooltip preset parity and native device/screen-reader acceptance remain separate."
+    },
+    {
+      "feature": "HTML label lookup, CSS peer/group selectors and React Aria LabelContext",
+      "adaptation": "Use typed native View refs, native press events and scoped field/controlID ownership. Reactive native control metadata replaces order-dependent DOM peer selectors; Field disabled metadata models group state without implicitly disabling its input. Associated labels avoid duplicate accessibility names, preserve cancellation and can focus read-only inputs. Source typography and Sera choice-control exceptions are retained. Browser cursor/slot/for properties and vendor context are replaced by the native association API.",
+      "status": "All eleven style families, six source implementations, sixteen theme slots and all group/peer combinations have native tests. Native refs, live disabled state, checkbox/radio/switch activation, read-only focus, cancellation, independent targets and cleanup pass on both targets. Field/choice-control full source preset parity remains pending separately."
     }
   ]
 }

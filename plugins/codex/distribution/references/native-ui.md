@@ -28,15 +28,21 @@ commands serial because they regenerate the shared harness source directory.
 For Android, set `JAVA_HOME` and `ANDROID_HOME` for the pinned React Native
 runtime and start a dedicated emulator. Run `pnpm test:native-ui:android -- --device emulator-5558`.
 The runner builds a release app and AndroidX UI Automator instrumentation, then checks
-all fifteen required native cases. Skipped, aborted and incomplete runs fail. Source
+every required native case. Skipped, aborted and incomplete runs fail. Source
 hashes, retained APKs, native screenshots, hierarchy dumps and logs remain under
 `.artifacts/native-ui-android/`. Both platforms use one owned QA preparation path;
 unrelated directories and symlinked outputs are rejected. Keep harness preparation
 commands serial. Native OS runs remain explicit hardware checks alongside CI's native
 rendering, type and Hermes checks.
 
-Expo 57's scene lifecycle is incompatible with iOS 27/Xcode 27; use a compatible
-runtime for current acceptance and retain that SDK compatibility gap explicitly.
+Each full OS run also sweeps every authored root in the copied catalog. A story must
+produce a real native layout and subsequent native frames before the sweep advances.
+Caught render errors fail the sweep; the required total is injected from the private
+copied catalog, including named exports and excluding support-only modules. This
+checks native initial rendering; interaction and accessibility acceptance stay separate.
+
+The QA application's iOS 27 scene lifecycle acceptance remains unresolved. Current
+iOS OS evidence uses a compatible 26.5 runtime; retain that compatibility gap explicitly.
 
 ## Component preset styles
 
@@ -117,6 +123,15 @@ confirmation. Native props, refs, keyboard modes and value callbacks replace DOM
 input properties/events; browser date/time formatting, second/fractional step controls
 and HTML autofill behavior stay web-specific. These fields have no implicit server,
 file upload or application submission handler.
+
+Label retains all eleven style families and sixteen newer theme rules, including
+Sera's distinct input versus checkbox/radio/switch typography. Field disabled metadata
+and reactive control state replace DOM group/peer selectors. Use controlID for explicit
+native ownership; native association metadata replaces sibling ordering and vendor
+LabelContext. Label activation preserves cancellation, disabled targets, read-only focus
+and independent refs. Associated labels avoid duplicate accessible names. Explicit native
+text/layout styles win, and letter spacing follows the selected type size. HTML for/slot
+and browser cursor rules are replaced by the native field API and OS pointer policy.
 
 Kbd and KbdGroup retain all eleven source families and sixteen newer theme slots,
 including source Sans typography, compact geometry, scoped tooltip/input-group paint,

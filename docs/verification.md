@@ -1,3 +1,17 @@
+# Source labels and complete authored native rendering sweep — October 25, 2026
+
+Label retains all six source implementations and sixteen newer theme slots, including Sera's distinct input versus checkbox/radio/switch typography. Reactive native control metadata and Field disabled state replace DOM label lookup, peer/group selectors and vendor LabelContext. Native labels preserve cancellation, independent control IDs/refs, disabled targets, read-only focus, cleanup and explicit caller styles. Tracking resets now clear inherited em spacing. Keyboard groups and unbound labels preserve inherited native text tone.
+
+The OS harness now requires a native layout and subsequent frames for every authored story before advancing. Its required total is derived from the private copied catalog, rejects duplicate identities and excludes support-only modules. Both complete release-built OS runs passed every one of 16 required cases, including all 716 authored roots, label-to-input focus, source layout, controls, system document selection/cancel and date/time selection/cancel. This establishes native initial rendering for the maintained catalog; it does not replace per-item interaction, visual or screen-reader acceptance or establish completion of pending official registry work.
+
+- Native tests: 57 suites and 1,677 assertions passed per platform, with existing coverage thresholds unchanged. Typecheck passed; Hermes compiled all 720 authored modules for both platforms.
+- Android: `.artifacts/native-ui-android/2026-10-25T12-49-48-341Z/`; all 16 cases passed. APK SHA-256 `8563f07b4ddebc924c59dcb163b4036576005cfc3bee8beb3b62f274956c7920`; test APK `efdcd581e24d9a458aac5ddd5ac255ca7fa24b7a76b593271ea0882910694988`. The during-sweep screenshot was inspected and native final screenshots/hierarchies are retained.
+- iOS 26.5: `.artifacts/native-ui-ios/2026-10-25T12-50-36-268Z/`; all 16 cases passed on the requested dedicated simulator. The 716-root sweep passed in 215.859 seconds. iOS 27 scene lifecycle acceptance remains unresolved separately.
+- All 136 canonical native source files match both private device build copies; evidence: `.artifacts/native-ui/2026-10-25-label-presets/device-source-equivalence.json`.
+- CLI unit checks passed (658 passed, one existing optional install skip). Lint, static security, source/checklist contracts, packed-consumer smoke and packlist policy passed. Logs: `/private/tmp/anhedral-label-*`. The package remained within the unchanged size budget.
+
+The official registry checklist accounts for Label and the composed frozen input/textarea/file label examples. Field, choice-control, modern composite examples and other source presets remain independently pending.
+
 # Source keyboard hints and sample output — October 25, 2026
 
 Kbd/KbdGroup retain all six source implementations and sixteen newer theme slots: source Sans typography, compact heights, spacing, radius, light/dark paint, tooltip/input-group ancestry and explicit text/icon overrides. Native modal boundaries reset physical ancestor selectors. Source sample-output elements use native monospace text; inline code keeps its independent styling. Three modern authored Kbd examples were added, bringing the catalog to 455 component examples and 720 total authored modules. Shortcut registration remains application-owned. InputGroup/Tooltip full preset parity and keyboard device/screen-reader acceptance remain separate.
