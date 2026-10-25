@@ -62,6 +62,50 @@ class RegistryAndroidTests {
     }
     throw AssertionError("Missing visible native label: " + name)
   }
+  @Test fun inputGroupPresetsRetainGeometryEditingAndIndependentActions() = uiAutomator {
+    openStory("native/input-group-contract")
+    fun press(name:String) { label(name).apply { waitForStable(); click() } }
+    val presets=listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")
+    val heights=listOf(32,36,36,32,28,36,40,32,36,36,36)
+    for ((index,preset) in presets.withIndex()) {
+      label("Input group preset: " + preset)
+      label("Input group geometry: " + preset + ":320x" + heights[index])
+      press("Next input group preset")
+    }
+    label("Input group geometry: nova:320x32")
+    label("Group registration: inputs=1; refs=true; disabled=false")
+    press("Focus grouped input")
+    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    val evidenceRun = InstrumentationRegistry.getArguments().getString("evidenceRun") ?: "local"
+    val diagnosticDirectory=File(instrumentation.targetContext.getExternalFilesDir(null),"native-qa/"+evidenceRun)
+    require(evidenceRun.matches(Regex("[A-Za-z0-9_-]+")))
+    diagnosticDirectory.mkdirs()
+    device.dumpWindowHierarchy(File(diagnosticDirectory,"inputGroup-after-addon.xml"))
+    onElement { named("Native grouped input") && isFocused }.setText("Expo")
+    device.pressBack()
+    label("Grouped input value: Expo")
+    label("Group focus events: 1")
+    press("Send grouped input")
+    label("Grouped input actions: 1")
+    press("Toggle input group disabled")
+    label("Input group disabled: true")
+    label("Group registration: inputs=1; refs=true; disabled=true")
+    label("Send grouped input")
+    onElement { named("Send grouped input") && !isEnabled }
+    press("Toggle input group disabled")
+    label("Input group disabled: false")
+    press("Send grouped input")
+    label("Grouped input actions: 2")
+    assertEquals("Retained",label("Readonly grouped input").text)
+    press("Open grouped info")
+    label("Grouped connection info")
+    press("Close grouped info")
+    label("Grouped textarea height: 64")
+    label("Grouped growing textarea").setText("one\ntwo\nthree\nfour\nfive\nsix\nseven")
+    onElement(timeoutMs=15000) { textAsString()?.let { it.startsWith("Grouped textarea height: ") && (it.substringAfterLast(": ").toIntOrNull() ?: 0)>64 } == true }
+    label("Grouped growing textarea").setText("")
+    label("Grouped textarea height: 64")
+  }
   @Test fun sourceChartsRetainPresetGeometryAndSeriesInteractions() = uiAutomator {
     openStory("native/chart-contract")
     for (preset in listOf("nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4")) {

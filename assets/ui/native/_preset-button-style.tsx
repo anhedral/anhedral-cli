@@ -7,6 +7,7 @@ export function nativePresetButtonStyle(
   variant: 'default' | 'outline' | 'secondary' | 'ghost' | 'destructive' | 'link',
   size: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg',
   state: NativePresetState,
+  additionalClasses = '',
 ) {
   const frozen = name === 'default' || name === 'new-york' || name === 'new-york-v4';
   return nativePresetStyle(
@@ -19,5 +20,6 @@ export function nativePresetButtonStyle(
     nativeButtonPresetSource.globals.radius,
     { variant, size },
     state,
+    additionalClasses,
   );
 }

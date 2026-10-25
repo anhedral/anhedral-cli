@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { validateNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
-test('455 authored component examples retain native source and complete source/style/dependency provenance', () => {
+test('463 authored component examples retain native source and complete source/style/dependency provenance', () => {
   const catalog = loadNativeExampleRecipes();
   validateNativeChartRecipes(loadOfficialRegistry(), catalog);
-  assert.equal(catalog.recipes.length, 455);
+  assert.equal(catalog.recipes.length, 463);
   for (const recipe of catalog.recipes)
     assert.doesNotMatch(recipe.source, /<(?:div|span|button|input|form|svg)\b|onClick=/);
   const pagination = catalog.recipes.find((recipe) => recipe.name === 'pagination-demo');
@@ -143,4 +143,17 @@ test('authored description lists retain native term/definition hosts instead of 
   assert.match(source, /RegistryDescriptionTerm/);
   assert.match(source, /RegistryDescriptionDetails/);
   assert.doesNotMatch(source, /<(?:dl|dt|dd)\b/);
+});
+
+test('input-group examples retain native Tabler glyphs, actual clipboard hooks, raw autosizing and favorite state', () => {
+  const recipes = loadNativeExampleRecipes().recipes;
+  const button = recipes.find((r) => r.name === 'input-group-button');
+  assert.match(button.source, /@tabler\/icons-react-native/);
+  assert.match(button.source, /registry-copy-to-clipboard/);
+  assert.match(button.source, /data-active=\{isFavorite\}/);
+  assert.match(button.source, /data-\[active=true\]:fill-blue-600/);
+  const custom = recipes.find((r) => r.name === 'input-group-custom');
+  assert.match(custom.source, /RegistryAutosizeTextarea as NativeAutosizeTextarea/);
+  assert.match(custom.source, /nativeGroupControl=\{true\}/);
+  assert.match(custom.source, /field-sizing-content/);
 });

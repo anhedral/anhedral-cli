@@ -24,6 +24,7 @@ import {
   type TextStyle,
 } from 'react-native';
 import { useTheme } from '../theme';
+import { NativeInputGroupHostBoundary } from './_input-group-context';
 import { useNativeFontStyle, type NativeFontRole } from './fonts';
 
 /** Identity protocol used by native registry styling wrappers; no DOM inspection is involved. */
@@ -93,7 +94,7 @@ export function content(children: ReactNode): ReactNode {
 export function Box({ children, style, ...props }: ViewProps) {
   return (
     <View {...props} style={[{ gap: 8 }, style]}>
-      {content(children)}
+      <NativeInputGroupHostBoundary>{content(children)}</NativeInputGroupHostBoundary>
     </View>
   );
 }

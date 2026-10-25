@@ -10,6 +10,7 @@ import {
 } from 'react';
 import {
   View,
+  StyleSheet,
   Modal,
   KeyboardAvoidingView,
   Pressable,
@@ -36,6 +37,12 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 import { NativeKbdSurfaceContext } from './_kbd-context';
 import { NativeExampleChildWidth } from './_registry-context';
+import {
+  NativeInputGroupContext,
+  NativeInputGroupAddonContext,
+  NativeInputGroupKbdPaint,
+  NativeInputGroupSurface,
+} from './_input-group-context';
 
 type OverlayState = {
   open: boolean;
@@ -189,11 +196,15 @@ export function OverlayClose({ onPress, asChild, render, children, ...props }: B
 export function OverlayContent({
   children,
   side: explicitSide,
-  align = 'center',
+  align: explicitAlign,
   placement,
   dismissOnBackdrop = true,
   swipeToDismiss = false,
   nativeSurface,
+  sideOffset = 0,
+  alignOffset = 0,
+  offset,
+  crossOffset,
   style,
   ...props
 }: ViewProps & {
@@ -202,10 +213,17 @@ export function OverlayContent({
   placement?: string;
   dismissOnBackdrop?: boolean;
   swipeToDismiss?: boolean;
-  nativeSurface?: 'tooltip';
+  nativeSurface?: 'tooltip' | 'combobox';
+  /** Native viewport-relative surface displacement; browser trigger anchoring remains separate. */
+  sideOffset?: number;
+  alignOffset?: number;
+  offset?: number;
+  crossOffset?: number;
 }) {
   const state = useOverlay();
-  const placed = (placement ?? state.placement)?.split(' ')[0];
+  const [placed, placedAlign] = (placement ?? state.placement ?? '').split(' ');
+  const align =
+    explicitAlign ?? (placedAlign === 'start' || placedAlign === 'end' ? placedAlign : 'center');
   const direction = useDirection();
   const resolvedSide =
     explicitSide === 'inline-start'
@@ -240,6 +258,21 @@ export function OverlayContent({
     },
   });
   const horizontal = side === 'left' || side === 'right';
+  const mainOffset = offset ?? sideOffset,
+    cross = crossOffset ?? alignOffset;
+  if (!Number.isFinite(mainOffset) || !Number.isFinite(cross))
+    throw Error('Native overlay offsets must be finite.');
+  const displacement =
+    mainOffset || cross
+      ? {
+          transform: horizontal
+            ? [{ translateX: side === 'right' ? -mainOffset : mainOffset }, { translateY: cross }]
+            : [
+                { translateX: direction === 'rtl' ? -cross : cross },
+                { translateY: side === 'bottom' ? -mainOffset : mainOffset },
+              ],
+        }
+      : undefined;
   return (
     <Modal
       testID={props.testID ? `${props.testID}-modal` : undefined}
@@ -250,90 +283,123 @@ export function OverlayContent({
       onDismiss={() => focus(state.returnFocus)}
       onRequestClose={() => state.set(false)}
     >
-      <NativeExampleChildWidth.Provider value={false}>
-        <NativeKbdSurfaceContext.Provider value={{ tooltip: nativeSurface === 'tooltip' }}>
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
-            <View
-              accessibilityElementsHidden={!state.open}
-              importantForAccessibility={state.open ? 'auto' : 'no-hide-descendants'}
-              style={{
-                flex: 1,
-                justifyContent:
-                  side === 'top' ? 'flex-start' : side === 'bottom' ? 'flex-end' : 'center',
-                alignItems:
-                  side === 'left' ? 'flex-start' : side === 'right' ? 'flex-end' : 'stretch',
-                padding: side === 'center' ? 24 : 0,
-              }}
+      <NativeInputGroupContext.Provider value={null}>
+        <NativeInputGroupAddonContext.Provider value={null}>
+          <NativeInputGroupKbdPaint.Provider value={{}}>
+            <NativeInputGroupSurface.Provider
+              value={
+                nativeSurface === 'combobox'
+                  ? {
+                      inCombobox: true,
+                      borderColor:
+                        typeof StyleSheet.flatten(style)?.borderColor === 'string'
+                          ? String(StyleSheet.flatten(style)?.borderColor)
+                          : colors['popover-foreground'],
+                    }
+                  : {}
+              }
             >
-              <Pressable
-                accessible={dismissOnBackdrop}
-                accessibilityRole="button"
-                accessibilityLabel="Dismiss overlay"
-                disabled={!dismissOnBackdrop}
-                onPress={() => state.set(false)}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  backgroundColor: colors.foreground,
-                  opacity: 0.35,
-                }}
-              />
-              <View
-                {...props}
-                accessibilityViewIsModal
-                onAccessibilityEscape={() => state.set(false)}
-                style={[
-                  {
-                    backgroundColor: colors.popover,
-                    padding: 20,
-                    paddingTop: 20 + insets.top,
-                    paddingBottom: 20 + insets.bottom,
-                    paddingLeft: 20 + insets.left,
-                    paddingRight: 20 + insets.right,
-                    gap: 12,
-                    borderRadius: side === 'center' ? 12 : 0,
-                    maxHeight: '90%',
-                    width: horizontal ? '85%' : undefined,
-                  },
-                  horizontal && { height: '100%', maxHeight: '100%' },
-                  {
-                    alignSelf:
-                      align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center',
-                  },
-                  style,
-                ]}
-              >
-                {swipeToDismiss && (
-                  <Pressable
-                    accessible
-                    accessibilityRole="button"
-                    accessibilityLabel="Close drawer"
-                    onPress={() => state.set(false)}
+              <NativeExampleChildWidth.Provider value={false}>
+                <NativeKbdSurfaceContext.Provider value={{ tooltip: nativeSurface === 'tooltip' }}>
+                  <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                   >
                     <View
-                      {...pan.panHandlers}
-                      style={{ minHeight: 28, justifyContent: 'center', alignItems: 'center' }}
+                      accessibilityElementsHidden={!state.open}
+                      importantForAccessibility={state.open ? 'auto' : 'no-hide-descendants'}
+                      style={{
+                        flex: 1,
+                        justifyContent:
+                          side === 'top' ? 'flex-start' : side === 'bottom' ? 'flex-end' : 'center',
+                        alignItems:
+                          side === 'left'
+                            ? 'flex-start'
+                            : side === 'right'
+                              ? 'flex-end'
+                              : 'stretch',
+                        padding: side === 'center' ? 24 : 0,
+                      }}
                     >
-                      <View
+                      <Pressable
+                        accessible={dismissOnBackdrop}
+                        accessibilityRole="button"
+                        accessibilityLabel="Dismiss overlay"
+                        disabled={!dismissOnBackdrop}
+                        onPress={() => state.set(false)}
                         style={{
-                          width: 40,
-                          height: 4,
-                          borderRadius: 2,
-                          backgroundColor: colors.border,
+                          position: 'absolute',
+                          inset: 0,
+                          backgroundColor: colors.foreground,
+                          opacity: 0.35,
                         }}
                       />
+                      <View
+                        {...props}
+                        accessibilityViewIsModal
+                        onAccessibilityEscape={() => state.set(false)}
+                        style={[
+                          {
+                            backgroundColor: colors.popover,
+                            padding: 20,
+                            paddingTop: 20 + insets.top,
+                            paddingBottom: 20 + insets.bottom,
+                            paddingLeft: 20 + insets.left,
+                            paddingRight: 20 + insets.right,
+                            gap: 12,
+                            borderRadius: side === 'center' ? 12 : 0,
+                            maxHeight: '90%',
+                            width: horizontal ? '85%' : undefined,
+                          },
+                          horizontal && { height: '100%', maxHeight: '100%' },
+                          {
+                            alignSelf:
+                              align === 'start'
+                                ? 'flex-start'
+                                : align === 'end'
+                                  ? 'flex-end'
+                                  : 'center',
+                          },
+                          displacement,
+                          style,
+                        ]}
+                      >
+                        {swipeToDismiss && (
+                          <Pressable
+                            accessible
+                            accessibilityRole="button"
+                            accessibilityLabel="Close drawer"
+                            onPress={() => state.set(false)}
+                          >
+                            <View
+                              {...pan.panHandlers}
+                              style={{
+                                minHeight: 28,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <View
+                                style={{
+                                  width: 40,
+                                  height: 4,
+                                  borderRadius: 2,
+                                  backgroundColor: colors.border,
+                                }}
+                              />
+                            </View>
+                          </Pressable>
+                        )}
+                        {content(children)}
+                      </View>
                     </View>
-                  </Pressable>
-                )}
-                {content(children)}
-              </View>
-            </View>
-          </KeyboardAvoidingView>
-        </NativeKbdSurfaceContext.Provider>
-      </NativeExampleChildWidth.Provider>
+                  </KeyboardAvoidingView>
+                </NativeKbdSurfaceContext.Provider>
+              </NativeExampleChildWidth.Provider>
+            </NativeInputGroupSurface.Provider>
+          </NativeInputGroupKbdPaint.Provider>
+        </NativeInputGroupAddonContext.Provider>
+      </NativeInputGroupContext.Provider>
     </Modal>
   );
 }
@@ -621,3 +687,7 @@ export const AlertDialogMedia = ({ style, ...props }: ViewProps) => {
     />
   );
 };
+
+Object.assign(OverlayRoot, { nativeLayoutTransparent: true });
+Object.assign(OverlayTrigger, { nativeLayoutSlot: true });
+Object.assign(LongPressTrigger, { nativeLayoutSlot: true });

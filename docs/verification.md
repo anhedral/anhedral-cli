@@ -1,3 +1,55 @@
+# Input Group source presets, composed actions and authored examples — October 25, 2026
+
+Input Group now retains all six source implementations, eleven style families,
+four addon alignments and four button sizes. Source rules drive native control,
+button, text and Kbd geometry, focus/invalid/disabled paint and font growth.
+Scoped metadata follows physical native hosts; it does not feed aggregate invalid
+or disabled state back into independent sibling controls. Explicitly composed
+addon triggers forward actions to their native inner buttons with child-first
+cancellation, accessibility metadata and long-press timing.
+
+Eight additional authored modules bring the catalog to 728 modules and 724 roots.
+The companion clipboard hook retains its upstream pin/hash with native OS clipboard
+writes, failure reporting, success timers and cleanup. Native Tabler 3.34.1 matches
+the pinned upstream web package. Custom autosizing textareas retain raw preflight
+geometry; adjacent raw text stays continuous. Source country menu callbacks,
+copy/favorite controls and nested popup/tooltip actions have direct regression tests.
+
+Browser DOM bubbling, textarea resize handles, clipboard fallback nodes, portal
+coordinates and exact CSS animation timing remain explicit platform boundaries.
+Read-only controls stay enabled and forward focus requests to the native TextInput;
+browser keyboard-focus parity is not claimed. Overlay-dependent examples remain
+partial until their owning presets/API are complete. Input Group and six independent
+examples close seven checklist groups: 188 accounted for, 431 unfinished.
+
+Validation:
+
+- All 61 native suites and 1,782 tests passed on each target after the final
+  accessibility/userSelect changes. All 728 modules bundle for both Hermes targets;
+  generated native typecheck, source generators, lint, static security, CLI contract
+  checks and packed consumer checks passed. The earlier complete CLI run passed
+  673 tests with one existing optional skip; final source/checklist changes received
+  focused regression and packaging checks. Packlist: 249 files, 1,065,594 packed bytes.
+- Full Android and iOS 26.5 runs each passed all 19 cases, including all 724 authored
+  roots. Evidence: Android `.artifacts/native-ui-android/2026-10-25T16-25-35-074Z/`
+  and iOS `.artifacts/native-ui-ios/2026-10-25T16-33-15-790Z/`.
+- The final metadata/userSelect refinement passed the focused regression on both
+  targets: Android `.artifacts/native-ui-android/2026-10-25T16-45-51-983Z/` and
+  iOS `.artifacts/native-ui-ios/2026-10-25T16-50-44-753Z/`.
+  APK 38787feda692b810389f469d403a437b0157fc96f6525adc7b120d3f6db2eb69;
+  test APK a089b5c872197c9fc87a6a886cd457d1d2ff403e2fbcacfa7efbccf9d023be33.
+  Source equivalence for all 143 native files is retained under
+  `.artifacts/native-ui/2026-10-25-input-group/`. Focused results are not described
+  as full same-binary suite acceptance. Android screenshots were inspected.
+- Earlier failed runs are retained: Android readiness/reveal races and an iOS
+  keyboard-covered dismiss target. The driver now waits for actual registration,
+  stable physical bounds and disabled state; iOS uses the input Return action.
+  Actual composed-button popup failure was independently reproduced before the
+  implementation fix. No coverage gate or assertion was weakened.
+
+Expanded screen-reader/physical-device acceptance and the QA app's iOS 27 scene
+lifecycle adoption remain separate. These checks do not close the remaining registry.
+
 # Source chart styles, native rendering and input provenance — October 25, 2026
 
 ChartContainer/Tooltip/Legend retain all six source implementations and eleven style

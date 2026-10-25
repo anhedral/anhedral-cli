@@ -194,6 +194,32 @@ export const RegistryInput = Object.assign(
   { nativeInputSlot: true },
 );
 export const RegistryTextarea = inputBinding(Textarea, true);
+/** Raw browser autosize controls use preflight geometry, independently of the styled Textarea recipe. */
+const RawAutosizeTextarea = Object.assign(
+  function RawAutosizeTextarea({ style, ...props }: InputProps) {
+    return (
+      <Input
+        {...props}
+        nativePreset={false}
+        nativeFieldKind="textarea"
+        multiline
+        nativeContentSizing
+        style={[
+          {
+            minHeight: 0,
+            borderWidth: 0,
+            borderRadius: 0,
+            backgroundColor: 'transparent',
+            padding: 0,
+          },
+          style,
+        ]}
+      />
+    );
+  },
+  { nativeInputSlot: true },
+);
+export const RegistryAutosizeTextarea = inputBinding(RawAutosizeTextarea, true);
 export const RegistryInputGroupInput = inputBinding(InputGroupInput);
 export const RegistryInputGroupTextarea = inputBinding(InputGroupTextarea, true);
 

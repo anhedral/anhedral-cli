@@ -20,6 +20,7 @@
     "@react-native-community/datetimepicker": "9.1.0",
     "@react-native/babel-preset": "0.86.0",
     "@react-native/jest-preset": "0.86.0",
+    "@tabler/icons-react-native": "3.34.1",
     "@tanstack/react-form": "1.20.0",
     "@testing-library/react-native": "14.1.0",
     "@types/d3-scale": "4.0.9",

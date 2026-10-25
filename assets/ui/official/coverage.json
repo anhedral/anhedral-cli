@@ -3038,32 +3038,46 @@
       }
     },
     "registry:example/input-group-icon": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 source retains its text, icons, composition and actions using the reviewed Input Group implementation and completed dependencies. Raw text stays continuous and native text input/content sizing replace HTML input and textarea behavior. Browser pointer-event selectors and resize handles use the explicit native component boundary; device and screen-reader acceptance are separately recorded.",
       "nativeFiles": [
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/_input-group-context.tsx",
+        "assets/ui/native/_input-group-presets.tsx",
+        "assets/ui/native/_preset-input-group-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/button.tsx",
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-input-group-presets.test.tsx",
+        "tests/native-ui/registry-input-group.test.tsx",
+        "tests/test-native-input-group-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
       ],
       "reviewedInputs": {
         "new-york-v4": "d92fcab0f6ee1a5b596f4b3e1b5b358b5b928b8d4dd1fe7611934b1a3c7ce453"
       }
     },
     "registry:example/input-group-text": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 source retains its text, icons, composition and actions using the reviewed Input Group implementation and completed dependencies. Raw text stays continuous and native text input/content sizing replace HTML input and textarea behavior. Browser pointer-event selectors and resize handles use the explicit native component boundary; device and screen-reader acceptance are separately recorded.",
       "nativeFiles": [
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/_input-group-context.tsx",
+        "assets/ui/native/_input-group-presets.tsx",
+        "assets/ui/native/_preset-input-group-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/button.tsx",
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-input-group-presets.test.tsx",
+        "tests/native-ui/registry-input-group.test.tsx",
+        "tests/test-native-input-group-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
       ],
       "reviewedInputs": {
         "new-york-v4": "d98da1622807cb43415b8cd4f54c543e5e41e5dffcd9e0a2c72b94f839ca1c8c"
@@ -5472,16 +5486,23 @@
       }
     },
     "registry:example/input-group-spinner": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 source retains its text, icons, composition and actions using the reviewed Input Group implementation and completed dependencies. Raw text stays continuous and native text input/content sizing replace HTML input and textarea behavior. Browser pointer-event selectors and resize handles use the explicit native component boundary; device and screen-reader acceptance are separately recorded.",
       "nativeFiles": [
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/_input-group-context.tsx",
+        "assets/ui/native/_input-group-presets.tsx",
+        "assets/ui/native/_preset-input-group-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/button.tsx",
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-input-group-presets.test.tsx",
+        "tests/native-ui/registry-input-group.test.tsx",
+        "tests/test-native-input-group-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
       ],
       "reviewedInputs": {
         "new-york-v4": "b3f760192adbd93890a2a627e8fa79698ba8f38679c1779deef1adeadc991138"
@@ -5536,16 +5557,23 @@
       }
     },
     "registry:example/kbd-input-group": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 source retains its text, icons, composition and actions using the reviewed Input Group implementation and completed dependencies. Raw text stays continuous and native text input/content sizing replace HTML input and textarea behavior. Browser pointer-event selectors and resize handles use the explicit native component boundary; device and screen-reader acceptance are separately recorded.",
       "nativeFiles": [
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/_input-group-context.tsx",
+        "assets/ui/native/_input-group-presets.tsx",
+        "assets/ui/native/_preset-input-group-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/button.tsx",
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-input-group-presets.test.tsx",
+        "tests/native-ui/registry-input-group.test.tsx",
+        "tests/test-native-input-group-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
       ],
       "reviewedInputs": {
         "new-york-v4": "71defd4fda74397f16fc39ab0c17c3b5b51150f2ee85817f8035a894b8e5085d"
@@ -5771,16 +5799,23 @@
       }
     },
     "registry:example/spinner-input-group": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "The authored New York v4 source retains its text, icons, composition and actions using the reviewed Input Group implementation and completed dependencies. Raw text stays continuous and native text input/content sizing replace HTML input and textarea behavior. Browser pointer-event selectors and resize handles use the explicit native component boundary; device and screen-reader acceptance are separately recorded.",
       "nativeFiles": [
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/_input-group-context.tsx",
+        "assets/ui/native/_input-group-presets.tsx",
+        "assets/ui/native/_preset-input-group-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/button.tsx",
         "assets/ui/native-example-recipes.json.gz",
         "assets/ui/native/registry-styles.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-input-group-presets.test.tsx",
+        "tests/native-ui/registry-input-group.test.tsx",
+        "tests/test-native-input-group-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
       ],
       "reviewedInputs": {
         "new-york-v4": "a773091a3f49e23e8e286f65926267045c371c01b346ec0b7cecb85a62e700f9"
@@ -7140,7 +7175,7 @@
     },
     "registry:ui/label": {
       "status": "ported",
-      "reason": "Six source implementations and sixteen theme slots retain source type, line height, peer/group disabled opacity and Sera choice-control typography. Native field metadata/controlID replace DOM lookup, sibling selectors and vendor LabelContext. Reactive state, caller overrides, native refs, cancellation, read-only focus, independent targets and cleanup are tested. OS pointer cursor policy and DOM host props are native boundaries; device/screen-reader acceptance is separate.",
+      "reason": "Six source implementations and sixteen theme slots retain source type, line height, peer/group disabled opacity and Sera choice-control typography. Native field metadata/controlID replace DOM lookup, sibling selectors and vendor LabelContext. Reactive state, caller overrides, native refs, cancellation, read-only focus requests, independent targets and cleanup are tested. OS pointer cursor policy and DOM host props are native boundaries; device/screen-reader acceptance is separate.",
       "nativeFiles": [
         "assets/ui/native/label.tsx",
         "assets/ui/native/_label-presets.tsx",
@@ -9689,6 +9724,75 @@
         "new-york": "550689051cb7d9d6f41311b65c31510629697106396b350e0421ef7ff8de3e1a",
         "new-york-v4": "8292a119464d36b2451f644d6d72a112bbb94f75fab660f732086426cb68072e"
       }
+    },
+    "registry:ui/input-group": {
+      "status": "ported",
+      "reason": "All six source implementations and eleven style families retain four addon alignments, four button sizes, source typography, source heights, focus/invalid/disabled ancestry, direct-button/Kbd selectors, caller overrides, refs and native content sizing. Physical host boundaries replace CSS ancestry. Native explicit child-first activation preserves cancellation and accessibility actions. Read-only controls remain enabled with OS-owned focus requests; browser event bubbling, textarea resize handles and exact CSS transitions are platform boundaries. Native renderer and OS tests cover compound geometry and independent actions; screen-reader acceptance remains separate.",
+      "nativeFiles": [
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/_input-group-context.tsx",
+        "assets/ui/native/_input-group-presets.tsx",
+        "assets/ui/native/_preset-input-group-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/button.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-input-group-presets.test.tsx",
+        "tests/native-ui/registry-input-group.test.tsx",
+        "tests/test-native-input-group-presets.test.mjs"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "218039dd869f0e42cb62f9e79edd213eb09c83e08c3b38d9fe5d273b822d156e",
+        "aria-lyra": "b849fb4a73e9e8f6fe4aed20375beba1ee9cae554d3f60021c0f31c3fb628914",
+        "aria-maia": "e15cf2eed53750eba64211ce213876f2190ad783e912c50b4a19930d5c9f763a",
+        "aria-mira": "087e62680c6f014b6d683dfc9067b6b6d29dab76c580e592b25dfaacc2b9f8c2",
+        "aria-nova": "250d44537a03d22ea73f80c21280f38aeaa87d6950ef525944f758b41a53abf3",
+        "aria-rhea": "d751c4d97efe9f445d6d5b9a7a8a0eeb5f28f85f538e2cf96d6a5dde9228aed9",
+        "aria-sera": "11c4742cd7f4ad231ab5484ee3284b0359ba602d1ecb53fae2b0e88c35ea843a",
+        "aria-vega": "78e9c76c142db08fc63c0bb6362cefd294dc714ca93e7faed2974a25f234555a",
+        "base-luma": "ad3c5782285192375351c7c3a9ecdb7e3855db9a7b614512904a5b9fa06dba4a",
+        "base-lyra": "9228362b11337329ed4ed4f2fe28772f0c0389e21ce94f37263c2c6506258a69",
+        "base-maia": "353a02a3ff433cd507f1a327ed3c511441b084b8ec554284742d501b43779f9b",
+        "base-mira": "6f7d9f83f3b7d2436a24a89e06f13c3050f625a4634133a8e7cbaeb07df469e2",
+        "base-nova": "ca785adef1e1bfa2a4124f6d252066bb3ada259ddae3e55514355eccbb3c4cf5",
+        "base-rhea": "121f1d6bcde3ee1a8812996c5ed31a1db613bcedca14930557f6f51d3940b803",
+        "base-sera": "b9f7e92afcca8a90ac688d8e6625e471ff333ff4efa3ab4f5252caf7069c65c8",
+        "base-vega": "c1ed33830587086934edc228a96ac36892d1e1ef33f7db833f24cbd2e00760a7",
+        "default": "ea8d78ffbe6f0a4bfae0ef490139d88653fb801cba932229d0cea5c66783494d",
+        "new-york": "348a7dd1fe448f499b9a83cfe2449af3d213369164067d4beb1e377e2611873d",
+        "new-york-v4": "431a1df82945d375fae4e92e6fae9554c4149c5c29ec0673401f9d5aebad776c",
+        "radix-luma": "d44d3d52c38b7995b5e3ddd9504bbe139689d54317d957d115dd900254dd3523",
+        "radix-lyra": "36f7f751c426f7b56f955dadd7996ee0a1bfd91d898f82f7a1d4bc4b82962e5f",
+        "radix-maia": "df10aed4c0d9b31956964bd7b73c2f0735aab838585ebf90ad0aa64bd7e5ac2c",
+        "radix-mira": "900b5ec787aa41ec4f8de306cec80eb2b84fa0a35b4ceed7ea29785a56e61544",
+        "radix-nova": "cd87e000fc44a7a863c07843139fdeb6f01cd6bcf77e4c9a2634c13a32c4d32a",
+        "radix-rhea": "d1f608a283f64b26d17374b89c62a9a6ec0092c861781827681d83b90e7d4ca8",
+        "radix-sera": "db947a8dfc94227cc046ab1d3845c37e2ba89151b70343cfccfdaa7e46838327",
+        "radix-vega": "f152034016263df866d6625c3e2d26bace1195f0796a41a1b105e249fd96a81c"
+      }
+    },
+    "registry:example/input-group-textarea": {
+      "status": "ported",
+      "reason": "The authored New York v4 source retains its text, icons, composition and actions using the reviewed Input Group implementation and completed dependencies. Raw text stays continuous and native text input/content sizing replace HTML input and textarea behavior. Browser pointer-event selectors and resize handles use the explicit native component boundary; device and screen-reader acceptance are separately recorded.",
+      "nativeFiles": [
+        "assets/ui/native/input-group.tsx",
+        "assets/ui/native/_input-group-context.tsx",
+        "assets/ui/native/_input-group-presets.tsx",
+        "assets/ui/native/_preset-input-group-style.tsx",
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/button.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/registry-styles.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-input-group-presets.test.tsx",
+        "tests/native-ui/registry-input-group.test.tsx",
+        "tests/test-native-input-group-presets.test.mjs",
+        "tests/native-ui/registry-official-examples.test.tsx"
+      ],
+      "reviewedInputs": {
+        "new-york-v4": "dd3ae3cac6e215807b49f8af21b60c22142562f5d359b88ba6d6d81754696b45"
+      }
     }
   },
   "webSpecific": [
@@ -9779,8 +9883,8 @@
     },
     {
       "feature": "HTML label lookup, CSS peer/group selectors and React Aria LabelContext",
-      "adaptation": "Use typed native View refs, native press events and scoped field/controlID ownership. Reactive native control metadata replaces order-dependent DOM peer selectors; Field disabled metadata models group state without implicitly disabling its input. Associated labels avoid duplicate accessibility names, preserve cancellation and can focus read-only inputs. Source typography and Sera choice-control exceptions are retained. Browser cursor/slot/for properties and vendor context are replaced by the native association API.",
-      "status": "All eleven style families, six source implementations, sixteen theme slots and all group/peer combinations have native tests. Native refs, live disabled state, checkbox/radio/switch activation, read-only focus, cancellation, independent targets and cleanup pass on both targets. Field/choice-control full source preset parity remains pending separately."
+      "adaptation": "Use typed native View refs, native press events and scoped field/controlID ownership. Reactive native control metadata replaces order-dependent DOM peer selectors; Field disabled metadata models group state without implicitly disabling its input. Associated labels avoid duplicate accessibility names, preserve cancellation and forward read-only focus requests to the OS. Source typography and Sera choice-control exceptions are retained. Browser cursor/slot/for properties and vendor context are replaced by the native association API.",
+      "status": "All eleven style families, six source implementations, sixteen theme slots and all group/peer combinations have native tests. Native refs, live disabled state, checkbox/radio/switch activation, read-only focus requests, cancellation, independent targets and cleanup pass on both targets. Field/choice-control full source preset parity remains pending separately."
     },
     {
       "feature": "ChartStyle CSS injection, chart DOM/SVG selectors and Recharts animation internals",

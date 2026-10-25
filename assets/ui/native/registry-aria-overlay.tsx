@@ -68,3 +68,7 @@ export {
 } from './_overlay';
 
 export { DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogClose } from './dialog';
+
+export { PopoverHeader, PopoverTitle, PopoverDescription } from './popover';
+
+Object.assign(Trigger, { nativeLayoutActivator: true });

@@ -34,6 +34,9 @@ importers:
       '@react-native/jest-preset':
         specifier: 0.86.0
         version: 0.86.0(@babel/core@7.29.7)(react@19.2.3)
+      '@tabler/icons-react-native':
+        specifier: 3.34.1
+        version: 3.34.1(react@19.2.3)
       '@tanstack/react-form':
         specifier: 1.20.0
         version: 1.20.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1625,6 +1628,20 @@ packages:
     resolution:
       {
         integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==,
+      }
+
+  '@tabler/icons-react-native@3.34.1':
+    resolution:
+      {
+        integrity: sha512-XCMmdQi1XHXkRlG491sqgTOUkxR1sTaOjdSaIzvnjspKKStzmoE5blwrit+YMW2kriTCneX3tDLiRcAsfWS3ig==,
+      }
+    peerDependencies:
+      react: '>= 16.5.1'
+
+  '@tabler/icons@3.34.1':
+    resolution:
+      {
+        integrity: sha512-9gTnUvd7Fd/DmQgr3MKY+oJLa1RfNsQo8c/ir3TJAWghOuZXodbtbVp0QBY2DxWuuvrSZFys0HEbv1CoiI5y6A==,
       }
 
   '@tanstack/form-core@1.20.0':
@@ -7002,6 +7019,13 @@ snapshots:
       '@sinonjs/commons': 3.0.1
 
   '@standard-schema/utils@0.3.0': {}
+
+  '@tabler/icons-react-native@3.34.1(react@19.2.3)':
+    dependencies:
+      '@tabler/icons': 3.34.1
+      react: 19.2.3
+
+  '@tabler/icons@3.34.1': {}
 
   '@tanstack/form-core@1.20.0':
     dependencies:

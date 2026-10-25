@@ -38,6 +38,7 @@ export function nativePresetStyle(
   radiusScale: Readonly<Record<'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl', number>>,
   slots: Readonly<Record<string, string>>,
   state: NativePresetState,
+  additionalClasses = '',
 ) {
   const legacy = name === 'default' || name === 'new-york';
   const classes = [recipe.base];
@@ -65,6 +66,7 @@ export function nativePresetStyle(
       })
     )
       classes.push(compound.className);
+  if (additionalClasses) classes.push(additionalClasses);
   const authored = classes
     .flatMap((value) => value.split(/\s+/))
     .flatMap((token) => {
@@ -208,6 +210,7 @@ export function nativePresetStyle(
   );
   if (typeof result.paint.letterSpacingEm === 'number')
     result.text.letterSpacing = (result.text.fontSize ?? 14) * result.paint.letterSpacingEm;
+  const sourceHeight = result.view.height;
   if (
     state.hasText !== false &&
     !slots.size?.startsWith('icon') &&
@@ -226,6 +229,7 @@ export function nativePresetStyle(
   }
   return {
     ...result,
+    sourceHeight,
     iconSize,
     foreground: typeof result.text.color === 'string' ? result.text.color : undefined,
   };

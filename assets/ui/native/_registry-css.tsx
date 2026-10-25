@@ -765,6 +765,9 @@ export function registryStyle(
     else if (token === 'overflow-y-auto' || token === 'overflow-y-scroll') paint.scrollVertical = 1;
     else if (token === 'list-decimal' || token === 'list-disc' || token === 'list-none')
       paint.listMarker = token.slice(5);
+    else if (token === 'transition-[color,box-shadow]') paint.webTransition = 'color,box-shadow';
+    else if (token === 'outline-none') paint.nativeOutline = 'none';
+    else if (token === 'field-sizing-content') paint.nativeFieldSizing = 'content';
     else if (token === 'resize-none') paint.nativeResize = 'none';
     else throw Error(`Unreviewed native registry utility: ${original}`);
   }

@@ -137,3 +137,30 @@ test('sidebar state is shared by its navigation trigger and drawer', async () =>
   );
   expect(screen.queryByText('Home')).toBeNull();
 });
+
+test('native viewport offsets retain main/cross axes and inherited placement alignment', async () => {
+  await mount(
+    <UI.Popover defaultOpen placement="bottom start">
+      <UI.PopoverContent testID="offset" offset={10} crossOffset={-8}>
+        Body
+      </UI.PopoverContent>
+    </UI.Popover>,
+  );
+  expect(screen.getByTestId('offset')).toHaveStyle({
+    alignSelf: 'flex-start',
+    transform: [{ translateX: -8 }, { translateY: -10 }],
+  });
+});
+test('native horizontal viewport offsets retain source side and explicit alignment', async () => {
+  await mount(
+    <UI.Popover defaultOpen>
+      <UI.PopoverContent testID="offset" side="right" align="end" sideOffset={10} alignOffset={4}>
+        Body
+      </UI.PopoverContent>
+    </UI.Popover>,
+  );
+  expect(screen.getByTestId('offset')).toHaveStyle({
+    alignSelf: 'flex-end',
+    transform: [{ translateX: -10 }, { translateY: 4 }],
+  });
+});

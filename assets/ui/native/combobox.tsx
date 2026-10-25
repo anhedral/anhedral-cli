@@ -250,7 +250,7 @@ export function ComboboxContent({
 }: React.ComponentProps<typeof OverlayContent> & { searchLabel?: string }) {
   const state = useCombobox();
   return (
-    <OverlayContent {...props}>
+    <OverlayContent {...props} nativeSurface="combobox">
       <Popup.Provider value={true}>
         {!containsInput(children) && (
           <Input

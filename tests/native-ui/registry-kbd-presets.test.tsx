@@ -1,3 +1,4 @@
+import { withAlpha } from './.generated/src/native/_core';
 import React from 'react';
 import { Dimensions, StyleSheet } from 'react-native';
 import { render, screen, fireEvent } from '@testing-library/react-native';
@@ -124,10 +125,13 @@ test('sample output retains monospace without inheriting keyboard background or 
   expect(screen.queryByRole('button')).toBeNull();
 });
 test('input-group keyboard ancestry ends at physical modal boundaries and tooltip colors follow the modal', async () => {
-  let inputColor: string | undefined, background: string | undefined;
+  let inputColor: string | undefined,
+    addonColor: string | undefined,
+    background: string | undefined;
   function Example() {
     const { colors } = UI.useTheme();
     inputColor = colors.input;
+    addonColor = withAlpha(colors['muted-foreground']!, 0.1);
     background = colors.background;
     return (
       <UI.NativeComponentStyleProvider style="luma">
@@ -152,7 +156,7 @@ test('input-group keyboard ancestry ends at physical modal boundaries and toolti
     );
   }
   await mount(<Example />);
-  expect(screen.getByTestId('input')).toHaveStyle({ backgroundColor: inputColor! });
+  expect(screen.getByTestId('input')).toHaveStyle({ backgroundColor: addonColor! });
   expect(StyleSheet.flatten(screen.getByTestId('dialog').props.style).backgroundColor).not.toBe(
     inputColor!,
   );

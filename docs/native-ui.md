@@ -128,7 +128,7 @@ Label retains all eleven style families and sixteen newer theme rules, including
 Sera's distinct input versus checkbox/radio/switch typography. Field disabled metadata
 and reactive control state replace DOM group/peer selectors. Use controlID for explicit
 native ownership; native association metadata replaces sibling ordering and vendor
-LabelContext. Label activation preserves cancellation, disabled targets, read-only focus
+LabelContext. Label activation preserves cancellation, disabled targets, read-only focus requests
 and independent refs. Associated labels avoid duplicate accessible names. Explicit native
 text/layout styles win, and letter spacing follows the selected type size. HTML for/slot
 and browser cursor rules are replaced by the native field API and OS pointer policy.
@@ -194,9 +194,30 @@ adaptations. Browser underline offset, background clipping and CSS transition ti
 use native text/View painting and immediate state changes; they are not exact browser
 paint/animation parity. Native device/keyboard/visual acceptance remains separate.
 
+Input Group retains six authored parts, four addon alignments and four button sizes
+across all eleven source families. Its compound buttons compose the regular Button
+recipe before the group classes, preserving native form actions, refs and focus paint.
+Immediate button slots receive composed addon activation, accessible labels, expanded/disabled state and long-press timing; child cancellation is preserved. Descendant state drives group focus, invalid and disabled paint; a disabled child does
+not disable sibling actions. Explicit group disabled state blocks its controls.
+Native slots track direct versus nested physical views and stop their ancestry at
+modal boundaries. Keyboard hints retain direct/descendant source rules and inherited
+leading. Textarea and raw autosizing examples grow through native content sizing;
+readonly controls keep enabled accessibility state and delegate focus requests to the OS. Native readOnly interaction follows TextInput behavior; browser keyboard-focus parity is not claimed. Adjacent text expressions retain a continuous
+native text run for counters and accessibility.
+
+The authored copy example uses the OS clipboard through Expo Clipboard, with success,
+rejection, timeout and unmount handling. Its companion upstream hook, outside the
+published registry index, has an explicit source path, pin and SHA-256; changing the
+upstream pin requires review. Tabler examples use native SVG glyphs from the same
+3.34.1 version locked upstream. Native overlay offsets displace the viewport-relative
+surface along its side and alignment axes. Browser trigger-coordinate anchoring,
+portal coordinates, CSS focus outlines and color/box-shadow transition timing remain
+explicit web-specific boundaries; native surface positioning and state paint are
+maintained separately. Overlay preset/API parity remains unfinished.
+
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 455 reviewed source modules,
+The authored component example overlay currently includes 463 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 `node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`
 and `node scripts/native-icons.mjs --check`. Their coverage remains partial while

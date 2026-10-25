@@ -21,6 +21,11 @@ import {
   type Ref,
 } from 'react';
 import { useTheme } from '../theme';
+import type { NativePresetState } from './_preset-style';
+import {
+  useNativeInputGroupMetadata,
+  useNativeInputGroupAddonPresence,
+} from './_input-group-context';
 import {
   NativeRecipeState,
   useRegistryPalette,
@@ -84,6 +89,12 @@ export type ButtonProps = Omit<PressableProps, 'children'> & {
   nativeImplicitSubmit?: boolean;
   /** @internal Compound controls own their own source slots. */
   nativeBare?: boolean;
+  /** @internal Compound source classes participate in the same CVA cascade, including rings/icons. */
+  nativeCompoundStyle?: (state: NativePresetState) => {
+    classes: string;
+    iconOnly?: boolean;
+    inheritedForeground?: string;
+  };
   pending?: boolean;
   type?: 'button' | 'submit' | 'reset';
   form?: string;
@@ -117,6 +128,7 @@ export function Button({
   nativePreset = true,
   nativeImplicitSubmit = false,
   nativeBare = false,
+  nativeCompoundStyle,
   pending = false,
   textColor,
   textStyle,
@@ -158,6 +170,8 @@ export function Button({
   const type = requestedType ?? (htmlDefault && action.available ? 'submit' : 'button');
   const busy = pending || (type !== 'button' && action.pending);
   const blocked = disabled || busy;
+  useNativeInputGroupMetadata({ kind: 'button', disabled: !!blocked, invalid, focused });
+  useNativeInputGroupAddonPresence('button');
   const disabledPaint = !!disabled || (!pending && type !== 'button' && action.pending);
   const renderedChildren =
     typeof children === 'function'
@@ -226,22 +240,34 @@ export function Button({
     iconEnd: iconPlacement(renderedChildren, 'inline-end'),
     hasIcon: hasDirectIcon(renderedChildren),
   };
-  const resolvePreset = (pressed = false) =>
-    preset && nativePreset && !nativeBare
-      ? nativePresetButtonStyle(preset, variant, size, {
-          ...presetState,
-          hasText: !!plainText(surfaceChildren),
-          hasIcon: hasDirectIcon(surfaceChildren),
-          iconStart: iconPlacement(surfaceChildren, 'inline-start'),
-          iconEnd: iconPlacement(surfaceChildren, 'inline-end'),
-          pressed: pressed && !busy,
-        })
-      : undefined;
+  const resolvePreset = (pressed = false) => {
+    if (!preset || !nativePreset || nativeBare) return undefined;
+    const state = {
+      ...presetState,
+      hasText: !!plainText(surfaceChildren),
+      hasIcon: hasDirectIcon(surfaceChildren),
+      iconStart: iconPlacement(surfaceChildren, 'inline-start'),
+      iconEnd: iconPlacement(surfaceChildren, 'inline-end'),
+      pressed: pressed && !busy,
+    };
+    const compound = nativeCompoundStyle?.(state);
+    return {
+      ...nativePresetButtonStyle(
+        preset,
+        variant,
+        size,
+        { ...state, hasText: compound?.iconOnly ? false : state.hasText },
+        compound?.classes,
+      ),
+      inheritedForeground: compound?.inheritedForeground,
+    };
+  };
   const adapted = resolvePreset();
   const foreground =
     textColor ??
     StyleSheet.flatten(textStyle)?.color ??
     adapted?.foreground ??
+    adapted?.inheritedForeground ??
     (nativeBare ? colors.foreground : foregrounds[variant]);
   const surface = {
     borderRadius: radius,
@@ -535,5 +561,5 @@ export function LinkButton({
   );
 }
 
-Object.assign(Button, { nativeButtonSlot: true });
+Object.assign(Button, { nativeButtonSlot: true, nativeLayoutSlot: true });
 Object.assign(LinkButton, { nativeButtonSlot: true });

@@ -99,6 +99,7 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/runtime-sweep",Component:NativeRuntimeSweep}',
           '{id: "native/example-layout",Component:NativeExampleLayoutMatrix}',
           '{id: "native/chart-contract",Component:NativeChartMatrix}',
+          '{id: "native/input-group-contract",Component:NativeInputGroupMatrix}',
         ].join(',\n') +
         '];',
     );

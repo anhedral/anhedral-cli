@@ -55,6 +55,7 @@ import {
   NativeIconForcedSize,
 } from './_registry-context';
 import { registryStyle } from './_registry-css';
+import { NativeInputGroupHostBoundary } from './_input-group-context';
 import { nativePresetMetrics } from './_preset-metrics';
 import { useNativeReducedMotion, useNativePulse } from './_animation';
 import { NativeRegistryImage } from './registry-image';
@@ -363,6 +364,12 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       };
     delete forwarded['data-active'];
     if (Component === Button) forwarded.nativeImplicitSubmit = true;
+    if (
+      translated.paint.nativeFieldSizing === 'content' &&
+      'nativeInputSlot' in Component &&
+      Component.nativeInputSlot === true
+    )
+      forwarded.nativeContentSizing = true;
     if (spinner) {
       if (translated.paint.spin !== undefined)
         forwarded.nativeSpin = Boolean(translated.paint.spin);
@@ -659,7 +666,11 @@ function RecipeHover({
       animate(false);
     },
   };
-  const body = primitiveText(children) ? <LabelText>{children}</LabelText> : content(children);
+  const body = (
+    <NativeInputGroupHostBoundary>
+      {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
+    </NativeInputGroupHostBoundary>
+  );
   return onPress ? (
     <AnimatedRecipePressable
       {...motion}
@@ -717,7 +728,11 @@ function RecipeView({
   ...props
 }: NativeRecipeViewProps) {
   const effects = useContext(RegistryLocalPaint);
-  const body = primitiveText(children) ? <LabelText>{children}</LabelText> : content(children);
+  const body = (
+    <NativeInputGroupHostBoundary>
+      {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
+    </NativeInputGroupHostBoundary>
+  );
   if (effects.scrollHorizontal || effects.scrollVertical) {
     if (onPress || effects.hoverTranslateY !== undefined || effects.pulse === 1)
       throw Error('Native scrolling recipe hosts require a separate pressable or motion child.');

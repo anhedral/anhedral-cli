@@ -28,7 +28,7 @@ export function nativePresetKbdStyle(
       }
       return [token];
     });
-  return nativePresetStyle(
+  const result = nativePresetStyle(
     name,
     slot,
     { base: classes.join(' '), variants: {}, defaultVariants: {}, compoundVariants: [] },
@@ -37,4 +37,8 @@ export function nativePresetKbdStyle(
     {},
     state,
   );
+  const inheritsLeading =
+    classes.some((token) => /^text-\[/.test(token)) &&
+    !classes.some((token) => /^(leading-|text-(?:xs|sm|base|lg|xl|[2-9]xl)(?:$|\/))/.test(token));
+  return { ...result, inheritsLeading };
 }

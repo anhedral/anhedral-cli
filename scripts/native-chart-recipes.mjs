@@ -67,6 +67,10 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     )
     .replace(/\(value: keyof typeof chartConfig\)/g, '(value: unknown)')
     .replace(/chartConfig\[value\]/g, 'chartConfig[String(value) as keyof typeof chartConfig]');
+  if (filename.endsWith('input-group-button.tsx'))
+    source = source
+      .replaceAll('data-[favorite=true]:', 'data-[active=true]:')
+      .replaceAll('data-favorite=', 'data-active=');
   if (filename.endsWith('spinner-custom.tsx'))
     source = source.replace(
       'React.ComponentProps<"svg">',
@@ -373,7 +377,49 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
         else if (module === 'recharts' || module.startsWith('recharts/'))
           target = '../../native/charts';
         else if (module === 'lucide-react') target = 'lucide-react-native';
-        else if (
+        else if (module === '@tabler/icons-react') target = '@tabler/icons-react-native';
+        else if (module === '@/hooks/use-copy-to-clipboard')
+          target = '../../native/registry-copy-to-clipboard';
+        else if (module === 'react-textarea-autosize') {
+          if (!node.importClause?.name || node.importClause.namedBindings)
+            throw Error('Unreviewed autosize textarea import.');
+          const name = node.importClause.name;
+          declarations.push(
+            f.createVariableStatement(
+              undefined,
+              f.createVariableDeclarationList(
+                [
+                  f.createVariableDeclaration(
+                    name,
+                    undefined,
+                    undefined,
+                    f.createCallExpression(f.createIdentifier('withRegistryStyles'), undefined, [
+                      f.createIdentifier('NativeAutosizeTextarea'),
+                      f.createStringLiteral('view'),
+                    ]),
+                  ),
+                ],
+                ts.NodeFlags.Const,
+              ),
+            ),
+          );
+          return f.createImportDeclaration(
+            undefined,
+            f.createImportClause(
+              false,
+              undefined,
+              f.createNamedImports([
+                f.createImportSpecifier(
+                  false,
+                  f.createIdentifier('RegistryAutosizeTextarea'),
+                  f.createIdentifier('NativeAutosizeTextarea'),
+                ),
+              ]),
+            ),
+            f.createStringLiteral('../../native/registry-form-controls'),
+            undefined,
+          );
+        } else if (
           /^@\/registry\/(?:default|new-york|new-york-v4|bases\/(?:base|radix|aria))\/ui\//.test(
             module,
           )
@@ -445,11 +491,11 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
                         f.createStringLiteral(
                           e.name.text === 'CardTitle' || e.name.text === 'CardDescription'
                             ? 'text'
-                            : /^(Button|Toggle|ToggleGroupItem|RadioGroupItem)$|Trigger$|Menu(?:Item|CheckboxItem|RadioItem)$/.test(
+                            : /^(Button|InputGroupButton|Toggle|ToggleGroupItem|RadioGroupItem)$|Trigger$|Menu(?:Item|CheckboxItem|RadioItem)$/.test(
                                   e.name.text,
                                 )
                               ? 'button'
-                              : module === 'lucide-react'
+                              : module === 'lucide-react' || module === '@tabler/icons-react'
                                 ? 'icon'
                                 : module.startsWith('recharts')
                                   ? 'svg'
@@ -816,9 +862,13 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
         if (
           nativeForms &&
           name === 'onChange' &&
-          ['Input', 'Textarea', 'InputGroupInput', 'InputGroupTextarea'].includes(
-            node.parent.parent.tagName?.getText(file),
-          )
+          [
+            'Input',
+            'Textarea',
+            'TextareaAutosize',
+            'InputGroupInput',
+            'InputGroupTextarea',
+          ].includes(node.parent.parent.tagName?.getText(file))
         ) {
           const convert = (child) =>
             ts.isPropertyAccessExpression(child) &&
@@ -842,6 +892,16 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           node.initializer.text === '0'
         )
           return f.updateJsxAttribute(node, node.name, f.createStringLiteral('none'));
+        if (
+          name === 'data-slot' &&
+          node.initializer &&
+          ts.isStringLiteral(node.initializer) &&
+          node.initializer.text === 'input-group-control'
+        )
+          return f.createJsxAttribute(
+            f.createIdentifier('nativeGroupControl'),
+            f.createJsxExpression(undefined, f.createTrue()),
+          );
         if (name === 'data-icon')
           return f.updateJsxAttribute(
             node,
@@ -849,6 +909,18 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             ts.visitNode(node.initializer, visit),
           );
         if (name === 'title' && ['img', 'Image'].includes(tag)) return undefined;
+        if (name === 'title' && tag === 'InputGroupButton')
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier('accessibilityHint'),
+            ts.visitNode(node.initializer, visit),
+          );
+        if (ariaRecipe && name === 'onAction' && tag === 'DropdownMenuItem')
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier('onPress'),
+            ts.visitNode(node.initializer, visit),
+          );
         if (name === 'xmlns' || (name.startsWith('data-') && name !== 'data-active'))
           return undefined;
         if (

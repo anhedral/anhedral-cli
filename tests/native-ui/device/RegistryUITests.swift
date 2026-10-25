@@ -1,6 +1,56 @@
 import XCTest
 final class RegistryUITests: XCTestCase {
   private let authoredStoryCount = 0 // ANHEDRAL_AUTHORED_STORY_COUNT
+  func testInputGroupPresetsRetainGeometryEditingAndIndependentActions() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/input-group-contract", in: app)
+    let scroll=storyScroll(app)
+    func press(_ name:String) {
+      let button=app.buttons[name]
+      for _ in 0..<12 { if button.exists && button.isHittable { break }; scroll.swipeUp() }
+      for _ in 0..<12 { if button.exists && button.isHittable { break }; scroll.swipeDown() }
+      XCTAssertTrue(button.isHittable,name)
+      button.tap()
+    }
+    let presets = ["nova","vega","maia","lyra","mira","luma","sera","rhea","default","new-york","new-york-v4"]
+    let heights = [32,36,36,32,28,36,40,32,36,36,36]
+    for (index,preset) in presets.enumerated() {
+      XCTAssertTrue(app.staticTexts["Input group preset: " + preset].waitForExistence(timeout:10))
+      XCTAssertTrue(app.staticTexts["Input group geometry: " + preset + ":320x" + String(heights[index])].waitForExistence(timeout:10))
+      press("Next input group preset")
+    }
+    XCTAssertTrue(app.staticTexts["Input group geometry: nova:320x32"].waitForExistence(timeout:10))
+    XCTAssertTrue(app.staticTexts["Group registration: inputs=1; refs=true; disabled=false"].waitForExistence(timeout:10))
+    let input=app.textFields["Native grouped input"]
+    XCTAssertTrue(input.exists)
+    app.otherElements["Focus grouped input"].tap()
+    XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout:10))
+    input.typeText("Expo\n")
+    XCTAssertTrue(app.staticTexts["Grouped input value: Expo"].waitForExistence(timeout:10))
+    press("Send grouped input")
+    XCTAssertTrue(app.staticTexts["Grouped input actions: 1"].waitForExistence(timeout:10))
+    press("Toggle input group disabled")
+    XCTAssertTrue(app.staticTexts["Input group disabled: true"].waitForExistence(timeout:10))
+    XCTAssertFalse(app.buttons["Send grouped input"].isEnabled)
+    press("Toggle input group disabled")
+    press("Send grouped input")
+    XCTAssertTrue(app.staticTexts["Grouped input actions: 2"].waitForExistence(timeout:10))
+    XCTAssertEqual(app.textFields["Readonly grouped input"].value as? String,"Retained")
+    press("Open grouped info")
+    XCTAssertTrue(app.staticTexts["Grouped connection info"].waitForExistence(timeout:10))
+    press("Close grouped info")
+    let textarea=app.textViews["Grouped growing textarea"]
+    for _ in 0..<10 { if textarea.exists && textarea.isHittable { break };scroll.swipeUp() }
+    XCTAssertTrue(textarea.exists)
+    let before=textarea.frame.height
+    textarea.tap();textarea.typeText("one\ntwo\nthree\nfour\nfive\nsix\nseven")
+    expectation(for:NSPredicate { _,_ in textarea.frame.height > before },evaluatedWith:textarea)
+    waitForExpectations(timeout:10)
+    textarea.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:33))
+    expectation(for:NSPredicate { _,_ in textarea.frame.height <= before+1 },evaluatedWith:textarea)
+    waitForExpectations(timeout:10)
+  }
   func testSourceChartsRetainPresetGeometryAndSeriesInteractions() {
     let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
     app.launch()

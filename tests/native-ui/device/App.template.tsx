@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { View, FlatList, ScrollView, Text, Keyboard, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
+import { NativeInputGroupContext } from './.generated/src/native/_input-group-context';
 import { NativeRegistryPalette } from './.generated/src/native/_registry-context';
 import { withRegistryStyles, RegistryView } from './.generated/src/native/registry-styles';
 import { Textarea as SourceTextarea } from './.generated/src/native/registry-form-controls';
@@ -12,6 +13,152 @@ import {
 } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+function NativeInputGroupProbe({ onChange }: { onChange: (value: string) => void }) {
+  const group = useContext(NativeInputGroupContext);
+  useEffect(() => {
+    const inputs = [...(group?.controls.values() ?? [])].filter((entry) => entry.kind === 'input');
+    onChange(
+      'inputs=' +
+        inputs.length +
+        '; refs=' +
+        inputs.map((entry) => !!entry.ref?.current).join(',') +
+        '; disabled=' +
+        inputs.map((entry) => !!entry.disabled).join(','),
+    );
+  }, [group, onChange]);
+  return null;
+}
+function NativeInputGroupMatrix() {
+  const presets = [
+    'nova',
+    'vega',
+    'maia',
+    'lyra',
+    'mira',
+    'luma',
+    'sera',
+    'rhea',
+    'default',
+    'new-york',
+    'new-york-v4',
+  ] as const;
+  const [index, setIndex] = useState(0),
+    [frame, setFrame] = useState(''),
+    [value, setValue] = useState(''),
+    [actions, setActions] = useState(0),
+    [disabled, setDisabled] = useState(false),
+    [message, setMessage] = useState(''),
+    [messageHeight, setMessageHeight] = useState(0),
+    [registration, setRegistration] = useState('pending'),
+    [focusEvents, setFocusEvents] = useState(0),
+    directRef = useRef<import('react-native').TextInput>(null);
+  const preset = presets[index]!;
+  return (
+    <View style={{ width: 320, gap: 8 }}>
+      <UI.Text>{'Input group preset: ' + preset}</UI.Text>
+      <UI.Text>{'Input group geometry: ' + preset + ':' + frame}</UI.Text>
+      <UI.Button onPress={() => setIndex((index + 1) % presets.length)}>
+        Next input group preset
+      </UI.Button>
+      <NativeRegistryPalette
+        source={
+          preset === 'default' || preset === 'new-york' || preset === 'new-york-v4'
+            ? preset
+            : 'base'
+        }
+        generation={preset === 'default' || preset === 'new-york' ? 'legacy' : 'modern'}
+      >
+        <UI.NativeComponentStyleProvider style={preset}>
+          <UI.InputGroup
+            key={preset}
+            disabled={disabled}
+            onLayout={({ nativeEvent: { layout } }) =>
+              setFrame(Math.round(layout.width) + 'x' + Math.round(layout.height))
+            }
+          >
+            <NativeInputGroupProbe onChange={setRegistration} />
+            <UI.InputGroupAddon accessibilityLabel="Focus grouped input" accessible>
+              <UI.InputGroupText>Find</UI.InputGroupText>
+            </UI.InputGroupAddon>
+            <UI.InputGroupInput
+              accessibilityLabel="Native grouped input"
+              ref={directRef}
+              onFocus={() => setFocusEvents((n) => n + 1)}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
+              value={value}
+              onChangeText={setValue}
+            />
+            <UI.InputGroupAddon align="inline-end">
+              <UI.InputGroupButton
+                onPress={() => {
+                  setActions((n) => n + 1);
+                  Keyboard.dismiss();
+                }}
+              >
+                Send grouped input
+              </UI.InputGroupButton>
+            </UI.InputGroupAddon>
+          </UI.InputGroup>
+          <UI.InputGroup>
+            <UI.InputGroupInput
+              accessibilityLabel="Readonly grouped input"
+              readOnly
+              value="Retained"
+            />
+          </UI.InputGroup>
+          <UI.InputGroup>
+            <UI.Popover>
+              <UI.PopoverTrigger asChild>
+                <UI.InputGroupAddon>
+                  <UI.InputGroupButton size="icon-xs" accessibilityLabel="Open grouped info">
+                    ?
+                  </UI.InputGroupButton>
+                </UI.InputGroupAddon>
+              </UI.PopoverTrigger>
+              <UI.PopoverContent>
+                <UI.Text>Grouped connection info</UI.Text>
+                <UI.PopoverClose>Close grouped info</UI.PopoverClose>
+              </UI.PopoverContent>
+            </UI.Popover>
+            <UI.InputGroupInput accessibilityLabel="Info grouped value" />
+          </UI.InputGroup>
+        </UI.NativeComponentStyleProvider>
+      </NativeRegistryPalette>
+      <UI.NativeComponentStyleProvider style="nova">
+        <UI.InputGroup>
+          <UI.InputGroupTextarea
+            accessibilityLabel="Grouped growing textarea"
+            value={message}
+            onChangeText={setMessage}
+            onLayout={({ nativeEvent: { layout } }) => setMessageHeight(Math.round(layout.height))}
+          />
+          <UI.InputGroupAddon align="block-end">
+            <UI.Kbd>Enter</UI.Kbd>
+          </UI.InputGroupAddon>
+        </UI.InputGroup>
+      </UI.NativeComponentStyleProvider>
+      <UI.Text>{'Grouped textarea height: ' + messageHeight}</UI.Text>
+      <UI.Text>{'Group registration: ' + registration}</UI.Text>
+      <UI.Text>{'Group focus events: ' + focusEvents}</UI.Text>
+      <UI.Text>{'Input group disabled: ' + disabled}</UI.Text>
+      <UI.Button onPress={() => directRef.current?.focus()}>
+        Focus grouped input explicitly
+      </UI.Button>
+      <UI.Text>{'Grouped input value: ' + value}</UI.Text>
+      <UI.Text>{'Grouped input actions: ' + actions}</UI.Text>
+      <UI.Button
+        onPress={() => {
+          Keyboard.dismiss();
+          setDisabled(!disabled);
+        }}
+      >
+        Toggle input group disabled
+      </UI.Button>
+      <UI.Button onPress={() => Keyboard.dismiss()}>Dismiss grouped keyboard</UI.Button>
+    </View>
+  );
+}
 function NativeInputMatrix() {
   const [height, setHeight] = useState(0),
     [frames, setFrames] = useState<Record<string, string>>({}),

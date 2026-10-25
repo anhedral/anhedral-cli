@@ -24,6 +24,11 @@ import {
 } from './_registry-context';
 import { NativeKbdSurfaceContext } from './_kbd-context';
 import { nativePresetKbdStyle } from './_preset-kbd-style';
+import {
+  NativeInputGroupKbdPaint,
+  NativeInputGroupHostBoundary,
+  useNativeInputGroupAddonPresence,
+} from './_input-group-context';
 const textKeys = new Set([
   'color',
   'fontFamily',
@@ -49,6 +54,8 @@ const textKeys = new Set([
 ]);
 export type KbdProps = Omit<ViewProps, 'style'> & { style?: StyleProp<TextStyle>; ref?: Ref<View> };
 function NativeKbd({ part, children, style, ...props }: KbdProps & { part: 'Kbd' | 'KbdGroup' }) {
+  useNativeInputGroupAddonPresence('kbd', part === 'Kbd');
+  const addonPaint = useContext(NativeInputGroupKbdPaint);
   const theme = useTheme(),
     requested = useNativeComponentStyle(),
     origin = useNativeRegistrySource(),
@@ -64,7 +71,11 @@ function NativeKbd({ part, children, style, ...props }: KbdProps & { part: 'Kbd'
       : generation === 'legacy'
         ? 'default'
         : (requested ?? 'nova');
-  const own = StyleSheet.flatten(style),
+  const own = StyleSheet.flatten([
+      part === 'Kbd' && addonPaint.descendant,
+      part === 'Kbd' && addonPaint.direct,
+      style,
+    ]),
     ownText = Object.fromEntries(
       Object.entries(own ?? {}).filter(([key]) => textKeys.has(key)),
     ) as TextStyle,
@@ -76,15 +87,28 @@ function NativeKbd({ part, children, style, ...props }: KbdProps & { part: 'Kbd'
     fontSize: own?.fontSize,
     lineHeight: own?.lineHeight,
   });
-  const metrics =
-    own?.fontSize !== undefined && own.lineHeight === undefined
-      ? {
-          ...adapted.text,
-          lineHeight:
-            ((adapted.text.lineHeight ?? (adapted.text.fontSize ?? 14) * 1.5) * own.fontSize) /
-            (adapted.text.fontSize ?? 14),
-        }
-      : adapted.text;
+  const parent = StyleSheet.flatten(inherited.style),
+    inheritedRatio =
+      parent?.fontSize && parent.lineHeight ? parent.lineHeight / parent.fontSize : 1.5;
+  const baseFont = adapted.text.fontSize ?? 14,
+    requestedFont = own?.fontSize ?? baseFont;
+  const sourceLine = adapted.inheritsLeading
+    ? baseFont * inheritedRatio
+    : (adapted.text.lineHeight ?? baseFont * 1.5);
+  const requestedLine = own?.lineHeight ?? (sourceLine * requestedFont) / baseFont;
+  const metrics = {
+    ...adapted.text,
+    ...(adapted.inheritsLeading || own?.fontSize !== undefined
+      ? { fontSize: requestedFont, lineHeight: requestedLine }
+      : undefined),
+  };
+  const inheritedHeight =
+    adapted.inheritsLeading && typeof adapted.sourceHeight === 'number'
+      ? Math.max(
+          adapted.sourceHeight,
+          requestedLine * fontScale + Math.max(0, adapted.sourceHeight - sourceLine),
+        )
+      : undefined;
   const face = useNativeFontStyle(
     adapted.fontRole ?? inherited.fontRole ?? 'sans',
     Number(ownText.fontWeight ?? metrics.fontWeight) || 400,
@@ -116,10 +140,11 @@ function NativeKbd({ part, children, style, ...props }: KbdProps & { part: 'Kbd'
               { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },
               part === 'Kbd' && { justifyContent: 'center' },
               adapted.view,
+              inheritedHeight !== undefined && { height: inheritedHeight },
               ownView,
             ]}
           >
-            {content(children)}
+            <NativeInputGroupHostBoundary>{content(children)}</NativeInputGroupHostBoundary>
           </View>
         </NativeButtonIconSize.Provider>
       </TextToneProvider>

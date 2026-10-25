@@ -406,6 +406,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     data: nativeChartPresets(inventory),
     source: await nativeChartPresetSource(inventory),
   });
+  const { nativeInputGroupPresets, nativeInputGroupPresetSource } =
+    await import('./native-input-group-presets.mjs');
+  outputs.push({
+    component: 'input-group',
+    target: target('input-group'),
+    data: nativeInputGroupPresets(inventory),
+    source: await nativeInputGroupPresetSource(inventory),
+  });
   const { nativeExampleLayout, nativeExampleLayoutSource } =
     await import('./native-example-layout.mjs');
   outputs.push({
