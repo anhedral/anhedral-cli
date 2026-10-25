@@ -16,3 +16,11 @@ The CLI does not manage provider access, billing, infrastructure, deployments, r
 Preserve generated-consumer tests, source-generation safety, pinned dependencies, UI provenance, licenses and immutable release packaging. Check emitted source and the actual packed npm artifact. Preserve docs/verification.md as dated evidence. Keep one focused behavior per topic branch from staging; promote stable releases through main. A build does not publish npm or install a plugin.
 
 The Codex plugin ships skills and stack references only. It has no MCP server, project catalog, dashboard or provider credentials. Package validation checks the skills, references, versions and absence of a managed runtime.
+
+## Next/OpenNext runtime regression gate
+
+Relevant web generator, build dependency and runtime-harness PRs automatically compile one isolated generated foundation and run it in local workerd. The smoke verifies prerendered homepage output, dynamic SSR/RSC, a synthetic Server Action and cookie round-trip, Hono service binding and static asset cache headers. Synthetic routes exist only in the test workspace. It never deploys or migrates a configured database. Run `pnpm test:next-runtime` locally.
+
+The gate retains `.artifacts/next-runtime/{bundle,smoke}.json` for one day. Its initial 4 MiB gzip budget sums emitted Worker JS/Wasm modules individually, lists the largest modules, and fails when exceeded. This is a source artifact regression ceiling, not provider upload size, memory consumption or cold-request latency. Review measurement changes before adjusting the ceiling.
+
+New public homepages are prerenderable; request-dependent routes opt into dynamic rendering where needed. Generated `public/_headers` caches fingerprinted Next assets immutably; ordinary assets retain platform revalidation. Authenticated responses continue to require private/no-store policy. Existing apps must adopt generator changes explicitly.

@@ -81,7 +81,8 @@
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
     "test:native-ui": "pnpm build && pnpm --dir tests/native-ui typecheck && pnpm --dir tests/native-ui test",
     "native-ui:docs": "node scripts/native-ui-catalog.mjs --write",
-    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream"
+    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream",
+    "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs"
   },
   "keywords": [
     "cli",
