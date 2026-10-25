@@ -311,3 +311,14 @@ test('authored Card list, scroll, fixed icon track and link utilities retain exp
     16,
   );
 });
+
+test('border width utilities preserve explicit all-edge and directional colors regardless of class order', () => {
+  const result = registryStyle('border-transparent border-b-input border', options);
+  assert.equal(result.view.borderWidth, 1);
+  assert.equal(result.view.borderColor, 'color:transparent');
+  assert.equal(result.view.borderBottomColor, 'color:input');
+  const edges = registryStyle('border-red border-t-2 border-l-blue', options);
+  assert.equal(edges.view.borderColor, 'color:red');
+  assert.equal(edges.view.borderTopWidth, 2);
+  assert.equal(edges.view.borderLeftColor, 'color:blue');
+});

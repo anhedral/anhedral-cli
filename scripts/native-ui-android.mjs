@@ -11,9 +11,15 @@ import { spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { prepareNativeQAApp, nativeQASourceManifest } from './native-ui-device.mjs';
+import {
+  prepareNativeQAApp,
+  nativeQASourceManifest,
+  seedNativeQADocument,
+  nativeQADocumentName,
+  nativeQADocumentContent,
+} from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeAndroidTestCount = 12;
+export const nativeAndroidTestCount = 15;
 const start = '// BEGIN ANHEDRAL NATIVE REGISTRY QA',
   end = '// END ANHEDRAL NATIVE REGISTRY QA';
 export function nativeAndroidTestGradle(source) {
@@ -169,6 +175,30 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     save();
     capture(adb, ['-s', device, 'install', '-r', apk], 'install-app.log');
     capture(adb, ['-s', device, 'install', '-r', testApk], 'install-tests.log');
+    const fixture = seedNativeQADocument(evidence),
+      remoteDocument = '/sdcard/Download/' + nativeQADocumentName;
+    const existingDocument = spawnSync(adb, ['-s', device, 'shell', 'cat', remoteDocument], {
+      encoding: 'utf8',
+    });
+    if (existingDocument.status === 0 && existingDocument.stdout !== nativeQADocumentContent)
+      throw Error('Refusing to overwrite an unrelated emulator document.');
+    if (existingDocument.status !== 0)
+      capture(adb, ['-s', device, 'push', fixture, remoteDocument], 'seed-document.log');
+    capture(
+      adb,
+      [
+        '-s',
+        device,
+        'shell',
+        'am',
+        'broadcast',
+        '-a',
+        'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
+        '-d',
+        'file://' + remoteDocument,
+      ],
+      'scan-document.log',
+    );
     state.phase = 'instrumentation';
     save();
     const output = capture(

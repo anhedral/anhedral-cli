@@ -92,7 +92,7 @@ class RegistryAndroidTests {
     val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
     // The associated label is excluded from duplicate accessibility traversal. Touch its authored
     // 20dp line above the input's 12dp gap, then prove focus before sending any text.
-    device.click(bounds.left + (20 * density).toInt(), bounds.top - (22 * density).toInt())
+    device.click(bounds.centerX(), bounds.top - (22 * density).toInt())
     onElement { named("Email") && className == "android.widget.EditText" && isFocused }
     type("native@example.com")
     onElement { named("Email") && textAsString() == "native@example.com" }
@@ -176,6 +176,52 @@ class RegistryAndroidTests {
     label("Stop native spinner").click()
     label("Spinner motion stopped")
     label("Native source spinner")
+  }
+
+  @Test fun nativeInputsRetainSourceHeightsAndTextareaResizes() = uiAutomator {
+    openStory("native/input-metrics")
+    val density=InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+    for ((name,height) in listOf("vega" to 36,"nova" to 32,"maia" to 36,"lyra" to 32,"mira" to 28,"luma" to 36,"sera" to 40,"rhea" to 32)) {
+      val field=label("Native input "+name)
+      assertTrue("Incorrect input height: "+name,abs(field.visibleBounds.height()/density-height)<=1.0f)
+    }
+    label("Legacy textarea height: 90")
+    label("Textarea height: 64")
+    onElement { viewIdResourceName == "registry-story-scroll" }.scroll(Direction.DOWN,0.6f)
+    label("Native growing textarea").setText("one\ntwo\nthree\nfour\nfive\nsix\nseven")
+    onElement(timeoutMs=15000) { textAsString()?.let { it.startsWith("Textarea height: ") && (it.substringAfterLast(": ").toIntOrNull() ?: 0)>64 } == true }
+    label("Native growing textarea").setText("")
+    label("Textarea height: 64")
+  }
+  @Test fun systemDocumentPickerSelectsAndCancelsWithoutLosingWork() = uiAutomator {
+    openStory("native/file-input")
+    onElement { contentDescription?.toString()?.startsWith("Native document") == true }.click()
+    device.wait(Until.findObject(By.desc("Show roots")),15000)
+    if (!device.hasObject(By.text("Open from"))) device.findObject(By.desc("Show roots")).click()
+    assertTrue("Document roots drawer did not open",device.wait(Until.hasObject(By.text("Open from")),5000))
+    device.waitForIdle(1000)
+    device.wait(Until.findObject(By.text("Downloads")),5000).click()
+    assertTrue("Document roots drawer did not close",device.wait(Until.gone(By.text("Open from")),5000))
+    device.wait(Until.findObject(By.text("anhedral-native-file-qa.txt")),15000).click()
+    label("Document selection: anhedral-native-file-qa.txt:true")
+    onElement { contentDescription?.toString()?.startsWith("Native document") == true }.click()
+    onElement(timeoutMs=15000) { packageName?.toString()?.contains("documentsui")==true }
+    device.pressBack()
+    label("Document cancellations: 1")
+    label("Document selection: anhedral-native-file-qa.txt:true")
+  }
+  @Test fun systemDateAndTimePickersCommitAndCancel() = uiAutomator {
+    openStory("native/temporal-input")
+    onElement { contentDescription?.toString()?.startsWith("Native date") == true }.click()
+    onElement(timeoutMs=15000) { contentDescription?.toString()?.let { it.contains("17") && it.contains("October") && it.contains("2026") } == true }.click()
+    onElement { textAsString()=="OK" }.click()
+    label("Date selection: 2026-10-17")
+    onElement { contentDescription?.toString()?.startsWith("Native time") == true }.click()
+    onElement(timeoutMs=15000) { textAsString()=="OK" }.click()
+    label("Time selection: 15:42")
+    onElement { contentDescription?.toString()?.startsWith("Native date") == true }.click()
+    onElement(timeoutMs=15000) { textAsString()=="CANCEL" || textAsString()=="Cancel" }.click()
+    label("Date selection: 2026-10-17")
   }
 
 }

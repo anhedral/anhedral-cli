@@ -1,12 +1,99 @@
 import React, { useState } from 'react';
-import { View, FlatList, ScrollView, Text, type LayoutChangeEvent } from 'react-native';
+import { View, FlatList, ScrollView, Text, Keyboard, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
 import { NativeRegistryPalette } from './.generated/src/native/_registry-context';
 import { withRegistryStyles, RegistryView } from './.generated/src/native/registry-styles';
+import { Textarea as SourceTextarea } from './.generated/src/native/registry-form-controls';
 import { NativeExampleOptions } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
+function NativeInputMatrix() {
+  const [height, setHeight] = useState(0),
+    [frames, setFrames] = useState<Record<string, string>>({}),
+    [rowsHeight, setRowsHeight] = useState(0);
+  return (
+    <View style={{ gap: 12 }}>
+      {(['vega', 'nova', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea'] as const).map((preset) => (
+        <UI.NativeComponentStyleProvider key={preset} style={preset}>
+          <UI.Input
+            accessibilityLabel={'Native input ' + preset}
+            placeholder={preset}
+            onLayout={({ nativeEvent: { layout } }) =>
+              setFrames((previous) => ({
+                ...previous,
+                [preset]: Math.round(layout.width) + 'x' + Math.round(layout.height),
+              }))
+            }
+            style={{ width: 160 }}
+          />
+        </UI.NativeComponentStyleProvider>
+      ))}
+      <UI.Text>
+        {'Input geometry: ' +
+          ['vega', 'nova', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea']
+            .map((name) => name + '=' + frames[name])
+            .join('; ')}
+      </UI.Text>
+      <NativeRegistryPalette generation="legacy" source="default">
+        <UI.Text>{'Legacy textarea height: ' + rowsHeight}</UI.Text>
+        <SourceTextarea
+          rows={3}
+          accessibilityLabel="Native fixed rows"
+          onLayout={(event) => setRowsHeight(Math.round(event.nativeEvent.layout.height))}
+        />
+      </NativeRegistryPalette>
+      <UI.Text>{'Textarea height: ' + height}</UI.Text>
+      <UI.Textarea
+        accessibilityLabel="Native growing textarea"
+        onLayout={(event) => setHeight(Math.round(event.nativeEvent.layout.height))}
+      />
+      <UI.Button onPress={() => Keyboard.dismiss()}>Dismiss native keyboard</UI.Button>
+    </View>
+  );
+}
+function NativeFileMatrix() {
+  const [selection, setSelection] = useState('none'),
+    [cancelled, setCancelled] = useState(0);
+  return (
+    <View style={{ gap: 12 }}>
+      <UI.FileInput
+        accessibilityLabel="Native document"
+        accept="text/plain"
+        onFilesChange={(files) =>
+          setSelection(
+            files.map((file) => file.name + ':' + String(file.uri.startsWith('file://'))).join(','),
+          )
+        }
+        onPickerCancel={() => setCancelled((n) => n + 1)}
+      />
+      <UI.Text>{'Document selection: ' + selection}</UI.Text>
+      <UI.Text>{'Document cancellations: ' + cancelled}</UI.Text>
+    </View>
+  );
+}
+function NativeTemporalMatrix() {
+  const [date, setDate] = useState('none'),
+    [time, setTime] = useState('none');
+  return (
+    <View style={{ gap: 12 }}>
+      <UI.TemporalInput
+        type="date"
+        accessibilityLabel="Native date"
+        defaultValue="2026-10-25"
+        onChange={setDate}
+      />
+      <UI.TemporalInput
+        type="time"
+        accessibilityLabel="Native time"
+        defaultValue="15:42"
+        onChange={setTime}
+      />
+      <UI.Text>{'Date selection: ' + date}</UI.Text>
+      <UI.Text>{'Time selection: ' + time}</UI.Text>
+    </View>
+  );
+}
 const SourceCallbackButton = withRegistryStyles(UI.Button, 'button');
 const SourceSpinner = withRegistryStyles(UI.Spinner);
 function NativeSpinnerMatrix() {

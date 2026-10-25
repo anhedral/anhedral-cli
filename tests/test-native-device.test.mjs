@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, mkdirSync, symlinkSync, rmSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { validateNativeQADirectory, nativeQASourceManifest } from '../scripts/native-ui-device.mjs';
+import {
+  validateNativeQADirectory,
+  nativeQASourceManifest,
+  seedNativeQADocument,
+  nativeQADocumentContent,
+} from '../scripts/native-ui-device.mjs';
 test('native QA preparation accepts an empty or owned app and refuses unrelated files and symlink outputs', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-qa-owner-')),
     qa = path.join(root, 'app'),
@@ -49,5 +54,25 @@ test('native QA manifests identify the actual copied app and reject source symli
     assert.throws(() => nativeQASourceManifest(qa), /symlinked native QA source/);
   } finally {
     rmSync(qa, { recursive: true, force: true });
+  }
+});
+
+test('system picker fixtures are idempotent and preserve unrelated files and symlinks', () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-document-'));
+  try {
+    const target = seedNativeQADocument(directory);
+    assert.equal(readFileSync(target, 'utf8'), nativeQADocumentContent);
+    assert.equal(seedNativeQADocument(directory), target);
+    writeFileSync(target, 'unrelated');
+    assert.throws(() => seedNativeQADocument(directory), /unrelated/);
+    assert.equal(readFileSync(target, 'utf8'), 'unrelated');
+    rmSync(target);
+    const other = path.join(directory, 'preserved.txt');
+    writeFileSync(other, nativeQADocumentContent);
+    symlinkSync(other, target);
+    assert.throws(() => seedNativeQADocument(directory), /unrelated/);
+    assert.equal(readFileSync(other, 'utf8'), nativeQADocumentContent);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });

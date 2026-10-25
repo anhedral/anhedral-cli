@@ -203,11 +203,14 @@ test('browser-only API classifications require a real upstream export and native
 });
 test('export presence and browser-only policy cannot promote incomplete items to complete native registry parity', () => {
   const pending = incompleteNativeItems(inventory, coverage);
-  assert.equal(pending.length, 527);
+  assert.equal(pending.length, 519);
   assert.ok(pending.includes('registry:ui/form'));
   assert.ok(pending.includes('registry:block/dashboard-01'));
   assert.ok(!pending.includes('registry:ui/button'));
   assert.ok(!pending.includes('registry:ui/spinner'));
+  for (const name of ['input', 'textarea']) assert.ok(!pending.includes('registry:ui/' + name));
+  for (const name of ['input-example', 'textarea-example', 'input-file'])
+    assert.ok(pending.includes('registry:example/' + name));
   for (const name of ['basic', 'button', 'badge', 'size', 'color', 'custom'])
     assert.ok(!pending.includes('registry:example/spinner-' + name));
   assert.ok(!pending.includes('registry:ui/badge'));

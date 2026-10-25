@@ -28,7 +28,7 @@ commands serial because they regenerate the shared harness source directory.
 For Android, set `JAVA_HOME` and `ANDROID_HOME` for the pinned React Native
 runtime and start a dedicated emulator. Run `pnpm test:native-ui:android -- --device emulator-5558`.
 The runner builds a release app and AndroidX UI Automator instrumentation, then checks
-all twelve required native cases. Skipped, aborted and incomplete runs fail. Source
+all fifteen required native cases. Skipped, aborted and incomplete runs fail. Source
 hashes, retained APKs, native screenshots, hierarchy dumps and logs remain under
 `.artifacts/native-ui-android/`. Both platforms use one owned QA preparation path;
 unrelated directories and symlinked outputs are rejected. Keep harness preparation
@@ -89,6 +89,35 @@ labels replace SVG status semantics; SVG descendants remain hidden from accessib
 Custom authored spinner glyphs use the same reduced-motion policy. Native styles,
 props and View refs replace browser SVG host attributes and refs.
 
+Input and Textarea retain all eight newer preset rules and the three frozen source
+families, including responsive type, placeholder/selection colors, invalid/disabled
+paint, source geometry and explicit caller overrides. Native intrinsic layout drives modern
+Textarea growth and shrinkage; frozen Default/New York keep their authored fixed minimum.
+Authored HTML rows affects only fixed-sizing sources, matching the [HTML textarea
+sizing rules](https://html.spec.whatwg.org/multipage/rendering.html#the-textarea-element-2).
+Explicit native numberOfLines remains available. Automatic native editing mirrors
+uncontrolled text internally while controlled values remain owned by the application.
+The OS owns text selection foreground and editing handles. Browser field-sizing and
+resize handles become native intrinsic sizing and scrolling; CSS focus outlines
+and transitions follow native focus/state rendering. Android RN 0.86 routes TextInput
+edge colors to every edge; a native width/padding projection preserves authored
+underlines and exact content insets without that unsupported edge-color dispatch.
+
+Use FileInput for a system document picker with typed file metadata, MIME filters,
+multiple selection, cancellation and retry. Picked documents are copied to the local
+cache; URI access and uploads belong to the application. Browser FileList, DOM file
+input events, multipart encoding and arbitrary extension-to-MIME inference are not
+native APIs. File selector typography retains its separate source slot. Unsupported
+extension filters fail explicitly instead of silently accepting every file.
+Use TemporalInput with type date/time for native date/clock selection. Dates use local
+YYYY-MM-DD values and times use minute-precision HH:mm values. Bounds, overnight time
+ranges, required fields, cancel, disabled/stale results and provider errors preserve
+application ownership. iOS stages selection until Apply; Android uses its system
+confirmation. Native props, refs, keyboard modes and value callbacks replace DOM
+input properties/events; browser date/time formatting, second/fractional step controls
+and HTML autofill behavior stay web-specific. These fields have no implicit server,
+file upload or application submission handler.
+
 Skeleton retains all eleven source style families, including frozen New York primary
 transparency and New York v4 accent paint. Its native pulse follows the source two-second
 cubic easing cycle and half-opacity midpoint, responds to live reduced-motion changes,
@@ -143,12 +172,11 @@ paint/animation parity. Native device/keyboard/visual acceptance remains separat
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 446 reviewed source modules,
+The authored component example overlay currently includes 452 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 `node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`
 and `node scripts/native-icons.mjs --check`. Their coverage remains partial while
-component preset/API parity is unfinished. The overlay includes 99 distinct published
-examples from each of the legacy Default and New York registries. Their original
+component preset/API parity is unfinished. The overlay includes 100 distinct published examples from each of the legacy Default and New York registries. Their original
 source files, color generation, controlled callbacks and hashes are retained;
 matching names never substitute the modern source. Filled legacy destructive buttons
 and badges remain distinct from modern translucent variants.

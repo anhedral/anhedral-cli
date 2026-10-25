@@ -1,24 +1,14 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { format, resolveConfig } from 'prettier';
-import { loadOfficialRegistry, sha256, validateStyleGlobals } from './shadcn-registry.mjs';
+import { loadOfficialRegistry, sha256 } from './shadcn-registry.mjs';
+import { nativeGlobalMetrics } from './native-style-metrics.mjs';
+export { nativeGlobalMetrics } from './native-style-metrics.mjs';
 const target = (component) =>
   fileURLToPath(new URL('../assets/ui/native/_' + component + '-presets.tsx', import.meta.url));
 const variants = ['default', 'outline', 'secondary', 'ghost', 'destructive', 'link'];
 const sizes = ['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg'];
-export function nativeGlobalMetrics(inventory) {
-  validateStyleGlobals(inventory);
-  const global = inventory.styleGlobals['apps/v4/app/globals.css'];
-  const radius = Object.fromEntries(
-    [
-      ...global.content.matchAll(
-        /--radius-(sm|md|lg|xl|2xl|3xl|4xl):\s*(?:calc\(var\(--radius\) \* ([\d.]+)\)|var\(--radius\));/g,
-      ),
-    ].map((match) => [match[1], Number(match[2] ?? 1)]),
-  );
-  if (Object.keys(radius).length !== 7) throw Error('Upstream radius formulas need native review.');
-  return { upstream: inventory.source, globals: { sha256: global.sha256, radius } };
-}
+
 function nativeComponentPresets(inventory, component) {
   if (component === 'skeleton') return nativeSkeletonPresets(inventory);
   if (component === 'card') return nativeCardPresets(inventory);
@@ -384,6 +374,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       source: await source(inventory, component),
     })),
   );
+  const { nativeInputPresets, nativeInputPresetSource } =
+    await import('./native-input-presets.mjs');
+  for (const component of ['input', 'textarea'])
+    outputs.push({
+      component,
+      target: target(component),
+      data: nativeInputPresets(inventory, component),
+      source: await nativeInputPresetSource(inventory, component),
+    });
   outputs.push({
     component: 'metrics',
     target: metricsTarget,

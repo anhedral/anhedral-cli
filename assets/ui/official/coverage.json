@@ -2958,16 +2958,30 @@
       }
     },
     "registry:example/input-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All available authored frozen generations retain their original source, native control modes, disabled/placeholder/text state and independent provenance. Button composition retains source submit ownership; these demonstration buttons have no implicit application or provider handler. Native style/API matrices and real text editing/resizing are tested, including the full fifteen-case Android/iOS suites.",
       "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_input-border.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-legacy-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "b9857c182c1b565aac2a3cf7d1963e9a04efcd1a0fb5e864b7664c51f665019f",
@@ -2976,16 +2990,30 @@
       }
     },
     "registry:example/input-disabled": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All available authored frozen generations retain their original source, native control modes, disabled/placeholder/text state and independent provenance. Button composition retains source submit ownership; these demonstration buttons have no implicit application or provider handler. Native style/API matrices and real text editing/resizing are tested, including the full fifteen-case Android/iOS suites.",
       "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_input-border.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-legacy-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "738a17625b07c54567440404239b3b6455f67b39a3b0acbb11e7f83c1cb7c42e",
@@ -3096,16 +3124,30 @@
       }
     },
     "registry:example/input-with-button": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All available authored frozen generations retain their original source, native control modes, disabled/placeholder/text state and independent provenance. Button composition retains source submit ownership; these demonstration buttons have no implicit application or provider handler. Native style/API matrices and real text editing/resizing are tested, including the full fifteen-case Android/iOS suites.",
       "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_input-border.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-legacy-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "8df91d9b5f696c1bdb4bbacf2094014b0668f3cd1ae309d87d5b5ba9f629bcc2",
@@ -3576,16 +3618,30 @@
       }
     },
     "registry:example/textarea-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All available authored frozen generations retain their original source, native control modes, disabled/placeholder/text state and independent provenance. Button composition retains source submit ownership; these demonstration buttons have no implicit application or provider handler. Native style/API matrices and real text editing/resizing are tested, including the full fifteen-case Android/iOS suites.",
       "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_input-border.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-legacy-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "75780866ba353c74f06834b3e744b82250e1283981ecdfc9de22506edba9b53e",
@@ -3594,16 +3650,30 @@
       }
     },
     "registry:example/textarea-disabled": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All available authored frozen generations retain their original source, native control modes, disabled/placeholder/text state and independent provenance. Button composition retains source submit ownership; these demonstration buttons have no implicit application or provider handler. Native style/API matrices and real text editing/resizing are tested, including the full fifteen-case Android/iOS suites.",
       "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_input-border.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-legacy-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "966aa802f283b33edd061c12d06ab84feae1b90297ed9d82154215325d2b915a",
@@ -3612,16 +3682,30 @@
       }
     },
     "registry:example/textarea-with-button": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All available authored frozen generations retain their original source, native control modes, disabled/placeholder/text state and independent provenance. Button composition retains source submit ownership; these demonstration buttons have no implicit application or provider handler. Native style/API matrices and real text editing/resizing are tested, including the full fifteen-case Android/iOS suites.",
       "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_input-border.tsx"
       ],
       "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-legacy-examples.test.tsx"
       ],
       "reviewedInputs": {
         "default": "7e3ce9dcb8bd69867a2f143dedd7dca924aefb533f9713a48a73671ee586fde5",
@@ -4475,15 +4559,27 @@
     },
     "registry:example/textarea-example": {
       "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "reason": "The authored layouts, native text/file/date/time controls, field associations, source typography and user value handling are retained and tested. Dependent Label/Field/Select/NativeSelect preset review remains pending; initial rendering and a functional picker do not complete their source presentation.",
       "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
         "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_input-border.tsx"
       ],
       "tests": [
-        "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt"
       ],
       "reviewedInputs": {
         "aria-luma": "8c4391a1490173da2c70c7815756d3d773cc0d0280b6f47288cbaa143bf2f4af",
@@ -6716,6 +6812,193 @@
         "radix-sera": "85c354b480c2fb443904152cbf2b0619fee99062b8a7d5c1e5d7a961cff6c223",
         "radix-vega": "10dc57e5aab5171571ed753d69911f650329c37d9b45ac9bd518a709d123dcbf"
       }
+    },
+    "registry:ui/input": {
+      "status": "ported",
+      "reason": "All eleven source families retain pinned source classes, eight preset rules, responsive typography, native font scaling, focus/invalid/disabled paint and authoritative caller styles. Authored text/password/email/phone/URL/search/number inputs use native editing; file/date/time types use explicit SDK controls. Native props, TextInput/View refs and typed callbacks replace DOM hosts/events. File selection/cancel/retry and date/time staging, bounds, cancellation and stale-result guards are tested. All fifteen Android and iOS OS acceptance cases passed; screen-reader and physical-device acceptance remains separate.",
+      "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
+        "assets/ui/native/_input-border.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "1ab885c7ee35caa951adeff05490aafc719da71e567bf04972e84cc26a455029",
+        "aria-lyra": "10068655d57e57a3a321cdfd53900e03277477df84035882732878c6192b1f68",
+        "aria-maia": "419170dd77362b85cbfb1453edea45799c929825732fd03899e115cf57c4906e",
+        "aria-mira": "2a2fd6790980c72d79529c8f495798f7750a041c0dd23d80806a635481aed373",
+        "aria-nova": "ec7b4b944058481909b073dd786eb74a0bb7a940a2c4bd939eb7f565b6997644",
+        "aria-rhea": "d404b77300277ed98ca42b95f70245003f71b500cafa62065e3f144a64f959cf",
+        "aria-sera": "d5054a9f7399ca1730e00b8931c8ffea7655e7ce4ddc7637c00c2165f7b01fdc",
+        "aria-vega": "ac5d6a02f45a88c5d3671502f533125ea4e686f38f2222efb1b4d29765409e61",
+        "base-luma": "65275edf4dd3d6681c034dfbbce9ca5897f0a3d04de0d1dd0d4d4cce9e1aaf62",
+        "base-lyra": "0e7ae00b74f274cb04f32369018984de254d1b9da15e2ee7f11f9c6ce69951ba",
+        "base-maia": "906141bc751a840d4a95b39686f68982ddcdcdf28add6c88464c49492b6f7bf7",
+        "base-mira": "d3606d3683e5395dad7a3cd50541d41758906829601e88dec188b1a38017a5c0",
+        "base-nova": "ac8a0f859f89c34a441612e8ae38a5bbe14d1247cdeff29319478717d3aa6cd6",
+        "base-rhea": "010f84ac2aaf16ce86198bdad7d279fc123cefd63db9b9301963788af5b5ea52",
+        "base-sera": "f427a27113bfb9d9de84357ab02ac19e540b26847e658870ddec228021bfd70b",
+        "base-vega": "75840b47e617e9670de82529799635e5ae99865e1004457e17c5e8e6bc7e7771",
+        "default": "9efb597e066d2856e8ca626f585a60dced1b6a214ba587fa4350c8936960f74b",
+        "new-york": "05b00e2b2da125f0e34208712a9fd59fc61071301cba621240ac5a9c6299fbaf",
+        "new-york-v4": "776751b2024213784aa8b9e2f1860e283b76d9c4cc70d12e1c76559e0ade2dcd",
+        "radix-luma": "dbc27c3cb0b549f3de436e8dc7112cefb3a05f5b1278d8776a6082bed6d7b4e4",
+        "radix-lyra": "c79dab6fbd84097d27c43e75b0ab47844e0d3ae5475d564d6a6c935067483371",
+        "radix-maia": "c8e1bca426ef69e3c37e278284f1509da63f4327615320c7416f2f64064bca4c",
+        "radix-mira": "4b5b485f43dbd07f302d63efb7ae04592ad15049da21722c194788b2d453dbf4",
+        "radix-nova": "0d036363a95fc0ffedbe0476a7ca8a6b53d7ff3682d66be20b6ab5c1a6239d36",
+        "radix-rhea": "1a59e84919c6390fc940e027727fa6812c04c33377b5394380d9b4890fc247de",
+        "radix-sera": "d8a4dffff8f682091f65171172763f796b3bd5159b25a292c954909eb1de49a9",
+        "radix-vega": "aad0a5d2aa442ebc4aecf6ee328404b47ff0dbdbc5112057febd4a39b7b3cba8"
+      }
+    },
+    "registry:ui/textarea": {
+      "status": "ported",
+      "reason": "All eleven source families retain pinned classes, eight preset rules, source minimums, responsive typography, placeholder/selection colors and focus/invalid/disabled paint. Modern native intrinsic sizing grows/shrinks without locking to an initial content event, mirroring uncontrolled text while retaining controlled ownership. HTML rows affects frozen fixed-sizing generations, with font/padding/border-aware heights; native numberOfLines and explicit heights remain available. Native sizing/scrolling replaces browser field-sizing and resize handles. Both platforms pass all fifteen OS cases; expanded screen-reader and physical-device acceptance remains separate.",
+      "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
+        "assets/ui/native/_input-border.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "6083c4bbb86cead3ba07ba80838cda9b91869222d9af54e5dd6c0a41e1a5beaa",
+        "aria-lyra": "f61f7a01e5719b9023c9b5df4f376d2d9c86ef4217f54ff4143d76868bfbf200",
+        "aria-maia": "ae817895e5ed07d546f08a6dec832597985cf611e909cda2cf26e92319bc8213",
+        "aria-mira": "0ec15497c3bcd20bb69443fa948e64feeb3f9abb51e3801243c6d4f62173cccb",
+        "aria-nova": "8ab513dc0bc0af24c207521a0dbcffb2dda27bde20bfb042f1c78ab75285bcf4",
+        "aria-rhea": "03590cdccd04d77f89cb79901fbea2aab9508fcb570f4ddd3e5f7950163206db",
+        "aria-sera": "ebfa1a480e97555ccb175e2d7ba67d5f9bbe861da8a13a1e695c94948e2433d5",
+        "aria-vega": "8c1aa1496a3ec21b84b7dbb53964bd4cc4ce77e6e67ed0e9fac9b0508711cb4c",
+        "base-luma": "76364f80e71b16c4bd89970262d988841b0aaee33c444f12faa8d8c466148501",
+        "base-lyra": "b9efc63baa485253a885e18ec7ae733a13fb843631e73ddd1f361d83181697e7",
+        "base-maia": "6e17a371b171aca90fc3c53982a1ca39c89f961c7db32a105e12b2fc62d37610",
+        "base-mira": "70faa0125c799c52b1ddceb1f9b87b8e92ac9d5aaf91d985a2ba49a965adfa12",
+        "base-nova": "6c772512b307754cfc306aba1980a62f346b473cf0eb12de60a74f56dd74eca0",
+        "base-rhea": "c04f460c5f25b699a38854e21f2779ccfc37af354ff63c800ea7bf0370b0f2ed",
+        "base-sera": "1d3d971671c16b24d521a6b943e93d861631d22441cc2d1bddc3752715465503",
+        "base-vega": "c37b854b3c2d06578c08555956332c83ab44cdd32abb48c8d5374e49cf3a1809",
+        "default": "3f6ca90bd14805fb59b86affd565edf613b17cf8b92f9a1861ac655464d780c0",
+        "new-york": "53f776ac7840e0da090c2875a74c51ebe505b084b13d23448029c1c68f9479a3",
+        "new-york-v4": "bec7edc59d62be196ca7287153df5c2468f8d8ee432690789b0708a16b761359",
+        "radix-luma": "8830441ad028a8e222f4a5ccaf519005a77a8b0bba29a9049dd2be6fe2b07a2f",
+        "radix-lyra": "75a56971bb1ba55c1059287346fb2b8ade14ec39a75693cf0cf1e837f6c48da4",
+        "radix-maia": "910cb0bd73b14b1127c7c441e112db274de714d78b24812edc016439c80d7b4d",
+        "radix-mira": "25a87681bb1045126041494b8ca92130a6c59e3e490105bd6bcbc21092340e87",
+        "radix-nova": "e61227f8c4fcc01e6ceb32c8c50d1fd8ad8102e4d7fd88e6d9a0ec4d7d5ff2fb",
+        "radix-rhea": "38d68912231686340a732cf7c6b86f46f15fd97cf46bfbe87b4d0476b191eb18",
+        "radix-sera": "04d9eea9708055b649092cd4341335518eabf7b398b2ac063d8ea615b003033e",
+        "radix-vega": "a9f1c951dd0ae0c8b62041e2bdd395ccbbf9922ec030942050d889f5e303d5f3"
+      }
+    },
+    "registry:example/input-example": {
+      "status": "partial",
+      "reason": "The authored layouts, native text/file/date/time controls, field associations, source typography and user value handling are retained and tested. Dependent Label/Field/Select/NativeSelect preset review remains pending; initial rendering and a functional picker do not complete their source presentation.",
+      "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_input-border.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt"
+      ],
+      "reviewedInputs": {
+        "aria-luma": "6e40d0b0f3f347c71c3aba45e3424ad23e7da1d73fda73fb533baec8029b8619",
+        "aria-lyra": "aaaa96fd84e371972e31c9011a298e0db48b15001f66865957a7ae4f0e4fcb7e",
+        "aria-maia": "61079c9f1f369ecaf3a6f4aed1ca910529e52a5f23399fe93af8a7f2e953fe9b",
+        "aria-mira": "501883c6495ff55910731dc194e7e8f148349984214516bc7cfcdf9335acf198",
+        "aria-nova": "a22bc06a2088da882df5acfc10385dbc44a392e992fc5d83c5847a0199343c8d",
+        "aria-rhea": "fdfb3a04e310a46516865242427c5026614779cccc054e23b8932eca63390339",
+        "aria-sera": "63183387fe2cb5c3212945775b6b8a8e0c6e794c43f034bdc455d770535b9e48",
+        "aria-vega": "943f96d06c0604721f12cc3c883114e07b4d69fab8f5b05ba4fe628842322738",
+        "base-luma": "f9c1ef9332d51728c1898374456e1a51f53a4eb8d011418bdfd3e4f6b3d347fa",
+        "base-lyra": "a38513ff4cc316d812ddf07ddc0aeae2571c87a49c2f7ee5d1fb47ad8d1e6f03",
+        "base-maia": "ab14dfe2330ebabe325cac13f7c57c755a3b1be01dbd175978efb36d33664755",
+        "base-mira": "e7f70af54f9c22fc384283a25e46231a77521298dec38e8105434e587f08e6b9",
+        "base-nova": "bacad99ff0fb26831bcb3fc967bf18070bf7ca9587e5aeee43efe71c802f2cf7",
+        "base-rhea": "48ae7a086ba0b0116e06799c3f4c010fbdccd2b60f66d9a0105be9bd711328ce",
+        "base-sera": "6ce0dcd46a0ab7d85934775e0fbdf278b1b0e2cb6b0c311e59a846f020c5d769",
+        "base-vega": "2f5734d671df16ca3b000c2bdd175f9b97e2b75b18d970efa0cbdac3143acc74",
+        "radix-luma": "4d8ae2742be439db49a9010d6f64949f2c345859de7bd748acdee9c027f02f0e",
+        "radix-lyra": "45f91a54dab4524ac588a03b1ebcf3cfcecdfcbf687a342c08174d1cc40f26f2",
+        "radix-maia": "e80f8ef751a54b27bb5210c20502e68ea57a929b5d79b9da0c47e2c49a2c4738",
+        "radix-mira": "2bd4c8f7ab10aab1c06e5b48616a1c62f533c884a359257d55e0484696a9c7f9",
+        "radix-nova": "58fb11742c7826957402eb02818348513636c2675e9b1d08adcba8b500ab2f2a",
+        "radix-rhea": "eb95ce3a8c403c8b4b3763ff244af6e65b2c20d6c2da36f98a401c55bb1b5a20",
+        "radix-sera": "cea025b9a2402b7189476ffb32c32b19018474af8e3bc5e8c26450a10297824f",
+        "radix-vega": "0fd59869f19dd524501dad1c23759c6b08f8ef4f7a1950ac28362eebcd64700c"
+      }
+    },
+    "registry:example/input-file": {
+      "status": "partial",
+      "reason": "The authored layouts, native text/file/date/time controls, field associations, source typography and user value handling are retained and tested. Dependent Label/Field/Select/NativeSelect preset review remains pending; initial rendering and a functional picker do not complete their source presentation.",
+      "nativeFiles": [
+        "assets/ui/native/input.tsx",
+        "assets/ui/native/_input-appearance.tsx",
+        "assets/ui/native/_input-presets.tsx",
+        "assets/ui/native/_textarea-presets.tsx",
+        "assets/ui/native/_preset-input-style.tsx",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/file-input.tsx",
+        "assets/ui/native/temporal-input.tsx",
+        "assets/ui/native-example-recipes.json.gz",
+        "assets/ui/native/_input-border.tsx"
+      ],
+      "tests": [
+        "tests/native-ui/registry-input-presets.test.tsx",
+        "tests/native-ui/registry-input-examples.test.tsx",
+        "tests/native-ui/registry-file-input.test.tsx",
+        "tests/native-ui/registry-temporal-input.test.tsx",
+        "tests/test-native-input-presets.test.mjs",
+        "tests/native-ui/device/RegistryUITests.swift",
+        "tests/native-ui/device/RegistryAndroidTests.kt"
+      ],
+      "reviewedInputs": {
+        "default": "7c2be85b8d7f84d8f35f47dc73da2c78c132641989be5967f1d3fa003ea7cdd8",
+        "new-york": "d100fb9932e18630c48f518e37aa7c23ba02bb5b3b40b1799fd52a87a1f610a3",
+        "new-york-v4": "a1d6aca7eea30860de1790073af611d6488bc6ae861f1427f7e9c6676818f3a8"
+      }
     }
   },
   "webSpecific": [
@@ -6788,6 +7071,16 @@
       "feature": "SVG loading status, root SVG refs and animation classes",
       "adaptation": "Actual native Lucide glyph, progressbar/loading names, native View refs and real native dimensions/stroke. One native-driver rotation follows live reduced motion. Animation classes control visual motion independently from loading state; native stops may explicitly keep the glyph visible.",
       "status": "Source glyph matches the lock-integrity-verified upstream package. All eleven style families, authored sizes/colors/custom glyphs and Button/Badge composition have native tests. Both platforms pass twelve native OS cases; physical-device/screen-reader acceptance remains separate."
+    },
+    {
+      "feature": "Browser field sizing, HTML rows and file-selector pseudo-elements",
+      "adaptation": "Native intrinsic text sizing preserves modern content-driven growth and shrinkage without fixing the initial content height. Frozen HTML rows becomes a font/padding/border-aware native height. Explicit native line counts and heights remain available. File selector text retains its own source slot and inherited explicit typeface. Native selection colors, editing handles, state paint and scrolling replace browser outlines, selection foreground and resize handles. Android TextInput edge-color dispatch is replaced by visible edge widths and compensating padding, preserving the source border box and content insets.",
+      "status": "All eleven style families and authored field examples have source/type/state tests. Real native layout, editing, growth/shrinkage and fixed rows pass on both OS platforms. Dependent field/label/select example presets remain pending separately."
+    },
+    {
+      "feature": "HTML FileList/multipart submission and date/time input hosts",
+      "adaptation": "Expo DocumentPicker returns typed cache-backed URI metadata, MIME filters, multiple selection and cancellation/error callbacks. Uploads and multipart encoding require an application handler. Native date/clock pickers use local ISO date/minute values, bounds and overnight time ranges. iOS wheel drafts are staged without round-tripping intermediate values until Apply; external controlled updates retain ownership. Browser DOM/SVG refs/events, file drag/drop, directory selection, native-calendar range/locale differences and seconds/fractional step controls remain explicit integration or per-item boundaries.",
+      "status": "Provider errors, invalid/stale/disabled results, validation, controlled state and callback ownership are tested. Both final Android and iOS builds pass every one of fifteen required OS cases, including system document selection/cancel and date/time selection/cancel. Other drag/drop/attachment items remain pending independently."
     }
   ]
 }

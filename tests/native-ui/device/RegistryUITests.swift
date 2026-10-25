@@ -47,7 +47,7 @@ final class RegistryUITests: XCTestCase {
     let input = app.textFields["Email"]
     XCTAssertTrue(input.waitForExistence(timeout: 10))
     // The source places its 20-point label above the input with a 12-point gap.
-    let label = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: input.frame.minX + 20, dy: input.frame.minY - 22))
+    let label = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: input.frame.midX, dy: input.frame.minY - 22))
     label.tap()
     app.typeText("native@example.com")
     XCTAssertEqual(input.value as? String, "native@example.com")
@@ -243,6 +243,76 @@ final class RegistryUITests: XCTestCase {
     XCTAssertTrue(app.descendants(matching:.any).matching(identifier:"Native source spinner").firstMatch.exists)
     let screenshot=XCTAttachment(screenshot:app.screenshot())
     screenshot.name="Native source Spinner glyph and dimensions"; screenshot.lifetime = .keepAlways; add(screenshot)
+  }
+
+  func testNativeInputHeightsAndTextareaContentResizing() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch(); openStory("native/input-metrics",in:app)
+    let scroll=storyScroll(app)
+    func reveal(_ element:XCUIElement) {
+      for _ in 0..<24 {
+        if element.exists && scroll.frame.contains(element.frame) { return }
+        scroll.swipeUp()
+      }
+      XCTFail("Missing input: "+element.label)
+    }
+    for (name,height) in [("vega",36.0),("nova",32.0),("maia",36.0),("lyra",32.0),("mira",28.0),("luma",36.0),("sera",40.0),("rhea",32.0)] {
+      let input=app.textFields["Native input "+name]; reveal(input)
+      XCTAssertEqual(input.frame.height,height-2,accuracy:1)
+    }
+    XCTAssertTrue(app.staticTexts["Input geometry: vega=160x36; nova=160x32; maia=160x36; lyra=160x32; mira=160x28; luma=160x36; sera=160x40; rhea=160x32"].waitForExistence(timeout:10))
+    XCTAssertTrue(app.staticTexts["Legacy textarea height: 90"].waitForExistence(timeout:10))
+    let textarea=app.textViews["Native growing textarea"]; reveal(textarea)
+    XCTAssertEqual(textarea.frame.height,62,accuracy:1)
+    textarea.tap(); textarea.typeText("one\ntwo\nthree\nfour\nfive\nsix\nseven")
+    let grown=app.staticTexts.matching(NSPredicate(format:"label BEGINSWITH %@","Textarea height: ")).firstMatch
+    let expanded=NSPredicate { _,_ in (Int(grown.label.components(separatedBy:": ").last ?? "0") ?? 0) > 64 }
+    expectation(for:expanded,evaluatedWith:nil); waitForExpectations(timeout:10)
+    XCTAssertEqual(textarea.value as? String,"one\ntwo\nthree\nfour\nfive\nsix\nseven")
+    let value=textarea.value as? String ?? ""
+    textarea.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:value.count))
+    XCTAssertTrue(app.staticTexts["Textarea height: 64"].waitForExistence(timeout:5))
+  }
+  func testSystemDocumentPickerSelectionAndCancellation() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch(); openStory("native/file-input",in:app)
+    let field=app.buttons.matching(NSPredicate(format:"label == %@","Native document")).firstMatch
+    XCTAssertTrue(field.waitForExistence(timeout:10)); field.tap()
+    let browse=app.buttons["Browse"]
+    if browse.waitForExistence(timeout:3) { browse.tap() }
+    let local=app.cells.matching(NSPredicate(format:"label CONTAINS %@","On My iPhone")).firstMatch
+    if local.waitForExistence(timeout:3) { local.tap() }
+    let folder=app.cells.matching(NSPredicate(format:"label CONTAINS %@","AnhedralRegistryQA")).firstMatch
+    if folder.waitForExistence(timeout:3) { folder.tap() }
+    let file=app.cells.matching(NSPredicate(format:"label CONTAINS %@","anhedral-native-file-qa")).firstMatch
+    XCTAssertTrue(file.waitForExistence(timeout:10)); file.tap()
+    XCTAssertTrue(app.staticTexts["Document selection: anhedral-native-file-qa.txt:true"].waitForExistence(timeout:10))
+    field.tap()
+    let cancel=app.buttons["Cancel"]; XCTAssertTrue(cancel.waitForExistence(timeout:10)); cancel.tap()
+    XCTAssertTrue(app.staticTexts["Document cancellations: 1"].waitForExistence(timeout:5))
+    XCTAssertTrue(app.staticTexts["Document selection: anhedral-native-file-qa.txt:true"].exists)
+  }
+  func testSystemDateAndTimeSelectionAndCancellation() {
+    let app=XCUIApplication(bundleIdentifier:"dev.anhedral.registryqa")
+    app.launch(); openStory("native/temporal-input",in:app)
+    let date=app.buttons.matching(NSPredicate(format:"label == %@","Native date")).firstMatch
+    XCTAssertTrue(date.waitForExistence(timeout:10)); date.tap()
+    XCTAssertTrue(app.pickerWheels.firstMatch.waitForExistence(timeout:10))
+    let day=app.pickerWheels.allElementsBoundByIndex.first { ($0.value as? String)=="25" }!
+    day.adjust(toPickerWheelValue:"17")
+    let selectedDay=NSPredicate { _,_ in (day.value as? String)?.trimmingCharacters(in:.whitespaces)=="17" }
+    expectation(for:selectedDay,evaluatedWith:nil); waitForExpectations(timeout:5)
+    app.buttons["Apply date"].tap()
+    XCTAssertTrue(app.staticTexts["Date selection: 2026-10-17"].waitForExistence(timeout:5))
+    app.buttons.matching(NSPredicate(format:"label == %@","Native time")).firstMatch.tap()
+    XCTAssertTrue(app.pickerWheels.firstMatch.waitForExistence(timeout:10))
+    let minute=app.pickerWheels.allElementsBoundByIndex.first { ($0.value as? String)?.hasPrefix("42")==true }!
+    minute.adjust(toPickerWheelValue:"43")
+    app.buttons["Apply time"].tap()
+    XCTAssertTrue(app.staticTexts["Time selection: 15:43"].waitForExistence(timeout:5))
+    date.tap(); app.buttons["Cancel date"].tap()
+    XCTAssertTrue(app.staticTexts["Date selection: 2026-10-17"].exists)
+    let screenshot=XCTAttachment(screenshot:app.screenshot()); screenshot.name="Native system input values"; screenshot.lifetime = .keepAlways; add(screenshot)
   }
 
 }

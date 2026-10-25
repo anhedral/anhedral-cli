@@ -2,10 +2,29 @@ import { readFileSync, writeFileSync, mkdirSync, openSync, closeSync, copyFileSy
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { prepareNativeQAApp, nativeQASourceManifest } from './native-ui-device.mjs';
+import {
+  prepareNativeQAApp,
+  nativeQASourceManifest,
+  seedNativeQADocument,
+} from './native-ui-device.mjs';
 export { nativeQAApp, nativeQAExport } from './native-ui-device.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const nativeIOSTestCount = 12;
+export const nativeIOSTestCount = 15;
+export function nativeIOSTestSelection(source, requested) {
+  const available = [...source.matchAll(/^\s*func (test[A-Za-z0-9]+)\(/gm)].map(
+    (match) => match[1],
+  );
+  if (available.length !== nativeIOSTestCount || new Set(available).size !== available.length)
+    throw Error('Native XCTest source count changed without review.');
+  if (requested === undefined) return available;
+  const selected = requested.split(',').map((value) => value.trim());
+  if (
+    selected.some((name) => !available.includes(name)) ||
+    new Set(selected).size !== selected.length
+  )
+    throw Error('Unknown or duplicate focused native XCTest selection.');
+  return selected;
+}
 export function assertNativeIOSResult(summary, expected = nativeIOSTestCount, device) {
   if (
     !Number.isSafeInteger(expected) ||
@@ -42,6 +61,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     throw Error(
       'Pass --device <dedicated simulator UUID>. Expo 57 requires a supported runtime; iOS 27 scene lifecycle remains unresolved.',
     );
+  const source = readFileSync(
+    path.join(root, 'tests/native-ui/device/RegistryUITests.swift'),
+    'utf8',
+  );
+  const selectionIndex = process.argv.indexOf('--tests');
+  if (selectionIndex >= 0 && process.argv[selectionIndex + 1] === undefined)
+    throw Error('Pass native XCTest method names after --tests.');
+  const selected = nativeIOSTestSelection(
+    source,
+    selectionIndex < 0 ? undefined : process.argv[selectionIndex + 1],
+  );
   run(process.execPath, [
     require.resolve('expo/bin/cli'),
     'prebuild',
@@ -51,10 +81,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     qa,
   ]);
   run('pod', ['install'], path.join(qa, 'ios'));
-  const source = readFileSync(
-    path.join(root, 'tests/native-ui/device/RegistryUITests.swift'),
-    'utf8',
-  );
   mkdirSync(path.join(qa, 'ios/RegistryUITests'), { recursive: true });
   writeFileSync(path.join(qa, 'ios/RegistryUITests/RegistryUITests.swift'), source);
   const ruby = `require 'xcodeproj'
@@ -106,7 +132,7 @@ scheme.test_action.build_configuration='Release';scheme.save_as(p,'AnhedralRegis
       'never',
       'ONLY_ACTIVE_ARCH=YES',
       'CODE_SIGNING_ALLOWED=NO',
-      'test',
+      'build-for-testing',
     ],
     {
       cwd: qa,
@@ -118,6 +144,61 @@ scheme.test_action.build_configuration='Release';scheme.save_as(p,'AnhedralRegis
   console.log('Native XCTest evidence: ' + evidence);
   if (result.error) throw result.error;
   if (result.status !== 0) throw Error('Native XCTest failed; inspect retained evidence.');
+  const derived = path.join(root, '.artifacts/native-ui-ios/derived');
+  run('xcrun', [
+    'simctl',
+    'install',
+    device,
+    path.join(derived, 'Build/Products/Release-iphonesimulator/AnhedralRegistryQA.app'),
+  ]);
+  const container = spawnSync(
+    'xcrun',
+    ['simctl', 'get_app_container', device, 'dev.anhedral.registryqa', 'data'],
+    { encoding: 'utf8' },
+  );
+  if (
+    container.status !== 0 ||
+    !path.isAbsolute(container.stdout.trim()) ||
+    !container.stdout.trim().includes('/Containers/Data/Application/')
+  )
+    throw Error('Could not resolve the owned simulator application data directory.');
+  seedNativeQADocument(path.join(container.stdout.trim(), 'Documents'));
+  const testLog = openSync(path.join(evidence, 'xctest.log'), 'w');
+  const tested = spawnSync(
+    'xcodebuild',
+    [
+      '-workspace',
+      path.join(qa, 'ios/AnhedralRegistryQA.xcworkspace'),
+      '-scheme',
+      'AnhedralRegistryQA',
+      '-configuration',
+      'Release',
+      '-sdk',
+      'iphonesimulator',
+      '-destination',
+      'id=' + device,
+      '-derivedDataPath',
+      derived,
+      '-resultBundlePath',
+      path.join(evidence, 'tests.xcresult'),
+      '-collect-test-diagnostics',
+      'never',
+      'ONLY_ACTIVE_ARCH=YES',
+      'CODE_SIGNING_ALLOWED=NO',
+      ...(selectionIndex < 0
+        ? []
+        : selected.map((name) => '-only-testing:RegistryUITests/RegistryUITests/' + name)),
+      'test-without-building',
+    ],
+    {
+      cwd: qa,
+      stdio: ['ignore', testLog, testLog],
+      env: { ...process.env, EXPO_NO_TELEMETRY: '1', EXPO_NO_DOTENV: '1' },
+    },
+  );
+  closeSync(testLog);
+  if (tested.error) throw tested.error;
+  if (tested.status !== 0) throw Error('Native XCTest failed; inspect retained test evidence.');
   const report = spawnSync(
     'xcrun',
     [
@@ -126,16 +207,25 @@ scheme.test_action.build_configuration='Release';scheme.save_as(p,'AnhedralRegis
       'test-results',
       'summary',
       '--path',
-      path.join(evidence, 'results.xcresult'),
+      path.join(evidence, 'tests.xcresult'),
     ],
     { encoding: 'utf8' },
   );
   if (report.error) throw report.error;
   if (report.status !== 0) throw Error('Native XCTest summary could not be read.');
   writeFileSync(path.join(evidence, 'summary.json'), report.stdout);
-  const passed = assertNativeIOSResult(JSON.parse(report.stdout), nativeIOSTestCount, device);
+  const passed = assertNativeIOSResult(JSON.parse(report.stdout), selected.length, device);
   writeFileSync(
     path.join(evidence, 'result.json'),
-    JSON.stringify({ phase: 'passed', device, ...passed }, null, 2) + '\n',
+    JSON.stringify(
+      {
+        phase: selectionIndex < 0 ? 'passed' : 'focused-passed',
+        device,
+        cases: selected,
+        ...passed,
+      },
+      null,
+      2,
+    ) + '\n',
   );
 }

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { validateNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
-test('446 authored component examples retain native source and complete source/style/dependency provenance', () => {
+test('452 authored component examples retain native source and complete source/style/dependency provenance', () => {
   const catalog = loadNativeExampleRecipes();
   validateNativeChartRecipes(loadOfficialRegistry(), catalog);
-  assert.equal(catalog.recipes.length, 446);
+  assert.equal(catalog.recipes.length, 452);
   for (const recipe of catalog.recipes)
     assert.doesNotMatch(recipe.source, /<(?:div|span|button|input|form|svg)\b|onClick=/);
   const pagination = catalog.recipes.find((recipe) => recipe.name === 'pagination-demo');
@@ -68,7 +68,7 @@ test('legacy published examples retain their own source hashes and scoped color 
   const recipes = loadNativeExampleRecipes().recipes;
   for (const style of ['default', 'new-york']) {
     const legacy = recipes.filter((recipe) => recipe.style === style);
-    assert.equal(legacy.length, 99);
+    assert.equal(legacy.length, 100);
     for (const recipe of legacy) {
       assert.match(recipe.origin, /public\/r\/styles\/[^/]+\/[^#]+#registry\//);
       assert.match(recipe.source, /generation="legacy"/);

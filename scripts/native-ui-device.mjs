@@ -15,6 +15,20 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import ts from 'typescript';
 const root = fileURLToPath(new URL('../', import.meta.url));
+export const nativeQADocumentName = 'anhedral-native-file-qa.txt';
+export const nativeQADocumentContent =
+  'Anhedral dedicated native document picker acceptance fixture.\n';
+export function seedNativeQADocument(directory) {
+  if (lstatSync(directory, { throwIfNoEntry: false })?.isSymbolicLink())
+    throw Error('Refusing a symlinked QA document directory.');
+  mkdirSync(directory, { recursive: true });
+  const target = path.join(directory, nativeQADocumentName);
+  const stat = lstatSync(target, { throwIfNoEntry: false });
+  if (stat && (!stat.isFile() || readFileSync(target, 'utf8') !== nativeQADocumentContent))
+    throw Error('Refusing to overwrite an unrelated document picker fixture.');
+  if (!stat) writeFileSync(target, nativeQADocumentContent, { flag: 'wx' });
+  return target;
+}
 export function nativeQAExport(source, requested) {
   const file = ts.createSourceFile(
     'recipe.tsx',
@@ -79,6 +93,9 @@ export function nativeQAApp(catalog, sourceFor) {
           '{id: "native/card-metrics",Component:NativeCardMatrix}',
           '{id: "native/button-callbacks",Component:NativeButtonCallbackMatrix}',
           '{id: "native/spinner-paint",Component:NativeSpinnerMatrix}',
+          '{id: "native/input-metrics",Component:NativeInputMatrix}',
+          '{id: "native/file-input",Component:NativeFileMatrix}',
+          '{id: "native/temporal-input",Component:NativeTemporalMatrix}',
         ].join(',\n') +
         '];',
     );
@@ -178,7 +195,10 @@ export async function prepareNativeQAApp(qa) {
           slug: 'anhedral-registry-qa',
           scheme: 'anhedral-registry-qa',
           version: '1.0.0',
-          ios: { bundleIdentifier: 'dev.anhedral.registryqa' },
+          ios: {
+            bundleIdentifier: 'dev.anhedral.registryqa',
+            infoPlist: { UIFileSharingEnabled: true, LSSupportsOpeningDocumentsInPlace: true },
+          },
           android: { package: 'dev.anhedral.registryqa' },
         },
       },

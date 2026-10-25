@@ -1,6 +1,8 @@
 import { useState, useRef, useMemo, type ReactNode } from 'react';
 import { TextInput, type TextInputProps } from 'react-native';
 import { Input, type InputProps } from './input';
+import { FileInput, type FileInputProps } from './file-input';
+import { TemporalInput, type TemporalInputProps } from './temporal-input';
 import { Textarea } from './textarea';
 import { InputGroupInput, InputGroupTextarea } from './input-group';
 import { composeNativeRefs } from './_slot';
@@ -119,7 +121,8 @@ function useRegistryInput({
           ? undefined
           : String(defaultValue),
     editable: props.editable ?? !disabled,
-    numberOfLines: props.numberOfLines ?? rows,
+    numberOfLines: props.numberOfLines,
+    nativeRows: rows,
     keyboardType: props.keyboardType ?? (pattern === '[0-9]*' ? 'number-pad' : keyboard),
     secureTextEntry: props.secureTextEntry ?? type === 'password',
     autoCapitalize:
@@ -164,12 +167,32 @@ function useRegistryInput({
   };
 }
 function inputBinding(Component: (props: InputProps) => ReactNode, multiline = false) {
-  return function RegistryInput(props: RegistryInputProps) {
-    const input = useRegistryInput({ ...props, multiline: props.multiline ?? multiline });
-    return <Component {...input} />;
-  };
+  return Object.assign(
+    function RegistryInput(props: RegistryInputProps) {
+      const input = useRegistryInput({ ...props, multiline: props.multiline ?? multiline });
+      return <Component {...input} />;
+    },
+    { nativeInputSlot: true },
+  );
 }
-export const RegistryInput = inputBinding(Input);
+const RegistryTextInput = inputBinding(Input);
+export type RegistryFileInputProps = FileInputProps & { type: 'file' };
+function isTemporalInput(
+  props: RegistryInputProps | RegistryFileInputProps | TemporalInputProps,
+): props is TemporalInputProps {
+  return props.type === 'date' || props.type === 'time';
+}
+export const RegistryInput = Object.assign(
+  function RegistryInput(props: RegistryInputProps | RegistryFileInputProps | TemporalInputProps) {
+    if (props.type === 'file') {
+      const { type: _type, ...file } = props;
+      return <FileInput {...file} />;
+    }
+    if (isTemporalInput(props)) return <TemporalInput {...props} />;
+    return <RegistryTextInput {...props} />;
+  },
+  { nativeInputSlot: true },
+);
 export const RegistryTextarea = inputBinding(Textarea, true);
 export const RegistryInputGroupInput = inputBinding(InputGroupInput);
 export const RegistryInputGroupTextarea = inputBinding(InputGroupTextarea, true);

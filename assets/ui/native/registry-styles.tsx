@@ -423,6 +423,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         kind === 'text' || kind === 'link'
           ? [translated.view, translated.text, nativeInline]
           : [translated.view, nativeInline];
+      if ('nativeInputSlot' in Component && Component.nativeInputSlot === true)
+        forwarded.style = [translated.view, translated.text, nativeInline];
       if (
         ('nativeCardTextSlot' in Component && Component.nativeCardTextSlot === true) ||
         ('nativeCardSlot' in Component && Component.nativeCardSlot === true)

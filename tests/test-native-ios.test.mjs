@@ -7,6 +7,7 @@ import {
   nativeQAExport,
   assertNativeIOSResult,
   nativeIOSTestCount,
+  nativeIOSTestSelection,
 } from '../scripts/native-ui-ios.mjs';
 import { loadNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadNativeFormRecipes } from '../scripts/native-form-recipes.mjs';
@@ -84,7 +85,7 @@ test('the maintained OS gallery renders every recipe component and uses only act
 
 test('native XCTest acceptance requires every expected case on the exact requested simulator without skips or expected failures', () => {
   const entry = {
-    passedTests: 12,
+    passedTests: 15,
     failedTests: 0,
     skippedTests: 0,
     expectedFailures: 0,
@@ -92,8 +93,8 @@ test('native XCTest acceptance requires every expected case on the exact request
   };
   const result = {
     result: 'Passed',
-    totalTestCount: 12,
-    passedTests: 12,
+    totalTestCount: 15,
+    passedTests: 15,
     failedTests: 0,
     skippedTests: 0,
     expectedFailures: 0,
@@ -101,7 +102,7 @@ test('native XCTest acceptance requires every expected case on the exact request
     devicesAndConfigurations: [entry],
   };
   assert.deepEqual(assertNativeIOSResult(result, nativeIOSTestCount, 'owned'), {
-    tests: 12,
+    tests: 15,
     failures: 0,
   });
   for (const change of [
@@ -116,7 +117,7 @@ test('native XCTest acceptance requires every expected case on the exact request
     { devicesAndConfigurations: [{ ...entry, device: { deviceId: 'other' } }] },
   ])
     assert.throws(
-      () => assertNativeIOSResult({ ...result, ...change }, 12, 'owned'),
+      () => assertNativeIOSResult({ ...result, ...change }, 15, 'owned'),
       /did not pass every expected case/,
     );
   const source = readFileSync('tests/native-ui/device/RegistryUITests.swift', 'utf8');
@@ -124,4 +125,20 @@ test('native XCTest acceptance requires every expected case on the exact request
   assert.match(source, /testNativeCardPresetsRetainMeasuredSpacing/);
   const runner = readFileSync('scripts/native-ui-ios.mjs', 'utf8');
   assert.match(runner, /'-collect-test-diagnostics',\s*'never'/);
+});
+
+test('focused XCTest runs select real methods and cannot masquerade as full acceptance', () => {
+  const source = readFileSync('tests/native-ui/device/RegistryUITests.swift', 'utf8');
+  assert.equal(nativeIOSTestSelection(source).length, nativeIOSTestCount);
+  assert.deepEqual(
+    nativeIOSTestSelection(source, 'testSystemDocumentPickerSelectionAndCancellation'),
+    ['testSystemDocumentPickerSelectionAndCancellation'],
+  );
+  for (const selection of [
+    '',
+    'unknown',
+    'testSystemDocumentPickerSelectionAndCancellation,testSystemDocumentPickerSelectionAndCancellation',
+  ])
+    assert.throws(() => nativeIOSTestSelection(source, selection), /Unknown or duplicate/);
+  assert.throws(() => nativeIOSTestSelection(''), /count changed/);
 });

@@ -326,7 +326,7 @@ export function registryStyle(
       continue;
     }
     if (token === 'after:border-border') {
-      view.borderColor = options.color('border');
+      view.borderColor ??= options.color('border');
       continue;
     }
     if (token === 'after:mix-blend-darken' || token === 'after:mix-blend-lighten') {
@@ -535,10 +535,10 @@ export function registryStyle(
           'border-t-0': 'borderTopWidth',
         }[token]!]: token.endsWith('-0') ? 0 : 1,
       });
-      view.borderColor = options.color('border');
+      view.borderColor ??= options.color('border');
     } else if (token === 'border') {
       view.borderWidth = 1;
-      view.borderColor = options.color('border');
+      view.borderColor ??= options.color('border');
     } else if (token === 'border-dashed') view.borderStyle = 'dashed';
     else if (/^border-[tblr]-\d+$/.test(token)) {
       const [, edge, amount] = token.split('-');
@@ -550,7 +550,13 @@ export function registryStyle(
           r: 'borderRightWidth',
         }[edge!]!]: Number(amount),
       });
-      view.borderColor = options.color('border');
+      view.borderColor ??= options.color('border');
+    } else if (/^border-[tblr]-/.test(token)) {
+      const match = /^border-([tblr])-(.+)$/.exec(token)!;
+      const side = { t: 'Top', b: 'Bottom', l: 'Left', r: 'Right' }[
+        match[1] as 't' | 'b' | 'l' | 'r'
+      ];
+      Object.assign(view, { ['border' + side + 'Color']: options.color(match[2]!) });
     } else if (token.startsWith('border-')) {
       const value = token.slice(7);
       if (/^\d+$/.test(value)) view.borderWidth = Number(value);

@@ -1,3 +1,55 @@
+# Source text fields and native system pickers — October 25, 2026
+
+Input and Textarea retain all eleven source families and sixteen newer CSS rules,
+with responsive typography, native font scaling, placeholder/selection colors,
+focus/invalid/disabled state and caller overrides. Native field bindings now cover
+all authored text/password/email/phone/URL/search/number/file/date/time types.
+FileInput uses Expo DocumentPicker 57.0.3, with cache-backed metadata, filters,
+multiple selection, cancellation/retry and stale-result guards. TemporalInput uses
+the Expo-compatible native DateTimePicker 9.1.0 API, with local canonical values,
+bounds, overnight time ranges, controlled ownership and staged iOS Apply/Cancel.
+Uploads, multipart encoding, DOM events/refs, browser resize/selection details and
+OS-specific calendar behavior remain explicit native/application boundaries.
+
+- Native suites: 1,609 passed per platform across 55 suites with existing coverage
+  thresholds. All 717 modules compile to both Hermes targets. Generated typecheck,
+  the CLI unit suite, lint, static security and focused source/driver contracts pass;
+  the existing optional braces-runtime skip remains. The catalog now contains 452
+  authored component example modules and 713 authored UI story roots.
+- Device testing exposed an initial content-size height lock. Modern Textarea now
+  uses intrinsic layout and mirrors uncontrolled editing; controlled values retain
+  application ownership. Frozen HTML rows uses source font/padding/border metrics.
+  Both OS platforms verify growth/shrinkage and the legacy three-row 90-point height.
+- Real iOS date-wheel testing exposed feedback from intermediate controlled updates.
+  Native picker seeds now remain stable while the draft changes; Apply commits the
+  latest draft and external application value changes still replace it. A large
+  25-to-17 day change, clock selection and cancellation pass on native controls.
+- Visual review caught RN 0.86 Android TextInput's per-edge color setter targeting
+  ALL edges. Native widths and compensating padding preserve the source underline,
+  outer dimensions and exact text insets. The before/after Android screenshots were
+  inspected; Sera keeps its 160×40 geometry and no longer paints side borders.
+- Android: all fifteen release instrumentation cases passed. Evidence:
+  `.artifacts/native-ui-android/2026-10-25T12-02-06-901Z/`. APK SHA-256
+  be6becb1035ff5813148a6add46f981349dcab6a8d11cb3125511311647d463a;
+  test APK 6ed0d698697969982f687e597877b2fde7dc3d24599ced45bfeffd33919e6148.
+- iOS: all fifteen required XCTest cases passed on the owned iOS 26.5 simulator.
+  Evidence: `.artifacts/native-ui-ios/2026-10-25T12-03-43-527Z/`. Focused runs are
+  separately identified and cannot replace the full expected-case gate.
+- QA document seeding preserves collisions and symlinks; file sharing is enabled
+  only in the owned QA app. Real system document selection/cancel is exercised on
+  both platforms. Earlier native failures remain in their dated artifact directories;
+  picker-window settling, label coordinates and UIKit's border-excluding accessibility
+  frames were corrected without removing native cases or assertions.
+
+Source review, renderer excerpts, byte comparison, retained failures and final logs
+live under `.artifacts/native-ui/2026-10-25-input-presets/`. Input, Textarea and six
+self-contained legacy example groups are accounted for. Modern aggregate examples
+and file examples retain partial status for unfinished Label/Field/Select presets.
+The indexed registry checklist is 97 groups accounted / 519 pending at this review;
+a separate audit has identified four additional published legacy endpoints outside
+those indexes, which must also be inventoried and ported. These results do not
+establish complete registry, physical-device, expanded screen-reader or store acceptance.
+
 # Source Spinner and native glyph composition — October 25, 2026
 
 Spinner now uses the authored Lucide Loader2 glyph, size-4 default, inherited/custom

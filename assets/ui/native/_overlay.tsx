@@ -32,6 +32,7 @@ type OverlayState = {
   id: string;
   placement?: string;
   triggerSize: { width: number; height: number };
+  returnFocus: RefObject<View | null>;
   measure: (width: number, height: number) => void;
 };
 const OverlayContext = createContext<OverlayState | null>(null);
@@ -47,6 +48,7 @@ export type OverlayProps = {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   placement?: string;
+  restoreFocusRef?: RefObject<View | null>;
 };
 export function OverlayRoot({
   open,
@@ -54,6 +56,7 @@ export function OverlayRoot({
   onOpenChange,
   children,
   placement,
+  restoreFocusRef,
 }: OverlayProps) {
   const [value, set] = useControllable(open, defaultOpen, onOpenChange);
   const trigger = useRef<View>(null);
@@ -68,7 +71,17 @@ export function OverlayRoot({
   };
   return (
     <OverlayContext.Provider
-      value={{ open: value, set, trigger, heading, id, placement, triggerSize, measure }}
+      value={{
+        open: value,
+        set,
+        trigger,
+        heading,
+        id,
+        placement,
+        triggerSize,
+        measure,
+        returnFocus: restoreFocusRef ?? trigger,
+      }}
     >
       {children}
     </OverlayContext.Provider>
@@ -201,9 +214,9 @@ export function OverlayContent({
     const closed = previous.current && !state.open;
     previous.current = state.open;
     if (!closed || Platform.OS === 'ios') return;
-    const frame = requestAnimationFrame(() => focus(state.trigger));
+    const frame = requestAnimationFrame(() => focus(state.returnFocus));
     return () => cancelAnimationFrame(frame);
-  }, [state.open, state.trigger]);
+  }, [state.open, state.returnFocus]);
   const pan = PanResponder.create({
     onMoveShouldSetPanResponder: (_event, gesture) =>
       swipeToDismiss && Math.abs(gesture.dx) < 20 && gesture.dy > 16,
@@ -219,7 +232,7 @@ export function OverlayContent({
       transparent
       animationType="none"
       onShow={() => focus(state.heading)}
-      onDismiss={() => focus(state.trigger)}
+      onDismiss={() => focus(state.returnFocus)}
       onRequestClose={() => state.set(false)}
     >
       <KeyboardAvoidingView

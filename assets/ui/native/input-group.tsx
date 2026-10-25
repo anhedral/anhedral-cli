@@ -177,6 +177,7 @@ export function InputGroupInput({
   return (
     <Input
       {...props}
+      nativePreset={false}
       editable={!group.disabled && editable !== false}
       invalid={invalid}
       onChangeText={onChangeText}

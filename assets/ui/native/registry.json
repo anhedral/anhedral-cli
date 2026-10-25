@@ -1241,7 +1241,14 @@
     "_badge.tsx",
     "_card-presets.tsx",
     "_preset-card-style.tsx",
-    "_spinner.tsx"
+    "_spinner.tsx",
+    "_input-presets.tsx",
+    "_textarea-presets.tsx",
+    "_preset-input-style.tsx",
+    "file-input.tsx",
+    "_input-appearance.tsx",
+    "temporal-input.tsx",
+    "_input-border.tsx"
   ],
   "supportModules": [
     {
@@ -1334,6 +1341,14 @@
     {
       "file": "navigation",
       "exports": ["NativeLink", "NativeNavigationProvider", "useNativeNavigation"]
+    },
+    {
+      "file": "file-input",
+      "exports": ["FileInput", "nativeDocumentTypes"]
+    },
+    {
+      "file": "temporal-input",
+      "exports": ["TemporalInput", "parseNativeTemporal", "formatNativeTemporal"]
     }
   ],
   "recipeCatalogs": [

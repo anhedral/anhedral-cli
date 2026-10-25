@@ -770,9 +770,7 @@ export function FieldInput(props: React.ComponentProps<typeof Input>) {
   return <Input {...props} />;
 }
 export const FieldSeparator = ({ children }: { children?: ReactNode }) => <Muted>{children}</Muted>;
-export const Textarea = ({ style, ...props }: TextInputProps) => (
-  <Input {...props} multiline textAlignVertical="top" style={[{ minHeight: 100 }, style]} />
-);
+export { Textarea } from './input';
 const OTPContext = createContext({ value: '', maxLength: 6, focus: () => {}, disabled: false });
 export function InputOTP({
   value,

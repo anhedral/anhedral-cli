@@ -129,6 +129,10 @@ export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
     valibot: '1.4.0',
     // renovate: datasource=npm depName=react-native-svg
     'react-native-svg': '15.15.4',
+    // renovate: datasource=npm depName=@react-native-community/datetimepicker
+    '@react-native-community/datetimepicker': '9.1.0',
+    // renovate: datasource=npm depName=expo-document-picker
+    'expo-document-picker': '57.0.3',
     // renovate: datasource=npm depName=expo-clipboard
     'expo-clipboard': '57.0.2',
     // renovate: datasource=npm depName=@react-native-async-storage/async-storage

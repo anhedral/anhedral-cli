@@ -217,6 +217,7 @@ export function ComboboxInput({
   if (popup)
     return (
       <Input
+        nativePreset={false}
         accessibilityLabel="Search options"
         {...props}
         placeholder={placeholder}
@@ -253,6 +254,7 @@ export function ComboboxContent({
       <Popup.Provider value={true}>
         {!containsInput(children) && (
           <Input
+            nativePreset={false}
             accessibilityLabel={searchLabel}
             placeholder={searchLabel}
             autoFocus
