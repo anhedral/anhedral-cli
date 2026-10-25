@@ -350,17 +350,24 @@ const TabsContext = createContext<{
   value: string;
   set: (value: string) => void;
   id: string;
+  orientation: 'horizontal' | 'vertical';
 } | null>(null);
 export function Tabs({
   value,
+  orientation = 'horizontal',
   defaultValue = '',
   onValueChange,
   ...props
-}: ViewProps & { value?: string; defaultValue?: string; onValueChange?: (value: string) => void }) {
+}: ViewProps & {
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  orientation?: 'horizontal' | 'vertical';
+}) {
   const [selected, set] = useControllable(value, defaultValue, onValueChange);
   const id = useId();
   return (
-    <TabsContext.Provider value={{ value: selected, set, id }}>
+    <TabsContext.Provider value={{ value: selected, set, id, orientation }}>
       <Box {...props} />
     </TabsContext.Provider>
   );
@@ -372,6 +379,7 @@ export function TabsList({
   ...props
 }: ViewProps & { variant?: 'default' | 'line' }) {
   const { colors, radius } = useTheme();
+  const tabs = useContext(TabsContext);
   return (
     <TabListVariant.Provider value={variant}>
       <Box
@@ -380,6 +388,7 @@ export function TabsList({
         style={[
           row(),
           {
+            flexDirection: tabs?.orientation === 'vertical' ? 'column' : 'row',
             backgroundColor: variant === 'default' ? colors.muted : 'transparent',
             borderRadius: radius,
             padding: variant === 'default' ? 4 : 0,

@@ -38,7 +38,9 @@
     "!assets/ui/native/*.ts",
     "!assets/ui/native-fonts.json.gz",
     "!assets/ui/native-chart-recipes.json.gz",
-    "!assets/ui/native-form-recipes.json.gz"
+    "!assets/ui/native-form-recipes.json.gz",
+    "!assets/ui/native-example-recipes.json.gz",
+    "!assets/ui/native-icons.json.gz"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {

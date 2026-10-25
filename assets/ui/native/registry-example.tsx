@@ -1,25 +1,15 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { View, type ViewProps } from 'react-native';
-import { TrendingUp } from 'lucide-react-native';
+import { nativeRegistryIcons } from './registry-icons';
 import { useTheme } from '../theme';
 import { LabelText, content } from './_core';
-import { RegistryView, withRegistryStyles } from './registry-styles';
+import { RegistryView } from './registry-styles';
 
-export type NativeExampleStyle =
-  'vega' | 'nova' | 'maia' | 'lyra' | 'mira' | 'luma' | 'sera' | 'rhea';
-const ExampleStyle = createContext<NativeExampleStyle>('nova');
-export function NativeExampleOptions({
-  style,
-  children,
-}: {
-  style: NativeExampleStyle;
-  children?: ReactNode;
-}) {
-  return <ExampleStyle.Provider value={style}>{children}</ExampleStyle.Provider>;
-}
+import { useNativeExampleStyle } from './_registry-context';
+export { NativeExampleOptions, type NativeExampleStyle } from './_registry-context';
 /** Browser gallery search parameters become explicit native preview context. */
 export function useDesignSystemSearchParams() {
-  return [{ style: useContext(ExampleStyle) }] as const;
+  return [{ style: useNativeExampleStyle() }] as const;
 }
 export function ExampleWrapper({ children, style, ...props }: ViewProps) {
   const { colors } = useTheme();
@@ -40,7 +30,7 @@ export function Example({
   ...props
 }: ViewProps & { title?: string; containerClassName?: string; className?: string }) {
   const { colors, radius } = useTheme(),
-    preset = useContext(ExampleStyle);
+    preset = useNativeExampleStyle();
   return (
     <RegistryView
       {...props}
@@ -75,7 +65,6 @@ export function Example({
     </RegistryView>
   );
 }
-const StyledTrendingUp = withRegistryStyles(TrendingUp, 'svg');
 /** Native recipes use the official Lucide icon; browser icon-package pickers stay in the web gallery. */
 export function IconPlaceholder({
   lucide,
@@ -85,12 +74,13 @@ export function IconPlaceholder({
   remixicon: _remixicon,
   ...props
 }: {
-  lucide: 'TrendingUpIcon';
+  lucide: keyof typeof nativeRegistryIcons;
   tabler?: string;
   hugeicons?: string;
   phosphor?: string;
   remixicon?: string;
-} & React.ComponentProps<typeof StyledTrendingUp>) {
-  if (lucide !== 'TrendingUpIcon') throw Error('Unreviewed native chart icon: ' + lucide);
-  return <StyledTrendingUp {...props} />;
+} & React.ComponentProps<(typeof nativeRegistryIcons)[keyof typeof nativeRegistryIcons]>) {
+  const Icon = nativeRegistryIcons[lucide];
+  if (!Icon) throw Error('Unreviewed native registry icon: ' + lucide);
+  return <Icon {...props} />;
 }

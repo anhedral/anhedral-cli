@@ -1,3 +1,25 @@
+# Authored component examples and icon sources — October 24, 2026
+
+Added 152 source-preserving component examples and 166 actual Lucide native icon
+selections. The native compiler now validates translated TSX syntax and preserves
+callback bodies, object values, lower-case managers and distinct imported aliases.
+Native adapters cover Aria overlay ownership, scalar/range slider values, object
+and multiple selection, pagination, measured trigger width and numeric input bounds.
+Image lifecycle checks cover grayscale filtering, source changes and stable URI identity.
+
+- Both iOS and Android passed 867 tests in 36 suites. A subsequent image-identity
+  refinement passed the 17 affected presentation/control tests on each platform.
+- Root tests: 587 passed, one existing optional skip. Typecheck, lint, source hygiene,
+  release policy and security policy passed. Packed CLI smoke passed; packlist:
+  248 files, 1,142,094 compressed bytes. Both production Hermes builds contain all
+  417 native registry modules.
+- An isolated Expo iOS QA app built successfully with 413 renderable stories.
+  Installation succeeded. Interactive simulator and screen-reader acceptance remain
+  unverified; build success is not device acceptance.
+- Coverage entries remain partial. The strict whole-registry completion gate still
+  rejects 551 distinct items; all eight component style presets and remaining authored
+  sources still require work. Nothing in this slice certifies full Expo parity.
+
 # Authored native form registry — October 24, 2026
 
 Added the actual ten React Hook Form, nine TanStack Form, nine Formisch and two

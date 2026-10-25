@@ -23,6 +23,12 @@ Calendar supports local-date single, multiple and range selection, locale labels
 
 ## Official registry assets and recipes
 
+The authored component example overlay currently includes 152 reviewed source modules,
+with 166 source-pinned Lucide native selections. Generate and validate these through
+\`node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`
+and \`node scripts/native-icons.mjs --check\`. Their coverage remains partial while
+component preset/API parity is unfinished.
+
 The native package includes the reviewed font and theme catalogs. \`NativeFontProvider\`
 loads selected body/heading/serif/monospace roles through Expo Font; \`useNativeFonts\`
 exposes loading, error and retry states. All 52 official font and heading entries map

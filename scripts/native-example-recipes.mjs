@@ -1,0 +1,217 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { gzipSync, gunzipSync } from 'node:zlib';
+import { createHash } from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { loadOfficialRegistry, reviewedInputs } from './shadcn-registry.mjs';
+import { portNativeRegistryRecipe, validateNativeChartRecipes } from './native-chart-recipes.mjs';
+const root = fileURLToPath(new URL('../', import.meta.url)),
+  target = path.join(root, 'assets/ui/native-example-recipes.json.gz');
+const hash = (value) => createHash('sha256').update(value).digest('hex');
+export const loadNativeExampleRecipes = () => JSON.parse(gunzipSync(readFileSync(target)));
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const inventory = loadOfficialRegistry();
+  if (process.argv.includes('--check')) {
+    validateNativeChartRecipes(inventory, loadNativeExampleRecipes());
+    console.log('Native component example source/style/dependency evidence passed.');
+  } else {
+    const index = process.argv.indexOf('--source');
+    if (index < 0 || !process.argv[index + 1])
+      throw Error('Pass --source /absolute/path/to/the/pinned/shadcn-ui');
+    const upstream = path.resolve(process.argv[index + 1]),
+      recipes = [];
+    const names = [
+      'alert-destructive',
+      'alert-dialog-demo',
+      'badge-destructive',
+      'badge-outline',
+      'badge-secondary',
+      'button-default',
+      'button-demo',
+      'button-destructive',
+      'button-ghost',
+      'button-group-demo',
+      'button-group-input',
+      'button-group-nested',
+      'button-group-select',
+      'button-group-separator',
+      'button-group-size',
+      'button-icon',
+      'button-link',
+      'button-loading',
+      'button-outline',
+      'button-secondary',
+      'button-size',
+      'combobox-demo',
+      'context-menu-demo',
+      'dropdown-menu-demo',
+      'dropdown-menu-dialog',
+      'dropdown-menu-radio-group',
+      'field-checkbox',
+      'field-choice-card',
+      'field-fieldset',
+      'field-input',
+      'field-radio',
+      'field-select',
+      'field-slider',
+      'field-switch',
+      'field-textarea',
+      'input-demo',
+      'input-disabled',
+      'input-group-button-group',
+      'input-group-icon',
+      'input-group-text',
+      'input-otp-controlled',
+      'input-otp-demo',
+      'input-otp-separator',
+      'input-with-button',
+      'input-with-label',
+      'item-icon',
+      'item-variant',
+      'kbd-button',
+      'kbd-demo',
+      'kbd-tooltip',
+      'menubar-demo',
+      'native-select-demo',
+      'native-select-disabled',
+      'native-select-groups',
+      'native-select-invalid',
+      'pagination-demo',
+      'radio-group-demo',
+      'select-demo',
+      'select-scrollable',
+      'skeleton-card',
+      'slider-demo',
+      'spinner-basic',
+      'spinner-button',
+      'spinner-color',
+      'spinner-custom',
+      'spinner-empty',
+      'spinner-size',
+      'table-demo',
+      'tabs-demo',
+      'textarea-demo',
+      'textarea-disabled',
+      'textarea-with-button',
+      'textarea-with-label',
+      'toggle-disabled',
+      'toggle-group-demo',
+      'toggle-group-disabled',
+      'toggle-group-lg',
+      'toggle-group-outline',
+      'toggle-group-single',
+      'toggle-group-sm',
+      'toggle-lg',
+      'toggle-outline',
+      'toggle-sm',
+      'toggle-with-text',
+    ];
+    const origins = names
+      .map((name) => 'apps/v4/registry/new-york-v4/examples/' + name + '.tsx')
+      .concat([
+        'apps/v4/registry/bases/aria/examples/avatar-example.tsx',
+        'apps/v4/registry/bases/aria/examples/button-example.tsx',
+        'apps/v4/registry/bases/aria/examples/carousel-example.tsx',
+        'apps/v4/registry/bases/aria/examples/checkbox-example.tsx',
+        'apps/v4/registry/bases/aria/examples/collapsible-example.tsx',
+        'apps/v4/registry/bases/aria/examples/command-example.tsx',
+        'apps/v4/registry/bases/aria/examples/label-example.tsx',
+        'apps/v4/registry/bases/aria/examples/native-select-example.tsx',
+        'apps/v4/registry/bases/aria/examples/pagination-example.tsx',
+        'apps/v4/registry/bases/aria/examples/progress-example.tsx',
+        'apps/v4/registry/bases/aria/examples/radio-group-example.tsx',
+        'apps/v4/registry/bases/aria/examples/skeleton-example.tsx',
+        'apps/v4/registry/bases/aria/examples/slider-example.tsx',
+        'apps/v4/registry/bases/aria/examples/spinner-example.tsx',
+        'apps/v4/registry/bases/aria/examples/switch-example.tsx',
+        'apps/v4/registry/bases/aria/examples/tabs-example.tsx',
+        'apps/v4/registry/bases/aria/examples/textarea-example.tsx',
+        'apps/v4/registry/bases/aria/examples/toggle-example.tsx',
+        'apps/v4/registry/bases/aria/examples/demo.tsx',
+        'apps/v4/registry/bases/base/examples/avatar-example.tsx',
+        'apps/v4/registry/bases/base/examples/button-group-example.tsx',
+        'apps/v4/registry/bases/base/examples/carousel-example.tsx',
+        'apps/v4/registry/bases/base/examples/checkbox-example.tsx',
+        'apps/v4/registry/bases/base/examples/collapsible-example.tsx',
+        'apps/v4/registry/bases/base/examples/command-example.tsx',
+        'apps/v4/registry/bases/base/examples/context-menu-example.tsx',
+        'apps/v4/registry/bases/base/examples/dropdown-menu-example.tsx',
+        'apps/v4/registry/bases/base/examples/label-example.tsx',
+        'apps/v4/registry/bases/base/examples/menubar-example.tsx',
+        'apps/v4/registry/bases/base/examples/native-select-example.tsx',
+        'apps/v4/registry/bases/base/examples/pagination-example.tsx',
+        'apps/v4/registry/bases/base/examples/progress-example.tsx',
+        'apps/v4/registry/bases/base/examples/radio-group-example.tsx',
+        'apps/v4/registry/bases/base/examples/select-example.tsx',
+        'apps/v4/registry/bases/base/examples/skeleton-example.tsx',
+        'apps/v4/registry/bases/base/examples/slider-example.tsx',
+        'apps/v4/registry/bases/base/examples/switch-example.tsx',
+        'apps/v4/registry/bases/base/examples/table-example.tsx',
+        'apps/v4/registry/bases/base/examples/tabs-example.tsx',
+        'apps/v4/registry/bases/base/examples/textarea-example.tsx',
+        'apps/v4/registry/bases/base/examples/toast-example.tsx',
+        'apps/v4/registry/bases/base/examples/toggle-example.tsx',
+        'apps/v4/registry/bases/base/examples/demo.tsx',
+        'apps/v4/registry/bases/radix/examples/avatar-example.tsx',
+        'apps/v4/registry/bases/radix/examples/button-example.tsx',
+        'apps/v4/registry/bases/radix/examples/button-group-example.tsx',
+        'apps/v4/registry/bases/radix/examples/carousel-example.tsx',
+        'apps/v4/registry/bases/radix/examples/checkbox-example.tsx',
+        'apps/v4/registry/bases/radix/examples/collapsible-example.tsx',
+        'apps/v4/registry/bases/radix/examples/command-example.tsx',
+        'apps/v4/registry/bases/radix/examples/context-menu-example.tsx',
+        'apps/v4/registry/bases/radix/examples/dropdown-menu-example.tsx',
+        'apps/v4/registry/bases/radix/examples/label-example.tsx',
+        'apps/v4/registry/bases/radix/examples/menubar-example.tsx',
+        'apps/v4/registry/bases/radix/examples/native-select-example.tsx',
+        'apps/v4/registry/bases/radix/examples/pagination-example.tsx',
+        'apps/v4/registry/bases/radix/examples/popover-example.tsx',
+        'apps/v4/registry/bases/radix/examples/progress-example.tsx',
+        'apps/v4/registry/bases/radix/examples/radio-group-example.tsx',
+        'apps/v4/registry/bases/radix/examples/select-example.tsx',
+        'apps/v4/registry/bases/radix/examples/skeleton-example.tsx',
+        'apps/v4/registry/bases/radix/examples/slider-example.tsx',
+        'apps/v4/registry/bases/radix/examples/switch-example.tsx',
+        'apps/v4/registry/bases/radix/examples/table-example.tsx',
+        'apps/v4/registry/bases/radix/examples/tabs-example.tsx',
+        'apps/v4/registry/bases/radix/examples/textarea-example.tsx',
+        'apps/v4/registry/bases/radix/examples/toggle-example.tsx',
+        'apps/v4/registry/bases/radix/examples/demo.tsx',
+      ]);
+    for (const origin of origins) {
+      const name = path.basename(origin, '.tsx');
+      const input = inventory.sources[origin];
+      if (!input) throw Error('Missing reviewed component example ' + name);
+      const source = readFileSync(path.join(upstream, origin), 'utf8');
+      if (hash(source) !== input.sha256) throw Error('Component example source drift: ' + origin);
+      const support = false,
+        itemKey = 'registry:example/' + (support ? name.replace(/-(?:schema|action)$/, '') : name),
+        native = portNativeRegistryRecipe(source, origin, { nativeForms: true });
+      recipes.push({
+        kind: support ? 'support' : 'example',
+        export: name === 'demo' ? 'Demo' : 'default',
+        itemKey,
+        style: origin.includes('/bases/')
+          ? origin.split('/bases/')[1].split('/')[0]
+          : 'new-york-v4',
+        name,
+        origin,
+        upstreamSha256: input.sha256,
+        reviewedInputs: reviewedInputs(inventory, itemKey),
+        nativeSha256: hash(native),
+        source: native,
+      });
+    }
+    writeFileSync(
+      target,
+      gzipSync(JSON.stringify({ schemaVersion: 1, upstream: inventory.source, recipes }), {
+        level: 9,
+      }),
+    );
+    console.log(
+      'Generated',
+      recipes.length,
+      'native component examples from pinned official source.',
+    );
+  }
+}

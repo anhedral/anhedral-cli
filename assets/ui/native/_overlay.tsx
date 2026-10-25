@@ -4,6 +4,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type ReactNode,
   type RefObject,
 } from 'react';
@@ -18,7 +19,7 @@ import {
   PanResponder,
   type ViewProps,
 } from 'react-native';
-import { Box, LabelText, Muted, row, content, useControllable } from './_core';
+import { Box, LabelText, Muted, row, content, useControllable, useDirection } from './_core';
 import { Button, type ButtonProps } from './button';
 import { NativeSlot } from './_slot';
 import { cloneElement } from 'react';
@@ -31,8 +32,12 @@ type OverlayState = {
   trigger: RefObject<View | null>;
   heading: RefObject<View | null>;
   id: string;
+  placement?: string;
+  triggerSize: { width: number; height: number };
+  measure: (width: number, height: number) => void;
 };
 const OverlayContext = createContext<OverlayState | null>(null);
+export const useOptionalOverlay = () => useContext(OverlayContext);
 export function useOverlay() {
   const value = useContext(OverlayContext);
   if (!value) throw Error('Overlay parts require a Dialog, Sheet, Popover or menu root.');
@@ -43,14 +48,30 @@ export type OverlayProps = {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  placement?: string;
 };
-export function OverlayRoot({ open, defaultOpen = false, onOpenChange, children }: OverlayProps) {
+export function OverlayRoot({
+  open,
+  defaultOpen = false,
+  onOpenChange,
+  children,
+  placement,
+}: OverlayProps) {
   const [value, set] = useControllable(open, defaultOpen, onOpenChange);
   const trigger = useRef<View>(null);
   const heading = useRef<View>(null);
   const id = useId();
+  const [triggerSize, setTriggerSize] = useState({ width: 0, height: 0 });
+  const measure = (width: number, height: number) => {
+    if (width > 0 && height > 0)
+      setTriggerSize((previous) =>
+        previous.width === width && previous.height === height ? previous : { width, height },
+      );
+  };
   return (
-    <OverlayContext.Provider value={{ open: value, set, trigger, heading, id }}>
+    <OverlayContext.Provider
+      value={{ open: value, set, trigger, heading, id, placement, triggerSize, measure }}
+    >
       {children}
     </OverlayContext.Provider>
   );
@@ -69,6 +90,10 @@ export function OverlayTrigger({ onPress, asChild, render, children, ...props }:
     <Host
       {...props}
       ref={state.trigger}
+      onLayout={(event) => {
+        props.onLayout?.(event);
+        state.measure(event.nativeEvent.layout.width, event.nativeEvent.layout.height);
+      }}
       accessibilityState={{ ...props.accessibilityState, expanded: state.open }}
       onPress={(event) => {
         onPress?.(event);
@@ -95,6 +120,10 @@ export function LongPressTrigger({
     <Host
       {...props}
       ref={state.trigger}
+      onLayout={(event) => {
+        props.onLayout?.(event);
+        state.measure(event.nativeEvent.layout.width, event.nativeEvent.layout.height);
+      }}
       accessibilityHint={props.accessibilityHint ?? 'Touch and hold to open'}
       accessibilityState={{ expanded: state.open }}
       onLongPress={(event) => {
@@ -132,17 +161,38 @@ export function OverlayClose({ onPress, asChild, render, children, ...props }: B
 }
 export function OverlayContent({
   children,
-  side = 'center',
+  side: explicitSide,
+  align = 'center',
+  placement,
   dismissOnBackdrop = true,
   swipeToDismiss = false,
   style,
   ...props
 }: ViewProps & {
-  side?: 'center' | 'top' | 'bottom' | 'left' | 'right';
+  side?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'inline-start' | 'inline-end';
+  align?: 'start' | 'center' | 'end';
+  placement?: string;
   dismissOnBackdrop?: boolean;
   swipeToDismiss?: boolean;
 }) {
   const state = useOverlay();
+  const placed = (placement ?? state.placement)?.split(' ')[0];
+  const direction = useDirection();
+  const resolvedSide =
+    explicitSide === 'inline-start'
+      ? direction === 'rtl'
+        ? 'right'
+        : 'left'
+      : explicitSide === 'inline-end'
+        ? direction === 'rtl'
+          ? 'left'
+          : 'right'
+        : explicitSide;
+  const side =
+    resolvedSide ??
+    (placed && ['top', 'bottom', 'left', 'right'].includes(placed)
+      ? (placed as 'top' | 'bottom' | 'left' | 'right')
+      : 'center');
   const { colors } = useTheme();
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, right: 0, bottom: 0, left: 0 };
   const previous = useRef(state.open);
@@ -217,6 +267,10 @@ export function OverlayContent({
                 width: horizontal ? '85%' : undefined,
               },
               horizontal && { height: '100%', maxHeight: '100%' },
+              {
+                alignSelf:
+                  align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center',
+              },
               style,
             ]}
           >
@@ -327,10 +381,29 @@ export const TooltipContent = OverlayContent;
 export const TooltipClose = OverlayClose;
 export const DropdownMenu = OverlayRoot;
 export const DropdownMenuTrigger = OverlayTrigger;
-export const DropdownMenuContent = (props: React.ComponentProps<typeof OverlayContent>) => (
-  <OverlayContent accessibilityRole="menu" {...props} />
-);
-export const DropdownMenuLabel = Muted;
+export function DropdownMenuContent({
+  align = 'center',
+  style,
+  ...props
+}: React.ComponentProps<typeof OverlayContent> & { align?: 'start' | 'center' | 'end' }) {
+  return (
+    <OverlayContent
+      accessibilityRole="menu"
+      {...props}
+      style={[
+        { alignSelf: align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center' },
+        style,
+      ]}
+    />
+  );
+}
+export function DropdownMenuLabel({
+  inset = false,
+  style,
+  ...props
+}: React.ComponentProps<typeof Muted> & { inset?: boolean }) {
+  return <Muted {...props} style={[inset && { paddingLeft: 32 }, style]} />;
+}
 export const DropdownMenuGroup = Box;
 export const DropdownMenuSeparator = ({ ...props }: ViewProps) => (
   <Box {...props} style={{ height: 4 }} />
@@ -338,14 +411,20 @@ export const DropdownMenuSeparator = ({ ...props }: ViewProps) => (
 export function DropdownMenuItem({
   onSelect,
   onPress,
+  inset = false,
+  style,
   ...props
-}: ButtonProps & { onSelect?: (event: { preventDefault: () => void }) => void }) {
+}: ButtonProps & { inset?: boolean; onSelect?: (event: { preventDefault: () => void }) => void }) {
   const state = useOverlay();
   return (
     <Button
       variant="ghost"
       {...props}
       accessibilityRole="menuitem"
+      style={(state) => [
+        inset && { paddingLeft: 32 },
+        typeof style === 'function' ? style(state) : style,
+      ]}
       onPress={(event) => {
         let prevented = false;
         onPress?.(event);
@@ -361,20 +440,26 @@ export function DropdownMenuItem({
 }
 export const DropdownMenuShortcut = Muted;
 export function DropdownMenuCheckboxItem({
-  checked = false,
+  checked,
+  defaultChecked = false,
   onCheckedChange,
   ...props
-}: ButtonProps & { checked?: boolean; onCheckedChange?: (checked: boolean) => void }) {
+}: React.ComponentProps<typeof DropdownMenuItem> & {
+  defaultChecked?: boolean;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+}) {
+  const [selected, setSelected] = useControllable(checked, defaultChecked, onCheckedChange);
   return (
     <DropdownMenuItem
       {...props}
-      accessibilityState={{ checked }}
+      accessibilityState={{ checked: selected }}
       onSelect={(event) => {
         event.preventDefault();
-        onCheckedChange?.(!checked);
+        setSelected(!selected);
       }}
     >
-      <LabelText accessibilityElementsHidden>{checked ? '✓ ' : '  '}</LabelText>
+      <LabelText accessibilityElementsHidden>{selected ? '✓ ' : '  '}</LabelText>
       {contentForMenu(props.children)}
     </DropdownMenuItem>
   );
@@ -398,7 +483,10 @@ export function DropdownMenuRadioGroup({
     </MenuRadioContext.Provider>
   );
 }
-export function DropdownMenuRadioItem({ value, ...props }: ButtonProps & { value: string }) {
+export function DropdownMenuRadioItem({
+  value,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuItem> & { value: string }) {
   const radio = useContext(MenuRadioContext);
   return (
     <DropdownMenuItem
@@ -409,7 +497,23 @@ export function DropdownMenuRadioItem({ value, ...props }: ButtonProps & { value
   );
 }
 export const DropdownMenuSub = OverlayRoot;
-export const DropdownMenuSubTrigger = OverlayTrigger;
+export function DropdownMenuSubTrigger({
+  inset = false,
+  style,
+  ...props
+}: ButtonProps & { inset?: boolean }) {
+  return (
+    <OverlayTrigger
+      variant="ghost"
+      {...props}
+      accessibilityRole="menuitem"
+      style={(state) => [
+        inset && { paddingLeft: 32 },
+        typeof style === 'function' ? style(state) : style,
+      ]}
+    />
+  );
+}
 export const DropdownMenuSubContent = DropdownMenuContent;
 export const ContextMenu = OverlayRoot;
 export const ContextMenuTrigger = LongPressTrigger;
@@ -418,12 +522,12 @@ export const ContextMenuItem = DropdownMenuItem;
 export const ContextMenuCheckboxItem = DropdownMenuCheckboxItem;
 export const ContextMenuRadioGroup = DropdownMenuRadioGroup;
 export const ContextMenuRadioItem = DropdownMenuRadioItem;
-export const ContextMenuLabel = Muted;
+export const ContextMenuLabel = DropdownMenuLabel;
 export const ContextMenuSeparator = DropdownMenuSeparator;
 export const ContextMenuGroup = Box;
 export const ContextMenuShortcut = Muted;
 export const ContextMenuSub = OverlayRoot;
-export const ContextMenuSubTrigger = OverlayTrigger;
+export const ContextMenuSubTrigger = DropdownMenuSubTrigger;
 export const ContextMenuSubContent = DropdownMenuContent;
 export const Menubar = ({ style, ...props }: ViewProps) => <Box {...props} style={row(style)} />;
 export const MenubarMenu = OverlayRoot;
@@ -433,12 +537,12 @@ export const MenubarItem = DropdownMenuItem;
 export const MenubarCheckboxItem = DropdownMenuCheckboxItem;
 export const MenubarRadioGroup = DropdownMenuRadioGroup;
 export const MenubarRadioItem = DropdownMenuRadioItem;
-export const MenubarLabel = Muted;
+export const MenubarLabel = DropdownMenuLabel;
 export const MenubarSeparator = DropdownMenuSeparator;
 export const MenubarGroup = Box;
 export const MenubarShortcut = Muted;
 export const MenubarSub = OverlayRoot;
-export const MenubarSubTrigger = OverlayTrigger;
+export const MenubarSubTrigger = DropdownMenuSubTrigger;
 export const MenubarSubContent = DropdownMenuContent;
 
 /** Native Modal content owns its platform window; no browser portal container is needed. */

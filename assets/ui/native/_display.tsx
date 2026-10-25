@@ -1,4 +1,13 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import {
+  cloneElement,
+  useId,
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import {
   View,
   Image,
@@ -15,6 +24,8 @@ import { useTheme } from '../theme';
 import { useNativeFontStyle } from './fonts';
 import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
 import { Button, type ButtonProps } from './button';
+import { NativeSlot } from './_slot';
+import Svg, { Defs, Filter, FeColorMatrix, Image as SvgImage } from 'react-native-svg';
 
 const AlertTone = createContext<'default' | 'destructive'>('default');
 export function Alert({
@@ -178,31 +189,96 @@ export function Avatar({
     </AvatarContext.Provider>
   );
 }
-export function AvatarImage({ onLoad, onError, source, style, ...props }: ImageProps) {
-  const { loaded, setLoaded } = useContext(AvatarContext);
-  useEffect(() => {
-    setLoaded(false);
-  }, [source, setLoaded]);
-  return (
+export function AvatarImage({
+  onLoad,
+  onError,
+  source,
+  style,
+  grayscale = false,
+  ...props
+}: ImageProps & { grayscale?: boolean }) {
+  const { setLoaded } = useContext(AvatarContext),
+    filter = useId();
+  const identity = JSON.stringify([source, props.src, props.srcSet]),
+    latest = useRef(identity);
+  latest.current = identity;
+  const [ready, setReady] = useState({ identity, bitmap: false, filtered: false });
+  const current =
+    ready.identity === identity ? ready : { identity, bitmap: false, filtered: false };
+  const visible = grayscale ? current.filtered : current.bitmap;
+  useLayoutEffect(() => setLoaded(visible), [visible, setLoaded]);
+  const mark = (kind: 'bitmap' | 'filtered' | 'error') => {
+    if (latest.current !== identity) return;
+    setReady((previous) => {
+      const value =
+        previous.identity === identity ? previous : { identity, bitmap: false, filtered: false };
+      if (kind === 'error') return { identity, bitmap: false, filtered: false };
+      return value[kind] ? value : { ...value, [kind]: true };
+    });
+  };
+  const image = (
     <Image
       {...props}
       source={source}
+      accessible={grayscale ? false : props.accessible}
       onLoad={(event) => {
-        setLoaded(true);
+        if (latest.current !== identity) return;
+        mark('bitmap');
         onLoad?.(event);
       }}
       onError={(event) => {
-        setLoaded(false);
+        if (latest.current !== identity) return;
+        mark('error');
         onError?.(event);
       }}
-      accessibilityElementsHidden={!loaded}
+      accessibilityElementsHidden={!current.bitmap || grayscale}
       style={[
-        { position: 'absolute', width: '100%', height: '100%', opacity: loaded ? 1 : 0 },
+        {
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          opacity: current.bitmap && !grayscale ? 1 : 0,
+        },
         style,
       ]}
     />
   );
+  return (
+    <>
+      {image}
+      {grayscale && (
+        <Svg
+          width="100%"
+          height="100%"
+          style={{ position: 'absolute', inset: 0, opacity: visible ? 1 : 0 }}
+          accessibilityElementsHidden={!visible}
+          testID={props.testID ? props.testID + '-grayscale' : undefined}
+          accessible={visible}
+          accessibilityRole="image"
+          accessibilityLabel={props.accessibilityLabel ?? props.alt}
+        >
+          <Defs>
+            <Filter id={filter}>
+              <FeColorMatrix type="saturate" values={0} />
+            </Filter>
+          </Defs>
+          <SvgImage
+            width="100%"
+            height="100%"
+            href={props.src ?? source}
+            testID={props.testID ? props.testID + '-svg-source' : undefined}
+            onLoad={() => mark('filtered')}
+            preserveAspectRatio={
+              props.resizeMode === 'contain' ? 'xMidYMid meet' : 'xMidYMid slice'
+            }
+            filter={'url(#' + filter + ')'}
+          />
+        </Svg>
+      )}
+    </>
+  );
 }
+AvatarImage.nativeRegistryImage = true;
 export function AvatarFallback(props: TextProps) {
   return useContext(AvatarContext).loaded ? null : <LabelText {...props} />;
 }
@@ -243,7 +319,27 @@ export const ButtonGroup = ({
     style={[{ flexDirection: orientation === 'horizontal' ? 'row' : 'column', gap: 2 }, style]}
   />
 );
-export const ButtonGroupText = LabelText;
+export function ButtonGroupText({
+  asChild = false,
+  render,
+  ...props
+}: React.ComponentProps<typeof LabelText> & {
+  asChild?: boolean;
+  render?: React.ReactElement<{ children?: React.ReactNode }>;
+}) {
+  return asChild || render ? (
+    <NativeSlot
+      {...props}
+      children={
+        render
+          ? cloneElement(render, { children: props.children ?? render.props.children })
+          : props.children
+      }
+    />
+  ) : (
+    <LabelText {...props} />
+  );
+}
 export const ButtonGroupSeparator = Separator;
 export const Empty = ({ style, ...props }: ViewProps) => (
   <Surface {...props} style={[{ alignItems: 'center', padding: 24 }, style]} />

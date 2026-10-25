@@ -388,7 +388,8 @@ export function Carousel({
   index,
   defaultIndex = 0,
   onIndexChange,
-  loop = false,
+  opts,
+  loop = opts?.loop ?? false,
   orientation = 'horizontal',
   ...props
 }: ViewProps & {
@@ -396,8 +397,10 @@ export function Carousel({
   defaultIndex?: number;
   onIndexChange?: (index: number) => void;
   loop?: boolean;
+  opts?: { align?: 'start'; loop?: boolean };
   orientation?: 'horizontal' | 'vertical';
 }) {
+  if (opts?.align && opts.align !== 'start') throw Error('Unreviewed native carousel alignment.');
   const [selected, set] = useControllable(index, defaultIndex, onIndexChange);
   const [count, setCount] = useState(0);
   const [size, setSize] = useState(1);

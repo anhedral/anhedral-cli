@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { View, ScrollView, type ViewProps, type TextInputProps } from 'react-native';
-import { Box, LabelText, Muted, row, useControllable, nativeComponent } from './_core';
+import { Box, LabelText, Muted, row, useControllable, content, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { Input } from './input';
 import { useTheme } from '../theme';
@@ -20,12 +20,20 @@ import {
   type OverlayProps,
 } from './_overlay';
 export type SelectOption = { value: string; label: string; disabled?: boolean };
+type SelectChange = { change(value: unknown): void }['change'];
+type SelectRender = { render(value: unknown): ReactNode }['render'];
+type SelectString = { format(value: unknown): string }['format'];
 const SelectContext = createContext<{
-  value: string;
-  set: (value: string) => void;
-  labels: Map<string, string>;
+  value: unknown;
+  labels: Map<unknown, string>;
+  set: (value: unknown) => void;
+  isSelected: (value: unknown) => boolean;
+  label: (value: unknown) => string;
+  multiple: boolean;
   disabled: boolean;
   invalid?: boolean;
+  accessibilityLabel?: string;
+  placeholder?: ReactNode;
   query: string;
   setQuery: (query: string) => void;
 } | null>(null);
@@ -40,10 +48,10 @@ function textOf(node: ReactNode): string {
     )
     .join('');
 }
-function itemLabels(node: ReactNode, labels = new Map<string, string>()) {
+function itemLabels(node: ReactNode, labels = new Map<unknown, string>()) {
   Children.forEach(node, (child) => {
-    if (isValidElement<{ value?: string; children?: ReactNode }>(child)) {
-      if (nativeComponent(child.type) === SelectItem && child.props.value)
+    if (isValidElement<{ value?: unknown; children?: ReactNode }>(child)) {
+      if (nativeComponent(child.type) === SelectItem && child.props.value !== undefined)
         labels.set(child.props.value, textOf(child.props.children));
       itemLabels(child.props.children, labels);
     }
@@ -52,30 +60,78 @@ function itemLabels(node: ReactNode, labels = new Map<string, string>()) {
 }
 export function Select({
   value,
-  defaultValue = '',
+  defaultValue,
   onValueChange,
   disabled = false,
   invalid,
+  multiple = false,
+  items,
+  itemToStringValue,
+  placeholder,
+  accessibilityLabel,
+  nativeID: _nativeID,
   children,
   onOpenChange,
   ...overlay
 }: OverlayProps & {
-  value?: string;
-  defaultValue?: string;
-  onValueChange?: (value: string) => void;
+  value?: unknown;
+  defaultValue?: unknown;
+  onValueChange?: SelectChange;
   disabled?: boolean;
   invalid?: boolean;
+  multiple?: boolean;
+  items?: readonly unknown[];
+  itemToStringValue?: SelectString;
+  placeholder?: ReactNode;
+  accessibilityLabel?: string;
+  nativeID?: string;
 }) {
-  const [selected, set] = useControllable(value, defaultValue, onValueChange);
+  const [selected, set] = useControllable(
+    value,
+    defaultValue ?? (multiple ? [] : ''),
+    onValueChange,
+  );
   const [query, setQuery] = useState('');
+  const labels = itemLabels(children);
+  const addItems = (items: readonly unknown[]) => {
+    for (const item of items)
+      if (item && typeof item === 'object') {
+        if ('value' in item && 'label' in item)
+          labels.set(item.value, textOf(item.label as ReactNode));
+        if ('items' in item && Array.isArray(item.items)) addItems(item.items);
+      }
+  };
+  if (items) addItems(items);
+  const equal = (a: unknown, b: unknown) =>
+    Object.is(a, b) ||
+    (!!itemToStringValue &&
+      a != null &&
+      b != null &&
+      itemToStringValue(a) === itemToStringValue(b));
+  const values = multiple && Array.isArray(selected) ? selected : [selected];
+  const isSelected = (value: unknown) => values.some((item) => equal(item, value));
   return (
     <SelectContext.Provider
       value={{
         value: selected,
-        set,
-        labels: itemLabels(children),
+        labels,
+        set: (value) =>
+          set(
+            multiple
+              ? isSelected(value)
+                ? values.filter((item) => !equal(item, value))
+                : [...values, value]
+              : value,
+          ),
+        isSelected,
+        multiple,
+        label: (value) =>
+          labels.get(value) ||
+          (itemToStringValue && value != null ? itemToStringValue(value) : String(value ?? '')),
         disabled,
         invalid,
+        placeholder,
+        accessibilityLabel,
         query,
         setQuery,
       }}
@@ -111,7 +167,9 @@ export function SelectTrigger({
       {...props}
       disabled={state.disabled || props.disabled}
       accessibilityRole="combobox"
-      accessibilityLabel={props.accessibilityLabel ?? (field?.label || undefined)}
+      accessibilityLabel={
+        props.accessibilityLabel ?? state.accessibilityLabel ?? (field?.label || undefined)
+      }
       accessibilityHint={
         props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
       }
@@ -123,18 +181,23 @@ export function SelectTrigger({
   );
 }
 export function SelectValue({
-  placeholder = 'Select an option',
+  placeholder,
   children,
 }: {
-  placeholder?: string;
-  children?: ReactNode;
+  placeholder?: ReactNode;
+  children?: ReactNode | SelectRender;
 }) {
-  const state = useSelect();
-  return (
-    <LabelText>
-      {children ?? (state.value ? (state.labels.get(state.value) ?? state.value) : placeholder)}
-    </LabelText>
-  );
+  const state = useSelect(),
+    values = state.multiple && Array.isArray(state.value) ? state.value : [state.value];
+  const label = values
+    .filter((value) => value !== '' && value != null)
+    .map(state.label)
+    .join(', ');
+  const rendered =
+    typeof children === 'function'
+      ? children(state.value)
+      : (children ?? (label || placeholder || state.placeholder || 'Select an option'));
+  return <>{content(rendered)}</>;
 }
 export function SelectContent({
   children,
@@ -161,13 +224,20 @@ export function SelectContent({
     </OverlayContent>
   );
 }
-export function SelectItem({ value, children, ...props }: ButtonProps & { value: string }) {
+export function SelectItem({
+  value,
+  children,
+  textValue,
+  ...props
+}: ButtonProps & { value: unknown; textValue?: string }) {
   const selection = useSelect();
   const overlay = useOverlay();
   const groupDisabled = useContext(SelectGroupDisabled);
   if (
     selection.query &&
-    !textOf(children).toLocaleLowerCase().includes(selection.query.toLocaleLowerCase())
+    !(textValue ?? textOf(children))
+      .toLocaleLowerCase()
+      .includes(selection.query.toLocaleLowerCase())
   )
     return null;
   return (
@@ -175,16 +245,17 @@ export function SelectItem({ value, children, ...props }: ButtonProps & { value:
       variant="ghost"
       {...props}
       disabled={selection.disabled || groupDisabled || props.disabled}
-      accessibilityRole="radio"
+      accessibilityRole={selection.multiple ? 'checkbox' : 'radio'}
+      accessibilityLabel={props.accessibilityLabel ?? textValue}
       accessibilityState={{
-        checked: selection.value === value,
+        checked: selection.isSelected(value),
         disabled: !!(selection.disabled || groupDisabled || props.disabled),
       }}
       onPress={(event) => {
         props.onPress?.(event);
         if (event.isDefaultPrevented()) return;
         selection.set(value);
-        overlay.set(false);
+        if (!selection.multiple) overlay.set(false);
       }}
     >
       {children}
@@ -208,7 +279,9 @@ export const SelectLabel = Muted;
 export const SelectItemText = LabelText;
 export const SelectSeparator = () => <View style={{ height: 8 }} />;
 export function NativeSelect({
+  nativeID,
   options,
+  invalid,
   value,
   defaultValue,
   onValueChange,
@@ -219,6 +292,8 @@ export function NativeSelect({
   children,
 }: {
   options?: SelectOption[];
+  nativeID?: string;
+  invalid?: boolean;
   children?: ReactNode;
   size?: 'default' | 'sm';
   value?: string;
@@ -230,12 +305,13 @@ export function NativeSelect({
 }) {
   return (
     <Select
+      invalid={invalid}
       value={value}
       defaultValue={defaultValue}
       onValueChange={onValueChange}
       disabled={disabled}
     >
-      <SelectTrigger size={size} accessibilityLabel={accessibilityLabel}>
+      <SelectTrigger nativeID={nativeID} size={size} accessibilityLabel={accessibilityLabel}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
@@ -347,11 +423,21 @@ const CommandContext = createContext<{
 function commandCount(node: ReactNode, query: string): number {
   let count = 0;
   Children.forEach(node, (child) => {
-    if (!isValidElement<{ value?: string; keywords?: string[]; children?: ReactNode }>(child))
+    if (
+      !isValidElement<{
+        value?: string;
+        textValue?: string;
+        keywords?: string[];
+        children?: ReactNode;
+      }>(child)
+    )
       return;
     if (
       nativeComponent(child.type) === CommandItem &&
-      [child.props.value, ...(child.props.keywords ?? [])]
+      [
+        child.props.value ?? child.props.textValue ?? textOf(child.props.children),
+        ...(child.props.keywords ?? []),
+      ]
         .join(' ')
         .toLocaleLowerCase()
         .includes(query.toLocaleLowerCase())
@@ -394,11 +480,19 @@ export function CommandInput(props: TextInputProps) {
     />
   );
 }
-export const CommandList = ({ children, ...props }: React.ComponentProps<typeof ScrollView>) => (
-  <ScrollView {...props} style={[{ maxHeight: 350 }, props.style]}>
-    {children}
-  </ScrollView>
-);
+export function CommandList({
+  children,
+  renderEmptyState,
+  ...props
+}: React.ComponentProps<typeof ScrollView> & { renderEmptyState?: () => ReactNode }) {
+  const state = useCommand();
+  return (
+    <ScrollView {...props} style={[{ maxHeight: 350 }, props.style]}>
+      {children}
+      {state.count === 0 && renderEmptyState?.()}
+    </ScrollView>
+  );
+}
 export function CommandEmpty(props: React.ComponentProps<typeof Muted>) {
   return useCommand().count ? null : <Muted accessibilityLiveRegion="polite" {...props} />;
 }
@@ -411,13 +505,20 @@ export function CommandGroup({ heading, ...props }: ViewProps & { heading?: stri
   );
 }
 export function CommandItem({
-  value,
+  value: suppliedValue,
+  textValue,
   keywords = [],
   onSelect,
   children,
   ...props
-}: ButtonProps & { value: string; keywords?: string[]; onSelect?: (value: string) => void }) {
+}: ButtonProps & {
+  value?: string;
+  textValue?: string;
+  keywords?: string[];
+  onSelect?: (value: string) => void;
+}) {
   const state = useCommand();
+  const value = suppliedValue ?? textValue ?? textOf(children);
   if (![value, ...keywords].join(' ').toLocaleLowerCase().includes(state.query.toLocaleLowerCase()))
     return null;
   return (

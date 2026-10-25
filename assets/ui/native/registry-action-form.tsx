@@ -129,7 +129,7 @@ export function Select({
     value,
     defaultValue,
     onValueChange,
-    (value) => [value],
+    (value) => (value == null ? [] : Array.isArray(value) ? value.map(String) : [String(value)]),
     props.disabled,
   );
   return <NativeSelect {...props} value={field.value} onValueChange={field.set} />;

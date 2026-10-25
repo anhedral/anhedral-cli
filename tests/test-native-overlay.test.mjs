@@ -15,5 +15,10 @@ test('published native overlay preserves every maintained source, font license a
   assert.equal(forms.recipes.filter((recipe) => recipe.name.startsWith('form-rhf-')).length, 10);
   assert.ok(fonts);
   assert.ok(Object.keys(decoded.files).includes('native/charts.tsx'));
-  assert.ok(binary.length < 150000, 'native overlay should retain compression headroom');
+  // The packlist enforces the total published artifact budget. This check keeps
+  // compression effective as new authored examples are added to the overlay.
+  assert.ok(
+    binary.length < Buffer.byteLength(JSON.stringify(decoded)) * 0.1,
+    'native overlay should compress below ten percent of its source size',
+  );
 });

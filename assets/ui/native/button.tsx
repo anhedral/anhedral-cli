@@ -1,4 +1,12 @@
-import { Pressable, StyleSheet, Linking, type View, type PressableProps } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Linking,
+  type View,
+  type PressableProps,
+  type TextStyle,
+  type StyleProp,
+} from 'react-native';
 import {
   Children,
   cloneElement,
@@ -8,11 +16,15 @@ import {
   type Ref,
 } from 'react';
 import { useTheme } from '../theme';
+import { NativeRecipeState } from './_registry-context';
 import { useNativeFormAction } from './native-form';
 import { NativeSlot } from './_slot';
-import { LabelText as Text, TextToneProvider, withAlpha } from './_core';
+import { LabelText as Text, TextToneProvider, withAlpha, plainText } from './_core';
 export type ButtonProps = Omit<PressableProps, 'children'> & {
   children?: ReactNode;
+  textColor?: string;
+  textStyle?: StyleProp<Omit<TextStyle, 'color'> & { color?: string }>;
+  invalid?: boolean;
   type?: 'button' | 'submit' | 'reset';
   form?: string;
   asChild?: boolean;
@@ -34,6 +46,9 @@ const sizes = {
 export function Button({
   children,
   type = 'button',
+  invalid = false,
+  textColor,
+  textStyle,
   form,
   asChild = false,
   render,
@@ -64,63 +79,72 @@ export function Button({
     destructive: colors.destructive,
     link: colors.primary,
   };
+  const foreground = textColor ?? StyleSheet.flatten(textStyle)?.color ?? foregrounds[variant];
   const surface = {
     borderRadius: radius,
     backgroundColor: backgrounds[variant],
-    borderColor: variant === 'outline' ? colors.border : 'transparent',
+    borderColor: invalid
+      ? colors.destructive
+      : variant === 'outline'
+        ? colors.border
+        : 'transparent',
   };
   const Host = asChild || render ? NativeSlot : Pressable;
   const slotChild = render
     ? cloneElement(render, { children: children ?? render.props.children })
     : children;
   return (
-    <TextToneProvider value={foregrounds[variant]}>
-      <Host
-        {...props}
-        {...(asChild || render ? { slotVariant: variant, slotSize: size } : {})}
-        accessibilityRole={accessibilityRole}
-        onPress={(event) => {
-          props.onPress?.(event);
-          if (blocked || event.isDefaultPrevented()) return;
-          if (type === 'submit') void action.submit();
-          else if (type === 'reset') void action.reset();
-        }}
-        accessibilityState={{
-          ...accessibilityState,
-          disabled: !!blocked,
-          ...(type !== 'button' && action.pending ? { busy: true } : {}),
-        }}
-        disabled={blocked}
-        style={(state) => [
-          styles.button,
-          sizes[size],
-          surface,
-          blocked && styles.disabled,
-          state.pressed && styles.pressed,
-          typeof style === 'function' ? style(state) : style,
-        ]}
-      >
-        {asChild || render
-          ? slotChild
-          : Children.map(children, (child) =>
-              typeof child === 'string' || typeof child === 'number' ? (
-                <Text
-                  style={[
-                    styles.label,
-                    {
-                      color: foregrounds[variant],
-                      fontSize: size === 'xs' ? 12 : size === 'lg' ? 16 : 14,
-                    },
-                  ]}
-                >
-                  {child}
-                </Text>
-              ) : (
-                child
-              ),
-            )}
-      </Host>
-    </TextToneProvider>
+    <NativeRecipeState.Provider value={{ ...accessibilityState, disabled: !!blocked }}>
+      <TextToneProvider value={foreground}>
+        <Host
+          {...props}
+          {...(asChild || render ? { slotVariant: variant, slotSize: size } : {})}
+          accessibilityRole={accessibilityRole}
+          accessibilityLabel={props.accessibilityLabel ?? (plainText(children) || undefined)}
+          onPress={(event) => {
+            props.onPress?.(event);
+            if (blocked || event.isDefaultPrevented()) return;
+            if (type === 'submit') void action.submit();
+            else if (type === 'reset') void action.reset();
+          }}
+          accessibilityState={{
+            ...accessibilityState,
+            disabled: !!blocked,
+            ...(type !== 'button' && action.pending ? { busy: true } : {}),
+          }}
+          disabled={blocked}
+          style={(state) => [
+            styles.button,
+            sizes[size],
+            surface,
+            blocked && styles.disabled,
+            state.pressed && styles.pressed,
+            typeof style === 'function' ? style(state) : style,
+          ]}
+        >
+          {asChild || render
+            ? slotChild
+            : Children.map(children, (child) =>
+                typeof child === 'string' || typeof child === 'number' ? (
+                  <Text
+                    style={[
+                      styles.label,
+                      {
+                        fontSize: size === 'xs' ? 12 : size === 'lg' ? 16 : 14,
+                      },
+                      textStyle,
+                      { color: foreground },
+                    ]}
+                  >
+                    {child}
+                  </Text>
+                ) : (
+                  child
+                ),
+              )}
+        </Host>
+      </TextToneProvider>
+    </NativeRecipeState.Provider>
   );
 }
 const styles = StyleSheet.create({

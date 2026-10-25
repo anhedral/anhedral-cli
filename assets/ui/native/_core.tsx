@@ -63,8 +63,17 @@ export function plainText(node: ReactNode): string {
     .map((child) =>
       typeof child === 'string' || typeof child === 'number' || typeof child === 'bigint'
         ? String(child)
-        : isValidElement<{ children?: ReactNode }>(child)
-          ? plainText(child.props.children)
+        : isValidElement<{
+              children?: ReactNode;
+              accessibilityElementsHidden?: boolean;
+              'aria-hidden'?: boolean;
+              importantForAccessibility?: string;
+            }>(child)
+          ? child.props.accessibilityElementsHidden ||
+            child.props['aria-hidden'] ||
+            child.props.importantForAccessibility === 'no-hide-descendants'
+            ? ''
+            : plainText(child.props.children)
           : '',
     )
     .join('');
@@ -99,6 +108,8 @@ export const useTextTone = () => useContext(TextToneContext);
 export const NativeTextStyleContext = createContext<{
   style?: StyleProp<TextStyle>;
   fontRole?: NativeFontRole;
+  numberOfLines?: number;
+  textBreakStrategy?: TextProps['textBreakStrategy'];
 }>({});
 export const NativeTextStyleProvider = NativeTextStyleContext.Provider;
 export function LabelText({
@@ -119,6 +130,12 @@ export function LabelText({
   return (
     <NativeText
       {...props}
+      textBreakStrategy={props.textBreakStrategy ?? inherited.textBreakStrategy}
+      lineBreakStrategyIOS={
+        props.lineBreakStrategyIOS ?? (inherited.textBreakStrategy ? 'standard' : undefined)
+      }
+      numberOfLines={props.numberOfLines ?? inherited.numberOfLines}
+      ellipsizeMode={props.ellipsizeMode ?? (inherited.numberOfLines ? 'tail' : undefined)}
       style={[
         { color: colors.foreground, fontSize: 14, lineHeight: 21 },
         inherited.style,

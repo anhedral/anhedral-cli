@@ -1219,7 +1219,11 @@
     "_field-context.tsx",
     "registry-form-controls.tsx",
     "registry-formisch.tsx",
-    "registry-action-form.tsx"
+    "registry-action-form.tsx",
+    "_registry-context.tsx",
+    "registry-icons.tsx",
+    "registry-slider.tsx",
+    "registry-aria-overlay.tsx"
   ],
   "supportModules": [
     {
@@ -1306,5 +1310,9 @@
       "exports": ["NativeForm", "NativeFormScope"]
     }
   ],
-  "recipeCatalogs": ["native-chart-recipes.json", "native-form-recipes.json"]
+  "recipeCatalogs": [
+    "native-chart-recipes.json",
+    "native-form-recipes.json",
+    "native-example-recipes.json"
+  ]
 }

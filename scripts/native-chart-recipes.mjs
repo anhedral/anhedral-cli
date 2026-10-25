@@ -15,6 +15,34 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
       '<PieChart>',
       '<PieChart value={activeIndex} onValueChange={(index) => setActiveMonth(desktopData[index].month)}>',
     );
+  if (filename.endsWith('pagination-demo.tsx')) {
+    source =
+      'import * as React from "react";\n' +
+      source
+        .replace(
+          'function PaginationDemo() {',
+          'function PaginationDemo() { const [page,setPage] = React.useState(2);',
+        )
+        .replace(
+          '<PaginationPrevious href="#" />',
+          '<PaginationPrevious disabled={page === 1} onPress={() => setPage(Math.max(1,page-1))} />',
+        )
+        .replace(
+          '<PaginationNext href="#" />',
+          '<PaginationNext disabled={page === 3} onPress={() => setPage(Math.min(3,page+1))} />',
+        )
+        .replace(
+          /<PaginationLink href="#"(?: isActive)?>(\s*[123]\s*)<\/PaginationLink>/g,
+          (_, number) =>
+            '<PaginationLink isActive={page === ' +
+            number.trim() +
+            '} onPress={() => setPage(' +
+            number.trim() +
+            ')}> ' +
+            number.trim() +
+            ' </PaginationLink>',
+        );
+  }
   // Explicit boundary conversions retain the upstream values while satisfying native scalar APIs.
   source = source
     .replace(/payload\?\.\[0\]\.dataKey/g, 'payload?.[0]?.dataKey')
@@ -33,12 +61,22 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     )
     .replace(/\(value: keyof typeof chartConfig\)/g, '(value: unknown)')
     .replace(/chartConfig\[value\]/g, 'chartConfig[String(value) as keyof typeof chartConfig]');
+  if (filename.endsWith('spinner-custom.tsx'))
+    source = source.replace(
+      'React.ComponentProps<"svg">',
+      'import("lucide-react-native").LucideProps & {className?:string}',
+    );
+  if (filename.endsWith('/select-example.tsx'))
+    source = source.replace(/(fonts|plans)\[0\]\.(value|name)/g, '$1[0]!.$2');
+  const ariaRecipe = filename.includes('/bases/aria/');
   const nativeActions = nativeForms && /form-next-/.test(filename);
   if (nativeActions) source = source.replace(/\bFormData\b/g, 'NativeFormValues');
   // A successful action can return the original empty default again. Native
   // controlled inputs reset from the new state object; refresh the count too.
   if (nativeActions && filename.endsWith('form-next-demo.tsx'))
     source = source.replace('[formState.values.description]', '[formState]');
+  if (nativeForms && filename.includes('form-formisch-'))
+    source = source.replace(/field\.onChange\(value\)/g, 'field.onChange(String(value))');
   if (nativeForms) source = source.replace(/\brequired_error:/g, 'error:');
   // Native submit actions have no browser default. Await the actual library action
   // so pending/error state belongs to the native form for its entire lifetime.
@@ -161,7 +199,11 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           );
         }
         let target;
-        if (nativeActions && /\/ui\/(radio-group|select|checkbox|switch)$/.test(module))
+        if (ariaRecipe && /\/ui\/(alert-dialog|dialog|dropdown-menu|popover|tooltip)$/.test(module))
+          target = '../../native/registry-aria-overlay';
+        else if (/\/bases\/(base|aria)\/ui\/slider$/.test(module))
+          target = '../../native/registry-slider';
+        else if (nativeActions && /\/ui\/(radio-group|select|checkbox|switch)$/.test(module))
           target = '../../native/registry-action-form';
         else if (nativeForms && /\/ui\/(input|textarea|input-group)$/.test(module))
           target = '../../native/registry-form-controls';
@@ -194,7 +236,7 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
         )
           throw Error('Chart imports must be named.');
         const elements = node.importClause.namedBindings.elements
-          .filter((e) => e.name.text !== 'ChartStyle')
+          .filter((e) => !['ChartStyle', 'buttonVariants'].includes(e.name.text))
           .map((e) => {
             if (
               node.importClause.isTypeOnly ||
@@ -203,7 +245,8 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
               e.name.text === 'ChartConfig'
             )
               return f.updateImportSpecifier(e, true, e.propertyName, e.name);
-            const alias = f.createIdentifier('Native' + e.name.text);
+            if (/^[a-z]/.test(e.name.text)) return e;
+            const alias = f.createUniqueName('Native' + e.name.text);
             declarations.push(
               f.createVariableStatement(
                 undefined,
@@ -218,11 +261,15 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
                         f.createStringLiteral(
                           e.name.text === 'CardTitle' || e.name.text === 'CardDescription'
                             ? 'text'
-                            : module === 'lucide-react'
-                              ? 'svg'
-                              : module.startsWith('recharts')
-                                ? 'svg'
-                                : 'view',
+                            : /^(Button|Toggle|ToggleGroupItem|RadioGroupItem)$|Trigger$|Menu(?:Item|CheckboxItem|RadioItem)$/.test(
+                                  e.name.text,
+                                )
+                              ? 'button'
+                              : module === 'lucide-react'
+                                ? 'icon'
+                                : module.startsWith('recharts')
+                                  ? 'svg'
+                                  : 'view',
                         ),
                       ]),
                     ),
@@ -231,7 +278,14 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
                 ),
               ),
             );
-            return f.updateImportSpecifier(e, false, e.propertyName ?? e.name, alias);
+            return f.updateImportSpecifier(
+              e,
+              false,
+              ariaRecipe && /\/ui\/slider$/.test(module) && e.name.text === 'Slider'
+                ? f.createIdentifier('AriaSlider')
+                : (e.propertyName ?? e.name),
+              alias,
+            );
           });
         if (!elements.length) return undefined;
         return f.updateImportDeclaration(
@@ -322,8 +376,163 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
             ),
           ]),
         );
+      if (nativeForms && ts.isPropertyAssignment(node) && node.name.getText(file) === 'onClick')
+        return f.updatePropertyAssignment(
+          node,
+          f.createIdentifier('onPress'),
+          ts.visitNode(node.initializer, visit),
+        );
+      if (nativeForms && ts.isMethodDeclaration(node) && node.name.getText(file) === 'onClick')
+        return f.updateMethodDeclaration(
+          node,
+          node.modifiers,
+          node.asteriskToken,
+          f.createIdentifier('onPress'),
+          node.questionToken,
+          node.typeParameters,
+          node.parameters,
+          node.type,
+          ts.visitNode(node.body, visit),
+        );
       if (ts.isJsxAttribute(node)) {
-        const name = node.name.getText(file);
+        const name = node.name.getText(file),
+          tag = node.parent.parent.tagName?.getText(file);
+        if (
+          nativeForms &&
+          node.initializer &&
+          ts.isJsxExpression(node.initializer) &&
+          node.initializer.expression &&
+          ts.isArrowFunction(node.initializer.expression)
+        ) {
+          const arrow = node.initializer.expression,
+            param = arrow.parameters[0];
+          let type;
+          if (
+            tag === 'Slider' &&
+            ['onValueChange', 'onValueCommit'].includes(name) &&
+            param &&
+            !param.type
+          )
+            type = f.createUnionTypeNode([
+              f.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+              f.createTypeOperatorNode(
+                ts.SyntaxKind.ReadonlyKeyword,
+                f.createArrayTypeNode(f.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)),
+              ),
+            ]);
+          if (tag === 'Select' && name === 'itemToStringValue' && param && !param.type) {
+            const items = node.parent.properties.find(
+              (attr) => ts.isJsxAttribute(attr) && attr.name.getText(file) === 'items',
+            );
+            if (
+              items?.initializer &&
+              ts.isJsxExpression(items.initializer) &&
+              items.initializer.expression &&
+              ts.isIdentifier(items.initializer.expression)
+            )
+              type = f.createIndexedAccessTypeNode(
+                f.createTypeQueryNode(items.initializer.expression),
+                f.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+              );
+          }
+          if (type) {
+            const annotated = f.updateParameterDeclaration(
+              param,
+              param.modifiers,
+              param.dotDotDotToken,
+              param.name,
+              param.questionToken,
+              type,
+              param.initializer,
+            );
+            const updated = f.updateArrowFunction(
+              arrow,
+              arrow.modifiers,
+              arrow.typeParameters,
+              [annotated, ...arrow.parameters.slice(1)],
+              arrow.type,
+              arrow.equalsGreaterThanToken,
+              ts.visitNode(arrow.body, visit),
+            );
+            return f.updateJsxAttribute(
+              node,
+              node.name,
+              f.updateJsxExpression(node.initializer, updated),
+            );
+          }
+        }
+        if (
+          name === 'className' &&
+          node.initializer &&
+          ts.isJsxExpression(node.initializer) &&
+          node.initializer.expression &&
+          ts.isCallExpression(node.initializer.expression) &&
+          node.initializer.expression.expression.getText(file) === 'buttonVariants'
+        ) {
+          const args = node.initializer.expression.arguments;
+          if (args.length !== 1 || !ts.isObjectLiteralExpression(args[0]))
+            throw Error('Unreviewed native button variant composition.');
+          return f.createJsxSpreadAttribute(ts.visitNode(args[0], visit));
+        }
+        if (
+          name === 'nativeButton' ||
+          name === 'alignItemWithTrigger' ||
+          (ariaRecipe && name === 'slot')
+        )
+          return undefined;
+        if (ariaRecipe && name === 'isRowHeader')
+          return f.createJsxAttribute(
+            f.createIdentifier('accessibilityRole'),
+            f.createStringLiteral('header'),
+          );
+        const renamed =
+          name === 'isDisabled'
+            ? 'disabled'
+            : name === 'isInvalid'
+              ? 'invalid'
+              : ['selectedKey', 'defaultSelectedKey'].includes(name)
+                ? name === 'selectedKey'
+                  ? 'value'
+                  : 'defaultValue'
+                : name === 'onSelectionChange'
+                  ? 'onValueChange'
+                  : name === 'isExpanded'
+                    ? 'open'
+                    : name === 'defaultExpanded'
+                      ? 'defaultOpen'
+                      : name === 'onExpandedChange'
+                        ? 'onOpenChange'
+                        : name === 'minValue'
+                          ? 'min'
+                          : name === 'maxValue'
+                            ? 'max'
+                            : name === 'defaultSelected'
+                              ? ['Toggle', 'ToggleGroupItem'].includes(tag)
+                                ? 'defaultPressed'
+                                : 'defaultChecked'
+                              : name === 'isSelected'
+                                ? ['Toggle', 'ToggleGroupItem'].includes(tag)
+                                  ? 'pressed'
+                                  : 'checked'
+                                : ariaRecipe &&
+                                    name === 'onChange' &&
+                                    ['Switch', 'Checkbox'].includes(tag)
+                                  ? 'onCheckedChange'
+                                  : ariaRecipe && name === 'onChange' && tag === 'Toggle'
+                                    ? 'onPressedChange'
+                                    : ariaRecipe && name === 'onChange' && tag === 'Slider'
+                                      ? 'onValueChange'
+                                      : ariaRecipe &&
+                                          name === 'id' &&
+                                          ['TabsTrigger', 'TabsContent', 'SelectItem'].includes(tag)
+                                        ? 'value'
+                                        : undefined;
+        if (renamed)
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier(renamed),
+            ts.visitNode(node.initializer, visit),
+          );
         if (
           nativeForms &&
           !nativeActions &&
@@ -340,9 +549,35 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
           return f.updateJsxAttribute(
             node,
             f.createIdentifier(name === 'id' ? 'nativeID' : 'invalid'),
-            ts.visitNode(node.initializer, visit),
+            name !== 'id' &&
+              node.initializer &&
+              ts.isStringLiteral(node.initializer) &&
+              ['true', 'false'].includes(node.initializer.text)
+              ? f.createJsxExpression(
+                  undefined,
+                  node.initializer.text === 'true' ? f.createTrue() : f.createFalse(),
+                )
+              : ts.visitNode(node.initializer, visit),
           );
-        if (nativeForms && name === 'onChange') {
+        if (
+          nativeForms &&
+          name === 'defaultChecked' &&
+          node.parent.parent.tagName?.getText(file) === 'FieldLabel'
+        )
+          return undefined;
+        if (
+          nativeForms &&
+          name === 'modal' &&
+          node.parent.parent.tagName?.getText(file) === 'DropdownMenu'
+        )
+          return undefined;
+        if (
+          nativeForms &&
+          name === 'onChange' &&
+          ['Input', 'Textarea', 'InputGroupInput', 'InputGroupTextarea'].includes(
+            node.parent.parent.tagName?.getText(file),
+          )
+        ) {
           const convert = (child) =>
             ts.isPropertyAccessExpression(child) &&
             ['value', 'checked'].includes(child.name.text) &&
@@ -486,10 +721,27 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
     ...declarations,
     ...statements.filter((s) => !ts.isImportDeclaration(s)),
   ]);
-  return (
+  const native =
     '// Adapted from shadcn/ui (MIT). Source and input hash are retained in NATIVE_RECIPES.json.\n' +
-    ts.createPrinter().printFile(output)
+    ts.createPrinter().printFile(output);
+  validateNativeRecipeSyntax(native, filename);
+  return native;
+}
+export function validateNativeRecipeSyntax(source, filename) {
+  const parsed = ts.createSourceFile(
+    filename,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
   );
+  if (parsed.parseDiagnostics.length)
+    throw Error(
+      'Invalid translated native source ' +
+        filename +
+        ': ' +
+        ts.flattenDiagnosticMessageText(parsed.parseDiagnostics[0].messageText, ' '),
+    );
 }
 export const portChartRecipe = portNativeRegistryRecipe;
 export function loadNativeChartRecipes() {
@@ -506,6 +758,7 @@ export function validateNativeChartRecipes(inventory, catalog) {
     seen.add(recipe.origin);
     if (inventory.sources[recipe.origin]?.sha256 !== recipe.upstreamSha256)
       throw Error('Stale native chart source: ' + recipe.origin);
+    validateNativeRecipeSyntax(recipe.source, recipe.origin);
     if (hash(recipe.source) !== recipe.nativeSha256)
       throw Error('Changed native chart output: ' + recipe.origin);
     const key =

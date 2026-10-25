@@ -1,7 +1,15 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import {
+  Children,
+  createContext,
+  isValidElement,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { ScrollView, type ViewProps } from 'react-native';
-import { Box, LabelText, Muted, row, useControllable } from './_core';
-import { Button, type ButtonProps } from './button';
+import { Box, LabelText, Muted, row, useControllable, plainText, nativeComponent } from './_core';
+import { Button, LinkButton, type ButtonProps } from './button';
 import { Input } from './input';
 import { Checkbox } from './_controls';
 export const ScrollArea = ({ children, ...props }: React.ComponentProps<typeof ScrollView>) => (
@@ -26,40 +34,161 @@ export const TableHead = ({ style, ...props }: React.ComponentProps<typeof Label
     style={[{ fontWeight: '600', minWidth: 120, padding: 8 }, style]}
   />
 );
-export const TableCell = ({ style, ...props }: ViewProps) => (
-  <Box {...props} style={[{ minWidth: 120, padding: 8, flex: 1 }, style]} />
+export const TableCell = ({ colSpan = 1, style, ...props }: ViewProps & { colSpan?: number }) => (
+  <Box
+    {...props}
+    style={[
+      { minWidth: 120 * Math.max(1, colSpan), padding: 8, flex: Math.max(1, colSpan) },
+      style,
+    ]}
+  />
 );
 export const TableCaption = Muted;
-export const Pagination = ({ style, ...props }: ViewProps) => (
-  <Box accessibilityLabel="Pagination" {...props} style={row(style)} />
-);
+type PageState = { page: number; maximum: number; set: (page: number) => void };
+const PageContext = createContext<PageState | null>(null);
+function pageOptions(children: ReactNode, pages: number[] = [], active: { page?: number } = {}) {
+  Children.forEach(children, (child) => {
+    if (!isValidElement<{ children?: ReactNode; page?: number; isActive?: boolean }>(child)) return;
+    if (nativeComponent(child.type) === PaginationLink) {
+      const value = child.props.page ?? Number(plainText(child.props.children));
+      if (Number.isInteger(value) && value > 0) {
+        pages.push(value);
+        if (child.props.isActive) active.page = value;
+      }
+    }
+    pageOptions(child.props.children, pages, active);
+  });
+  return { pages, active: active.page };
+}
+export function Pagination({
+  children,
+  style,
+  page,
+  defaultPage,
+  onPageChange,
+  pageCount,
+  ...props
+}: ViewProps & {
+  page?: number;
+  defaultPage?: number;
+  pageCount?: number;
+  onPageChange?: (page: number) => void;
+}) {
+  const authored = pageOptions(children),
+    maximum = pageCount ?? (authored.pages.length ? Math.max(...authored.pages) : Infinity);
+  const [current, set] = useControllable(page, defaultPage ?? authored.active ?? 1, onPageChange);
+  const bounded = Math.min(maximum, Math.max(1, current));
+  return (
+    <PageContext.Provider
+      value={{ page: bounded, maximum, set: (page) => set(Math.min(maximum, Math.max(1, page))) }}
+    >
+      <Box
+        accessibilityLabel="Pagination"
+        accessibilityValue={{
+          min: 1,
+          now: bounded,
+          ...(Number.isFinite(maximum) ? { max: maximum } : {}),
+        }}
+        {...props}
+        style={row(style)}
+      >
+        {children}
+      </Box>
+    </PageContext.Provider>
+  );
+}
 export const PaginationContent = ({ style, ...props }: ViewProps) => (
   <Box {...props} style={row(style)} />
 );
 export const PaginationItem = Box;
-export const PaginationLink = ({ isActive, ...props }: ButtonProps & { isActive?: boolean }) => (
-  <Button
-    variant={isActive ? 'outline' : 'ghost'}
-    {...props}
-    accessibilityState={{ selected: !!isActive, disabled: !!props.disabled }}
-  />
-);
-export const PaginationPrevious = ({
+type PageButtonProps = ButtonProps & {
+  href?: string;
+  onNavigate?: React.ComponentProps<typeof LinkButton>['onNavigate'];
+  onError?: React.ComponentProps<typeof LinkButton>['onError'];
+};
+function PageButton({
+  href,
+  onPress,
+  onNavigate,
+  onError,
+  activate,
+  ...props
+}: PageButtonProps & { activate?: () => void }) {
+  if (href && href !== '#')
+    return (
+      <LinkButton
+        {...props}
+        href={href}
+        onPress={onPress}
+        onNavigate={onNavigate}
+        onError={onError}
+      />
+    );
+  return (
+    <Button
+      {...props}
+      onPress={(event) => {
+        onPress?.(event);
+        if (!event.isDefaultPrevented()) activate?.();
+      }}
+    />
+  );
+}
+export function PaginationLink({
+  isActive,
+  page,
+  children,
+  ...props
+}: PageButtonProps & { isActive?: boolean; page?: number }) {
+  const state = useContext(PageContext),
+    target = page ?? Number(plainText(children));
+  const selected =
+    state && Number.isInteger(target) && target > 0 ? state.page === target : !!isActive;
+  return (
+    <PageButton
+      variant={selected ? 'outline' : 'ghost'}
+      {...props}
+      activate={() => {
+        if (Number.isInteger(target) && target > 0) state?.set(target);
+      }}
+      accessibilityState={{ selected, disabled: !!props.disabled }}
+    >
+      {children}
+    </PageButton>
+  );
+}
+export function PaginationPrevious({
   children = 'Previous',
   ...props
-}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) => (
-  <Button {...props} accessibilityLabel={props.accessibilityLabel ?? 'Previous page'}>
-    {children}
-  </Button>
-);
-export const PaginationNext = ({
+}: Omit<PageButtonProps, 'children'> & { children?: ReactNode }) {
+  const state = useContext(PageContext);
+  return (
+    <PageButton
+      {...props}
+      disabled={props.disabled ?? !!(state && state.page <= 1)}
+      activate={() => state?.set(state.page - 1)}
+      accessibilityLabel={props.accessibilityLabel ?? 'Previous page'}
+    >
+      {children}
+    </PageButton>
+  );
+}
+export function PaginationNext({
   children = 'Next',
   ...props
-}: Omit<ButtonProps, 'children'> & { children?: ReactNode }) => (
-  <Button {...props} accessibilityLabel={props.accessibilityLabel ?? 'Next page'}>
-    {children}
-  </Button>
-);
+}: Omit<PageButtonProps, 'children'> & { children?: ReactNode }) {
+  const state = useContext(PageContext);
+  return (
+    <PageButton
+      {...props}
+      disabled={props.disabled ?? !!(state && state.page >= state.maximum)}
+      activate={() => state?.set(state.page + 1)}
+      accessibilityLabel={props.accessibilityLabel ?? 'Next page'}
+    >
+      {children}
+    </PageButton>
+  );
+}
 export const PaginationEllipsis = () => <Muted accessibilityLabel="More pages">…</Muted>;
 export type DataColumn<T> = {
   id: string;

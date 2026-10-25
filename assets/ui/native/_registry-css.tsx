@@ -8,17 +8,22 @@ export type RegistryStyle = {
   children: string[];
   svgChildren: string[];
   descendants: string[];
-  fontRole?: 'mono';
+  fontRole?: 'mono' | 'sans' | 'heading' | 'serif';
 };
 export function registryStyle(
   classes: string | undefined,
   options: {
     width: number;
+    height?: number;
+    mode?: 'light' | 'dark';
+    styleName?: string;
     color: (value: string) => string;
     radius: number;
     index?: number;
     count?: number;
     active?: boolean;
+    selected?: boolean;
+    expanded?: boolean;
   },
 ): RegistryStyle {
   const result: RegistryStyle = {
@@ -42,9 +47,22 @@ export function registryStyle(
     (a, b) => Number(/(?:^|:)!|!$/.test(a)) - Number(/(?:^|:)!|!$/.test(b)),
   )) {
     let token = original.replace(/^!|!$/g, '');
-    const responsive = /^(sm|md|lg):(.+)$/.exec(token);
+    if (token.startsWith('dark:')) {
+      if (options.mode !== 'dark') continue;
+      token = token.slice(5);
+    }
+    const preset = /^style-(vega|nova|maia|lyra|mira|luma|sera|rhea):(.+)$/.exec(token);
+    if (preset) {
+      if (preset[1] !== (options.styleName ?? 'nova')) continue;
+      token = preset[2]!;
+    }
+    const responsive = /^(sm|md|lg|xl|2xl):(.+)$/.exec(token);
     if (responsive) {
-      if (options.width < ({ sm: 640, md: 768, lg: 1024 }[responsive[1]!] ?? Infinity)) continue;
+      if (
+        options.width <
+        ({ sm: 640, md: 768, lg: 1024, xl: 1280, '2xl': 1536 }[responsive[1]!] ?? Infinity)
+      )
+        continue;
       token = responsive[2]!.replace(/^!|!$/g, '');
     }
     if (token.startsWith('[&>div]:')) {
@@ -91,23 +109,96 @@ export function registryStyle(
       if (!options.active) continue;
       token = token.slice(19);
     }
+    if (/^group-data-\[(state=on|selected)\]\/toggle:/.test(token)) {
+      if (!options.selected) continue;
+      token = token.replace(/^group-data-\[(state=on|selected)\]\/toggle:/, '');
+    }
+    if (token.startsWith('[svg]:')) {
+      result.svgChildren.push(token.slice(6));
+      continue;
+    }
+    if (token.startsWith('group-aria-expanded:')) {
+      if (!options.expanded) continue;
+      token = token.slice('group-aria-expanded:'.length);
+    }
+    if (token.startsWith('group-data-[state=open]:')) {
+      if (!options.expanded) continue;
+      token = token.slice('group-data-[state=open]:'.length);
+    }
+    if (token === 'group' || token.startsWith('group/')) {
+      paint.group = token;
+      continue;
+    }
+    if (token === 'sr-only') {
+      Object.assign(view, {
+        position: 'absolute',
+        width: 1,
+        height: 1,
+        overflow: 'hidden',
+        opacity: 0,
+      });
+      continue;
+    }
+    if (token === 'truncate') {
+      paint.lines = 1;
+      continue;
+    }
+    if (/^line-clamp-[1-9]$/.test(token)) {
+      paint.lines = Number(token.slice(11));
+      continue;
+    }
+    if (token === 'after:absolute' || token === 'after:inset-0') {
+      paint.nativePseudoBorder = 1;
+      continue;
+    }
+    if (token === 'after:rounded-lg') {
+      view.borderRadius = options.radius;
+      continue;
+    }
+    if (token === 'after:border') {
+      view.borderWidth = 1;
+      continue;
+    }
+    if (token === 'after:border-border') {
+      view.borderColor = options.color('border');
+      continue;
+    }
+    if (token === 'after:mix-blend-darken' || token === 'after:mix-blend-lighten') {
+      paint.webBlendMode = token.slice(16);
+      continue;
+    }
     if (token === 'hidden') view.display = 'none';
-    else if (token === 'flex') view.display = 'flex';
+    else if (token === 'flex' || token === 'block') view.display = 'flex';
     else if (token === 'grid') {
       view.display = 'flex';
       view.flexDirection = 'column';
-    } else if (token === 'grid-cols-2') {
+      paint.columns = 1;
+    } else if (/^grid-cols-[1-9]$/.test(token)) {
       view.flexDirection = 'row';
       view.flexWrap = 'wrap';
-      paint.columns = 2;
+      paint.columns = Number(token.slice(10));
+    } else if (token === 'grid-cols-subgrid') {
+      paint.subgrid = 1;
+    } else if (/^col-span-(full|[1-9])$/.test(token)) {
+      paint.columnSpan = token.slice(9);
     } else if (token === 'flex-row' || token === 'flex-col')
       view.flexDirection = token === 'flex-row' ? 'row' : 'column';
-    else if (token === 'flex-wrap') view.flexWrap = 'wrap';
+    else if (token === 'place-items-center') {
+      view.alignItems = 'center';
+      view.justifyContent = 'center';
+    } else if (token === 'flex-wrap') view.flexWrap = 'wrap';
     else if (token === 'flex-1') view.flex = 1;
+    else if (token === 'flex-none') {
+      view.flexGrow = 0;
+      view.flexShrink = 0;
+    } else if (token === 'inline-flex' || token === 'inline-block' || token === 'inline')
+      view.display = 'flex';
     else if (token === 'shrink-0') view.flexShrink = 0;
     else if (token === 'basis-full') view.flexBasis = '100%';
-    else if (token === 'basis-1/4') view.flexBasis = '25%';
-    else if (token.startsWith('gap-')) view.gap = number(token.slice(4));
+    else if (/^basis-[1-9]\/[1-9]$/.test(token)) {
+      const [a, b] = token.slice(6).split('/').map(Number);
+      view.flexBasis = ((100 * a!) / b! + '%') as `${number}%`;
+    } else if (token.startsWith('gap-')) view.gap = number(token.slice(4));
     else if (token.startsWith('items-')) {
       const value = token.slice(6);
       const align = {
@@ -146,20 +237,43 @@ export function registryStyle(
       const value = match[4] === 'auto' ? 'auto' : number(match[4]!) * (match[1] ? -1 : 1);
       if (value === 'auto' && prefix === 'padding') throw Error('Native padding cannot be auto.');
       for (const side of suffix) Object.assign(view, { [prefix + side]: value });
+    } else if (
+      /^w-\(--(?:radix-(?:dropdown-menu|context-menu|popover|tooltip|select)-trigger-width|anchor-width)\)$/.test(
+        token,
+      )
+    ) {
+      paint.triggerWidth = 1;
     } else if (/^(min-|max-)?(w|h|size)-/.test(token)) {
       const match = /^(min-|max-)?(w|h|size)-(.+)$/.exec(token)!;
       const names =
         match[2] === 'size' ? ['width', 'height'] : [match[2] === 'w' ? 'width' : 'height'];
-      const value =
-        match[3] === 'full'
-          ? '100%'
-          : match[3] === 'md'
-            ? 448
-            : match[3] === 'sm'
-              ? 384
-              : match[3] === 'lg'
-                ? 512
-                : number(match[3]!);
+      const value = /^\[\d+(?:\.\d+)?%\]$/.test(match[3]!)
+        ? match[3]!.slice(1, -1)
+        : /^[1-9]\/[1-9]$/.test(match[3]!)
+          ? (100 * Number(match[3]!.split('/')[0])) / Number(match[3]!.split('/')[1]) + '%'
+          : match[3] === 'screen'
+            ? match[2] === 'w'
+              ? options.width
+              : (options.height ?? options.width)
+            : match[3] === 'auto' || match[3] === 'fit'
+              ? 'auto'
+              : match[3] === 'xs'
+                ? 320
+                : match[3] === 'full'
+                  ? '100%'
+                  : match[3] === '3xl'
+                    ? 768
+                    : match[3] === '2xl'
+                      ? 672
+                      : match[3] === 'xl'
+                        ? 576
+                        : match[3] === 'md'
+                          ? 448
+                          : match[3] === 'sm'
+                            ? 384
+                            : match[3] === 'lg'
+                              ? 512
+                              : number(match[3]!);
       for (let name of names) {
         if (match[1]) name = match[1].slice(0, -1) + name[0]!.toUpperCase() + name.slice(1);
         Object.assign(view, { [name]: value });
@@ -173,6 +287,10 @@ export function registryStyle(
             : token === 'aspect-video'
               ? 16 / 9
               : undefined;
+      if (/^aspect-\[\d+(?:\.\d+)?\/\d+(?:\.\d+)?\]$/.test(token)) {
+        const [a, b] = token.slice(8, -1).split('/').map(Number);
+        if (b! > 0) view.aspectRatio = a! / b!;
+      }
       if (view.aspectRatio === undefined)
         throw Error(`Unsupported native aspect ratio: ${original}`);
     } else if (token === 'absolute' || token === 'relative') view.position = token;
@@ -184,6 +302,7 @@ export function registryStyle(
     else if (token.startsWith('rounded-')) {
       const value = token.slice(8),
         fixed = {
+          full: 9999,
           xs: 2,
           sm: Math.max(0, options.radius - 4),
           md: Math.max(0, options.radius - 2),
@@ -214,21 +333,57 @@ export function registryStyle(
       const value = token.slice(7);
       if (/^\[\d+(\.\d+)?px\]$/.test(value)) view.borderWidth = number(value);
       else view.borderColor = options.color(value);
+    } else if (token === 'shadow-none') {
+      view.boxShadow = [];
+      view.elevation = 0;
     } else if (token === 'shadow-xl') {
       view.boxShadow = [
         { offsetX: 0, offsetY: 20, blurRadius: 25, spreadDistance: -5, color: 'rgba(0,0,0,0.1)' },
         { offsetX: 0, offsetY: 8, blurRadius: 10, spreadDistance: -6, color: 'rgba(0,0,0,0.1)' },
       ];
       view.elevation = 8;
-    } else if (token === 'transition-all') paint.transitionDuration = 150;
+    } else if (token === 'grayscale') paint.grayscale = 1;
+    else if (token === 'animate-spin') paint.spin = 1;
+    else if (token.startsWith('hover:bg-')) paint.hoverBackground = options.color(token.slice(9));
+    else if (token.startsWith('hover:text-'))
+      paint.hoverForeground = options.color(token.slice(11));
+    else if (token === 'transition-transform') {
+      paint.turnTransition = 1;
+      paint.transitionDuration = 150;
+    } else if (token === 'rotate-90') paint.turnAngle = 90;
+    else if (token === 'transition-none') paint.transitionDuration = 0;
+    else if (token === 'transition-all') paint.transitionDuration = 150;
     else if (token === 'ease-in-out') paint.transitionEasing = 'in-out';
     else if (token === 'hover:-translate-y-0.5') paint.hoverTranslateY = -2;
-    else if (token === 'font-mono') result.fontRole = 'mono';
-    else if (token === 'font-bold' || token === 'font-medium' || token === 'font-normal')
-      text.fontWeight = token === 'font-bold' ? '700' : token === 'font-medium' ? '500' : '400';
+    else if (['font-mono', 'font-sans', 'font-serif', 'font-heading'].includes(token))
+      result.fontRole = token.slice(5) as RegistryStyle['fontRole'];
+    else if (
+      token === 'font-bold' ||
+      token === 'font-semibold' ||
+      token === 'font-medium' ||
+      token === 'font-normal'
+    )
+      text.fontWeight =
+        token === 'font-bold'
+          ? '700'
+          : token === 'font-semibold'
+            ? '600'
+            : token === 'font-medium'
+              ? '500'
+              : '400';
     else if (token === 'leading-none') paint.lineHeightMultiplier = 1;
-    else if (token === 'tabular-nums') text.fontVariant = ['tabular-nums'];
+    else if (token === 'leading-tight') paint.lineHeightMultiplier = 1.25;
+    else if (token === 'leading-normal') paint.lineHeightMultiplier = 1.5;
+    else if (token === 'leading-relaxed') paint.lineHeightMultiplier = 1.625;
+    else if (token === 'tracking-normal') text.letterSpacing = 0;
+    else if (token === 'tracking-tight') paint.letterSpacingEm = -0.025;
+    else if (token === 'tracking-wide') paint.letterSpacingEm = 0.05;
+    else if (token === 'text-pretty' || token === 'text-balance') {
+      paint.textBreakStrategy = token === 'text-pretty' ? 'highQuality' : 'balanced';
+    } else if (token === 'tabular-nums') text.fontVariant = ['tabular-nums'];
     else if (token === 'capitalize') text.textTransform = 'capitalize';
+    else if (token === 'normal-case') text.textTransform = 'none';
+    else if (token === 'uppercase' || token === 'lowercase') text.textTransform = token;
     else if (token.startsWith('text-')) {
       const value = token.slice(5),
         sizes = {
@@ -243,7 +398,11 @@ export function registryStyle(
         const [fontSize, lineHeight] = sizes[value as keyof typeof sizes];
         text.fontSize = fontSize;
         text.lineHeight = lineHeight;
-      } else if (value === 'left' || value === 'center') text.textAlign = value;
+      } else if (/^\[\d+(?:\.\d+)?(?:rem|px)\]$/.test(value)) {
+        text.fontSize = number(value);
+        text.lineHeight = text.fontSize * 1.5;
+      } else if (value === 'left' || value === 'center' || value === 'right' || value === 'justify')
+        text.textAlign = value;
       else text.color = options.color(value);
     } else if (token.startsWith('bg-')) view.backgroundColor = options.color(token.slice(3));
     else if (token.startsWith('fill-')) paint.fill = options.color(token.slice(5));
@@ -261,6 +420,7 @@ export function registryStyle(
     else if (token === 'resize-none') paint.nativeResize = 'none';
     else throw Error(`Unreviewed native registry utility: ${original}`);
   }
-  if (paint.lineHeightMultiplier && text.fontSize) text.lineHeight = text.fontSize;
+  if (typeof paint.lineHeightMultiplier === 'number' && text.fontSize)
+    text.lineHeight = text.fontSize * paint.lineHeightMultiplier;
   return result;
 }
