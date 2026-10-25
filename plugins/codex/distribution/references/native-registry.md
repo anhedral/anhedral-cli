@@ -81,6 +81,14 @@ These decisions describe the named native boundary; they do not mark an entire c
 | radix-sera | 219 | `e327c2fef03354dc9d4e911f3577d0f2088601ddba03b98464be8ada4f4b7285` |
 | radix-vega | 219 | `fdde2bee0e099cc823e2f2029df515048fc14d3a4f4a437ed6a0795d53486b9e` |
 
+## External dependency review
+
+The snapshot retains 9 exact Git package/lock/workspace inputs and 74 imported or declared npm package roots. Review fingerprints include reachable transitive dependency integrity, peer contexts, workspace source trees and patched dependency bytes. Package resolution uses the registry owner first, with explicit workspace or lockfile fallback records. Literal dynamic imports and import types are included; unresolved dynamic expressions require renewed review on every upstream revision. Snapshot collection never installs packages or evaluates upstream code.
+
+| Package without a pinned resolution | Native handling |
+| --- | --- |
+| tailwindcss-animate | Retained unresolved upstream metadata; requires explicit browser/native review. |
+
 ## Public API review
 
 This is export tracking, not proof of complete behavior or visual parity. Native item status remains separate. Browser-only exports have explicit native alternatives in the reviewed policy. All source variant declarations remain in the API ledger.
@@ -821,3 +829,4 @@ These upstream metadata gaps remain visible; they are not silently dropped or tr
 | Shiki HTML spans and CSS theme variables | Keep grammar/state behavior using the JavaScript regex engine, but render themed native Text rather than HTML. | Native Text adaptation tested for all upstream hook grammars, state and streaming behavior; no HTML/CSS runtime is installed. |
 | HTML description lists | Use scoped native term/definition roles and combined term/value accessibility labels. Preserve native IDs and refs; embedded links, inputs and buttons remain independently exposed. A labelled-by reference to only the term must not erase the definition value. | All authored Separator examples and nested/dynamic description-list contracts tested. Device screen-reader and visual matrix acceptance remain separate. |
 | Card CSS grid/container placement, slot descendants and custom spacing | Native header/action rows, owning-Card footer membership, direct native image corners and scoped numeric spacing replace browser grid selectors and CSS custom properties. Explicit CardAction parts and registry styling wrappers preserve source slot identity. Frozen titles inherit native application typography where their source declares no size. | All eleven source styles, both modern sizes, spacing overrides, source typography and keyed/dynamic composition tested. Unfinished dependent Card examples remain pending separately; device screen-reader/store acceptance remains separate. |
+| Legacy Tailwind animation plugin metadata | The default and new-york index/style entries declare tailwindcss-animate as a browser build plugin. Preserve all four declarations; native animation implementations use React Native animation primitives. Do not invent a package version absent from the pinned upstream manifests and lockfile. | The sole unresolved npm package root is explicit in dependency review. This classification does not complete either legacy registry style group or its animation APIs. |

@@ -259,6 +259,7 @@ test('global theme formulas are integrity checked and invalidate dependent compo
   assert.ok(diff.changed.includes('radix-vega/button-example'));
   assert.ok(diff.changed.includes('aria-rhea/button-example'));
   assert.ok(!diff.changed.includes('base-nova/use-mobile'));
+  assert.ok(!diff.changed.includes('new-york-v4/use-mobile'));
   assert.ok(!diff.changed.includes('default/button'));
   assert.notDeepEqual(
     reviewedInputs(inventory, 'registry:example/button-example'),
@@ -322,4 +323,31 @@ test('the whole registry retains static CVA classes and their distinct legacy an
   assert.equal(recipe('base-nova').variants.variant.destructive, 'cn-button-variant-destructive');
   assert.equal(recipe('default').variants.size.default, 'h-10 px-4 py-2');
   assert.equal(recipe('new-york').variants.size.default, 'h-9 px-4 py-2');
+});
+
+test('registry source analysis retains dynamic literal imports and import types, and records unresolved module expressions', () => {
+  const result = analyzeSource(
+    `import React from "react"; const grammar=()=>import("shiki/langs/tsx.mjs"); type Date=import("date-fns").DateArg; const builtin=require("node:crypto"); const unknown=()=>import(selectedPackage);`,
+    'dependency-fixture.tsx',
+  );
+  assert.deepEqual(result.imports, ['date-fns', 'node:crypto', 'react', 'shiki/langs/tsx.mjs']);
+  assert.deepEqual(result.unresolvedImports, ['selectedPackage']);
+});
+
+test('package-only updates invalidate affected native APIs and their registry dependents while unrelated modules remain stable', () => {
+  const changed = structuredClone(inventory);
+  changed.packageInputs.packages['class-variance-authority'].graph.sha256 = 'a'.repeat(64);
+  const diff = diffOfficialRegistry(inventory, changed);
+  assert.ok(diff.changed.includes('base-nova/button'));
+  assert.ok(diff.changed.includes('base-nova/button-example'));
+  assert.ok(!diff.changed.includes('base-nova/use-mobile'));
+  assert.ok(!diff.changed.includes('new-york-v4/use-mobile'));
+  assert.ok(!diff.changed.includes('base-nova/font-inter'));
+  const unrelated = structuredClone(inventory);
+  unrelated.packageInputs.packages.next.graph.sha256 = 'f'.repeat(64);
+  const other = diffOfficialRegistry(inventory, unrelated);
+  assert.ok(!other.changed.includes('base-nova/button'));
+  const globals = structuredClone(inventory);
+  globals.styleGlobals['apps/v4/app/globals.css'].sha256 = 'a'.repeat(64);
+  assert.ok(diffOfficialRegistry(inventory, globals).changed.includes('new-york-v4/card'));
 });

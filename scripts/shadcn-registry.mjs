@@ -6,6 +6,11 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import ts from 'typescript';
 import { registryClassRecipes } from './registry-class-recipes.mjs';
+import {
+  collectRegistryPackageInputs,
+  validateRegistryPackageInputs,
+  registryPackageFingerprint,
+} from './shadcn-package-inputs.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const destination = path.join(root, 'assets/ui/official');
@@ -22,7 +27,8 @@ export function analyzeSource(source, filename) {
   const imports = new Set(),
     functions = new Set(),
     variants = new Map(),
-    browser = new Set();
+    browser = new Set(),
+    unresolvedImports = new Set();
   const publicValues = new Set(),
     publicTypes = new Set();
   const add = (name, value) => {
@@ -65,6 +71,25 @@ export function analyzeSource(source, filename) {
       ts.isStringLiteral(node.moduleSpecifier)
     )
       imports.add(node.moduleSpecifier.text);
+    if (
+      ts.isCallExpression(node) &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) && node.expression.text === 'require'))
+    ) {
+      const argument = node.arguments[0];
+      if (
+        argument &&
+        (ts.isStringLiteral(argument) || ts.isNoSubstitutionTemplateLiteral(argument))
+      )
+        imports.add(argument.text);
+      else unresolvedImports.add(argument?.getText(file) ?? '<missing module>');
+    }
+    if (
+      ts.isImportTypeNode(node) &&
+      ts.isLiteralTypeNode(node.argument) &&
+      ts.isStringLiteral(node.argument.literal)
+    )
+      imports.add(node.argument.literal.text);
     if (ts.isFunctionDeclaration(node) && node.name) functions.add(node.name.text);
     if (
       ts.isJsxAttribute(node) &&
@@ -120,6 +145,7 @@ export function analyzeSource(source, filename) {
     ...(Object.keys(classRecipes).length ? { classRecipes } : {}),
     exports: { values: [...publicValues].sort(), types: [...publicTypes].sort() },
     imports: [...imports].sort(),
+    ...(unresolvedImports.size ? { unresolvedImports: [...unresolvedImports].sort() } : {}),
     functions: [...functions].sort(),
     variants: Object.fromEntries(
       [...variants].sort().map(([key, values]) => [key, [...values].sort()]),
@@ -180,6 +206,7 @@ export function loadOfficialRegistry() {
     }),
   );
   validateStyleGlobals(inventory);
+  validateRegistryPackageInputs(inventory.packageInputs, inventory.source.commit, inventory);
   return inventory;
 }
 /** Include locally imported companion source that published registry entries omit. */
@@ -202,14 +229,16 @@ function itemFingerprint(inventory, style, name, visited = new Set()) {
   const next = new Set(visited);
   next.add(key);
   const tokenStyle = style.replace(/^(?:base|aria|radix)-/, '');
-  const styleSheet = [
+  const styledItem = [
     'registry:ui',
     'registry:block',
     'registry:example',
     'registry:component',
-  ].includes(item.type)
+  ].includes(item.type);
+  const styleSheet = styledItem
     ? inventory.styleSheets['style-' + tokenStyle + '.css']?.sha256
     : undefined;
+  const usesStyles = styledItem && (!!styleSheet || style === 'new-york-v4');
   return sha256(
     JSON.stringify({
       item,
@@ -222,7 +251,8 @@ function itemFingerprint(inventory, style, name, visited = new Set()) {
           : {}),
       })),
       styleSheet,
-      ...(styleSheet && inventory.styleGlobals
+      packageInputs: registryPackageFingerprint(inventory, item, usesStyles),
+      ...(usesStyles && inventory.styleGlobals
         ? {
             styleGlobals: Object.fromEntries(
               Object.entries(inventory.styleGlobals)
@@ -404,6 +434,11 @@ export function registryChecklist(inventory, coverage) {
   );
   const policy = JSON.parse(read(path.join(destination, 'api-policy.json')));
   validateApiPolicy(api, policy);
+  const packages = inventory.packageInputs;
+  text += `\n## External dependency review\n\nThe snapshot retains ${Object.keys(packages.files).length} exact Git package/lock/workspace inputs and ${Object.keys(packages.packages).length} imported or declared npm package roots. Review fingerprints include reachable transitive dependency integrity, peer contexts, workspace source trees and patched dependency bytes. Package resolution uses the registry owner first, with explicit workspace or lockfile fallback records. Literal dynamic imports and import types are included; unresolved dynamic expressions require renewed review on every upstream revision. Snapshot collection never installs packages or evaluates upstream code.\n\n| Package without a pinned resolution | Native handling |\n| --- | --- |\n`;
+  for (const [name, entry] of Object.entries(packages.packages))
+    if (entry.resolution === 'unresolved')
+      text += `| ${name} | Retained unresolved upstream metadata; requires explicit browser/native review. |\n`;
   text +=
     '\n## Public API review\n\nThis is export tracking, not proof of complete behavior or visual parity. Native item status remains separate. Browser-only exports have explicit native alternatives in the reviewed policy. All source variant declarations remain in the API ledger.\n\n| Component | Upstream value exports | Native exports present | Browser-specific exports | Unimplemented exports |\n| --- | ---: | ---: | --- | --- |\n';
   for (const [name, entry] of Object.entries(api)) {
@@ -576,6 +611,7 @@ async function snapshot(source, cache) {
     const content = read(path.join(registryRoot, 'styles', name));
     result.styleSheets[name] = { sha256: sha256(content), content };
   }
+  result.packageInputs = collectRegistryPackageInputs(sourceRoot, commit, result);
   for (const name of ['config.json', 'index.json', 'themes.css']) {
     const file = path.join(sourceRoot, 'apps/v4/public/r', name);
     result.auxiliary[name] = { sha256: sha256(readFileSync(file)) };

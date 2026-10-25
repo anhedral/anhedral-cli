@@ -1,3 +1,29 @@
+# Upstream package provenance — October 25, 2026
+
+Registry review now includes the exact pinned upstream package manifests, pnpm
+workspace and lockfile, reachable package integrity and peer contexts, workspace
+source trees and patched dependency bytes. Literal dynamic imports, require calls
+and import types enter the inventory. Unresolved dynamic expressions require
+renewed review on every upstream revision. Global CSS also invalidates v4 UI
+consumers while hooks remain independent of stylesheet changes.
+
+- The upstream pin and published metadata baseline are unchanged. Nine exact Git
+  inputs cover 74 npm roots; all resolved graphs are complete. The legacy
+  `tailwindcss-animate` declarations have no version in the current upstream lock;
+  four browser style/index references remain explicit. No version was invented.
+- All 702 native recipe source bytes, upstream hashes and origins remain identical;
+  all eight theme values remain identical. Coverage stays 81 accounted / 535 pending.
+  Evidence: `.artifacts/shadcn-registry/package-runtime-equivalence.json` and the
+  retained previous inventory and source-import-analysis records.
+- Root unit tests: 639 passed, one optional skip. Native generated typecheck,
+  lint, static security, packed consumer installation and packlist passed:
+  249 files, 1,006,760 packed bytes. New Git fixtures test package-only changes,
+  transitive/peer/alias/cyclic graphs, workspace code, patch bytes, dirty checkouts,
+  dynamic imports and unrelated-package isolation. CI includes these contracts.
+- This changes review provenance, not native runtime behavior; the unchanged
+  native source retains the separately recorded Jest, Hermes and OS evidence below.
+  It does not establish complete registry parity or a dependency advisory audit.
+
 # Native Card source styles and measured geometry — October 25, 2026
 
 Card now retains the eight modern presets and three frozen source definitions for
