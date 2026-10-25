@@ -8,10 +8,13 @@ import {
   type Ref,
 } from 'react';
 import { useTheme } from '../theme';
+import { useNativeFormAction } from './native-form';
 import { NativeSlot } from './_slot';
 import { LabelText as Text, TextToneProvider, withAlpha } from './_core';
 export type ButtonProps = Omit<PressableProps, 'children'> & {
   children?: ReactNode;
+  type?: 'button' | 'submit' | 'reset';
+  form?: string;
   asChild?: boolean;
   render?: ReactElement<{ children?: ReactNode }>;
   ref?: Ref<View>;
@@ -30,6 +33,8 @@ const sizes = {
 };
 export function Button({
   children,
+  type = 'button',
+  form,
   asChild = false,
   render,
   variant = 'default',
@@ -41,6 +46,8 @@ export function Button({
   ...props
 }: ButtonProps) {
   const { colors, radius, mode } = useTheme();
+  const action = useNativeFormAction(form);
+  const blocked = disabled || (type !== 'button' && action.pending);
   const backgrounds = {
     default: colors.primary,
     secondary: colors.secondary,
@@ -72,13 +79,23 @@ export function Button({
         {...props}
         {...(asChild || render ? { slotVariant: variant, slotSize: size } : {})}
         accessibilityRole={accessibilityRole}
-        accessibilityState={{ ...accessibilityState, disabled: !!disabled }}
-        disabled={disabled}
+        onPress={(event) => {
+          props.onPress?.(event);
+          if (blocked || event.isDefaultPrevented()) return;
+          if (type === 'submit') void action.submit();
+          else if (type === 'reset') void action.reset();
+        }}
+        accessibilityState={{
+          ...accessibilityState,
+          disabled: !!blocked,
+          ...(type !== 'button' && action.pending ? { busy: true } : {}),
+        }}
+        disabled={blocked}
         style={(state) => [
           styles.button,
           sizes[size],
           surface,
-          disabled && styles.disabled,
+          blocked && styles.disabled,
           state.pressed && styles.pressed,
           typeof style === 'function' ? style(state) : style,
         ]}

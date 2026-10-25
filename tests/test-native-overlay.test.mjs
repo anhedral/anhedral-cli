@@ -11,6 +11,8 @@ test('published native overlay preserves every maintained source, font license a
   const fonts = JSON.parse(decoded.files['native-fonts.json']);
   const recipes = JSON.parse(decoded.files['native-chart-recipes.json']);
   assert.equal(recipes.recipes.filter((recipe) => recipe.kind === 'block').length, 210);
+  const forms = JSON.parse(decoded.files['native-form-recipes.json']);
+  assert.equal(forms.recipes.filter((recipe) => recipe.name.startsWith('form-rhf-')).length, 10);
   assert.ok(fonts);
   assert.ok(Object.keys(decoded.files).includes('native/charts.tsx'));
   assert.ok(binary.length < 150000, 'native overlay should retain compression headroom');

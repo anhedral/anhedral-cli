@@ -12,7 +12,10 @@ export function nativeOverlayFiles(directory = root) {
       .sort()
       .map((file) => ['native/' + file, readFileSync(path.join(ui, 'native', file), 'utf8')]),
   );
-  for (const file of ['native-fonts.json', 'native-chart-recipes.json'])
+  for (const file of [
+    'native-fonts.json',
+    ...(registry.recipeCatalogs ?? ['native-chart-recipes.json']),
+  ])
     files[file] = gunzipSync(readFileSync(path.join(ui, file + '.gz')), {
       maxOutputLength: 16 * 1024 * 1024,
     }).toString();

@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useMemo,
   type ReactNode,
   type RefObject,
 } from 'react';
@@ -14,6 +15,7 @@ import { Box, LabelText, Muted, content, nativeComponent } from './_core';
 import { Input, type InputProps } from './input';
 import { Button, type ButtonProps } from './button';
 import { useTheme } from '../theme';
+import { composeNativeRefs } from './_slot';
 type Align = 'inline-start' | 'inline-end' | 'block-start' | 'block-end';
 type Group = {
   input: RefObject<TextInput | null>;
@@ -156,6 +158,7 @@ export function InputGroupInput({
   const group = useGroup(),
     setInvalid = group.setInvalid,
     setDisabled = group.setDisabled;
+  const mergedRef = useMemo(() => composeNativeRefs(group.input, ref), [group.input, ref]);
   useEffect(() => {
     setInvalid(!!invalid);
   }, [invalid, setInvalid]);
@@ -168,11 +171,7 @@ export function InputGroupInput({
       editable={!group.disabled && editable !== false}
       invalid={invalid}
       onChangeText={onChangeText}
-      ref={(node) => {
-        group.input.current = node;
-        if (typeof ref === 'function') ref(node);
-        else if (ref) ref.current = node;
-      }}
+      ref={mergedRef}
       style={[
         { flex: 1, minWidth: 0, borderWidth: 0, borderRadius: 0, backgroundColor: 'transparent' },
         style,

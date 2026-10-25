@@ -1,4 +1,14 @@
-import { createContext, useContext, useId, useRef, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useId,
+  useRef,
+  useState,
+  useMemo,
+  Children,
+  isValidElement,
+  type ReactNode,
+} from 'react';
 import {
   View,
   Pressable,
@@ -10,11 +20,31 @@ import {
   type PressableProps,
 } from 'react-native';
 import { useTheme } from '../theme';
-import { Box, LabelText, Muted, content, plainText, row, useControllable } from './_core';
+import {
+  Box,
+  LabelText,
+  Muted,
+  content,
+  plainText,
+  row,
+  useControllable,
+  nativeComponent,
+  withAlpha,
+} from './_core';
 import { Button, type ButtonProps } from './button';
 import { Input } from './input';
+import {
+  NativeFieldProvider,
+  useNativeFieldPart,
+  useNativeFieldInput,
+  useNativeField,
+  NativeChoiceLabelContext,
+  useNativeFieldActivation,
+  type NativeChoiceState,
+} from './_field-context';
 
 export function Checkbox({
+  invalid,
   checked,
   defaultChecked = false,
   onCheckedChange,
@@ -24,6 +54,7 @@ export function Checkbox({
   style,
   ...props
 }: Omit<PressableProps, 'children'> & {
+  invalid?: boolean;
   checked?: boolean | 'indeterminate';
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
@@ -33,17 +64,28 @@ export function Checkbox({
     onCheckedChange?.(next === true),
   );
   const { colors } = useTheme();
+  const field = useNativeField();
+  const inChoice = useNativeFieldActivation(() => set(value !== true), !!disabled, value === true);
   return (
     <Pressable
       {...props}
       accessibilityRole="checkbox"
-      accessibilityLabel={accessibilityLabel ?? (plainText(children) || undefined)}
+      accessibilityLabel={accessibilityLabel ?? (plainText(children) || field?.label || undefined)}
+      accessibilityLabelledBy={
+        accessibilityLabel !== undefined
+          ? props.accessibilityLabelledBy
+          : (props.accessibilityLabelledBy ?? (field?.labelIDs.length ? field.labelIDs : undefined))
+      }
+      accessibilityHint={
+        props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
+      }
       accessibilityState={{
         checked: value === 'indeterminate' ? 'mixed' : value,
         disabled: !!disabled,
       }}
       disabled={disabled}
       onPress={(event) => {
+        if (inChoice) event.stopPropagation();
         props.onPress?.(event);
         if (!event.isDefaultPrevented()) set(value !== true);
       }}
@@ -58,7 +100,7 @@ export function Checkbox({
           height: 22,
           borderRadius: 4,
           borderWidth: 1,
-          borderColor: colors.primary,
+          borderColor: (invalid ?? field?.invalid) ? colors.destructive : colors.primary,
           backgroundColor: value ? colors.primary : colors.background,
           alignItems: 'center',
           justifyContent: 'center',
@@ -74,25 +116,46 @@ export function Checkbox({
 }
 export function Switch({
   size = 'default',
+  invalid,
   checked,
   defaultChecked = false,
   onCheckedChange,
   ...props
 }: Omit<React.ComponentProps<typeof NativeSwitch>, 'value' | 'onValueChange'> & {
   size?: 'default' | 'sm';
+  invalid?: boolean;
   checked?: boolean;
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
 }) {
   const [value, set] = useControllable(checked, defaultChecked, onCheckedChange);
   const { colors } = useTheme();
+  const field = useNativeField();
+  useNativeFieldActivation(() => set(!value), !!props.disabled, value);
   return (
     <NativeSwitch
       accessible
       trackColor={{ false: colors.input, true: colors.primary }}
       {...props}
+      accessibilityLabel={props.accessibilityLabel ?? (field?.label || undefined)}
+      accessibilityLabelledBy={
+        props.accessibilityLabel !== undefined
+          ? props.accessibilityLabelledBy
+          : (props.accessibilityLabelledBy ?? (field?.labelIDs.length ? field.labelIDs : undefined))
+      }
+      accessibilityHint={
+        props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
+      }
       hitSlop={props.hitSlop ?? (size === 'sm' ? 12 : 8)}
-      style={[size === 'sm' && { transform: [{ scale: 0.8 }] }, props.style]}
+      style={[
+        (invalid ?? field?.invalid) && {
+          borderWidth: 1,
+          borderColor: colors.destructive,
+          borderRadius: 999,
+        },
+        size === 'sm' && { transform: [{ scale: 0.8 }] },
+        props.style,
+      ]}
       accessibilityRole="switch"
       accessibilityState={{ checked: value, disabled: !!props.disabled }}
       value={value}
@@ -208,44 +271,72 @@ const RadioContext = createContext<{
   disabled?: boolean;
 } | null>(null);
 export function RadioGroup({
+  invalid,
   value,
   defaultValue = '',
   onValueChange,
   disabled,
   ...props
 }: ViewProps & {
+  invalid?: boolean;
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
 }) {
+  const field = useNativeField();
   const [selected, set] = useControllable(value, defaultValue, onValueChange);
   return (
     <RadioContext.Provider value={{ value: selected, set, disabled }}>
-      <Box accessibilityRole="radiogroup" {...props} />
+      <Box
+        accessibilityRole="radiogroup"
+        {...props}
+        accessibilityLabel={props.accessibilityLabel ?? (field?.label || undefined)}
+        accessibilityHint={
+          props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
+        }
+      />
     </RadioContext.Provider>
   );
 }
 export function RadioGroupItem({
+  invalid,
   value,
   children,
   disabled,
   ...props
-}: Omit<ButtonProps, 'children'> & { value: string; children?: ReactNode }) {
+}: Omit<ButtonProps, 'children'> & { value: string; children?: ReactNode; invalid?: boolean }) {
   const group = useContext(RadioContext);
+  const field = useNativeField(),
+    { colors } = useTheme();
   if (!group) throw Error('RadioGroupItem requires RadioGroup.');
+  const inChoice = useNativeFieldActivation(
+    () => group.set(value),
+    !!(disabled || group.disabled),
+    group.value === value,
+  );
   return (
     <Button
       {...props}
       disabled={disabled || group.disabled}
       variant="outline"
       accessibilityRole="radio"
-      accessibilityLabel={props.accessibilityLabel ?? plainText(children)}
+      accessibilityLabel={
+        props.accessibilityLabel ?? (plainText(children) || field?.label || undefined)
+      }
+      accessibilityHint={
+        props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
+      }
+      style={(state) => [
+        (invalid ?? field?.invalid) && { borderColor: colors.destructive },
+        typeof props.style === 'function' ? props.style(state) : props.style,
+      ]}
       accessibilityState={{
         checked: group.value === value,
         disabled: !!(disabled || group.disabled),
       }}
       onPress={(event) => {
+        if (inChoice) event.stopPropagation();
         props.onPress?.(event);
         if (!event.isDefaultPrevented()) group.set(value);
       }}
@@ -461,7 +552,6 @@ export function AccordionItem({
 }
 export const AccordionTrigger = CollapsibleTrigger;
 export const AccordionContent = CollapsibleContent;
-const FieldContext = createContext({ invalid: false, id: '' });
 export function Field({
   invalid = false,
   orientation = 'vertical',
@@ -473,7 +563,7 @@ export function Field({
   const width = containerWidth ?? windowWidth;
   const id = useId();
   return (
-    <FieldContext.Provider value={{ invalid, id }}>
+    <NativeFieldProvider invalid={invalid} id={id}>
       <Box
         {...props}
         onLayout={(event) => {
@@ -491,42 +581,127 @@ export function Field({
           style,
         ]}
       />
-    </FieldContext.Provider>
+    </NativeFieldProvider>
   );
 }
 export const FieldGroup = Box;
-export const FieldSet = Box;
+export function FieldSet(props: ViewProps & { invalid?: boolean }) {
+  return <Field {...props} />;
+}
 export const FieldContent = Box;
-export const FieldLegend = ({
+export function FieldLegend({
   variant = 'legend',
+  children,
   style,
   ...props
-}: React.ComponentProps<typeof LabelText> & { variant?: 'label' | 'legend' }) => (
-  <LabelText
-    accessibilityRole="header"
-    {...props}
-    style={[{ fontWeight: '600', fontSize: variant === 'legend' ? 16 : 14 }, style]}
-  />
-);
-export const FieldLabel = ({ ...props }: React.ComponentProps<typeof LabelText>) => {
-  const field = useContext(FieldContext);
-  return <LabelText nativeID={`${field.id}-label`} {...props} />;
+}: React.ComponentProps<typeof LabelText> & { variant?: 'label' | 'legend' }) {
+  const { field, nativeID } = useNativeFieldPart('label', children, props.nativeID),
+    { colors } = useTheme();
+  return (
+    <LabelText
+      accessibilityRole="header"
+      {...props}
+      nativeID={nativeID}
+      style={[
+        { fontWeight: '500', fontSize: variant === 'legend' ? 16 : 14 },
+        field?.invalid && { color: colors.destructive },
+        style,
+      ]}
+    >
+      {children}
+    </LabelText>
+  );
+}
+export const FieldLabel = ({
+  children,
+  onPress,
+  style,
+  ...props
+}: React.ComponentProps<typeof LabelText>) => {
+  const compound = Children.toArray(children).some(
+    (child) =>
+      isValidElement(child) &&
+      [Field, Box, View].includes(nativeComponent(child.type) as typeof Field),
+  );
+  const { field, nativeID } = useNativeFieldPart('label', compound ? '' : children, props.nativeID),
+    { colors, radius, mode } = useTheme();
+  const activate = useRef<(() => void) | null>(null),
+    [choiceState, setState] = useState<NativeChoiceState>({ disabled: false, checked: false });
+  const choice = useMemo(() => ({ activate, setState }), []);
+  const press = (event: Parameters<NonNullable<typeof onPress>>[0]) => {
+    onPress?.(event);
+    if (event.isDefaultPrevented()) return;
+    if (compound) activate.current?.();
+    else {
+      const control = field?.control.current;
+      if (control?.activate) control.activate();
+      else control?.focus?.();
+    }
+  };
+  if (compound)
+    return (
+      <NativeChoiceLabelContext.Provider value={choice}>
+        <Pressable
+          {...props}
+          nativeID={nativeID}
+          accessible={false}
+          disabled={choiceState.disabled}
+          onPress={press}
+          style={[
+            {
+              borderWidth: 1,
+              borderRadius: radius,
+              borderColor: choiceState.checked
+                ? withAlpha(colors.primary ?? colors.foreground, mode === 'dark' ? 0.2 : 0.3)
+                : colors.border,
+              backgroundColor: choiceState.checked
+                ? withAlpha(colors.primary ?? colors.foreground, mode === 'dark' ? 0.1 : 0.05)
+                : 'transparent',
+              opacity: choiceState.disabled ? 0.5 : 1,
+              padding: 10,
+            },
+            style,
+          ]}
+        >
+          {content(children)}
+        </Pressable>
+      </NativeChoiceLabelContext.Provider>
+    );
+  return (
+    <LabelText
+      {...props}
+      nativeID={nativeID}
+      style={[{ fontWeight: '500' }, field?.invalid && { color: colors.destructive }, style]}
+      onPress={press}
+    >
+      {children}
+    </LabelText>
+  );
 };
 export const FieldTitle = FieldLabel;
-export const FieldDescription = Muted;
+export function FieldDescription({ children, ...props }: React.ComponentProps<typeof LabelText>) {
+  const { nativeID } = useNativeFieldPart('description', children, props.nativeID);
+  return (
+    <Muted {...props} nativeID={props.nativeID ?? nativeID}>
+      {children}
+    </Muted>
+  );
+}
 export function FieldError({
   children,
   errors,
   ...props
 }: React.ComponentProps<typeof LabelText> & { errors?: ({ message?: string } | undefined)[] }) {
-  const { colors } = useTheme();
-  const message =
-    children ?? [...new Set(errors?.map((error) => error?.message).filter(Boolean))].join('\n');
+  const { colors } = useTheme(),
+    message =
+      children ?? [...new Set(errors?.map((error) => error?.message).filter(Boolean))].join('\n');
+  const { nativeID } = useNativeFieldPart('error', message, props.nativeID);
   return message ? (
     <LabelText
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
       {...props}
+      nativeID={props.nativeID ?? nativeID}
       style={[{ color: colors.destructive }, props.style]}
     >
       {message}
@@ -534,8 +709,8 @@ export function FieldError({
   ) : null;
 }
 export function FieldInput(props: React.ComponentProps<typeof Input>) {
-  const field = useContext(FieldContext);
-  return <Input accessibilityLabelledBy={`${field.id}-label`} invalid={field.invalid} {...props} />;
+  const input = useNativeFieldInput(props);
+  return <Input {...input} />;
 }
 export const FieldSeparator = ({ children }: { children?: ReactNode }) => <Muted>{children}</Muted>;
 export const Textarea = ({ style, ...props }: TextInputProps) => (

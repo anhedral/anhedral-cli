@@ -121,10 +121,16 @@ export function registryStyle(
       view.alignItems = align[value as keyof typeof align];
     } else if (token.startsWith('justify-')) {
       const value = token.slice(8);
-      if (value !== 'center' && value !== 'start' && value !== 'between')
+      if (value !== 'center' && value !== 'start' && value !== 'end' && value !== 'between')
         throw Error(`Unsupported native justification: ${original}`);
       view.justifyContent =
-        value === 'center' ? 'center' : value === 'between' ? 'space-between' : 'flex-start';
+        value === 'center'
+          ? 'center'
+          : value === 'between'
+            ? 'space-between'
+            : value === 'end'
+              ? 'flex-end'
+              : 'flex-start';
     } else if (/^(-?)(p|m)([xytrbl]?)-/.test(token)) {
       const match = /^(-?)(p|m)([xytrbl]?)-(.+)$/.exec(token)!;
       const prefix = match[2] === 'p' ? 'padding' : 'margin';
@@ -144,7 +150,16 @@ export function registryStyle(
       const match = /^(min-|max-)?(w|h|size)-(.+)$/.exec(token)!;
       const names =
         match[2] === 'size' ? ['width', 'height'] : [match[2] === 'w' ? 'width' : 'height'];
-      const value = match[3] === 'full' ? '100%' : match[3] === 'md' ? 448 : number(match[3]!);
+      const value =
+        match[3] === 'full'
+          ? '100%'
+          : match[3] === 'md'
+            ? 448
+            : match[3] === 'sm'
+              ? 384
+              : match[3] === 'lg'
+                ? 512
+                : number(match[3]!);
       for (let name of names) {
         if (match[1]) name = match[1].slice(0, -1) + name[0]!.toUpperCase() + name.slice(1);
         Object.assign(view, { [name]: value });
@@ -171,6 +186,7 @@ export function registryStyle(
         fixed = {
           xs: 2,
           sm: Math.max(0, options.radius - 4),
+          md: Math.max(0, options.radius - 2),
           lg: options.radius,
           xl: options.radius + 4,
         };
@@ -240,7 +256,9 @@ export function registryStyle(
     else if (token === 'rotate-[-40deg]')
       view.transform = [...((view.transform as []) ?? []), { rotate: '-40deg' }];
     else if (token === 'mix-blend-luminosity') view.mixBlendMode = 'luminosity';
-    else if (token === 'space-y-0') view.rowGap = 0;
+    else if (token.startsWith('space-y-')) view.rowGap = number(token.slice(8));
+    else if (token === 'overflow-x-auto') paint.scrollHorizontal = 1;
+    else if (token === 'resize-none') paint.nativeResize = 'none';
     else throw Error(`Unreviewed native registry utility: ${original}`);
   }
   if (paint.lineHeightMultiplier && text.fontSize) text.lineHeight = text.fontSize;

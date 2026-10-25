@@ -13,6 +13,7 @@ import {
 } from 'react';
 import {
   View,
+  ScrollView,
   Animated,
   Easing,
   AccessibilityInfo,
@@ -24,9 +25,12 @@ import {
   type TextStyle,
 } from 'react-native';
 import { useTheme } from '../theme';
+import { styling } from '@workspace/styling';
 import { ChartContext } from './_chart-context';
 import {
   content,
+  plainText,
+  monospace,
   LabelText,
   NativeTextStyleContext,
   NativeTextStyleProvider,
@@ -34,6 +38,8 @@ import {
   useTextTone,
   withAlpha,
 } from './_core';
+import { useNativeFontStyle } from './fonts';
+import { tokenizeCode } from './code-block';
 import { registryStyle } from './_registry-css';
 
 const RegistryLocalPaint = createContext<Record<string, string | number>>({});
@@ -91,6 +97,12 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       const [name, opacity] = value.split('/');
       const resolved =
         theme.colors[name!] ??
+        (styling.registryColors as Record<string, string>)[name!] ??
+        (name === 'code'
+          ? theme.colors.muted
+          : name === 'code-foreground'
+            ? theme.colors.foreground
+            : undefined) ??
         (name === 'white' ? '#ffffff' : name === 'transparent' ? 'transparent' : undefined);
       if (resolved)
         return opacity === undefined ? resolved : withAlpha(resolved, Number(opacity) / 100);
@@ -302,3 +314,45 @@ export function registryClassNames(...values: RegistryClassName[]): string {
   values.forEach(visit);
   return output.join(' ');
 }
+
+function RecipePre({ children, style, ...props }: React.ComponentProps<typeof ScrollView>) {
+  return (
+    <ScrollView {...props} horizontal style={[{ maxWidth: '100%' }, style]}>
+      {content(children)}
+    </ScrollView>
+  );
+}
+function RecipeCode({ children, style, ...props }: React.ComponentProps<typeof LabelText>) {
+  const { colors } = useTheme(),
+    current = StyleSheet.flatten(style),
+    weight = current?.fontWeight === 'bold' ? 700 : Number(current?.fontWeight) || 400,
+    font = useNativeFontStyle('mono', weight, current?.fontStyle === 'italic'),
+    family = current?.fontFamily ?? font.fontFamily ?? monospace,
+    tokens = tokenizeCode(plainText(children), 'json');
+  return (
+    <LabelText {...props} fontRole="mono" style={[font, { fontFamily: family }, style]}>
+      {tokens.map((token, index) => (
+        <LabelText
+          key={index}
+          fontRole="mono"
+          style={{
+            fontFamily: family,
+            fontWeight: font.fontWeight ?? current?.fontWeight,
+            color:
+              token.kind === 'string'
+                ? colors.primary
+                : token.kind === 'number'
+                  ? (colors['chart-2'] ?? colors.primary)
+                  : token.kind === 'keyword'
+                    ? (colors['chart-3'] ?? colors.primary)
+                    : colors.foreground,
+          }}
+        >
+          {token.text}
+        </LabelText>
+      ))}
+    </LabelText>
+  );
+}
+export const RegistryPre = withRegistryStyles(RecipePre);
+export const RegistryCode = withRegistryStyles(RecipeCode, 'text');

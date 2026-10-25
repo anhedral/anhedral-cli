@@ -35,6 +35,7 @@ export function scaffoldNativeUI(root: string): void {
   const registry = JSON.parse(readFileSync(assets + 'native/registry.json', 'utf8')) as {
     components: { id: string; file: string }[];
     supportFiles: string[];
+    recipeCatalogs?: string[];
     supportModules?: { file: string; exports: string[] }[];
   };
   const components = [
@@ -44,7 +45,7 @@ export function scaffoldNativeUI(root: string): void {
     'theme-switcher',
   ];
   put(root, 'packages/native-ui/native-fonts.json', readAsset('native-fonts.json'));
-  const recipes = JSON.parse(readAsset('native-chart-recipes.json')) as {
+  type RecipeCatalog = {
     schemaVersion: number;
     upstream: unknown;
     recipes: {
@@ -57,13 +58,30 @@ export function scaffoldNativeUI(root: string): void {
       nativeSha256: string;
     }[];
   };
+  const catalogs = (registry.recipeCatalogs ?? ['native-chart-recipes.json']).map((file) => {
+    if (!/^native-[a-z-]+-recipes\.json$/.test(file)) throw Error('Unsafe native recipe catalog.');
+    return JSON.parse(readAsset(file)) as RecipeCatalog;
+  });
+  const recipes: RecipeCatalog = {
+    schemaVersion: 1,
+    upstream: catalogs[0]?.upstream,
+    recipes: catalogs.flatMap((catalog) => catalog.recipes),
+  };
+  if (
+    catalogs.some(
+      (catalog) =>
+        catalog.schemaVersion !== 1 ||
+        JSON.stringify(catalog.upstream) !== JSON.stringify(recipes.upstream),
+    )
+  )
+    throw Error('Native recipe catalogs must share one reviewed source pin.');
   for (const recipe of recipes.recipes) {
     if (
       !/^(default|new-york|new-york-v4|base|radix|aria)$/.test(recipe.style) ||
-      !/^chart-[a-z0-9-]+$/.test(recipe.name)
+      !/^[a-z][a-z0-9-]+$/.test(recipe.name)
     )
       throw Error('Unsafe native recipe path.');
-    const folder = recipe.kind === 'example' ? 'examples' : 'recipes';
+    const folder = recipe.kind === 'block' ? 'recipes' : 'examples';
     put(root, `packages/native-ui/src/${folder}/${recipe.style}/${recipe.name}.tsx`, recipe.source);
   }
   json(root, 'packages/native-ui/NATIVE_RECIPES.json', {

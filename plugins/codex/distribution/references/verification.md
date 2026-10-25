@@ -1,3 +1,42 @@
+# Authored native form registry — October 24, 2026
+
+Added the actual ten React Hook Form, nine TanStack Form, nine Formisch and two
+Next action-form examples as native source, with the two action/schema companion
+pairs missing from the published registry entries. The inventory now records 2,073
+referenced files. Relative source imports feed transitive parity fingerprints;
+changing an omitted companion invalidates the owning form's review.
+
+- Native fields retain labels, descriptions, invalid state, focus refs, disabled
+  choices, whole-card radio activation and submitted values. Scoped form IDs support
+  footer buttons; pending actions serialize and expose retryable errors.
+- Formisch retains its real Valibot store; native bindings replace DOM extraction.
+  TanStack submission refreshes blur validation because native button presses need
+  not blur a keyboard field. Native action forms retain schema/results and React
+  action state, collect repeated checkbox values and reset successful feedback input.
+  They execute local callbacks; upstream API/database placeholders remain application
+  integration points. Next server transport, multipart files and SSR are web-specific.
+- All 244 official named colors have source/output hashes in shared styling. Rich
+  Sonner content supports native JSON highlighting, message positions and theme radius;
+  formatter failures become dismissible errors.
+- Strict generated native typecheck passed. Full iOS and Android suites each passed
+  **703 tests / 33 suites**, above unchanged coverage gates. Android's first full run
+  found one iOS-only Switch-prop assertion; the corrected accessibility-state assertion
+  and full Android rerun passed. Native action pending-state checks passed on both.
+- Root unit checks passed **584 tests, one existing optional skip**. Lint, source
+  hygiene, security/release policy and 20 focused inventory/packaging contracts passed.
+  The actual packed CLI generated source byte-identical to both recipe catalogs;
+  packlist passed at 248 entries and 1,058,599 compressed bytes before the final
+  pending-state and palette-hash refinements. Repack before publication.
+- Production Metro/Hermes bytecode succeeded for all **265 maintained recipe and
+  companion modules** on iOS and Android. The initial bundle exposed the test harness's
+  React Native preset lacking Expo's export-namespace transform; production bundling
+  now uses the same pinned Expo preset as generated applications. Jest retains its
+  React Native preset. This does not establish OS/device acceptance.
+
+The new form entries remain **partial** in the whole-registry checklist while full
+component dependency/style parity is pending. The strict completion gate still rejects
+551 distinct items. The full Expo port is not complete; no merge or release occurred.
+
 # Native registry fonts, themes, forms and chart recipes — October 24, 2026
 
 Continued the full Expo port on the existing topic branch. The official checklist
@@ -683,7 +722,6 @@ The listener and empty-cache failures are environment limitations, not proven ap
 
 No provider resources, publication, production deployment or source commit were performed during this review. Detailed local evidence and prior pass results are recorded in `docs/verification.md`.
 
-
 ## Progressive stack — local checkout, 2026-10-18
 
 Plain initialization now selects Expo only. Capability dependencies resolve to a
@@ -770,7 +808,6 @@ but admin=false, and the attempted ruleset update returned HTTP 404. Existing ru
 are unchanged. PR #39 lists the exact administrator prerequisites, including both
 main rulesets, CI gate, merge commits and disabling automatic staging deletion.
 
-
 ## 2026-10-21 correction — lightweight hosted checks on both branches
 
 The owner clarified that large hosted checks are unacceptable on staging **and**
@@ -819,11 +856,9 @@ without changing tests or adding retries. These results do not establish Windows
 Linux, signed macOS distribution or store acceptance. Hosted PR checks provide
 separate evidence. This focused repair has no version bump or npm publication.
 
-
 ## 2026-10-23 — Product family naming
 
 Positioned Anhedral CLI as the starter foundation in the README and software factory, alongside Anhedral Platform, Anhedral Agents, and Anhedral Cloud. This documentation change does not publish a package or activate provider services. Validation: Git whitespace checks; canonical software-factory reference refreshed through the normal build.
-
 
 ## 2026-10-23 — Generated audit dependency security recovery
 
@@ -836,7 +871,6 @@ all existing security gates enabled. No provider resources or databases changed.
 CLI build, lint/typecheck/format/hygiene/release policy, focused dependency/Next
 contracts (11 tests) and refreshed OSV audit (61 locked/catalog versions) passed.
 Publication of the integrated candidate remains separate.
-
 
 ## 2026-10-23 — Managed authentication email recovery
 
@@ -936,7 +970,6 @@ Final React review gives web/native reset forms a token/error-derived route key,
 so following a new recovery link resets prior completion, input and error state.
 Only the used token/error fields cross the Next server/client boundary.
 
-
 ## 2026-10-23 — Immutable release smoke prerequisite
 
 The first 0.15.0 publication attempt (run 40056207567, source 4557627f) stopped
@@ -947,7 +980,6 @@ provisioned only Node. Add the same pinned pnpm action/version to those jobs, wi
 run_install disabled. Keep normal init, artifact integrity, npm environment/OIDC
 and exact-artifact checks intact. A workflow regression covers all three smoke
 locations. A fresh main candidate must be reviewed again after this correction.
-
 
 ## 2026-10-24 — Published 0.15.0 artifact identity
 
@@ -977,7 +1009,6 @@ Documentation correction validation: CLI build, documentation/plugin contract
 checks (two passing test entries) and `git diff --check` passed in an isolated
 checkout. No runtime behavior changed.
 
-
 ## 2026-10-24 — Addition post-commit installation recovery
 
 Focused addition regressions now inject a failure in the final frozen install,
@@ -993,7 +1024,6 @@ No generator behavior change was required. Build and lint (typecheck, formatting
 source hygiene and release policy) passed; the focused addition, transaction
 rollback and CLI-output run passed all 36 test entries. `git diff --check` passed.
 No provider, publication, deployment, database or payment operation occurred.
-
 
 ## 2026-10-24 — Recovered embedded inspector contracts
 
@@ -1015,7 +1045,6 @@ Playwright browser binary is absent. An initial fixture port attempted obsolete
 init flags; it was corrected to preserve the current fixture before acceptance.
 This is synthetic browser/SDK evidence, not live Codex-host or provider acceptance.
 No installed-plugin update, publication, deployment or provider operation occurred.
-
 
 ## 2026-10-24 — Recovered generated-type cache restoration
 
@@ -1039,7 +1068,6 @@ check (61 pass), packed CLI smoke and packlist policy (249 files) also passed.
 This does not update existing customer projects or establish device, store or live
 provider acceptance. No remote migration, deployment, payment or publication ran.
 
-
 ## 2026-10-24 — Preserved-work disposition and service-tool guidance
 
 Compared all preserved snapshots against the maintained CLI, its registered
@@ -1047,15 +1075,15 @@ commands/plugin tools, emitted source, packaging and tests. Patch IDs alone were
 insufficient because the repository squashes topic PRs. Exact Git tree comparison
 established the following dispositions:
 
-| Preserved source | Disposition |
-| --- | --- |
-| Maintainer-policy `f7e51c8` | Exactly the tree of merged PR #24 (`723a213`): architecture, lifecycle, security/toolchain and review work landed historically. PR #46 later retired the old control-panel/alternative-stack layout. The still-useful cache regression was adapted for the current API/Next stack. |
-| Former local staging `91ec88f` | Exactly the tree of merged PR #37 (`fc721c9`). Maintenance guidance, CI scope, Windows PATH ordering, release-artifact/profile fixes, README and artwork changes were already incorporated. Current command resolution, CI scope and preview discovery retain their relevant fixes. |
-| Older control-panel variant `d7ac371` | Its 28 changed paths belong to the retired apps/control-panel/plugin layout and an independent anhedral.progress.json report/discovery store. Current project inspection/lifecycle, provider records, delivery evidence, catalog and transaction locks own those concerns. Do not restore a parallel writable evidence store or unsupported capabilities. Original variant remains archived. |
-| User-work snapshot `4a48ca3` | Reviewed all 114 changed paths. Recovered embedded-host browser coverage, service-argument descriptions and per-operation service-tool descriptions. Nova auth controls/packaging (#60/#62), managed auth email (#61), security pins (#58/#59), approved branding (#47), contract checks (#44), UI inspection/substitution (#41/#43) and owned Next/native components (#49) already landed in focused form. |
-| User-work UI/generator alternatives | Generic ui/expo-ui packages, native web adapters, duplicate token JSON, unused component inventory, selectable provider/preset recipes and mobile-web bootstrap variants are superseded by separate DOM/native UI, shared tokens, offline core bootstrap and mandatory Next/Expo/Hono/D1/R2. Preserve originals in the archive; no current runtime consumer requires restoring them. |
-| Attached completed worktree branches | Addition recovery, dependency fixes, Nova packlist and product positioning have exactly the trees of merged PRs #67, #59, #62 and #56 respectively. Retiring their refs does not require removing their worktree files. |
-| Existing user-work stash | Shared tracked paths match the recovery snapshot, and all 39 untracked stash files are byte-identical to files in that snapshot. Keep the stash unchanged and independently backed up. |
+| Preserved source                      | Disposition                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Maintainer-policy `f7e51c8`           | Exactly the tree of merged PR #24 (`723a213`): architecture, lifecycle, security/toolchain and review work landed historically. PR #46 later retired the old control-panel/alternative-stack layout. The still-useful cache regression was adapted for the current API/Next stack.                                                                                                                          |
+| Former local staging `91ec88f`        | Exactly the tree of merged PR #37 (`fc721c9`). Maintenance guidance, CI scope, Windows PATH ordering, release-artifact/profile fixes, README and artwork changes were already incorporated. Current command resolution, CI scope and preview discovery retain their relevant fixes.                                                                                                                         |
+| Older control-panel variant `d7ac371` | Its 28 changed paths belong to the retired apps/control-panel/plugin layout and an independent anhedral.progress.json report/discovery store. Current project inspection/lifecycle, provider records, delivery evidence, catalog and transaction locks own those concerns. Do not restore a parallel writable evidence store or unsupported capabilities. Original variant remains archived.                |
+| User-work snapshot `4a48ca3`          | Reviewed all 114 changed paths. Recovered embedded-host browser coverage, service-argument descriptions and per-operation service-tool descriptions. Nova auth controls/packaging (#60/#62), managed auth email (#61), security pins (#58/#59), approved branding (#47), contract checks (#44), UI inspection/substitution (#41/#43) and owned Next/native components (#49) already landed in focused form. |
+| User-work UI/generator alternatives   | Generic ui/expo-ui packages, native web adapters, duplicate token JSON, unused component inventory, selectable provider/preset recipes and mobile-web bootstrap variants are superseded by separate DOM/native UI, shared tokens, offline core bootstrap and mandatory Next/Expo/Hono/D1/R2. Preserve originals in the archive; no current runtime consumer requires restoring them.                        |
+| Attached completed worktree branches  | Addition recovery, dependency fixes, Nova packlist and product positioning have exactly the trees of merged PRs #67, #59, #62 and #56 respectively. Retiring their refs does not require removing their worktree files.                                                                                                                                                                                     |
+| Existing user-work stash              | Shared tracked paths match the recovery snapshot, and all 39 untracked stash files are byte-identical to files in that snapshot. Keep the stash unchanged and independently backed up.                                                                                                                                                                                                                      |
 
 The recovered service-tool descriptions distinguish existence from application
 health, explain catalog/service identities, supported Worker/D1 analytics windows,

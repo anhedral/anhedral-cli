@@ -127,3 +127,46 @@ test('outlined native toggles retain their border before selection', async () =>
   await fireEvent.press(button);
   expect(button).toBeSelected();
 });
+
+test('native notifications retain rich description views, per-message placement and theme-relative radius', async () => {
+  await render(mount(<UI.SonnerToaster testID="notifications" />));
+  await act(() => {
+    UI.toast('First', {
+      position: 'top-left',
+      radiusOffset: 4,
+      description: (
+        <UI.Card testID="rich">
+          <UI.Text>Structured details</UI.Text>
+        </UI.Card>
+      ),
+    });
+    UI.toast('Second', { position: 'bottom-right' });
+  });
+  expect(screen.getByTestId('notifications-top-left')).toHaveStyle({
+    top: 16,
+    alignItems: 'flex-start',
+  });
+  expect(screen.getByTestId('notifications-bottom-right')).toHaveStyle({
+    bottom: 16,
+    alignItems: 'flex-end',
+  });
+  expect(screen.getByTestId('rich')).toBeOnTheScreen();
+  expect(screen.getByText('Structured details')).toBeOnTheScreen();
+});
+test('native promise notification formatter failures are caught and remain dismissible', async () => {
+  await render(mount(<UI.SonnerToaster />));
+  await act(async () => {
+    UI.toast.promise(Promise.resolve('value'), {
+      loading: 'Working',
+      success: () => {
+        throw Error('Display failed');
+      },
+      error: 'Operation failed',
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  expect(screen.getByRole('alert')).toHaveTextContent('Display failed');
+  await fireEvent.press(screen.getByRole('button', { name: 'Dismiss Display failed' }));
+  expect(screen.queryByRole('alert')).toBeNull();
+});

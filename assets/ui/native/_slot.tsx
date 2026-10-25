@@ -23,9 +23,9 @@ function prevented(event: unknown) {
     event.isDefaultPrevented()
   );
 }
-function refs(...input: (Ref<View> | undefined)[]) {
-  const all = [...new Set(input.filter((ref): ref is NonNullable<Ref<View>> => ref != null))];
-  return (node: View | null) => {
+export function composeNativeRefs<T>(...input: (Ref<T> | undefined)[]) {
+  const all = [...new Set(input.filter((ref): ref is NonNullable<Ref<T>> => ref != null))];
+  return (node: T | null) => {
     const cleanup: (() => void)[] = [];
     for (const ref of all) {
       if (typeof ref === 'function') {
@@ -69,7 +69,7 @@ export function NativeSlot({
   const merged: NativeProps = {
     ...props,
     ...own,
-    ref: refs(props.ref, own.ref),
+    ref: composeNativeRefs(props.ref, own.ref),
     disabled: props.disabled || own.disabled,
     accessibilityState: {
       ...props.accessibilityState,

@@ -37,7 +37,8 @@
     "!assets/ui/native/*.tsx",
     "!assets/ui/native/*.ts",
     "!assets/ui/native-fonts.json.gz",
-    "!assets/ui/native-chart-recipes.json.gz"
+    "!assets/ui/native-chart-recipes.json.gz",
+    "!assets/ui/native-form-recipes.json.gz"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -101,7 +102,8 @@
     "native-ui:parity": "node scripts/shadcn-registry.mjs --complete",
     "native-ui:fonts": "node scripts/shadcn-fonts.mjs",
     "native-ui:fonts:verify": "node scripts/shadcn-fonts.mjs --verify-assets",
-    "native-ui:themes": "node scripts/shadcn-themes.mjs"
+    "native-ui:themes": "node scripts/shadcn-themes.mjs",
+    "test:native-ui:bundle": "pnpm build && node scripts/native-ui-bundle.mjs"
   },
   "keywords": [
     "cli",

@@ -103,6 +103,10 @@ export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
     '@types/d3-shape': '3.2.0',
   },
   dependencies: {
+    // renovate: datasource=npm depName=@hookform/resolvers
+    '@hookform/resolvers': '6.0.0',
+    // renovate: datasource=npm depName=zod
+    zod: '4.6.6',
     // renovate: datasource=npm depName=lucide-react-native
     'lucide-react-native': '0.562.0',
     // renovate: datasource=npm depName=d3-shape
@@ -117,6 +121,12 @@ export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
     shiki: '3.23.0',
     // renovate: datasource=npm depName=react-hook-form
     'react-hook-form': '7.62.0',
+    // renovate: datasource=npm depName=@tanstack/react-form
+    '@tanstack/react-form': '1.20.0',
+    // renovate: datasource=npm depName=@formisch/react
+    '@formisch/react': '0.4.4',
+    // renovate: datasource=npm depName=valibot
+    valibot: '1.4.0',
     // renovate: datasource=npm depName=react-native-svg
     'react-native-svg': '15.15.4',
     // renovate: datasource=npm depName=expo-clipboard

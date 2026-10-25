@@ -1,14 +1,20 @@
 import { useContext, useEffect, useSyncExternalStore, type ReactNode } from 'react';
-import { AccessibilityInfo, type ViewProps } from 'react-native';
+import { AccessibilityInfo, type ViewProps, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-import { Box, LabelText, Muted, plainText, row } from './_core';
+import { Box, LabelText, TextToneProvider, content, plainText, row } from './_core';
 import { Button } from './button';
 import { Spinner } from './_display';
 import { useTheme } from '../theme';
 
 type ToastId = string | number;
 type ToastKind = 'message' | 'success' | 'info' | 'warning' | 'error' | 'loading';
+export type NativeToastPosition =
+  'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
 export type NativeToastOptions = {
+  position?: NativeToastPosition;
+  style?: StyleProp<ViewStyle>;
+  radiusOffset?: number;
+  contentGap?: number;
   id?: ToastId;
   description?: ReactNode;
   duration?: number;
@@ -100,7 +106,15 @@ function promise<T>(
             { ...options, id, duration: options.duration ?? 4000 },
           );
       },
-    );
+    )
+    .catch((reason) => {
+      if (active())
+        push(
+          'error',
+          reason instanceof Error ? reason.message : 'Unable to display the notification.',
+          { id, duration: options.duration ?? 4000 },
+        );
+    });
   return id;
 }
 export const toast = Object.assign(
@@ -134,7 +148,7 @@ function NativeToastView({
   closeButton: boolean;
   visible: boolean;
 }) {
-  const { colors } = useTheme();
+  const { colors, radius } = useTheme();
   useEffect(() => {
     const duration = message.duration ?? 4000;
     if (!Number.isFinite(duration) || duration <= 0) return;
@@ -149,15 +163,18 @@ function NativeToastView({
     <Box
       accessibilityElementsHidden={!visible}
       importantForAccessibility={visible ? 'auto' : 'no-hide-descendants'}
-      style={{
-        display: visible ? 'flex' : 'none',
-        backgroundColor: colors.popover,
-        borderColor: message.kind === 'error' ? colors.destructive : colors.border,
-        borderWidth: 1,
-        borderRadius: 10,
-        padding: 16,
-        gap: 8,
-      }}
+      style={[
+        {
+          backgroundColor: colors.popover,
+          borderColor: message.kind === 'error' ? colors.destructive : colors.border,
+          borderWidth: 1,
+          borderRadius: radius + (message.radiusOffset ?? 2),
+          padding: 16,
+          gap: message.contentGap ?? 8,
+        },
+        message.style,
+        { display: visible ? 'flex' : 'none' },
+      ]}
     >
       <Box style={row()}>
         {message.kind === 'loading' && <Spinner accessibilityLabel="Loading" />}
@@ -169,7 +186,11 @@ function NativeToastView({
           {message.title}
         </LabelText>
       </Box>
-      {message.description && <Muted>{message.description}</Muted>}
+      {message.description && (
+        <TextToneProvider value={colors['muted-foreground']}>
+          {content(message.description)}
+        </TextToneProvider>
+      )}
       <Box style={row()}>
         {message.action && (
           <Button
@@ -213,8 +234,7 @@ export function SonnerToaster({
   style,
   ...props
 }: ViewProps & {
-  position?:
-    'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  position?: NativeToastPosition;
   visibleToasts?: number;
   closeButton?: boolean;
   expand?: boolean;
@@ -222,38 +242,55 @@ export function SonnerToaster({
   const { toasts } = useSonner();
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 };
   const count = Number.isFinite(visibleToasts) ? Math.max(1, Math.trunc(visibleToasts)) : 3;
-  const shown = new Set((expand ? toasts : toasts.slice(-count)).map((item) => item.id));
+  const positions = [
+    ...new Set([position, ...toasts.map((message) => message.position ?? position)]),
+  ];
   return (
-    <Box
-      {...props}
-      pointerEvents="box-none"
-      style={[
-        {
-          position: 'absolute',
-          left: 16 + insets.left,
-          right: 16 + insets.right,
-          gap: 8,
-          ...(position.startsWith('top')
-            ? { top: 16 + insets.top }
-            : { bottom: 16 + insets.bottom }),
-          alignItems: position.endsWith('left')
-            ? 'flex-start'
-            : position.endsWith('right')
-              ? 'flex-end'
-              : 'stretch',
-        },
-        style,
-      ]}
-    >
-      {toasts.map((message) => (
-        <NativeToastView
-          key={message.id}
-          message={message}
-          closeButton={closeButton}
-          visible={shown.has(message.id)}
-        />
-      ))}
-    </Box>
+    <>
+      {positions.map((groupPosition) => {
+        const group = toasts.filter((message) => (message.position ?? position) === groupPosition);
+        const shown = new Set((expand ? group : group.slice(-count)).map((message) => message.id));
+        return (
+          <Box
+            {...props}
+            key={groupPosition}
+            testID={
+              props.testID && positions.length > 1
+                ? `${props.testID}-${groupPosition}`
+                : props.testID
+            }
+            pointerEvents="box-none"
+            style={[
+              {
+                position: 'absolute',
+                left: 16 + insets.left,
+                right: 16 + insets.right,
+                gap: 8,
+                ...(groupPosition.startsWith('top')
+                  ? { top: 16 + insets.top }
+                  : { bottom: 16 + insets.bottom }),
+                alignItems: groupPosition.endsWith('left')
+                  ? 'flex-start'
+                  : groupPosition.endsWith('right')
+                    ? 'flex-end'
+                    : 'stretch',
+              },
+              style,
+            ]}
+          >
+            {group.map((message) => (
+              <NativeToastView
+                key={message.id}
+                message={message}
+                closeButton={closeButton}
+                visible={shown.has(message.id)}
+              />
+            ))}
+          </Box>
+        );
+      })}
+    </>
   );
 }
+
 export { SonnerToaster as Toaster };

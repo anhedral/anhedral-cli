@@ -266,7 +266,8 @@ const PRODUCT_ITEMS = defineItems({
       'styling',
       `import { light, dark, spacing } from './tokens.cjs';
 import { registryThemes } from './registry-themes';
-export { registryThemes };
+import { registryColors } from './registry-colors';
+export { registryThemes, registryColors };
 
 export const styling = {
   colors: {
@@ -276,6 +277,7 @@ export const styling = {
   spacing,
   themes: { light, dark },
   registryThemes,
+  registryColors,
 };
 `,
       {},

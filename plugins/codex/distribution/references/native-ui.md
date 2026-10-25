@@ -56,7 +56,28 @@ attributes and CSS units are converted to their native equivalents. This transla
 does not establish completion of the remaining registry examples or all component
 style presets; the official checklist remains authoritative.
 
+The form overlay includes all ten official React Hook Form, nine TanStack Form,
+nine Formisch and two action-form examples, together with the action schemas and
+callbacks omitted from the published registry files. Native field bindings preserve
+validation, touched/error state, controlled values, array operations, disabled choices,
+external submit buttons and keyboard submission. Each screen uses a scoped
+`NativeFormScope`; form IDs do not become a global registry. Syntax-highlighted
+submitted JSON retains the actual values. Regenerate the catalog with
+`node scripts/native-form-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui`.
+
+Formisch keeps its actual Valibot store and subscriptions; native bindings replace
+HTML Form and DOM event extraction. TanStack submit refreshes blur validation before
+submitting because a native Save press need not blur a keyboard field. The two Next
+action examples use native value collection and React action state. Their schema and
+callback code executes locally; the upstream API/database placeholder remains an
+application integration point, and no Next server transport is implied. File uploads
+require explicit native file picking and are outside these text/choice examples.
+The shared styling package also retains all 244 official named registry colors,
+including the password-strength colors. It owns palette values for generated apps.
+
 ## Checks and maintenance
+
+Run `pnpm test:native-ui:bundle` to compile every maintained source recipe and companion into production Hermes bytecode for iOS and Android. This uses the same Expo Babel preset as generated applications; Jest retains the React Native test preset. Bundling verifies module resolution and native compilation, while device acceptance remains separate.
 
 From the CLI checkout, install the pinned test harness with `pnpm --dir tests/native-ui install --frozen-lockfile`, then run `pnpm test:native-ui`. It typechecks the copied public source and renders it with React Native Testing Library under iOS and Android module resolution. Native bridges are mocked only at platform boundaries; component implementations are not replaced with HTML or mocks. The catalog examples must cover exactly the baseline and every declared export must exist. Family tests exercise controlled/uncontrolled state, disabled choices, filtering, date bounds/ranges, native dismissal, stepping/resizing, pagination/selection, timers, code/clipboard, chart selection, themes and submission.
 

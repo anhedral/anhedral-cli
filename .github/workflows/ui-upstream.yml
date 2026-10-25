@@ -59,6 +59,8 @@ jobs:
           node scripts/shadcn-fonts.mjs
           node scripts/shadcn-themes.mjs
           node scripts/native-chart-recipes.mjs --check
+          node scripts/native-form-recipes.mjs --check
+          node scripts/shadcn-colors.mjs
       - name: Reject stale native parity evidence
         if: success() || failure()
         run: node scripts/shadcn-registry.mjs --write

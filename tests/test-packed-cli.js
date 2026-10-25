@@ -97,14 +97,16 @@ function runInstalledScaffold(installRoot) {
     readFileSync(path.join(projectRoot, 'packages/native-ui/native-fonts.json'), 'utf8'),
     overlay['native-fonts.json'],
   );
-  const recipes = JSON.parse(overlay['native-chart-recipes.json']);
-  for (const recipe of recipes.recipes)
+  const recipes = Object.entries(overlay)
+    .filter(([name]) => name.endsWith('-recipes.json'))
+    .flatMap(([, source]) => JSON.parse(source).recipes);
+  for (const recipe of recipes)
     assert.equal(
       readFileSync(
         path.join(
           projectRoot,
           'packages/native-ui/src',
-          recipe.kind === 'example' ? 'examples' : 'recipes',
+          recipe.kind === 'block' ? 'recipes' : 'examples',
           recipe.style,
           recipe.name + '.tsx',
         ),

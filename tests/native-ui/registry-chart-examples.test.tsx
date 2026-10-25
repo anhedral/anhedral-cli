@@ -3,7 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 import { ThemeProvider } from './.generated';
 import manifest from './.generated/NATIVE_RECIPES.json';
 import { NativeExampleOptions } from './.generated/src/native/registry-example';
-for (const recipe of manifest.recipes.filter((recipe) => recipe.kind === 'example')) {
+for (const recipe of manifest.recipes.filter(
+  (recipe) => recipe.kind === 'example' && recipe.name.startsWith('chart-'),
+)) {
   test(`${recipe.style}/${recipe.name} retains the official chart example data and native interactions`, async () => {
     const Component = require(`./.generated/src/examples/${recipe.style}/${recipe.name}`).default;
     const error = jest.spyOn(console, 'error'),

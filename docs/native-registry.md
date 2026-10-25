@@ -1,8 +1,8 @@
 # Official shadcn registry → Expo
 
-Pinned source: [shadcn-ui/ui at 617134d5810bba521803b3ed787190bacbb80b35](https://github.com/shadcn-ui/ui/tree/617134d5810bba521803b3ed787190bacbb80b35/apps/v4/registry). Published metadata retrieved 2026-10-24; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.
+Pinned source: [shadcn-ui/ui at 617134d5810bba521803b3ed787190bacbb80b35](https://github.com/shadcn-ui/ui/tree/617134d5810bba521803b3ed787190bacbb80b35/apps/v4/registry). Published metadata snapshot dated 2026-10-24; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.
 
-**27 registries, 6437 style/item entries, 616 distinct type/name pairs, 2069 referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.
+**27 registries, 6437 style/item entries, 616 distinct type/name pairs, 2073 referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.
 
 ## Maintenance model
 
@@ -31,7 +31,10 @@ These decisions describe the named native boundary; they do not mark an entire c
 | Browser media queries, CSS scrollbars and DOM element measurements | Native window/layout events, ScrollView indicators and native measurements | Window breakpoint, scrolling and resize tests; no extra CSS scrollbar thumb is installed. |
 | Public cn CSS class helper | StyleSheet flattening through nativeStyles; recipe-local classes are translated before rendering | Native utility tests. Public browser CSS strings are not treated as native styles. |
 | Browser toast exit-transition queue | Native toast store/provider and native lifecycle removal | Legacy hook, isolated manager, replacement/cancellation/timer tests. Browser CSS transition delays are not reproduced. |
-| DOM form elements, HTML file inputs, server actions, web routing and SSR examples | Require explicit native controls, file picking, submit/navigation callbacks and Expo screen composition | Remaining native examples/blocks and provider-independent bindings remain pending in the inventory below; a no-op callback is not completion. |
+| HTML form association, DOM input extraction and browser blur-before-submit | Scoped NativeForm, actual RHF/TanStack/Formisch stores, native labels/refs and explicit blur validation | All 28 authored library examples have native translations and behavior tests. Pending whole-item evidence remains explicit below. |
+| Next Form and server-action examples | Native value collection, React action state and retained schemas/local callbacks | Both authored forms and four omitted action/schema companions are inventoried. API/database integration remains the original application placeholder; Next transport is web-specific. |
+| Named browser palette colors and toast JSON markup | Shared official 244-color palette, native rich toast content and syntax-highlighted JSON | Palette source hash checks, actual submitted values, per-message placement and formatter error tests. |
+| HTML file inputs, web routing and SSR examples | Require explicit native controls, file picking, submit/navigation callbacks and Expo screen composition | Remaining native examples/blocks and provider-independent bindings remain pending in the inventory below; a no-op callback is not completion. |
 
 ## Registry coverage
 
@@ -407,36 +410,36 @@ Every row applies to all listed registries. The machine inventory retains each s
 | field-slider | example | new-york-v4 | pending | Needs item, variant and dependency review. |
 | field-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
 | field-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-array | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-checkbox | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-radiogroup | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-formisch-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-next-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-next-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-array | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-checkbox | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-password | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-radiogroup | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-rhf-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-array | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-checkbox | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-complex | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-demo | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-input | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-radiogroup | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-select | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-switch | example | new-york-v4 | pending | Needs item, variant and dependency review. |
-| form-tanstack-textarea | example | new-york-v4 | pending | Needs item, variant and dependency review. |
+| form-formisch-array | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-checkbox | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-complex | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-demo | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-input | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-radiogroup | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-select | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-switch | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-formisch-textarea | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-next-complex | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-next-demo | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-array | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-checkbox | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-complex | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-demo | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-input | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-password | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-radiogroup | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-select | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-switch | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-rhf-textarea | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-array | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-checkbox | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-complex | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-demo | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-input | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-radiogroup | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-select | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-switch | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
+| form-tanstack-textarea | example | new-york-v4 | partial | Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending. |
 | hover-card-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |
 | hover-card-example | example | aria-luma, aria-lyra, aria-maia, aria-mira, aria-nova, aria-rhea, aria-sera, aria-vega, base-luma, base-lyra, base-maia, base-mira, base-nova, base-rhea, base-sera, base-vega, radix-luma, radix-lyra, radix-maia, radix-mira, radix-nova, radix-rhea, radix-sera, radix-vega | pending | Needs item, variant and dependency review. |
 | input-demo | example | default, new-york, new-york-v4 | pending | Needs item, variant and dependency review. |

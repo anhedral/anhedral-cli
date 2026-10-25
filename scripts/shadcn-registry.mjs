@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync, gunzipSync } from 'node:zlib';
@@ -58,7 +58,11 @@ export function analyzeSource(source, filename) {
       for (const type of node.type.types)
         if (ts.isLiteralTypeNode(type) && ts.isStringLiteral(type.literal))
           add(node.name.getText(file), type.literal.text);
-    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier))
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    )
       imports.add(node.moduleSpecifier.text);
     if (ts.isFunctionDeclaration(node) && node.name) functions.add(node.name.text);
     if (
@@ -148,7 +152,18 @@ export function loadOfficialRegistry() {
     }),
   );
 }
-/** Inputs include authored files, style tokens and transitive official registry dependencies. */
+/** Include locally imported companion source that published registry entries omit. */
+export function sourceDependencies(inventory, origin, visited = new Set()) {
+  if (visited.has(origin)) return [];
+  const next = new Set(visited);
+  next.add(origin);
+  return (inventory.sources[origin]?.relativeSources ?? []).map((source) => ({
+    source,
+    sha256: inventory.sources[source]?.sha256,
+    dependencies: sourceDependencies(inventory, source, next),
+  }));
+}
+/** Inputs include authored files, local companions, style tokens and registry dependencies. */
 function itemFingerprint(inventory, style, name, visited = new Set()) {
   const item = inventory.registries[style]?.items.find((entry) => entry.name === name);
   if (!item) return null;
@@ -172,6 +187,9 @@ function itemFingerprint(inventory, style, name, visited = new Set()) {
         path: file.path,
         source: file.source,
         sha256: inventory.sources[file.source]?.sha256,
+        ...(inventory.sources[file.source]?.relativeSources?.length
+          ? { relativeSources: sourceDependencies(inventory, file.source) }
+          : {}),
       })),
       styleSheet,
       dependencies: (item.registryDependencies ?? []).map((dependency) => ({
@@ -338,7 +356,7 @@ export function registryChecklist(inventory, coverage) {
   const rows = [...groups.values()].sort((a, b) =>
     (a.type + '/' + a.name).localeCompare(b.type + '/' + b.name),
   );
-  let text = `# Official shadcn registry → Expo\n\nPinned source: [shadcn-ui/ui at ${inventory.source.commit}](https://github.com/shadcn-ui/ui/tree/${inventory.source.commit}/apps/v4/registry). Published metadata retrieved ${inventory.retrieved}; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.\n\n**${styles.length} registries, ${Object.values(inventory.registries).reduce((n, r) => n + r.items.length, 0)} style/item entries, ${rows.length} distinct type/name pairs, ${Object.keys(inventory.sources).length} referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.\n\n## Maintenance model\n\nKeep a complete, pinned upstream source mirror and published metadata snapshot for review. Maintain the Expo source as a separate native overlay. Preserve upstream web implementations and CLI behavior rather than manually editing every web copy or forking CLI internals. Anhedral CLI can supply both outputs while the upstream mirror stays outside its shipped starter payload. The complete upstream fork is [anhedral/shadcn-ui](https://github.com/anhedral/shadcn-ui), with upstream branches and tags preserved. The reviewed source pin and web CLI version are recorded in assets/ui/UPSTREAM-LOCK.json.\n\nFor each upstream update, compare item/file hashes, public APIs, discovered variants, examples and dependencies. Refresh the web baseline from upstream; invalidate any native coverage whose reviewed inputs changed. Port and test the native changes before marking them complete. A successful upstream merge is not evidence that a new feature works on Expo. Device acceptance remains separately recorded.\n\nRefresh a clean upstream checkout with \`node scripts/shadcn-registry.mjs --snapshot /absolute/path/to/shadcn-ui\`, regenerate with \`pnpm native-ui:registry:docs\`, and compare a retained previous snapshot with \`pnpm native-ui:registry -- --diff /absolute/path/to/previous-inventory.json.gz\`. Normal checks are offline. Reviewed native coverage includes source, style and transitive registry dependency fingerprints, so changed inputs cannot retain a ported status silently.\n\n## Platform adaptation checklist\n\nThese decisions describe the named native boundary; they do not mark an entire component, style or example complete. Device acceptance remains separate.\n\n| Browser-specific behavior | Native handling | Evidence / remaining work |\n| --- | --- | --- |\n| HTML chart recipe hosts, click handlers and CSS utility classes | View/Text/Pressable, native event names, inherited text styles and a strict reviewed utility translator | All 210 chart blocks and 21 chart examples retain authored data and callbacks; recipe render/control tests and source hash checks. Unknown hosts, imports and utilities fail. |\n| Recharts renderer and pointer-only data exploration | D3 geometry, native SVG primitives, touch selection and adjustable accessibility actions | Series/stack/curve/pie/radar/radial/label tests. This ports the APIs used by the reviewed recipes, not the entire Recharts library or its browser animation engine. |\n| ChartStyle CSS injection and color custom properties | Chart configuration/context and scoped native color resolution, including gradient stops | Chart contracts and recipe tests; CSS style elements are omitted on native. |\n| SVG DOM text attributes, rem units and CSS text casing | Native SVG attributes, point lengths, real font cuts, inherited casing and open text-on-arc paths | Native chart engine/font tests. Native OS typography acceptance remains pending. |\n| SVG CSS luminosity blending | Preserve explicit native label paint and theme contrast; browser compositing is not reproduced | The radial-label source remains visible in the recipe manifest; device contrast review remains pending. |\n| Next font loading, CSS font-face and CSS font variables | Expo Font with selected body/heading/serif/mono roles, verified TrueType cuts, errors and retry | All 52 font entries, 347 hashed cuts and retained licenses. Unavailable italic cuts use explicit native synthesis. |\n| HSL/OKLCH theme CSS and alpha colors | Shared token source plus gamut-mapped native sRGB colors and theme metrics | All eight registry themes, color/alpha and light/dark tests. This does not certify all eight component style presets. |\n| Browser gallery URL parameters and icon-package picker | Explicit native preview options and official Lucide native icons | Native example tests cover the authored bar-corner condition. Other icon-library picker implementations remain web gallery features. |\n| Tooltip demonstration hover transitions | Native pointer/touch animation with reduced-motion preference and subscription cleanup | Recipe motion tests. Browser focus pseudo-classes use native focus/accessibility behavior. |\n| DOM portals, browser overlay windows and hover/context activation | Native Modal, safe areas, touch-and-hold, native dismissal and focus restoration | Overlay/selection tests; OS focus and screen-reader device acceptance remains pending. |\n| Browser media queries, CSS scrollbars and DOM element measurements | Native window/layout events, ScrollView indicators and native measurements | Window breakpoint, scrolling and resize tests; no extra CSS scrollbar thumb is installed. |\n| Public cn CSS class helper | StyleSheet flattening through nativeStyles; recipe-local classes are translated before rendering | Native utility tests. Public browser CSS strings are not treated as native styles. |\n| Browser toast exit-transition queue | Native toast store/provider and native lifecycle removal | Legacy hook, isolated manager, replacement/cancellation/timer tests. Browser CSS transition delays are not reproduced. |\n| DOM form elements, HTML file inputs, server actions, web routing and SSR examples | Require explicit native controls, file picking, submit/navigation callbacks and Expo screen composition | Remaining native examples/blocks and provider-independent bindings remain pending in the inventory below; a no-op callback is not completion. |\n\n## Registry coverage\n\n| Registry | Published items | Metadata SHA-256 |\n| --- | ---: | --- |\n`;
+  let text = `# Official shadcn registry → Expo\n\nPinned source: [shadcn-ui/ui at ${inventory.source.commit}](https://github.com/shadcn-ui/ui/tree/${inventory.source.commit}/apps/v4/registry). Published metadata snapshot dated ${inventory.retrieved}; every response has its own SHA-256. Source and published metadata are recorded separately because publication can lag source. Third-party registries are outside this official snapshot.\n\n**${styles.length} registries, ${Object.values(inventory.registries).reduce((n, r) => n + r.items.length, 0)} style/item entries, ${rows.length} distinct type/name pairs, ${Object.keys(inventory.sources).length} referenced source files.** A matching component name does not establish variant, example or block parity. Only reviewed coverage entries may be marked ported. Device acceptance is separate.\n\n## Maintenance model\n\nKeep a complete, pinned upstream source mirror and published metadata snapshot for review. Maintain the Expo source as a separate native overlay. Preserve upstream web implementations and CLI behavior rather than manually editing every web copy or forking CLI internals. Anhedral CLI can supply both outputs while the upstream mirror stays outside its shipped starter payload. The complete upstream fork is [anhedral/shadcn-ui](https://github.com/anhedral/shadcn-ui), with upstream branches and tags preserved. The reviewed source pin and web CLI version are recorded in assets/ui/UPSTREAM-LOCK.json.\n\nFor each upstream update, compare item/file hashes, public APIs, discovered variants, examples and dependencies. Refresh the web baseline from upstream; invalidate any native coverage whose reviewed inputs changed. Port and test the native changes before marking them complete. A successful upstream merge is not evidence that a new feature works on Expo. Device acceptance remains separately recorded.\n\nRefresh a clean upstream checkout with \`node scripts/shadcn-registry.mjs --snapshot /absolute/path/to/shadcn-ui\`, regenerate with \`pnpm native-ui:registry:docs\`, and compare a retained previous snapshot with \`pnpm native-ui:registry -- --diff /absolute/path/to/previous-inventory.json.gz\`. Normal checks are offline. Reviewed native coverage includes source, style and transitive registry dependency fingerprints, so changed inputs cannot retain a ported status silently.\n\n## Platform adaptation checklist\n\nThese decisions describe the named native boundary; they do not mark an entire component, style or example complete. Device acceptance remains separate.\n\n| Browser-specific behavior | Native handling | Evidence / remaining work |\n| --- | --- | --- |\n| HTML chart recipe hosts, click handlers and CSS utility classes | View/Text/Pressable, native event names, inherited text styles and a strict reviewed utility translator | All 210 chart blocks and 21 chart examples retain authored data and callbacks; recipe render/control tests and source hash checks. Unknown hosts, imports and utilities fail. |\n| Recharts renderer and pointer-only data exploration | D3 geometry, native SVG primitives, touch selection and adjustable accessibility actions | Series/stack/curve/pie/radar/radial/label tests. This ports the APIs used by the reviewed recipes, not the entire Recharts library or its browser animation engine. |\n| ChartStyle CSS injection and color custom properties | Chart configuration/context and scoped native color resolution, including gradient stops | Chart contracts and recipe tests; CSS style elements are omitted on native. |\n| SVG DOM text attributes, rem units and CSS text casing | Native SVG attributes, point lengths, real font cuts, inherited casing and open text-on-arc paths | Native chart engine/font tests. Native OS typography acceptance remains pending. |\n| SVG CSS luminosity blending | Preserve explicit native label paint and theme contrast; browser compositing is not reproduced | The radial-label source remains visible in the recipe manifest; device contrast review remains pending. |\n| Next font loading, CSS font-face and CSS font variables | Expo Font with selected body/heading/serif/mono roles, verified TrueType cuts, errors and retry | All 52 font entries, 347 hashed cuts and retained licenses. Unavailable italic cuts use explicit native synthesis. |\n| HSL/OKLCH theme CSS and alpha colors | Shared token source plus gamut-mapped native sRGB colors and theme metrics | All eight registry themes, color/alpha and light/dark tests. This does not certify all eight component style presets. |\n| Browser gallery URL parameters and icon-package picker | Explicit native preview options and official Lucide native icons | Native example tests cover the authored bar-corner condition. Other icon-library picker implementations remain web gallery features. |\n| Tooltip demonstration hover transitions | Native pointer/touch animation with reduced-motion preference and subscription cleanup | Recipe motion tests. Browser focus pseudo-classes use native focus/accessibility behavior. |\n| DOM portals, browser overlay windows and hover/context activation | Native Modal, safe areas, touch-and-hold, native dismissal and focus restoration | Overlay/selection tests; OS focus and screen-reader device acceptance remains pending. |\n| Browser media queries, CSS scrollbars and DOM element measurements | Native window/layout events, ScrollView indicators and native measurements | Window breakpoint, scrolling and resize tests; no extra CSS scrollbar thumb is installed. |\n| Public cn CSS class helper | StyleSheet flattening through nativeStyles; recipe-local classes are translated before rendering | Native utility tests. Public browser CSS strings are not treated as native styles. |\n| Browser toast exit-transition queue | Native toast store/provider and native lifecycle removal | Legacy hook, isolated manager, replacement/cancellation/timer tests. Browser CSS transition delays are not reproduced. |\n| HTML form association, DOM input extraction and browser blur-before-submit | Scoped NativeForm, actual RHF/TanStack/Formisch stores, native labels/refs and explicit blur validation | All 28 authored library examples have native translations and behavior tests. Pending whole-item evidence remains explicit below. |\n| Next Form and server-action examples | Native value collection, React action state and retained schemas/local callbacks | Both authored forms and four omitted action/schema companions are inventoried. API/database integration remains the original application placeholder; Next transport is web-specific. |\n| Named browser palette colors and toast JSON markup | Shared official 244-color palette, native rich toast content and syntax-highlighted JSON | Palette source hash checks, actual submitted values, per-message placement and formatter error tests. |\n| HTML file inputs, web routing and SSR examples | Require explicit native controls, file picking, submit/navigation callbacks and Expo screen composition | Remaining native examples/blocks and provider-independent bindings remain pending in the inventory below; a no-op callback is not completion. |\n\n## Registry coverage\n\n| Registry | Published items | Metadata SHA-256 |\n| --- | ---: | --- |\n`;
   for (const style of styles)
     text += `| ${style} | ${inventory.registries[style].items.length} | \`${inventory.registries[style].sha256}\` |\n`;
   const api = nativeApiReport(
@@ -464,6 +482,38 @@ async function snapshot(source, cache) {
       }
     }
     result.registries[style] = { url, sha256: sha256(body), items: registry.items };
+  }
+  const queue = Object.keys(result.sources).filter((source) => !source.includes('#'));
+  result.unresolvedSourceImports = [];
+  for (let index = 0; index < queue.length; index++) {
+    const origin = queue[index],
+      input = result.sources[origin],
+      relativeSources = [];
+    for (const module of input.imports.filter((name) => name.startsWith('.'))) {
+      const base = path.posix.normalize(path.posix.join(path.posix.dirname(origin), module));
+      if (!base.startsWith('apps/v4/registry/'))
+        throw Error(
+          'Relative registry import escapes source boundary: ' + origin + ' -> ' + module,
+        );
+      const resolved = ['', '.ts', '.tsx', '.js', '.jsx', '.json', '/index.ts', '/index.tsx']
+        .map((suffix) => base + suffix)
+        .find(
+          (candidate) =>
+            existsSync(path.join(sourceRoot, candidate)) &&
+            statSync(path.join(sourceRoot, candidate)).isFile(),
+        );
+      if (!resolved) {
+        result.unresolvedSourceImports.push({ origin, module });
+        continue;
+      }
+      relativeSources.push(resolved);
+      if (!result.sources[resolved]) {
+        const content = read(path.join(sourceRoot, resolved));
+        result.sources[resolved] = { sha256: sha256(content), ...analyzeSource(content, resolved) };
+        queue.push(resolved);
+      }
+    }
+    if (relativeSources.length) input.relativeSources = [...new Set(relativeSources)].sort();
   }
   result.unresolvedDependencies = Object.entries(result.registries).flatMap(([style, registry]) =>
     registry.items.flatMap((item) =>

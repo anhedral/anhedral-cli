@@ -1214,7 +1214,12 @@
     "_slot.tsx",
     "_registry-css.tsx",
     "registry-styles.tsx",
-    "registry-example.tsx"
+    "registry-example.tsx",
+    "native-form.tsx",
+    "_field-context.tsx",
+    "registry-form-controls.tsx",
+    "registry-formisch.tsx",
+    "registry-action-form.tsx"
   ],
   "supportModules": [
     {
@@ -1295,6 +1300,11 @@
         "Cell",
         "Dot"
       ]
+    },
+    {
+      "file": "native-form",
+      "exports": ["NativeForm", "NativeFormScope"]
     }
-  ]
+  ],
+  "recipeCatalogs": ["native-chart-recipes.json", "native-form-recipes.json"]
 }

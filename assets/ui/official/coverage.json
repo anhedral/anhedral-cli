@@ -1948,6 +1948,396 @@
         "radix-sera": "3acb132783a608df8be1be6eaab6ac01bc290fec6d4d4c5d8ad76315cb05ddbe",
         "radix-vega": "756b04243a953070b42c28f9dc43ee1a36f693077af8137e040eae81a2dc94e8"
       }
+    },
+    "registry:example/form-next-demo": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-actions.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "10cd1f754c68becb228952511bb44084ca409e409853aa2dbf7e60943dbad3fa"
+      }
+    },
+    "registry:example/form-next-complex": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-actions.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "3acd17df071edd4e2b15aa8f5940601ddeb20e33766f302c0b4c3d5bfe4fa000"
+      }
+    },
+    "registry:example/form-rhf-demo": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "997ac1a99453ea162a4cdeff932e1f92d32b3282522396add2e57bd10fb76075"
+      }
+    },
+    "registry:example/form-rhf-input": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "0ccb0c2846eb0b27de474be8f95909eb3c2edf756a7965aac77dcbce41ee1482"
+      }
+    },
+    "registry:example/form-rhf-select": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "030ad1b962d4e4babd413010c8613c514c2d139ae56b339302c3800b9827c378"
+      }
+    },
+    "registry:example/form-rhf-checkbox": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "bfcf80026c595e9d10318fcdce739d642d78476953b8c822c405acb4720a6807"
+      }
+    },
+    "registry:example/form-rhf-switch": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "73801788cae23a1399a1617451a6438d6b56565d54efbdd2ebd9388de66ac29d"
+      }
+    },
+    "registry:example/form-rhf-textarea": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "c1f32358a8606fdb861039eab74134be7ce985b7d094437f7a02d11ff8950594"
+      }
+    },
+    "registry:example/form-rhf-radiogroup": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "427f8c77c954a761d4bc65f04d4de7d2087dd26a132431e8d3806db38c18e44b"
+      }
+    },
+    "registry:example/form-rhf-array": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "192e6c40549e28edb100099e54f0d693b6c9339d17e7ab7e17d4f2b6d991e82a"
+      }
+    },
+    "registry:example/form-rhf-complex": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "735ded9539833cfba6faafd85c9eb1d8979688743b430f79aa654e42cf4b6bad"
+      }
+    },
+    "registry:example/form-rhf-password": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-rhf.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "30525faa46511a96af3b585f0f2bfb54eb8d782ef4b3e4b762e6d76747c5b083"
+      }
+    },
+    "registry:example/form-tanstack-demo": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "65e52c7553b4fb9a0d92dffe0ed92f73dad5a47a2849524db88eb4e3c200f42d"
+      }
+    },
+    "registry:example/form-tanstack-input": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "c57833f0f4ba632a15d4c49bfc4e6f492421d35517f02ec2d397d36ab87aaa9a"
+      }
+    },
+    "registry:example/form-tanstack-textarea": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "c6a4479db531def1c8acc7b1effd62e4195b1d040fc883c34beefa5b562f11a4"
+      }
+    },
+    "registry:example/form-tanstack-select": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "1f37214529b4482bd92b79308812b623b8724bcc188debb7effe4515351b6fa1"
+      }
+    },
+    "registry:example/form-tanstack-checkbox": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "64b34cfff3eab43d26fa6e0d65a8c161e8e8dc9d5cd45394af5c3636cad186e7"
+      }
+    },
+    "registry:example/form-tanstack-switch": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "776ed70209a845dd6e98ea1b003c5f565c4b94e0bfb0b1b45a85a561a7889288"
+      }
+    },
+    "registry:example/form-tanstack-radiogroup": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "13408ccacfb342194c02aafc4be024a909d0046997e6729b2f04ffd94fd8937e"
+      }
+    },
+    "registry:example/form-tanstack-array": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "ad2e7e370478f05e9db506440aba9ceeba092bccb143ae33090199d6aa7fce53"
+      }
+    },
+    "registry:example/form-tanstack-complex": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-tanstack.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "6e1687a444961c8a93fbdd6d4eda542ed9550dc903cd953a99a74856dbe38a88"
+      }
+    },
+    "registry:example/form-formisch-demo": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "cfa5ced1801cfd1465679f507ec693398131f7a1f6894f80aa6bfce4ca1a5d5f"
+      }
+    },
+    "registry:example/form-formisch-input": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "173e728cce57b8b5e68a76b347a198bb74739d659373428da12670a17ccd1dfa"
+      }
+    },
+    "registry:example/form-formisch-textarea": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "3907c1a28f1e83b614d7b7702d77cdd47ae3a1efb0b1d563304dc27076cc7c15"
+      }
+    },
+    "registry:example/form-formisch-select": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "a473064dbda353d23a9d687c9e81ae3c5b9a2a641e65adac8487a5a0ecc88ed5"
+      }
+    },
+    "registry:example/form-formisch-checkbox": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "b638fca2e514c9291034cb99d6fa3a63009ba0063edb92b84d0fd03ce1ee42c2"
+      }
+    },
+    "registry:example/form-formisch-radiogroup": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "ea703e02e960c521136acb804cf3bdacb97d78e412c60278baf192a0e88c337a"
+      }
+    },
+    "registry:example/form-formisch-switch": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "ce474e0f4e2f489d02ce817a3944ab9a5075f2181ef44c46c3dc9fea904310cb"
+      }
+    },
+    "registry:example/form-formisch-array": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "ec221a53afcbc38dc2b89c83c97903d45ef0a706b21f5522f20beab30151f676"
+      }
+    },
+    "registry:example/form-formisch-complex": {
+      "status": "partial",
+      "reason": "Authored source, validation and submission logic are translated and behavior-tested with native controls. Full component dependency/style parity and native device acceptance remain pending.",
+      "nativeFiles": [
+        "assets/ui/native-form-recipes.json.gz",
+        "assets/ui/native/registry-form-controls.tsx",
+        "assets/ui/native/native-form.tsx"
+      ],
+      "tests": ["tests/native-ui/registry-official-formisch.test.tsx"],
+      "reviewedInputs": {
+        "new-york-v4": "5aed578ce8143d2b5b8c2117ca8f21b70a2a25ff5b7eab6d2c5012295bdcd841"
+      }
     }
   },
   "webSpecific": [

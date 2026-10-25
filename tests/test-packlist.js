@@ -183,7 +183,7 @@ try {
     const allowedNativeUI =
       file.path === 'assets/ui/native/registry.json' ||
       file.path === 'assets/ui/native-overlay.json.br' ||
-      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|native-fonts\.json\.gz|registry-themes\.json\.gz|LICENSE\.shadcn|UPSTREAM\.json|UPSTREAM-LOCK\.json)$/.test(
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|native-fonts\.json\.gz|(?:registry-themes|registry-colors)\.json\.gz|LICENSE\.shadcn|UPSTREAM\.json|UPSTREAM-LOCK\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);

@@ -7,7 +7,7 @@ import ts from 'typescript';
 import { loadOfficialRegistry, reviewedInputs } from './shadcn-registry.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const hash = (value) => createHash('sha256').update(value).digest('hex');
-export function portChartRecipe(source, filename) {
+export function portNativeRegistryRecipe(source, filename, { nativeForms = false } = {}) {
   // The source's month selector controls a custom shape. Expose the same controlled
   // value to native accessibility actions so touch and assistive selection stay in sync.
   if (filename.endsWith('chart-pie-interactive.tsx'))
@@ -33,6 +33,30 @@ export function portChartRecipe(source, filename) {
     )
     .replace(/\(value: keyof typeof chartConfig\)/g, '(value: unknown)')
     .replace(/chartConfig\[value\]/g, 'chartConfig[String(value) as keyof typeof chartConfig]');
+  const nativeActions = nativeForms && /form-next-/.test(filename);
+  if (nativeActions) source = source.replace(/\bFormData\b/g, 'NativeFormValues');
+  // A successful action can return the original empty default again. Native
+  // controlled inputs reset from the new state object; refresh the count too.
+  if (nativeActions && filename.endsWith('form-next-demo.tsx'))
+    source = source.replace('[formState.values.description]', '[formState]');
+  if (nativeForms) source = source.replace(/\brequired_error:/g, 'error:');
+  // Native submit actions have no browser default. Await the actual library action
+  // so pending/error state belongs to the native form for its entire lifetime.
+  if (nativeForms && /form-tanstack-[a-z-]+\.tsx$/.test(filename))
+    source = source.replace(
+      /onSubmit=\{\(e\) => \{\s*e\.preventDefault\(\)\s*form\.handleSubmit\(\)\s*\}\}/g,
+      'onSubmit={async () => { await form.validate("blur"); await form.handleSubmit(); }}',
+    );
+  if (nativeForms && /form-(?:rhf|tanstack|formisch)-array\.tsx$/.test(filename))
+    source = source.replace(
+      /id=\{`(form-(?:rhf|tanstack|formisch)-array-email-\$\{index\})`\}/g,
+      'id={`$1`} aria-label={`Email address ${index + 1}`}',
+    );
+  if (nativeForms && filename.endsWith('form-rhf-complex.tsx'))
+    source = source.replace(
+      /useForm<z\.infer<typeof formSchema>>/g,
+      'useForm<z.input<typeof formSchema>, unknown, z.output<typeof formSchema>>',
+    );
   const f = ts.factory,
     file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations = [],
@@ -51,6 +75,7 @@ export function portChartRecipe(source, filename) {
     svg: 'Svg',
     path: 'Path',
     clipPath: 'ClipPath',
+    ...(nativeForms ? { form: 'NativeForm', pre: 'RegistryPre', code: 'RegistryCode' } : {}),
   };
   const transformer = (context) => {
     const visit = (node) => {
@@ -64,6 +89,51 @@ export function portChartRecipe(source, filename) {
       if (ts.isImportDeclaration(node)) {
         const module = node.moduleSpecifier.text;
         if (module === 'react') return node;
+        if (nativeActions && /^\.\/form-next-/.test(module)) return node;
+        if (nativeActions && module === 'next/form')
+          return f.createImportDeclaration(
+            undefined,
+            f.createImportClause(
+              false,
+              undefined,
+              f.createNamedImports([
+                f.createImportSpecifier(
+                  false,
+                  f.createIdentifier('NativeActionForm'),
+                  f.createIdentifier('Form'),
+                ),
+              ]),
+            ),
+            f.createStringLiteral('../../native/registry-action-form'),
+            undefined,
+          );
+        if (
+          nativeForms &&
+          [
+            'react-hook-form',
+            '@hookform/resolvers/zod',
+            '@tanstack/react-form',
+            'valibot',
+            'zod',
+          ].includes(module)
+        )
+          return node;
+        if (nativeForms && module === '@formisch/react')
+          return f.updateImportDeclaration(
+            node,
+            node.modifiers,
+            node.importClause,
+            f.createStringLiteral('../../native/registry-formisch'),
+            undefined,
+          );
+        if (nativeForms && module === 'sonner')
+          return f.updateImportDeclaration(
+            node,
+            node.modifiers,
+            node.importClause,
+            f.createStringLiteral('../../native/sonner'),
+            undefined,
+          );
         if (module === 'cn' || module === '@/lib/utils') {
           const bindings = node.importClause?.namedBindings;
           if (
@@ -91,7 +161,12 @@ export function portChartRecipe(source, filename) {
           );
         }
         let target;
-        if (module === 'recharts' || module.startsWith('recharts/')) target = '../../native/charts';
+        if (nativeActions && /\/ui\/(radio-group|select|checkbox|switch)$/.test(module))
+          target = '../../native/registry-action-form';
+        else if (nativeForms && /\/ui\/(input|textarea|input-group)$/.test(module))
+          target = '../../native/registry-form-controls';
+        else if (module === 'recharts' || module.startsWith('recharts/'))
+          target = '../../native/charts';
         else if (module === 'lucide-react') target = 'lucide-react-native';
         else if (
           /^@\/registry\/(?:default|new-york|new-york-v4|bases\/(?:base|radix|aria))\/ui\//.test(
@@ -168,6 +243,52 @@ export function portChartRecipe(source, filename) {
         );
       }
       if (
+        nativeForms &&
+        ts.isReturnStatement(node) &&
+        node.expression &&
+        ts.isFunctionDeclaration(node.parent?.parent) &&
+        node.parent.parent.modifiers?.some(
+          (modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword,
+        )
+      ) {
+        let original = node.expression;
+        while (ts.isParenthesizedExpression(original)) original = original.expression;
+        if (!ts.isJsxElement(original) && !ts.isJsxSelfClosingElement(original))
+          return ts.visitEachChild(node, visit, context);
+        const expression = ts.visitNode(original, visit);
+        return f.updateReturnStatement(
+          node,
+          f.createJsxElement(
+            f.createJsxOpeningElement(
+              f.createIdentifier('NativeFormScope'),
+              undefined,
+              f.createJsxAttributes([]),
+            ),
+            [expression],
+            f.createJsxClosingElement(f.createIdentifier('NativeFormScope')),
+          ),
+        );
+      }
+      if (
+        nativeForms &&
+        ts.isPropertyAssignment(node) &&
+        ts.isObjectLiteralExpression(node.parent) &&
+        ts.isCallExpression(node.parent.parent) &&
+        /^toast(?:\.|$)/.test(node.parent.parent.expression.getText(file))
+      ) {
+        const name = node.name.getText(file).replace(/["']/g, '');
+        if (name === 'classNames') {
+          if (!/content:\s*["']flex flex-col gap-2["']/.test(node.initializer.getText(file)))
+            throw Error('Unreviewed native form toast classes.');
+          return f.createPropertyAssignment('contentGap', f.createNumericLiteral(8));
+        }
+        if (name === 'style') {
+          if (!/calc\(var\(--radius\)\s*\+\s*4px\)/.test(node.initializer.getText(file)))
+            throw Error('Unreviewed native form toast style.');
+          return f.createPropertyAssignment('radiusOffset', f.createNumericLiteral(4));
+        }
+      }
+      if (
         ts.isTypeReferenceNode(node) &&
         node.typeName.getText(file) === 'React.ComponentProps' &&
         node.typeArguments?.[0] &&
@@ -181,8 +302,61 @@ export function portChartRecipe(source, filename) {
         return ts.visitNode(node.expression, visit);
       if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(file) === 'ChartStyle')
         return f.createJsxExpression(undefined, f.createNull());
+      if (nativeActions && ts.isJsxOpeningElement(node) && node.tagName.getText(file) === 'Form')
+        return f.updateJsxOpeningElement(
+          node,
+          node.tagName,
+          node.typeArguments,
+          f.createJsxAttributes([
+            f.createJsxAttribute(
+              f.createIdentifier('pending'),
+              f.createJsxExpression(undefined, f.createIdentifier('pending')),
+            ),
+            ...ts.visitNode(node.attributes, visit).properties,
+            f.createJsxAttribute(
+              f.createIdentifier('values'),
+              f.createJsxExpression(
+                undefined,
+                f.createPropertyAccessExpression(f.createIdentifier('formState'), 'values'),
+              ),
+            ),
+          ]),
+        );
       if (ts.isJsxAttribute(node)) {
         const name = node.name.getText(file);
+        if (
+          nativeForms &&
+          !nativeActions &&
+          name === 'name' &&
+          !node.parent.parent.tagName?.getText(file).includes('.') &&
+          !['Input', 'Textarea', 'InputGroupInput', 'InputGroupTextarea', 'Controller'].includes(
+            node.parent.parent.tagName?.getText(file),
+          )
+        )
+          return undefined;
+        if (nativeForms && ['htmlFor', 'aria-describedby', 'aria-errormessage'].includes(name))
+          return undefined;
+        if (nativeForms && ['id', 'aria-invalid', 'data-invalid'].includes(name))
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier(name === 'id' ? 'nativeID' : 'invalid'),
+            ts.visitNode(node.initializer, visit),
+          );
+        if (nativeForms && name === 'onChange') {
+          const convert = (child) =>
+            ts.isPropertyAccessExpression(child) &&
+            ['value', 'checked'].includes(child.name.text) &&
+            ts.isPropertyAccessExpression(child.expression) &&
+            ['target', 'currentTarget'].includes(child.expression.name.text)
+              ? child.expression.expression
+              : ts.visitEachChild(child, convert, context);
+          return f.updateJsxAttribute(
+            node,
+            f.createIdentifier('onChangeText'),
+            ts.visitNode(node.initializer, convert),
+          );
+        }
+
         // Upstream's stroke="0" is a browser shorthand for no separator, not a native color.
         if (
           name === 'stroke' &&
@@ -237,7 +411,7 @@ export function portChartRecipe(source, filename) {
     (s) =>
       !ts.isExpressionStatement(s) ||
       !ts.isStringLiteral(s.expression) ||
-      s.expression.text !== 'use client',
+      !['use client', 'use server'].includes(s.expression.text),
   );
   const makeImport = (name, target) =>
     f.createImportDeclaration(
@@ -251,12 +425,18 @@ export function portChartRecipe(source, filename) {
       undefined,
     );
   imports.push(makeImport('withRegistryStyles', '../../native/registry-styles'));
+  if (nativeForms) imports.push(makeImport('NativeFormScope', '../../native/native-form'));
+  if (nativeActions && /\bNativeFormValues\b/.test(source))
+    imports.push(makeImport('NativeFormValues', '../../native/registry-action-form'));
   for (const name of hostNames) {
-    const target = name.startsWith('Registry')
-      ? '../../native/registry-styles'
-      : ['G', 'Svg', 'Path', 'ClipPath'].includes(name)
-        ? 'react-native-svg'
-        : '../../native/charts';
+    const target =
+      name === 'NativeForm'
+        ? '../../native/native-form'
+        : name.startsWith('Registry')
+          ? '../../native/registry-styles'
+          : ['G', 'Svg', 'Path', 'ClipPath'].includes(name)
+            ? 'react-native-svg'
+            : '../../native/charts';
     if (name.startsWith('Registry')) imports.push(makeImport(name, target));
     else {
       imports.push(
@@ -288,7 +468,9 @@ export function portChartRecipe(source, filename) {
                 undefined,
                 f.createCallExpression(f.createIdentifier('withRegistryStyles'), undefined, [
                   f.createIdentifier('NativeHost' + name),
-                  f.createStringLiteral(name === 'Svg' ? 'svg-root' : 'svg'),
+                  f.createStringLiteral(
+                    name === 'NativeForm' ? 'view' : name === 'Svg' ? 'svg-root' : 'svg',
+                  ),
                 ]),
               ),
             ],
@@ -309,6 +491,7 @@ export function portChartRecipe(source, filename) {
     ts.createPrinter().printFile(output)
   );
 }
+export const portChartRecipe = portNativeRegistryRecipe;
 export function loadNativeChartRecipes() {
   return JSON.parse(
     gunzipSync(readFileSync(path.join(root, 'assets/ui/native-chart-recipes.json.gz'))),
@@ -325,7 +508,8 @@ export function validateNativeChartRecipes(inventory, catalog) {
       throw Error('Stale native chart source: ' + recipe.origin);
     if (hash(recipe.source) !== recipe.nativeSha256)
       throw Error('Changed native chart output: ' + recipe.origin);
-    const key = `registry:${recipe.kind === 'block' ? 'block' : 'example'}/${recipe.name}`;
+    const key =
+      recipe.itemKey ?? `registry:${recipe.kind === 'block' ? 'block' : 'example'}/${recipe.name}`;
     if (JSON.stringify(recipe.reviewedInputs) !== JSON.stringify(reviewedInputs(inventory, key)))
       throw Error('Stale native chart style/dependency evidence: ' + recipe.origin);
   }

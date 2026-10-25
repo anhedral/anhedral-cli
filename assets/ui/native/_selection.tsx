@@ -10,6 +10,8 @@ import { View, ScrollView, type ViewProps, type TextInputProps } from 'react-nat
 import { Box, LabelText, Muted, row, useControllable, nativeComponent } from './_core';
 import { Button, type ButtonProps } from './button';
 import { Input } from './input';
+import { useTheme } from '../theme';
+import { useNativeField } from './_field-context';
 import {
   OverlayRoot,
   OverlayTrigger,
@@ -23,6 +25,7 @@ const SelectContext = createContext<{
   set: (value: string) => void;
   labels: Map<string, string>;
   disabled: boolean;
+  invalid?: boolean;
   query: string;
   setQuery: (query: string) => void;
 } | null>(null);
@@ -52,6 +55,7 @@ export function Select({
   defaultValue = '',
   onValueChange,
   disabled = false,
+  invalid,
   children,
   onOpenChange,
   ...overlay
@@ -60,12 +64,21 @@ export function Select({
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
+  invalid?: boolean;
 }) {
   const [selected, set] = useControllable(value, defaultValue, onValueChange);
   const [query, setQuery] = useState('');
   return (
     <SelectContext.Provider
-      value={{ value: selected, set, labels: itemLabels(children), disabled, query, setQuery }}
+      value={{
+        value: selected,
+        set,
+        labels: itemLabels(children),
+        disabled,
+        invalid,
+        query,
+        setQuery,
+      }}
     >
       <OverlayRoot
         {...overlay}
@@ -84,14 +97,28 @@ function useSelect() {
   if (!value) throw Error('Select parts require Select.');
   return value;
 }
-export function SelectTrigger(props: Omit<ButtonProps, 'size'> & { size?: 'default' | 'sm' }) {
-  const state = useSelect();
+export function SelectTrigger({
+  invalid,
+  style,
+  ...props
+}: Omit<ButtonProps, 'size'> & { size?: 'default' | 'sm'; invalid?: boolean }) {
+  const state = useSelect(),
+    field = useNativeField(),
+    { colors } = useTheme();
   return (
     <OverlayTrigger
       variant="outline"
       {...props}
       disabled={state.disabled || props.disabled}
       accessibilityRole="combobox"
+      accessibilityLabel={props.accessibilityLabel ?? (field?.label || undefined)}
+      accessibilityHint={
+        props.accessibilityHint ?? [field?.description, field?.error].filter(Boolean).join('. ')
+      }
+      style={(event) => [
+        (invalid ?? state.invalid ?? field?.invalid) && { borderColor: colors.destructive },
+        typeof style === 'function' ? style(event) : style,
+      ]}
     />
   );
 }
@@ -112,9 +139,13 @@ export function SelectValue({
 export function SelectContent({
   children,
   align = 'center',
+  position: _position,
   style,
   ...props
-}: React.ComponentProps<typeof OverlayContent> & { align?: 'start' | 'center' | 'end' }) {
+}: React.ComponentProps<typeof OverlayContent> & {
+  align?: 'start' | 'center' | 'end';
+  position?: 'popper' | 'item-aligned';
+}) {
   return (
     <OverlayContent
       {...props}

@@ -49,7 +49,7 @@ test('full official registry snapshot retains every style, item, referenced file
   }
   assert.equal(count, 6437);
   assert.equal(keys.size, 616);
-  assert.equal(Object.keys(inventory.sources).length, 2069);
+  assert.equal(Object.keys(inventory.sources).length, 2073);
   assert.equal(Object.keys(inventory.styleSheets).length, 8);
   for (const sheet of Object.values(inventory.styleSheets))
     assert.equal(sheet.sha256, sha256(sheet.content));
@@ -209,4 +209,19 @@ test('export presence and browser-only policy cannot promote incomplete items to
   assert.ok(!pending.includes('registry:lib/utils'));
   assert.ok(!pending.includes('registry:hook/use-mobile'));
   assert.equal(incompleteNativeItems(inventory, { items: {} }).length, 616);
+});
+
+test('omitted registry companion imports are inventoried and invalidate native review transitively', () => {
+  assert.deepEqual(inventory.unresolvedSourceImports, []);
+  const origin = 'apps/v4/registry/new-york-v4/examples/form-next-demo.tsx';
+  const companion = 'apps/v4/registry/new-york-v4/examples/form-next-demo-schema.ts';
+  assert.ok(inventory.sources[origin].relativeSources.includes(companion));
+  const before = reviewedInputs(inventory, 'registry:example/form-next-demo');
+  const changed = structuredClone(inventory);
+  changed.sources[companion].sha256 = '0'.repeat(64);
+  assert.notDeepEqual(reviewedInputs(changed, 'registry:example/form-next-demo'), before);
+  assert.deepEqual(
+    reviewedInputs(changed, 'registry:example/form-rhf-input'),
+    reviewedInputs(inventory, 'registry:example/form-rhf-input'),
+  );
 });
