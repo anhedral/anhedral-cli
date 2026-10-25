@@ -318,13 +318,34 @@ export function portNativeRegistryRecipe(source, filename, { nativeForms = false
         )
           throw Error('Chart imports must be named.');
         const elements = node.importClause.namedBindings.elements
-          .filter((e) => !['ChartStyle', 'buttonVariants'].includes(e.name.text))
+          .filter((e) => {
+            if (module === 'lucide-react' && (e.propertyName ?? e.name).text === 'LucideIcon') {
+              imports.push(
+                f.createImportDeclaration(
+                  undefined,
+                  f.createImportClause(
+                    false,
+                    undefined,
+                    f.createNamedImports([
+                      f.createImportSpecifier(true, f.createIdentifier('RegistryIcon'), e.name),
+                    ]),
+                  ),
+                  f.createStringLiteral('../../native/registry-styles'),
+                  undefined,
+                ),
+              );
+              return false;
+            }
+            return !['ChartStyle', 'buttonVariants'].includes(e.name.text);
+          })
           .map((e) => {
             if (
               node.importClause.isTypeOnly ||
               e.isTypeOnly ||
               module.startsWith('recharts/types/') ||
-              e.name.text === 'ChartConfig'
+              e.name.text === 'ChartConfig' ||
+              (module === 'lucide-react' &&
+                ['LucideIcon', 'LucideProps', 'IconNode'].includes((e.propertyName ?? e.name).text))
             )
               return f.updateImportSpecifier(e, true, e.propertyName, e.name);
             if (/^[a-z]/.test(e.name.text)) return e;

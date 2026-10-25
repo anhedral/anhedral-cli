@@ -21,6 +21,7 @@ import {
   type TextProps,
 } from 'react-native';
 import { useTheme } from '../theme';
+import { useRegistryPalette } from './_registry-context';
 import { useNativeFontStyle } from './fonts';
 import { Box, LabelText, Muted, Surface, row, monospace, withAlpha, plainText } from './_core';
 import { Button, type ButtonProps } from './button';
@@ -99,7 +100,9 @@ export function Badge({
   variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
 }) {
   const { colors, mode } = useTheme();
-  const filled = ['default', 'secondary'].includes(variant);
+  const legacy = useRegistryPalette() === 'legacy';
+  const filled =
+    ['default', 'secondary'].includes(variant) || (legacy && variant === 'destructive');
   const backgroundColor =
     variant === 'destructive'
       ? colors.destructive
@@ -128,7 +131,7 @@ export function Badge({
               ? colors.border
               : 'transparent',
           backgroundColor:
-            variant === 'destructive'
+            variant === 'destructive' && !legacy
               ? withAlpha(colors.destructive ?? colors.foreground, mode === 'dark' ? 0.2 : 0.1)
               : filled
                 ? backgroundColor
@@ -141,7 +144,9 @@ export function Badge({
         style={{
           color:
             variant === 'destructive'
-              ? colors.destructive
+              ? legacy
+                ? colors['destructive-foreground']
+                : colors.destructive
               : variant === 'link'
                 ? colors.primary
                 : variant === 'secondary'

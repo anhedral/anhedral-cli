@@ -18,7 +18,7 @@ import {
   type Ref,
 } from 'react';
 import { useTheme } from '../theme';
-import { NativeRecipeState } from './_registry-context';
+import { NativeRecipeState, useRegistryPalette } from './_registry-context';
 import { useNativeFormAction } from './native-form';
 import { NativeSlot } from './_slot';
 import { LabelText as Text, TextToneProvider, withAlpha, plainText } from './_core';
@@ -63,6 +63,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const { colors, radius, mode } = useTheme();
+  const legacy = useRegistryPalette() === 'legacy';
   const action = useNativeFormAction(form);
   const blocked = disabled || (type !== 'button' && action.pending);
   const backgrounds = {
@@ -70,15 +71,17 @@ export function Button({
     secondary: colors.secondary,
     outline: colors.background,
     ghost: 'transparent',
-    destructive: withAlpha(colors.destructive ?? colors.foreground, mode === 'dark' ? 0.2 : 0.1),
+    destructive: legacy
+      ? colors.destructive
+      : withAlpha(colors.destructive ?? colors.foreground, mode === 'dark' ? 0.2 : 0.1),
     link: 'transparent',
   };
   const foregrounds = {
     default: colors['primary-foreground'],
-    secondary: colors.foreground,
+    secondary: colors['secondary-foreground'],
     outline: colors.foreground,
     ghost: colors.foreground,
-    destructive: colors.destructive,
+    destructive: legacy ? colors['destructive-foreground'] : colors.destructive,
     link: colors.primary,
   };
   const foreground = textColor ?? StyleSheet.flatten(textStyle)?.color ?? foregrounds[variant];
@@ -88,7 +91,9 @@ export function Button({
     borderColor: invalid
       ? colors.destructive
       : variant === 'outline'
-        ? colors.border
+        ? legacy
+          ? colors.input
+          : colors.border
         : 'transparent',
   };
   const Host = asChild || render ? NativeSlot : Pressable;

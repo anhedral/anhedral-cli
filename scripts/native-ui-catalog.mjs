@@ -35,11 +35,15 @@ runtime for current acceptance and retain that SDK compatibility gap explicitly.
 
 ## Official registry assets and recipes
 
-The authored component example overlay currently includes 227 reviewed source modules,
+The authored component example overlay currently includes 409 reviewed source modules,
 with 166 source-pinned Lucide native selections. Generate and validate these through
 \`node scripts/native-example-recipes.mjs --source /absolute/path/to/the/pinned/shadcn-ui\`
 and \`node scripts/native-icons.mjs --check\`. Their coverage remains partial while
-component preset/API parity is unfinished.
+component preset/API parity is unfinished. The overlay includes 91 distinct published
+examples from each of the legacy Default and New York registries. Their original
+source files, color generation, controlled callbacks and hashes are retained;
+matching names never substitute the modern source. Filled legacy destructive buttons
+and badges remain distinct from modern translucent variants.
 
 Authored image recipes use native image caching and SVG grayscale/brightness filters.
 They retain source HTTPS URLs, alt text, crop, dimensions and aspect ratios, with visible

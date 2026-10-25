@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { loadNativeExampleRecipes } from '../scripts/native-example-recipes.mjs';
 import { validateNativeChartRecipes } from '../scripts/native-chart-recipes.mjs';
 import { loadOfficialRegistry } from '../scripts/shadcn-registry.mjs';
-test('227 authored component examples retain native source and complete source/style/dependency provenance', () => {
+test('409 authored component examples retain native source and complete source/style/dependency provenance', () => {
   const catalog = loadNativeExampleRecipes();
   validateNativeChartRecipes(loadOfficialRegistry(), catalog);
-  assert.equal(catalog.recipes.length, 227);
+  assert.equal(catalog.recipes.length, 409);
   for (const recipe of catalog.recipes)
     assert.doesNotMatch(recipe.source, /<(?:div|span|button|input|form|svg)\b|onClick=/);
   const pagination = catalog.recipes.find((recipe) => recipe.name === 'pagination-demo');
@@ -43,12 +43,12 @@ test('recipe generation preserves typed render callbacks, lowercase APIs and uni
 test('authored image recipes retain remote sources, aspect ratios and filter utilities without Next image imports', async () => {
   const catalog = loadNativeExampleRecipes();
   const images = catalog.recipes.filter((recipe) => recipe.name.startsWith('aspect-ratio-'));
-  assert.equal(images.length, 4);
+  assert.equal(images.length, 6);
   for (const recipe of images) {
     assert.match(recipe.source, /RegistryImage/);
     assert.doesNotMatch(recipe.source, /next\/image/);
     assert.match(recipe.source, /https:\/\//);
-    assert.match(recipe.source, /brightness/);
+    if (!['default', 'new-york'].includes(recipe.style)) assert.match(recipe.source, /brightness/);
     assert.match(recipe.source, /ratio=/);
   }
   const { portNativeRegistryRecipe } = await import('../scripts/native-chart-recipes.mjs');
@@ -62,4 +62,31 @@ test('authored image recipes retain remote sources, aspect ratios and filter uti
     () => portNativeRegistryRecipe('import {getImageProps} from "next/image";', 'fixture.tsx'),
     /reviewed default/,
   );
+});
+
+test('legacy published examples retain their own source hashes and scoped color generation', () => {
+  const recipes = loadNativeExampleRecipes().recipes;
+  for (const style of ['default', 'new-york']) {
+    const legacy = recipes.filter((recipe) => recipe.style === style);
+    assert.equal(legacy.length, 91);
+    for (const recipe of legacy) {
+      assert.match(recipe.origin, /public\/r\/styles\/[^/]+\/[^#]+#registry\//);
+      assert.match(recipe.source, /generation="legacy"/);
+    }
+    const button = legacy.find((recipe) => recipe.name === 'button-destructive');
+    assert.notEqual(
+      button.upstreamSha256,
+      recipes.find((recipe) => recipe.style === 'new-york-v4' && recipe.name === button.name)
+        .upstreamSha256,
+    );
+  }
+});
+test('legacy Lucide type imports stay types and never become component wrappers', async () => {
+  const { portNativeRegistryRecipe } = await import('../scripts/native-chart-recipes.mjs');
+  const translated = portNativeRegistryRecipe(
+    'import { LucideIcon as IconType, Check } from "lucide-react"; export default function Demo(){ const icon:IconType = Check; return <Check/>; }',
+    'fixture.tsx',
+  );
+  assert.match(translated, /type RegistryIcon as IconType/);
+  assert.doesNotMatch(translated, /const IconType =/);
 });

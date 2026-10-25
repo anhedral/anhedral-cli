@@ -54,6 +54,9 @@ const RegistryLocalPaint = createContext<Record<string, string | number>>({});
 export const RegistryPaintContext = createContext<Record<string, string | number>>({});
 const RegistryVariables = createContext<Record<string, string>>({});
 const DescendantStyle = createContext<string[]>([]);
+export type RegistryIcon = ComponentType<
+  import('lucide-react-native').LucideProps & { className?: string }
+>;
 type RecipeProps = {
   className?: string;
   children?: ReactNode;
@@ -130,8 +133,8 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         localVariables[key] = value;
       } else nativeInline[key] = value;
     }
-    const palette =
-      useRegistryPalette() === 'legacy' ? styling.registryColors : styling.utilityColors;
+    const generation = useRegistryPalette();
+    const palette = generation === 'legacy' ? styling.registryColors : styling.utilityColors;
     const color = (value: string, seen = new Set<string>()): string => {
       if (seen.has(value)) throw Error(`Cyclic native recipe color: ${value}`);
       seen.add(value);
@@ -175,6 +178,7 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
         .join(' '),
       {
         styleName,
+        generation,
         svg: kind === 'icon' || kind === 'svg-root',
         slot: Component.name?.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),
         selected:

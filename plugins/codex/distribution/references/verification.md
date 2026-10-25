@@ -1,3 +1,26 @@
+# Published legacy registry examples — October 24, 2026
+
+Added the actual published source for 91 Default and 91 New York examples, with
+independent source/dependency/style hashes: 409 component example modules and
+674 native registry modules overall. Published source comes from its pinned
+registry JSON, not from a replacement modern implementation. Legacy color palettes,
+small shadows and filled destructive buttons/badges retain their own generation.
+
+- Full native suites: 1,155 tests per platform, 38 suites each. Strict generated
+  TypeScript passed. Authored pagination, carousel API counters and controlled OTP
+  feedback passed on both platforms. Source/generator contracts: ten passed.
+- Root: 599 passed, one existing optional skip. Lint, installed packed CLI smoke
+  and packlist passed: 249 files, 960,783 compressed bytes. Both production Hermes
+  bundles contain all 674 maintained modules. Package budgets are unchanged.
+- Initial checks found an unported legacy shadow and an old LucideIcon import
+  being wrapped as a runtime component. The native adapter now uses its proper
+  component type, including recipe classes, without requiring a forward-ref brand.
+  The first OTP test targeted a visual digit button; it was corrected to type into
+  the actual one-time-code input and verify the authored feedback and final digit.
+- This adds source and behavior evidence; it does not certify complete legacy CSS,
+  remaining component APIs, all preset styles or native OS acceptance. Whole-registry
+  completion still rejects unfinished coverage. No release or deployment occurred.
+
 # Native authored image recipes — October 24, 2026
 
 The Expo overlay now retains all four reviewed aspect-ratio example modules:

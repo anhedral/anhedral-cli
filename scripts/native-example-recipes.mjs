@@ -254,11 +254,28 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     origins.push('apps/v4/registry/new-york-v4/examples/aspect-ratio-demo.tsx');
     for (const base of ['base', 'radix', 'aria'])
       origins.push(`apps/v4/registry/bases/${base}/examples/aspect-ratio-example.tsx`);
+    // Published legacy examples are separate authored inputs, even when their names
+    // match a maintained modern recipe. Never substitute modern source for them.
+    const maintainedNames = new Set(origins.map((origin) => path.basename(origin, '.tsx')));
+    for (const origin of Object.keys(inventory.sources)) {
+      if (
+        /#[^#]*registry\/(default|new-york)\/examples\//.test(origin) &&
+        maintainedNames.has(path.basename(origin, '.tsx')) &&
+        !/\/chart-/.test(origin)
+      )
+        origins.push(origin);
+    }
     for (const origin of origins) {
       const name = path.basename(origin, '.tsx');
       const input = inventory.sources[origin];
       if (!input) throw Error('Missing reviewed component example ' + name);
-      const source = readFileSync(path.join(upstream, origin), 'utf8');
+      const [file, embedded] = origin.split('#');
+      const source = embedded
+        ? JSON.parse(readFileSync(path.join(upstream, file), 'utf8')).files.find(
+            (entry) => entry.path === embedded || embedded.endsWith('/' + entry.path),
+          )?.content
+        : readFileSync(path.join(upstream, file), 'utf8');
+      if (typeof source !== 'string') throw Error('Missing published example source: ' + origin);
       if (hash(source) !== input.sha256) throw Error('Component example source drift: ' + origin);
       const support = false,
         itemKey = 'registry:example/' + (support ? name.replace(/-(?:schema|action)$/, '') : name),
@@ -269,7 +286,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         itemKey,
         style: origin.includes('/bases/')
           ? origin.split('/bases/')[1].split('/')[0]
-          : 'new-york-v4',
+          : (origin.match(/(?:registry\/|styles\/)(default|new-york-v4|new-york)\//)?.[1] ??
+            (() => {
+              throw Error('Unknown example registry: ' + origin);
+            })()),
         name,
         origin,
         upstreamSha256: input.sha256,

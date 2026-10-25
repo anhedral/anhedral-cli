@@ -17,6 +17,7 @@ export function registryStyle(
     height?: number;
     mode?: 'light' | 'dark';
     styleName?: string;
+    generation?: 'legacy' | 'modern';
     color: (value: string) => string;
     radius: number;
     index?: number;
@@ -396,6 +397,35 @@ export function registryStyle(
         { offsetX: 0, offsetY: 2, blurRadius: 4, spreadDistance: -2, color: 'rgba(0,0,0,0.1)' },
       ];
       view.elevation = 4;
+    } else if (token === 'shadow-sm') {
+      view.boxShadow =
+        options.generation === 'legacy'
+          ? [
+              {
+                offsetX: 0,
+                offsetY: 1,
+                blurRadius: 2,
+                spreadDistance: 0,
+                color: 'rgba(0,0,0,0.05)',
+              },
+            ]
+          : [
+              {
+                offsetX: 0,
+                offsetY: 1,
+                blurRadius: 3,
+                spreadDistance: 0,
+                color: 'rgba(0,0,0,0.1)',
+              },
+              {
+                offsetX: 0,
+                offsetY: 1,
+                blurRadius: 2,
+                spreadDistance: -1,
+                color: 'rgba(0,0,0,0.1)',
+              },
+            ];
+      view.elevation = 1;
     } else if (token === 'shadow-xl') {
       view.boxShadow = [
         { offsetX: 0, offsetY: 20, blurRadius: 25, spreadDistance: -5, color: 'rgba(0,0,0,0.1)' },
