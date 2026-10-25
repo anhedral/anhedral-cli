@@ -71,4 +71,18 @@ final class RegistryUITests: XCTestCase {
     }
   }
 
+  func testComposedNativeViewAndTextHostsKeepRealActions() {
+    let app = XCUIApplication(bundleIdentifier: "dev.anhedral.registryqa")
+    app.launch()
+    openStory("native/render-hosts", in: app)
+    for (index, entry) in [("Registry view action", "Host action: view"), ("Text badge action", "Host action: text"), ("Registry click action", "Host action: registry")].enumerated() {
+      let (label,result) = entry
+      let button = app.buttons.matching(identifier:label).firstMatch
+      XCTAssertTrue(button.waitForExistence(timeout: 10))
+      button.tap()
+      XCTAssertTrue(app.staticTexts[result].waitForExistence(timeout: 3))
+      XCTAssertTrue(app.staticTexts["Host count: " + String(index + 1)].waitForExistence(timeout: 3))
+    }
+  }
+
 }

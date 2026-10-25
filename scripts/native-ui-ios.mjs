@@ -73,6 +73,7 @@ export function nativeQAApp(catalog, sourceFor) {
           ...stories,
           '{id: "native/button-preset-matrix",Component:NativeButtonPresetMatrix}',
           '{id: "native/navigation-contract",Component:NativeNavigationMatrix}',
+          '{id: "native/render-hosts",Component:NativeRenderHostMatrix}',
         ].join(',\n') +
         '];',
     );

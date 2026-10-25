@@ -101,3 +101,51 @@ test('disabled composed controls cannot bypass their parent disabled state', asy
   await fireEvent.press(screen.getByRole('button', { name: 'Disabled' }));
   expect(press).not.toHaveBeenCalled();
 });
+
+test('native Button View composition creates one real pressable with source typography and native callbacks', async () => {
+  const { View, StyleSheet } = require('react-native');
+  const press = jest.fn(),
+    child = jest.fn(),
+    parentTouch = jest.fn();
+  await mount(
+    <UI.NativeComponentStyleProvider style="nova">
+      <UI.Button asChild onPress={press} onTouchStart={parentTouch}>
+        <View onTouchStart={child}>
+          <UI.Text>View action</UI.Text>
+        </View>
+      </UI.Button>
+    </UI.NativeComponentStyleProvider>,
+  );
+  const button = screen.getByRole('button', { name: 'View action' });
+  expect(screen.getAllByRole('button')).toHaveLength(1);
+  await fireEvent(button, 'touchStart', {});
+  expect(child).toHaveBeenCalledTimes(1);
+  expect(parentTouch).toHaveBeenCalledTimes(1);
+  expect(StyleSheet.flatten(screen.getByText('View action').props.style)).toMatchObject({
+    fontWeight: '500',
+    fontSize: 14,
+  });
+  await fireEvent.press(button);
+  expect(press).toHaveBeenCalledTimes(1);
+});
+
+test('static slot press feedback preserves mounted native refs until the actual unmount', async () => {
+  const ref = jest.fn(),
+    released = jest.fn();
+  ref.mockImplementation((node: unknown) => (node ? released : undefined));
+  await mount(
+    <UI.Badge
+      onPress={() => {}}
+      render={(props) => <UI.Text {...props} ref={ref} testID="ref-text" />}
+    >
+      Stable ref
+    </UI.Badge>,
+  );
+  expect(ref).toHaveBeenCalledTimes(1);
+  await fireEvent(screen.getByTestId('ref-text'), 'pressIn', {});
+  await fireEvent(screen.getByTestId('ref-text'), 'pressOut', {});
+  expect(ref).toHaveBeenCalledTimes(1);
+  expect(released).not.toHaveBeenCalled();
+  await screen.unmount();
+  expect(released).toHaveBeenCalledTimes(1);
+});

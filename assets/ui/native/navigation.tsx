@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { LabelText, content, type NativeTextPointerProps } from './_core';
 import { useTheme } from '../theme';
+import { nativeTextPressRetentionOffset } from './_slot';
 
 export type NativeNavigationOptions = { replace?: boolean; scroll?: boolean };
 export type NativeNavigationHandlers = {
@@ -189,23 +190,7 @@ export function NativeLink({
         props.onPointerLeave?.(event);
         onHoverOut?.(event as never);
       }}
-      pressRetentionOffset={
-        pressRetentionOffset == null
-          ? undefined
-          : typeof pressRetentionOffset === 'number'
-            ? {
-                top: pressRetentionOffset,
-                left: pressRetentionOffset,
-                bottom: pressRetentionOffset,
-                right: pressRetentionOffset,
-              }
-            : {
-                top: pressRetentionOffset.top ?? 0,
-                left: pressRetentionOffset.left ?? 0,
-                bottom: pressRetentionOffset.bottom ?? 0,
-                right: pressRetentionOffset.right ?? 0,
-              }
-      }
+      pressRetentionOffset={nativeTextPressRetentionOffset(pressRetentionOffset)}
       suppressHighlighting={blocked || props.suppressHighlighting}
       style={typeof style === 'function' ? style({ pressed }) : style}
     >

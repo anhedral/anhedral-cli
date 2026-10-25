@@ -1,3 +1,24 @@
+# Native render-host composition and Badge coverage — October 24, 2026
+
+Native slots now resolve static Text/View styles, preserve child callbacks and refs,
+and create real pressable controls for authored clickable views. Default native Text
+inherits the surrounding component typography; explicit text variants remain authoritative.
+Animated registry controls retain their animation values and press feedback.
+
+- Full native suites passed 1,288 tests per platform across 42 suites. Generated types
+  and both 699-module Hermes bundles passed. Root tests passed 616 with one existing
+  optional skip. Initial root failure from the old pending-count expectation is retained.
+- Real iOS 26.5 XCTest passed all six cases in 127.2 seconds, including composed View
+  and Text actions with exactly one counter increment per tap. Evidence:
+  .artifacts/native-ui-ios/2026-10-25T05-27-19-571Z/results.xcresult.
+  The preceding failed run is retained: its Text selector matched paragraph and text
+  accessibility representations; the corrected selector uses the first matching native
+  button and verifies actual action counts and destination state.
+- Badge and five distinct Badge example groups now meet reviewed source coverage.
+  Strict whole-registry completion still rejects 546 pending items. Device/visual/
+  keyboard/screen-reader acceptance remains a separate checklist; this source promotion
+  does not claim whole-registry completion. No publication or deployment occurred.
+
 # Native Badge source styles and shared CVA evaluation — October 24, 2026
 
 Badge now retains all eleven source families: the eight newer component presets

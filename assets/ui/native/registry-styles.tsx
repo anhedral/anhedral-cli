@@ -11,6 +11,7 @@ import {
   type ComponentType,
   type ComponentProps,
   type ReactNode,
+  type Ref,
 } from 'react';
 import {
   View,
@@ -52,6 +53,7 @@ import { registryStyle } from './_registry-css';
 import { NativeRegistryImage } from './registry-image';
 import { NativeLink } from './navigation';
 import { LinkButton } from './button';
+import { nativeTextPressRetentionOffset } from './_slot';
 
 const RegistryLocalPaint = createContext<Record<string, string | number>>({});
 export const RegistryPaintContext = createContext<Record<string, string | number>>({});
@@ -486,10 +488,26 @@ export function withRegistryStyles<C extends ComponentType<any>>(Component: C, k
       ('nativeRegistryIcon' in Component && Component.nativeRegistryIcon === true),
   });
 }
-function RecipeHover({ children, style, ...props }: ViewProps) {
+type NativeRecipeViewProps = Omit<PressableProps, 'children'> & {
+  children?: ReactNode;
+  ref?: Ref<View>;
+};
+const AnimatedRecipePressable = Animated.createAnimatedComponent(Pressable);
+function RecipeHover({
+  children,
+  style,
+  onPress,
+  disabled,
+  onHoverIn,
+  onHoverOut,
+  onPressIn,
+  onPressOut,
+  ...props
+}: NativeRecipeViewProps) {
   const effect = useContext(RegistryLocalPaint),
     position = useRef(new Animated.Value(0)).current,
-    [reduced, setReduced] = useState(false);
+    [reduced, setReduced] = useState(false),
+    [pressed, setPressed] = useState(false);
   useEffect(() => {
     let mounted = true;
     void AccessibilityInfo.isReduceMotionEnabled().then((value) => {
@@ -504,48 +522,81 @@ function RecipeHover({ children, style, ...props }: ViewProps) {
   }, [position]);
   const animate = (active: boolean) =>
     Animated.timing(position, {
-      toValue: active ? Number(effect.hoverTranslateY) : 0,
+      toValue: active && !disabled ? Number(effect.hoverTranslateY) : 0,
       duration: reduced ? 0 : Number(effect.transitionDuration ?? 0),
       easing: Easing.inOut(Easing.ease),
       useNativeDriver: true,
     }).start();
-  const transform = StyleSheet.flatten(style)?.transform;
-  return (
-    <Animated.View
-      {...props}
-      style={[
-        style,
-        { transform: [...(Array.isArray(transform) ? transform : []), { translateY: position }] },
-      ]}
-      onPointerEnter={(event) => {
-        props.onPointerEnter?.(event);
-        animate(true);
+  const motionStyle = (pressed: boolean) => {
+    const current = typeof style === 'function' ? style({ pressed }) : style;
+    const transform = StyleSheet.flatten(current)?.transform;
+    return [
+      current,
+      { transform: [...(Array.isArray(transform) ? transform : []), { translateY: position }] },
+    ];
+  };
+  const motion = {
+    ...props,
+    onPointerEnter: (event: Parameters<NonNullable<ViewProps['onPointerEnter']>>[0]) => {
+      props.onPointerEnter?.(event);
+      if (!onPress) onHoverIn?.(event as never);
+      animate(true);
+    },
+    onPointerLeave: (event: Parameters<NonNullable<ViewProps['onPointerLeave']>>[0]) => {
+      props.onPointerLeave?.(event);
+      if (!onPress) onHoverOut?.(event as never);
+      animate(false);
+    },
+    onTouchStart: (event: Parameters<NonNullable<ViewProps['onTouchStart']>>[0]) => {
+      props.onTouchStart?.(event);
+      animate(true);
+    },
+    onTouchEnd: (event: Parameters<NonNullable<ViewProps['onTouchEnd']>>[0]) => {
+      props.onTouchEnd?.(event);
+      animate(false);
+    },
+    onTouchCancel: (event: Parameters<NonNullable<ViewProps['onTouchCancel']>>[0]) => {
+      props.onTouchCancel?.(event);
+      animate(false);
+    },
+  };
+  const body = primitiveText(children) ? <LabelText>{children}</LabelText> : content(children);
+  return onPress ? (
+    <AnimatedRecipePressable
+      {...motion}
+      accessibilityRole={props.accessibilityRole ?? 'button'}
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={props.hitSlop ?? 16}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+      onPressIn={(event) => {
+        setPressed(true);
+        onPressIn?.(event);
       }}
-      onPointerLeave={(event) => {
-        props.onPointerLeave?.(event);
-        animate(false);
+      onPressOut={(event) => {
+        setPressed(false);
+        onPressOut?.(event);
       }}
-      onTouchStart={(event) => {
-        props.onTouchStart?.(event);
-        animate(true);
-      }}
-      onTouchEnd={(event) => {
-        props.onTouchEnd?.(event);
-        animate(false);
-      }}
-      onTouchCancel={(event) => {
-        props.onTouchCancel?.(event);
-        animate(false);
-      }}
+      style={motionStyle(pressed && !disabled)}
     >
-      {content(children)}
+      {body}
+    </AnimatedRecipePressable>
+  ) : (
+    <Animated.View
+      {...motion}
+      hitSlop={nativeTextPressRetentionOffset(props.hitSlop)}
+      style={motionStyle(false)}
+    >
+      {body}
     </Animated.View>
   );
 }
 function primitiveText(children: ReactNode): boolean {
+  const nodes = Children.toArray(children);
   return (
-    Children.count(children) > 0 &&
-    Children.toArray(children).every(
+    nodes.length > 0 &&
+    nodes.every(
       (child) =>
         typeof child === 'string' ||
         typeof child === 'number' ||
@@ -556,13 +607,57 @@ function primitiveText(children: ReactNode): boolean {
     )
   );
 }
-function RecipeView({ children, ...props }: ViewProps) {
+
+function RecipeView({
+  children,
+  style,
+  onPress,
+  disabled,
+  onHoverIn,
+  onHoverOut,
+  ...props
+}: NativeRecipeViewProps) {
   const effects = useContext(RegistryLocalPaint);
+  const body = primitiveText(children) ? <LabelText>{children}</LabelText> : content(children);
   return effects.hoverTranslateY !== undefined ? (
-    <RecipeHover {...props}>{children}</RecipeHover>
+    <RecipeHover
+      {...props}
+      style={style}
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={props.hitSlop ?? 16}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+    >
+      {children}
+    </RecipeHover>
+  ) : onPress ? (
+    <Pressable
+      {...props}
+      accessibilityRole={props.accessibilityRole ?? 'button'}
+      onPress={onPress}
+      disabled={disabled}
+      style={style}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+    >
+      {body}
+    </Pressable>
   ) : (
-    <View {...props}>
-      {primitiveText(children) ? <LabelText>{children}</LabelText> : content(children)}
+    <View
+      {...props}
+      hitSlop={nativeTextPressRetentionOffset(props.hitSlop)}
+      style={typeof style === 'function' ? style({ pressed: false }) : style}
+      onPointerEnter={(event) => {
+        props.onPointerEnter?.(event);
+        onHoverIn?.(event as never);
+      }}
+      onPointerLeave={(event) => {
+        props.onPointerLeave?.(event);
+        onHoverOut?.(event as never);
+      }}
+    >
+      {body}
     </View>
   );
 }

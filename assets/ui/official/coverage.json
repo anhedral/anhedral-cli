@@ -2376,16 +2376,24 @@
       }
     },
     "registry:example/badge-destructive": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All eleven Badge source families retain every authored variant and CVA rule, native focus/invalid/link-hover paint, glyph placement, source typography, consumer overrides and controlled native actions. Actual available source examples retain independent provenance; all modern bases render under every newer preset. Typed callbacks return one native host; static text/view and pressable hosts preserve callbacks, refs and source styles. Browser class helper exports, DOM attributes and unrestricted multi-host render output are explicitly adapted to native styles/props/containers. Expanded device, keyboard, screen-reader and visual acceptance remains separate.",
       "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_badge-presets.tsx",
+        "assets/ui/native/_preset-badge-style.tsx",
+        "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/text.tsx",
+        "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-native-hosts.test.tsx",
+        "tests/native-ui/registry-composition.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-component-styles.test.mjs"
       ],
       "reviewedInputs": {
         "default": "a50331c7cd61b39722456a4e2697299ad56f163a6f5231942ee4d5d9673e0fa3",
@@ -2394,16 +2402,24 @@
       }
     },
     "registry:example/badge-outline": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All eleven Badge source families retain every authored variant and CVA rule, native focus/invalid/link-hover paint, glyph placement, source typography, consumer overrides and controlled native actions. Actual available source examples retain independent provenance; all modern bases render under every newer preset. Typed callbacks return one native host; static text/view and pressable hosts preserve callbacks, refs and source styles. Browser class helper exports, DOM attributes and unrestricted multi-host render output are explicitly adapted to native styles/props/containers. Expanded device, keyboard, screen-reader and visual acceptance remains separate.",
       "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_badge-presets.tsx",
+        "assets/ui/native/_preset-badge-style.tsx",
+        "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/text.tsx",
+        "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-native-hosts.test.tsx",
+        "tests/native-ui/registry-composition.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-component-styles.test.mjs"
       ],
       "reviewedInputs": {
         "default": "2a1085c2ea7f6a70b53d4909fe03f83fba8a3a46f90ff87879763cf7c8ee063f",
@@ -2412,16 +2428,24 @@
       }
     },
     "registry:example/badge-secondary": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All eleven Badge source families retain every authored variant and CVA rule, native focus/invalid/link-hover paint, glyph placement, source typography, consumer overrides and controlled native actions. Actual available source examples retain independent provenance; all modern bases render under every newer preset. Typed callbacks return one native host; static text/view and pressable hosts preserve callbacks, refs and source styles. Browser class helper exports, DOM attributes and unrestricted multi-host render output are explicitly adapted to native styles/props/containers. Expanded device, keyboard, screen-reader and visual acceptance remains separate.",
       "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_badge-presets.tsx",
+        "assets/ui/native/_preset-badge-style.tsx",
+        "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/text.tsx",
+        "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-native-hosts.test.tsx",
+        "tests/native-ui/registry-composition.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-component-styles.test.mjs"
       ],
       "reviewedInputs": {
         "default": "93ac80fed49305f376f35ea6578332b450497c00ed34d90fa35a4863f2921119",
@@ -4884,16 +4908,24 @@
       }
     },
     "registry:example/badge-demo": {
-      "status": "partial",
-      "reason": "Authored component example source is translated with retained data and callbacks, checked on iOS and Android. Native typography, palette generations, scoped radius, selection, overlays and image lifecycle have behavior coverage. Complete component presets/API and device acceptance remain pending.",
+      "status": "ported",
+      "reason": "All eleven Badge source families retain every authored variant and CVA rule, native focus/invalid/link-hover paint, glyph placement, source typography, consumer overrides and controlled native actions. Actual available source examples retain independent provenance; all modern bases render under every newer preset. Typed callbacks return one native host; static text/view and pressable hosts preserve callbacks, refs and source styles. Browser class helper exports, DOM attributes and unrestricted multi-host render output are explicitly adapted to native styles/props/containers. Expanded device, keyboard, screen-reader and visual acceptance remains separate.",
       "nativeFiles": [
-        "assets/ui/native-example-recipes.json.gz",
-        "assets/ui/native/registry-styles.tsx"
+        "assets/ui/native/_badge.tsx",
+        "assets/ui/native/_badge-presets.tsx",
+        "assets/ui/native/_preset-badge-style.tsx",
+        "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/text.tsx",
+        "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
+        "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-native-hosts.test.tsx",
+        "tests/native-ui/registry-composition.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
-        "tests/native-ui/registry-upstream-controls.test.tsx",
-        "tests/test-native-example-recipes.test.mjs"
+        "tests/test-native-component-styles.test.mjs"
       ],
       "reviewedInputs": {
         "default": "0879f5566f61178a4d3337dc12a970aab19a52d0747e1a3f59f8e098a419fe56",
@@ -6203,17 +6235,22 @@
       }
     },
     "registry:ui/badge": {
-      "status": "partial",
-      "reason": "All eleven Badge style families retain their pinned CVA recipes, modern and legacy variants, native focus/invalid/link-hover states, glyph placement, source typography and explicit consumer colors. All three authored modern examples render under every newer preset. Native pressable render composition is covered; general static render-host composition and expanded native device/API acceptance remain pending.",
+      "status": "ported",
+      "reason": "All eleven Badge source families retain every authored variant and CVA rule, native focus/invalid/link-hover paint, glyph placement, source typography, consumer overrides and controlled native actions. Actual available source examples retain independent provenance; all modern bases render under every newer preset. Typed callbacks return one native host; static text/view and pressable hosts preserve callbacks, refs and source styles. Browser class helper exports, DOM attributes and unrestricted multi-host render output are explicitly adapted to native styles/props/containers. Expanded device, keyboard, screen-reader and visual acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native/_badge.tsx",
         "assets/ui/native/_badge-presets.tsx",
         "assets/ui/native/_preset-badge-style.tsx",
         "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/text.tsx",
         "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
         "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-native-hosts.test.tsx",
+        "tests/native-ui/registry-composition.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/test-native-component-styles.test.mjs"
       ],
@@ -6248,17 +6285,22 @@
       }
     },
     "registry:example/badge-example": {
-      "status": "partial",
-      "reason": "All eleven Badge style families retain their pinned CVA recipes, modern and legacy variants, native focus/invalid/link-hover states, glyph placement, source typography and explicit consumer colors. All three authored modern examples render under every newer preset. Native pressable render composition is covered; general static render-host composition and expanded native device/API acceptance remain pending.",
+      "status": "ported",
+      "reason": "All eleven Badge source families retain every authored variant and CVA rule, native focus/invalid/link-hover paint, glyph placement, source typography, consumer overrides and controlled native actions. Actual available source examples retain independent provenance; all modern bases render under every newer preset. Typed callbacks return one native host; static text/view and pressable hosts preserve callbacks, refs and source styles. Browser class helper exports, DOM attributes and unrestricted multi-host render output are explicitly adapted to native styles/props/containers. Expanded device, keyboard, screen-reader and visual acceptance remains separate.",
       "nativeFiles": [
         "assets/ui/native/_badge.tsx",
         "assets/ui/native/_badge-presets.tsx",
         "assets/ui/native/_preset-badge-style.tsx",
         "assets/ui/native/_preset-style.tsx",
+        "assets/ui/native/_slot.tsx",
+        "assets/ui/native/registry-styles.tsx",
+        "assets/ui/native/text.tsx",
         "assets/ui/native-example-recipes.json.gz"
       ],
       "tests": [
         "tests/native-ui/registry-badge-presets.test.tsx",
+        "tests/native-ui/registry-native-hosts.test.tsx",
+        "tests/native-ui/registry-composition.test.tsx",
         "tests/native-ui/registry-official-examples.test.tsx",
         "tests/test-native-component-styles.test.mjs"
       ],

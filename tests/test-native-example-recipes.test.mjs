@@ -120,3 +120,17 @@ test('native anchor and Next Link compilation preserve destinations and semantic
     /Unreviewed native button variant/,
   );
 });
+
+test('native registry view click conversion retains the authored state callback and explicit role', async () => {
+  const { portNativeRegistryRecipe, validateNativeRecipeSyntax } =
+    await import('../scripts/native-chart-recipes.mjs');
+  const source = `import {useState} from 'react';export default function Demo(){const[open,setOpen]=useState(false);return <div><div role="button" onClick={()=>setOpen(true)}>Open</div>{open&&<span>Opened</span>}</div>}`;
+  const output = portNativeRegistryRecipe(
+    source,
+    'apps/v4/registry/bases/base/examples/fixture.tsx',
+  );
+  validateNativeRecipeSyntax(output, 'fixture.tsx');
+  assert.match(output, /RegistryView role="button" onPress=\{\(\) => setOpen\(true\)\}/);
+  assert.match(output, /RegistryText>Opened/);
+  assert.doesNotMatch(output, /onClick=/);
+});

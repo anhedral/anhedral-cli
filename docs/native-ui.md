@@ -49,6 +49,15 @@ explicit consumer text styles win over source defaults. Avatar badges retain the
 separate baseline until their own preset slots are reviewed. Interactive badges keep
 expanded native touch bounds without changing authored visual geometry.
 
+Render callbacks return one native host element with native style arrays and
+normalized text/pressable props. Static View and themed Text roots preserve inherited
+metrics, colors, refs and child content; native views with actions become real
+pressables. A raw native Text root is adapted through the maintained themed text host.
+Use a native container or separate components for fragment/multiple-root output.
+Default Text inherits surrounding native typography; an explicit variant or style can
+override it. Event composition preserves child-first cancellation, pointer/touch
+callbacks and stable ref lifetimes during press feedback.
+
 Small visual buttons retain expanded touch targets
 through hitSlop; parent layout must allow those touch bounds.
 

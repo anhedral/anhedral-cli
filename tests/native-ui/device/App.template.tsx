@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, FlatList, ScrollView, Text } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as UI from './.generated';
+import { RegistryView } from './.generated/src/native/registry-styles';
 import { NativeExampleOptions } from './.generated/src/native/registry-example';
 /* REGISTRY_IMPORTS */
 /* REGISTRY_STORIES */
@@ -51,6 +52,31 @@ function NativeNavigationMatrix() {
         <UI.Text>{'Visited anchor: ' + anchor}</UI.Text>
       </View>
     </UI.NativeNavigationProvider>
+  );
+}
+function NativeRenderHostMatrix() {
+  const [host, setHost] = useState('none'),
+    [count, setCount] = useState(0);
+  const markHost = (value: string) => {
+    setHost(value);
+    setCount((count) => count + 1);
+  };
+  return (
+    <UI.NativeComponentStyleProvider style="nova">
+      <View style={{ gap: 24 }}>
+        <UI.Button render={<RegistryView />} onPress={() => markHost('view')}>
+          Registry view action
+        </UI.Button>
+        <UI.Badge onPress={() => markHost('text')} render={(props) => <UI.Text {...props} />}>
+          Text badge action
+        </UI.Badge>
+        <RegistryView onPress={() => markHost('registry')} className="p-2 border">
+          Registry click action
+        </RegistryView>
+        <UI.Text>{'Host action: ' + host}</UI.Text>
+        <UI.Text>{'Host count: ' + count}</UI.Text>
+      </View>
+    </UI.NativeComponentStyleProvider>
   );
 }
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: string | null }> {

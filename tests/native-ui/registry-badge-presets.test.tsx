@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet, type Text as NativeTextHost } from 'react-native';
 import * as UI from './.generated';
 import { styling } from './.generated/styling/src';
 import { nativePresetBadgeStyle } from './.generated/src/native/_preset-badge-style';
@@ -285,4 +285,165 @@ test('functional Badge content owns its rendered children, scaled geometry and d
   const style = StyleSheet.flatten(screen.getByRole('link').props.style);
   expect(style.height).toBeGreaterThan(20);
   expect(style.paddingLeft).toBe(6);
+});
+
+test('Badge static native View and themed Text render roots receive native style arrays and themed content', async () => {
+  const { View } = require('react-native');
+  const errors = jest.spyOn(console, 'error'),
+    warnings = jest.spyOn(console, 'warn');
+  try {
+    await mount(
+      <UI.NativeComponentStyleProvider style="nova">
+        <UI.Badge render={<View testID="native-view" />}>Native view label</UI.Badge>
+        <UI.Badge render={(props) => <UI.Text {...props} testID="native-text" />}>
+          Native text label
+        </UI.Badge>
+      </UI.NativeComponentStyleProvider>,
+    );
+    expect(typeof screen.getByTestId('native-view').props.style).not.toBe('function');
+    expect(typeof screen.getByTestId('native-text').props.style).not.toBe('function');
+    expect(screen.getByText('Native view label')).toBeTruthy();
+    expect(screen.getByText('Native text label')).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('native-text').props.style)).toMatchObject({
+      fontSize: 12,
+      lineHeight: 16,
+    });
+    expect(errors).not.toHaveBeenCalled();
+    expect(warnings).not.toHaveBeenCalled();
+  } finally {
+    errors.mockRestore();
+    warnings.mockRestore();
+  }
+});
+test('static render callback styles retain focus updates and explicit nested overrides without stale inherited paint', async () => {
+  const { View } = require('react-native');
+  const focus = jest.fn(),
+    pointer = jest.fn();
+  await mount(
+    <UI.NativeComponentStyleProvider style="new-york">
+      <UI.Badge
+        onFocus={focus}
+        onPointerEnter={pointer}
+        render={(props) => (
+          <View {...props} testID="static-root" style={[props.style, [{ borderRadius: 3 }]]} />
+        )}
+      >
+        Static root
+      </UI.Badge>
+    </UI.NativeComponentStyleProvider>,
+  );
+  const before = StyleSheet.flatten(screen.getByTestId('static-root').props.style).backgroundColor;
+  await fireEvent(screen.getByTestId('static-root'), 'pointerEnter', {});
+  expect(pointer).toHaveBeenCalledTimes(1);
+  const hovered = StyleSheet.flatten(screen.getByTestId('static-root').props.style);
+  expect(hovered.backgroundColor).not.toBe(before);
+  expect(hovered.borderRadius).toBe(3);
+  await fireEvent(screen.getByTestId('static-root'), 'focus', {});
+  expect(focus).toHaveBeenCalledTimes(1);
+  expect(
+    StyleSheet.flatten(screen.getByTestId('static-root').props.style).boxShadow.length,
+  ).toBeGreaterThan(1);
+});
+test('native pressable render callback styles preserve link-only hover after host detection', async () => {
+  const anchor = jest.fn();
+  await mount(
+    <UI.NativeNavigationProvider onAnchor={anchor}>
+      <UI.NativeComponentStyleProvider style="sera">
+        <UI.Badge
+          render={(props) => (
+            <RegistryLink {...props} href="#" style={[props.style, { borderRadius: 4 }]} />
+          )}
+        >
+          Link
+        </UI.Badge>
+      </UI.NativeComponentStyleProvider>
+    </UI.NativeNavigationProvider>,
+  );
+  const before = StyleSheet.flatten(screen.getByText('Link').props.style).color;
+  await fireEvent(screen.getByRole('link'), 'hoverIn', {});
+  expect(StyleSheet.flatten(screen.getByText('Link').props.style).color).not.toBe(before);
+  expect(StyleSheet.flatten(screen.getByRole('link').props.style).borderRadius).toBe(4);
+  await fireEvent.press(screen.getByRole('link'));
+  expect(anchor).toHaveBeenCalledTimes(1);
+});
+
+test('raw native Text composition retains native host refs, source fonts and consumer text styles', async () => {
+  const { Text } = require('react-native');
+  const ref = React.createRef<NativeTextHost>();
+  await mount(
+    <UI.NativeComponentStyleProvider style="nova">
+      <UI.Badge
+        render={(props) => (
+          <Text {...props} ref={ref} testID="raw-text" style={[props.style, { fontSize: 18 }]} />
+        )}
+      >
+        Raw native label
+      </UI.Badge>
+    </UI.NativeComponentStyleProvider>,
+  );
+  expect(ref.current).toBeTruthy();
+  expect(StyleSheet.flatten(screen.getByTestId('raw-text').props.style).fontSize).toBe(18);
+  expect(screen.getByText('Raw native label')).toBeTruthy();
+});
+
+test('default themed Text inherits source typography and explicit text variants and colors remain selectable', async () => {
+  await mount(
+    <UI.NativeComponentStyleProvider style="nova">
+      <UI.Badge
+        textStyle={{ color: '#123456' }}
+        render={(props) => <UI.Text {...props} testID="inherited-text" />}
+      >
+        Inherited
+      </UI.Badge>
+      <UI.Badge
+        render={(props) => <UI.Text {...props} variant="heading" testID="explicit-variant" />}
+      >
+        Heading
+      </UI.Badge>
+      <UI.Badge
+        render={(props) => (
+          <UI.Text
+            {...props}
+            testID="explicit-style"
+            style={[props.style, { fontSize: 18, lineHeight: 28 }]}
+          />
+        )}
+      >
+        Styled
+      </UI.Badge>
+    </UI.NativeComponentStyleProvider>,
+  );
+  expect(StyleSheet.flatten(screen.getByTestId('inherited-text').props.style)).toMatchObject({
+    fontSize: 12,
+    lineHeight: 16,
+    color: '#123456',
+  });
+  expect(StyleSheet.flatten(screen.getByTestId('explicit-variant').props.style)).toMatchObject({
+    fontSize: 24,
+    lineHeight: 32,
+  });
+  expect(StyleSheet.flatten(screen.getByTestId('explicit-style').props.style)).toMatchObject({
+    fontSize: 18,
+    lineHeight: 28,
+  });
+});
+
+test('static Text hosts preserve native press state and their action role', async () => {
+  const press = jest.fn();
+  await mount(
+    <UI.Badge
+      onPress={press}
+      style={({ pressed }) => ({ opacity: pressed ? 0.4 : 1 })}
+      render={(props) => <UI.Text {...props} testID="text-action" />}
+    >
+      Action
+    </UI.Badge>,
+  );
+  expect(screen.getByRole('button', { name: 'Action' })).toBeTruthy();
+  await fireEvent(screen.getByTestId('text-action'), 'pressIn', {});
+  expect(StyleSheet.flatten(screen.getByTestId('text-action').props.style).opacity).toBe(0.4);
+  await fireEvent(screen.getByTestId('text-action'), 'pressOut', {});
+  expect(StyleSheet.flatten(screen.getByTestId('text-action').props.style).opacity).toBe(1);
+  await fireEvent.press(screen.getByRole('button', { name: 'Action' }));
+  expect(press).toHaveBeenCalledTimes(1);
 });

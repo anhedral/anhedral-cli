@@ -1,7 +1,13 @@
-import { StyleSheet, type TextProps as NativeTextProps } from 'react-native';
-import { LabelText as NativeText, useTextTone } from './_core';
+import {
+  StyleSheet,
+  type TextProps as NativeTextProps,
+  type Text as NativeTextHost,
+} from 'react-native';
+import { LabelText as NativeText, useTextTone, NativeTextStyleContext } from './_core';
+import { useContext, type Ref } from 'react';
 import { useTheme } from '../theme';
 export type TextProps = NativeTextProps & {
+  ref?: Ref<NativeTextHost>;
   variant?: 'heading' | 'title' | 'body' | 'muted' | 'caption' | 'label';
 };
 const typography = StyleSheet.create({
@@ -12,17 +18,30 @@ const typography = StyleSheet.create({
   caption: { fontSize: 12, lineHeight: 20, fontWeight: '400' },
   label: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
 });
-export function Text({ variant = 'body', style, ...props }: TextProps) {
+export function Text({ variant, style, ...props }: TextProps) {
+  const kind = variant ?? 'body';
+  const inherited = useContext(NativeTextStyleContext);
   const { colors } = useTheme();
   const tone = useTextTone();
-  const color = ['muted', 'caption'].includes(variant)
+  const color = ['muted', 'caption'].includes(kind)
     ? colors['muted-foreground']
-    : (tone ?? colors.foreground);
+    : (tone ?? StyleSheet.flatten(inherited.style)?.color ?? colors.foreground);
   return (
     <NativeText
-      fontRole={variant === 'heading' || variant === 'title' ? 'heading' : 'sans'}
+      fontRole={
+        variant === undefined
+          ? inherited.fontRole
+          : kind === 'heading' || kind === 'title'
+            ? 'heading'
+            : 'sans'
+      }
       {...props}
-      style={[typography[variant], { color }, style]}
+      style={[
+        typography[kind],
+        variant === undefined ? inherited.style : undefined,
+        { color },
+        style,
+      ]}
     />
   );
 }

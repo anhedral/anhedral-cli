@@ -1,5 +1,6 @@
 import {
   Children,
+  createElement,
   Fragment,
   cloneElement,
   isValidElement,
@@ -10,17 +11,20 @@ import {
 } from 'react';
 import {
   View,
+  Text as NativeText,
   Pressable,
   StyleSheet,
   useWindowDimensions,
   type PressableProps,
   type ViewStyle,
   type TextStyle,
+  type TextProps,
   type StyleProp,
 } from 'react-native';
 import { useTheme } from '../theme';
 import {
   NativeTextStyleProvider,
+  LabelText,
   TextToneProvider,
   content,
   plainText,
@@ -33,9 +37,30 @@ import {
   useRegistryPalette,
   NativeButtonIconSize,
 } from './_registry-context';
-import { NativeSlot } from './_slot';
+import { NativeSlot, nativeTextPressRetentionOffset } from './_slot';
 import { nativePresetBadgeStyle } from './_preset-badge-style';
 type RenderProps = Omit<PressableProps, 'children'> & { children?: ReactNode; ref?: Ref<View> };
+/** Render callbacks receive native host styles and normalized shared text/pressable fields. */
+export type BadgeRenderProps = Omit<
+  PressableProps,
+  | 'children'
+  | 'style'
+  | 'disabled'
+  | 'onPress'
+  | 'onPressIn'
+  | 'onPressOut'
+  | 'onLongPress'
+  | 'pressRetentionOffset'
+> & {
+  children?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  disabled: boolean;
+  onPress?: NonNullable<PressableProps['onPress']>;
+  onPressIn?: NonNullable<PressableProps['onPressIn']>;
+  onPressOut?: NonNullable<PressableProps['onPressOut']>;
+  onLongPress?: NonNullable<PressableProps['onLongPress']>;
+  pressRetentionOffset?: TextProps['pressRetentionOffset'];
+};
 export type BadgeProps = RenderProps & {
   variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
   invalid?: boolean;
@@ -45,7 +70,7 @@ export type BadgeProps = RenderProps & {
   asChild?: boolean;
   render?:
     | ReactElement<{ children?: ReactNode }>
-    | ((props: RenderProps) => ReactElement<{ children?: ReactNode }>);
+    | ((props: BadgeRenderProps) => ReactElement<{ children?: ReactNode }>);
 };
 function iconPlacement(nodes: ReactNode, placement: string): boolean {
   return Children.toArray(nodes).some(
@@ -179,9 +204,13 @@ export function Badge({
     ...props,
     disabled: blocked,
     accessibilityState: { ...accessibilityState, disabled: !!blocked },
-    onPress: (event) => {
-      if (!blocked) onPress?.(event);
-    },
+    accessibilityRole:
+      props.accessibilityRole ?? (onPress ? (variant === 'link' ? 'link' : 'button') : undefined),
+    onPress: onPress
+      ? (event) => {
+          if (!blocked) onPress(event);
+        }
+      : undefined,
     onFocus: (event) => {
       setFocused(true);
       props.onFocus?.(event);
@@ -189,6 +218,14 @@ export function Badge({
     onBlur: (event) => {
       setFocused(false);
       props.onBlur?.(event);
+    },
+    onPointerEnter: (event) => {
+      setHovered(true);
+      props.onPointerEnter?.(event);
+    },
+    onPointerLeave: (event) => {
+      setHovered(false);
+      props.onPointerLeave?.(event);
     },
     onHoverIn: (event) => {
       setHovered(true);
@@ -205,26 +242,59 @@ export function Badge({
         : undefined),
     style: ({ pressed }) => resolveStyle(pressed),
   };
-  const element = typeof render === 'function' ? render({ ...common, children }) : render;
-  const child =
+  const renderProperties = { ...common };
+  delete renderProperties.ref;
+  const callbackStyle = typeof render === 'function' ? resolveStyle(false) : undefined;
+  const element =
+    typeof render === 'function'
+      ? render({
+          ...renderProperties,
+          children,
+          style: callbackStyle,
+          disabled: !!blocked,
+          onPress: common.onPress ?? undefined,
+          onPressIn: common.onPressIn ?? undefined,
+          onPressOut: common.onPressOut ?? undefined,
+          onLongPress: common.onLongPress ?? undefined,
+          pressRetentionOffset: nativeTextPressRetentionOffset(common.pressRetentionOffset),
+        })
+      : render;
+  let pressableHost = false;
+  let child =
     typeof render === 'function'
       ? element
       : element
         ? cloneElement(element, { children: children ?? element.props.children })
         : children;
   if ((asChild || element) && isValidElement<{ children?: ReactNode }>(child)) {
-    surfaceChildren = child.props.children;
-    const target = nativeComponent(child.type);
+    const hostChild = child;
+    surfaceChildren = hostChild.props.children;
+    const target = nativeComponent(hostChild.type);
+    pressableHost =
+      target === Pressable ||
+      (!!target &&
+        (typeof target === 'function' || typeof target === 'object') &&
+        'nativeButtonSlot' in target &&
+        target.nativeButtonSlot === true);
     isLink =
       !!target &&
       (typeof target === 'function' || typeof target === 'object') &&
       'nativeLinkSlot' in target &&
       target.nativeLinkSlot === true;
+    if (target === View || target === Pressable)
+      child = cloneElement(hostChild, { children: content(hostChild.props.children) });
+    if (target === NativeText)
+      child = createElement(LabelText, { ...hostChild.props, key: hostChild.key });
   }
   const finalStyle = resolve();
   const rendered =
     asChild || element ? (
-      <NativeSlot {...common} slotVariant={variant}>
+      <NativeSlot
+        {...common}
+        slotVariant={variant}
+        slotStyle={isLink || pressableHost ? 'pressable' : 'static'}
+        slotInheritedStyle={callbackStyle}
+      >
         {child}
       </NativeSlot>
     ) : onPress ? (
