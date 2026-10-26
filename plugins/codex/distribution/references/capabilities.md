@@ -51,7 +51,7 @@ CLI-owned composition adapters are fingerprinted in `anhedral.json`. Their edits
 
 Source writes use the existing journaled transaction/recovery implementation. Dependency resolution/install follows source commit; if installation fails, the CLI reports a post-commit error and retains the source for review and retry. Reviewed dependency patches are configured before the frozen install. `--skip-install` leaves dependency resolution/patch staging to a subsequent normal CLI installation or explicit consumer setup. `--dry-run` makes no writes or network requests, including transaction metadata.
 
-Repeated additions are no-ops. There is no removal command, provider deletion or implicit D1/R2 data deletion. An inconsistent parent/child declaration is rejected. Earlier full-stack generators and arbitrary custom layouts are not automatically adopted or overlaid; inspect their source and reconcile conflicts explicitly.
+Repeated additions leave source unchanged; the normal command still resolves and installs dependencies so it can recover from an earlier install failure. Use `--skip-install` for a source-only no-op. There is no removal command, provider deletion or implicit D1/R2 data deletion. An inconsistent parent/child declaration is rejected. Earlier full-stack generators and arbitrary custom layouts are not automatically adopted or overlaid; inspect their source and reconcile conflicts explicitly.
 
 ## Source state and activation
 

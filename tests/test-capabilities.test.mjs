@@ -215,6 +215,19 @@ test('dependency install failure retains the committed source with a recoverable
       JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities.installed,
       ['hono'],
     );
+    const source = snapshot(path.join(app, 'apps/api'));
+    const calls = [];
+    await inside(app, () =>
+      runCapabilityCommand('add', ['hono'], { quiet: true }, (_cmd, args) => {
+        calls.push(args);
+        writeFileSync(path.join(app, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+      }),
+    );
+    assert.deepEqual(calls, [
+      ['install', '--lockfile-only', '--no-frozen-lockfile'],
+      ['install', '--frozen-lockfile'],
+    ]);
+    assert.deepEqual(snapshot(path.join(app, 'apps/api')), source);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

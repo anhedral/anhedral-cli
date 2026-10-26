@@ -24,10 +24,11 @@ eventRoutes.post('/events', async (c) => {
   if (new TextEncoder().encode(data).byteLength > 8192)
     return c.json({ error: 'Event too large' }, 413);
   const id = crypto.randomUUID();
+  // Allocate a strictly increasing owner cursor atomically, including equal-ms writes.
   await c.env.DB.prepare(
-    'INSERT INTO application_event(id,user_id,topic,data,created_at) VALUES (?,?,?,?,?)',
+    'INSERT INTO application_event(id,user_id,topic,data,created_at) SELECT ?,?,?,?,MAX(?,COALESCE((SELECT MAX(created_at)+1 FROM application_event WHERE user_id=?),0))',
   )
-    .bind(id, c.get('userId'), body.data.topic, data, Date.now())
+    .bind(id, c.get('userId'), body.data.topic, data, Date.now(), c.get('userId'))
     .run();
   return c.json({ id }, 201);
 });

@@ -10,7 +10,7 @@ import {
 } from './capability-catalog.js';
 import { CapabilityEditor } from './capability-editor.js';
 import { addCapabilityRecipe, composeCapabilities } from './capability-recipes.js';
-import { runStagedTransaction } from './transaction.js';
+import { PostCommitError, runStagedTransaction } from './transaction.js';
 import { put } from './scaffold/files.js';
 import { execFile } from './util.js';
 import { capabilityReferences } from './capability-references.js';
@@ -162,6 +162,13 @@ export async function runCapabilityCommand(
       resourcesProvisionedByCli: false,
       activation: 'not verified',
     };
+    const installDependencies = () => {
+      if (parsed.has('--skip-install')) return;
+      run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], root);
+      if (configureDependencyPatches(root))
+        run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], root);
+      run('pnpm', ['install', '--frozen-lockfile'], root);
+    };
     if (!parsed.has('--dry-run') && files.length) {
       await runStagedTransaction(root, {
         commitPaths: files,
@@ -174,21 +181,21 @@ export async function runCapabilityCommand(
           }
           e.verify();
         },
-        afterCommit: () => {
-          if (!parsed.has('--skip-install')) {
-            run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], root);
-            if (configureDependencyPatches(root))
-              run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], root);
-            run('pnpm', ['install', '--frozen-lockfile'], root);
-          }
-        },
+        afterCommit: installDependencies,
       });
+    }
+    if (!parsed.has('--dry-run') && !files.length) {
+      e.verify();
+      try {
+        installDependencies();
+      } catch (error) {
+        throw new PostCommitError([], error);
+      }
     }
     result = {
       ...plan,
       sourceInstalled: !parsed.has('--dry-run'),
-      dependenciesInstalled:
-        !parsed.has('--dry-run') && !parsed.has('--skip-install') && files.length > 0,
+      dependenciesInstalled: !parsed.has('--dry-run') && !parsed.has('--skip-install'),
     };
   }
   if (output.json) console.log(JSON.stringify(result, null, 2));

@@ -359,7 +359,46 @@ try {
     received += new TextDecoder().decode(next.value);
   }
   await reader.cancel();
-  evidence.checks.push('owner-scoped events and resumable SSE delivery');
+  const firstEvent = await db
+    .prepare('SELECT id,created_at FROM application_event WHERE user_id=?')
+    .bind(alice.id)
+    .first();
+  const futureCursor = Date.now() + 60000;
+  await db
+    .prepare('UPDATE application_event SET created_at=? WHERE id=?')
+    .bind(futureCursor, firstEvent.id)
+    .run();
+  assert.equal(
+    (
+      await request('/events', {
+        method: 'POST',
+        headers: headers(alice.cookie, { 'content-type': 'application/json' }),
+        body: JSON.stringify({ topic: 'fixture', data: { message: 'later-event' } }),
+      })
+    ).status,
+    201,
+  );
+  const later = await db
+    .prepare('SELECT created_at FROM application_event WHERE id != ?')
+    .bind(firstEvent.id)
+    .first();
+  assert.equal(
+    later.created_at,
+    futureCursor + 1,
+    'Owner cursor remains monotonic across clock skew/equal-ms writes',
+  );
+  const resumed = await request('/events', {
+    headers: headers(alice.cookie, { 'last-event-id': futureCursor + ':' + firstEvent.id }),
+  });
+  const resumedReader = resumed.body.getReader();
+  let replay = '';
+  while (!replay.includes('later-event')) {
+    const next = await resumedReader.read();
+    assert.equal(next.done, false);
+    replay += new TextDecoder().decode(next.value);
+  }
+  await resumedReader.cancel();
+  evidence.checks.push('owner-scoped events, atomic monotonic cursors and resumable SSE delivery');
   assert.equal(
     (
       await request('/ai/generate', {
