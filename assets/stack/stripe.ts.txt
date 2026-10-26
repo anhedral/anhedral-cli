@@ -1,0 +1,126 @@
+import { Hono } from 'hono';
+import { z } from 'zod';
+import Stripe from 'stripe';
+import { requireSession } from '../security';
+import { billingEnvironment } from '../billing-mode';
+import type { AppEnv } from '../environment';
+export const stripeRoutes = new Hono<AppEnv>();
+const client = (key: string) =>
+  new Stripe(key, {
+    httpClient: Stripe.createFetchHttpClient(),
+    timeout: 5000,
+    maxNetworkRetries: 0,
+  });
+const settings = z.object({
+  STRIPE_SECRET_KEY: z.string().min(1),
+  STRIPE_PRICE_ID: z.string().startsWith('price_'),
+  PUBLIC_APP_URL: z.url(),
+});
+const webhookSettings = z.object({
+  STRIPE_SECRET_KEY: z.string().min(1),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1),
+});
+const idempotencyKey = z.string().regex(/^[a-zA-Z0-9_-]{8,100}$/);
+stripeRoutes.post('/billing/checkout', requireSession, async (c) => {
+  const config = settings.safeParse(c.env);
+  if (!config.success) return c.json({ error: 'Configure Stripe test mode first' }, 503);
+  const key = idempotencyKey.safeParse(c.req.header('idempotency-key'));
+  if (!key.success) return c.json({ error: 'Provide an idempotency-key' }, 400);
+  const env = config.data;
+  requireMatchingKey(c.env, env.STRIPE_SECRET_KEY);
+  const userId = c.get('userId');
+  const result = await client(env.STRIPE_SECRET_KEY).checkout.sessions.create(
+    {
+      mode: 'subscription',
+      client_reference_id: userId,
+      line_items: [{ price: env.STRIPE_PRICE_ID, quantity: 1 }],
+      subscription_data: { metadata: { userId } },
+      success_url: new URL('/?checkout=success', env.PUBLIC_APP_URL).href,
+      cancel_url: new URL('/?checkout=cancelled', env.PUBLIC_APP_URL).href,
+    },
+    { idempotencyKey: 'checkout:' + userId + ':' + key.data },
+  );
+  return c.json({ url: result.url });
+});
+async function verifiedEvent(
+  key: string,
+  secret: string,
+  signature: string | undefined,
+  body: string,
+  live: boolean,
+) {
+  if (!signature) return null;
+  try {
+    const event = await client(key).webhooks.constructEventAsync(
+      body,
+      signature,
+      secret,
+      undefined,
+      Stripe.createSubtleCryptoProvider(),
+    );
+    return event.livemode === live ? event : null;
+  } catch {
+    return null;
+  }
+}
+stripeRoutes.post('/webhooks/stripe', async (c) => {
+  const config = webhookSettings.safeParse(c.env);
+  if (!config.success) return c.json({ error: 'Webhook needs configuration' }, 503);
+  requireMatchingKey(c.env, config.data.STRIPE_SECRET_KEY);
+  const event = await verifiedEvent(
+    config.data.STRIPE_SECRET_KEY,
+    config.data.STRIPE_WEBHOOK_SECRET,
+    c.req.header('stripe-signature'),
+    await c.req.text(),
+    billingEnvironment(c.env) === 'live',
+  );
+  if (!event) return c.json({ error: 'Invalid signature or billing environment' }, 400);
+  // Receipts deduplicate delivery, but never grant an entitlement by event order.
+  await c.env.DB.prepare(
+    'INSERT OR IGNORE INTO billing_receipt(provider,event_id,received_at) VALUES (?,?,?)',
+  )
+    .bind('stripe', event.id, Date.now())
+    .run();
+  return c.json({ received: true });
+});
+function activePrice(subscription: Stripe.Subscription, price: string) {
+  if (!['active', 'trialing'].includes(subscription.status)) return false;
+  return subscription.items.data.some(
+    (item) => item.price.id === price && item.current_period_end * 1000 > Date.now(),
+  );
+}
+function requireMatchingKey(env: AppEnv['Bindings'], key: string) {
+  const prefix = { sandbox: 'sk_test_', live: 'sk_live_' }[billingEnvironment(env)];
+  if (!key.startsWith(prefix))
+    throw Error('Stripe key does not match the configured billing environment');
+}
+export async function stripeEntitled(env: AppEnv['Bindings'], userId: string) {
+  const config = settings.parse(env);
+  requireMatchingKey(env, config.STRIPE_SECRET_KEY);
+  const stripe = client(config.STRIPE_SECRET_KEY);
+  const subject = userId.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
+  const found = await stripe.subscriptions.search({
+    query: "metadata['userId']:'" + subject + "'",
+    limit: 100,
+  });
+  const canonical = await Promise.all(
+    found.data.map((value) => stripe.subscriptions.retrieve(value.id)),
+  );
+  return canonical.some(
+    (value) =>
+      value.metadata.userId === userId &&
+      value.livemode === (billingEnvironment(env) === 'live') &&
+      activePrice(value, config.STRIPE_PRICE_ID),
+  );
+}
+stripeRoutes.get('/billing/status', requireSession, async (c) => {
+  try {
+    return c.json({
+      entitled: await stripeEntitled(c.env, c.get('userId')),
+      provider: 'stripe',
+      environment: billingEnvironment(c.env),
+    });
+  } catch {
+    return c.json({ error: 'Billing needs configuration or is temporarily unavailable' }, 503);
+  }
+});

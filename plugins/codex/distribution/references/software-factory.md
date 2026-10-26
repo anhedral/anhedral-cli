@@ -7,7 +7,7 @@ Anhedral CLI creates a foundation; consumers develop and operate it themselves. 
 3. Review README.md, AGENTS.md, anhedral.json, environment examples and Wrangler configuration. Follow the recorded Node and pnpm versions.
 4. Run `pnpm dev` and open the address printed by the server. New projects contain only the web app. Add other clients only when required.
 5. Use `anhedral ui list/add/diff/doctor` to extend source-owned UI; see [UI commands](ui.md). Develop features and run `pnpm check`.
-6. Choose and configure your own authentication, integrations and hosting. Cloudflare, Stripe and RevenueCat Codex plugins can assist when installed and explicitly invoked; they are separate products with their own credentials and workflows.
+6. Use `anhedral add` to compose selected [stack capabilities](capabilities.md), inspect the dry-run plan, configure the selected auth methods/providers and validate the consumer. Cloudflare, Stripe and RevenueCat Codex plugins can assist when installed and explicitly invoked; they are separate products with their own credentials and workflows.
 
 The CLI does not manage provider access, billing, infrastructure, deployments, releases or production acceptance. Generated Wrangler/OpenNext configuration and explicit database migration scripts remain editable consumer tooling.
 

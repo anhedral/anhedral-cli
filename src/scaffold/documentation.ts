@@ -1,15 +1,17 @@
+import { capabilityReferences } from '../capability-references.js';
 import type { StandardOptions } from '../registry/types.js';
 import { put } from './files.js';
 export function writeSetupDocumentation(root: string, options: StandardOptions): void {
   if (!options.products.includes('hono') && !options.products.includes('expo')) {
+    for (const [file, source] of Object.entries(capabilityReferences())) put(root, file, source);
     put(
       root,
       'README.md',
       `# ${options.name}
 
 Next.js on Cloudflare Workers through OpenNext, with Anhedral UI from the start.
-Only apps/web is created. Hono, authentication, databases, object storage, payments,
-realtime, AI and additional applications are not installed or provisioned.
+Init creates only apps/web. Use anhedral stack status to inspect later source additions.
+No providers are provisioned by source generation.
 
 ## Develop
 
@@ -30,14 +32,17 @@ or writes. Updates are opt-in; never overwrite customized components silently.
 
 Native UI uses the React Native Reusables NativeWind registry in compatible Expo
 projects, preferring reviewed Anhedral extensions when present. It requires Expo,
-not a backend. The CLI does not yet create/configure a new native client through
-these UI commands; follow the upstream NativeWind/RNR setup before native ui init.
+not a backend. Use anhedral add expo, then add native-ui, for the reviewed client/setup recipes.
+Standalone UI commands do not create native clients or backend services; existing
+Expo applications need the upstream NativeWind/RNR setup before native ui init.
 
 ## Add strategically
 
 Add Hono when a dedicated API is justified, then Drizzle/D1/Better Auth when the
-product needs data and authentication. Services and other clients follow their
-reviewed prerequisites. No backend add/provision command is implemented here.
+product needs data and authentication. Use anhedral add <capability> --dry-run --json
+to review changes, then apply them. Missing parents require explicit selection or
+--with-dependencies. See docs/anhedral/capabilities.md for the complete catalog and
+source-protection contract. No provision or deployment command is implemented here.
 Consumers own integrations, deployment and application distribution. Run pnpm check
 and review your changes before deployment. Builds/startup never migrate databases.
 `,
@@ -49,7 +54,10 @@ and review your changes before deployment. Builds/startup never migrate database
 
 Start with Next.js/OpenNext/Workers and source-owned Anhedral UI. Do not add an API,
 database, authentication, R2 or native client without a concrete feature need.
-Use anhedral ui add/list/diff/doctor to manage platform-specific source; web uses
+Use anhedral add and stack list/status/doctor to compose selected capabilities.
+Preview additions first, preserve edited source, and configure selected auth methods
+explicitly. Source installation is not provider activation. Use anhedral ui
+add/list/diff/doctor to manage platform-specific source; web uses
 official shadcn and native uses RNR/NativeWind with reviewed Anhedral extensions.
 UI requires its application platform, not Hono or a database. Share tokens, not
 DOM/native primitives. Preserve consumer edits, attribution and upstream metadata.

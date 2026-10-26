@@ -1,0 +1,21 @@
+use gpui::{App, Application, Context, Window, WindowOptions, div, prelude::*};
+
+struct Desktop;
+impl Render for Desktop {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .flex()
+            .flex_col()
+            .p_8()
+            .gap_4()
+            .child("Your native application")
+            .child("Configure an authenticated backend client for your product.")
+    }
+}
+fn main() {
+    Application::new().run(|cx: &mut App| {
+        cx.open_window(WindowOptions::default(), |_, cx| cx.new(|_| Desktop))
+            .expect("Open application window");
+        cx.activate(true);
+    });
+}

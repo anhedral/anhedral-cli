@@ -46,3 +46,8 @@ writeFileSync(
   new URL('ui.md', references),
   readFileSync(new URL('../docs/ui.md', import.meta.url)),
 );
+
+writeFileSync(
+  new URL('capabilities.md', references),
+  readFileSync(new URL('../docs/capabilities.md', import.meta.url)),
+);

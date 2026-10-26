@@ -1,0 +1,58 @@
+import { Hono } from 'hono';
+import { streamSSE } from 'hono/streaming';
+import { z } from 'zod';
+import { requireSession } from '../security';
+import type { AppEnv } from '../environment';
+export const eventRoutes = new Hono<AppEnv>();
+const input = z.object({
+  topic: z.string().regex(/^[a-zA-Z0-9._-]{1,80}$/),
+  data: z.unknown().optional(),
+});
+function eventCursor(header: string | undefined) {
+  if (!header) return { since: Date.now(), afterId: '' };
+  const match = /^(\d+):([a-f0-9-]{36})$/.exec(header);
+  if (!match) return null;
+  const since = Number(match[1]);
+  if (!Number.isSafeInteger(since)) return null;
+  return { since, afterId: match[2] };
+}
+eventRoutes.use('/events', requireSession);
+eventRoutes.post('/events', async (c) => {
+  const body = input.safeParse(await c.req.json().catch(() => null));
+  if (!body.success) return c.json({ error: 'Invalid event' }, 400);
+  const data = JSON.stringify(body.data.data ?? null);
+  if (new TextEncoder().encode(data).byteLength > 8192)
+    return c.json({ error: 'Event too large' }, 413);
+  const id = crypto.randomUUID();
+  await c.env.DB.prepare(
+    'INSERT INTO application_event(id,user_id,topic,data,created_at) VALUES (?,?,?,?,?)',
+  )
+    .bind(id, c.get('userId'), body.data.topic, data, Date.now())
+    .run();
+  return c.json({ id }, 201);
+});
+eventRoutes.get('/events', (c) => {
+  const userId = c.get('userId');
+  const cursor = eventCursor(c.req.header('last-event-id'));
+  if (!cursor) return c.json({ error: 'Invalid event cursor' }, 400);
+  return streamSSE(c, async (stream) => {
+    for (let tick = 0; tick < 30 && !stream.aborted; tick++) {
+      const rows = await c.env.DB.prepare(
+        'SELECT id,topic,data,created_at FROM application_event WHERE user_id = ? AND (created_at > ? OR (created_at = ? AND id > ?)) ORDER BY created_at,id LIMIT 100',
+      )
+        .bind(userId, cursor.since, cursor.since, cursor.afterId)
+        .all<{ id: string; topic: string; data: string; created_at: number }>();
+      for (const row of rows.results) {
+        await stream.writeSSE({
+          id: row.created_at + ':' + row.id,
+          event: row.topic,
+          data: row.data,
+        });
+        cursor.since = row.created_at;
+        cursor.afterId = row.id;
+      }
+      await stream.writeSSE({ event: 'heartbeat', data: '{}' });
+      await stream.sleep(1000);
+    }
+  });
+});

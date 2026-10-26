@@ -1,3 +1,4 @@
+import { runCapabilityCommand } from './capability-command.js';
 import { runUiCommand } from './ui-command.js';
 import { commandArgumentError } from './cli-arguments.js';
 import type { OutputOptions } from './cli-output.js';
@@ -8,9 +9,10 @@ export async function runCommand(
   args: string[],
   output: OutputOptions,
 ): Promise<void> {
+  if (command === 'add' || command === 'stack') return runCapabilityCommand(command, args, output);
   if (command === 'ui') return runUiCommand(args, output);
   if (command !== 'init')
-    throw commandArgumentError(command, 'Use init or ui. Run anhedral --help.');
+    throw commandArgumentError(command, 'Use init, add, stack or ui. Run anhedral --help.');
   let options;
   try {
     options = parseStandardOptions(args);

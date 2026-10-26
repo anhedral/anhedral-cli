@@ -90,11 +90,14 @@ test('maintained dependency catalog audits the foundation dependencies', async (
     'drizzle-orm',
     'wrangler',
     'pnpm',
+    'wxt',
+    'stripe',
+    '@better-auth/drizzle-adapter',
   ])
     assert.ok(
       pins.some((pin) => pin.name === name),
       name,
     );
-  for (const name of ['vinext', 'void', 'vercel', 'electron', 'wxt', '@neondatabase/serverless'])
+  for (const name of ['vinext', 'void', 'vercel', 'electron', '@neondatabase/serverless'])
     assert.ok(!pins.some((pin) => pin.name === name), name);
 });

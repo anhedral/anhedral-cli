@@ -51,6 +51,31 @@ export function commandDefinition(command: string | undefined): CommandDefinitio
 }
 
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
+  add: {
+    description: 'Add selected stack capabilities to an existing Anhedral project.',
+    usage: 'add <capabilities...> [options]',
+    options: [
+      { flag: '--with-dependencies', description: 'Explicitly include missing prerequisites.' },
+      { flag: '--skip-install', description: 'Write source without installing dependencies.' },
+      {
+        flag: '--dry-run',
+        description: 'Preview every file and prerequisite without writes or network.',
+      },
+    ],
+    examples: [
+      'add hono',
+      'add database-auth',
+      'add expo native-ui stripe revenuecat --with-dependencies --dry-run --json',
+    ],
+    note: 'Adds source and local configuration only. Existing edits are preserved. No provisioning, credential installation, migration or deployment.',
+  },
+  stack: {
+    description: 'List capabilities and inspect declared source state.',
+    usage: 'stack <list|status|doctor>',
+    options: [],
+    examples: ['stack list', 'stack status --json', 'stack doctor'],
+    note: 'Installed source is not proof of live provider activation.',
+  },
   ui: {
     description: 'Anhedral UI: one source-owned catalog for web and native.',
     usage: 'ui <init|add|list|diff|doctor> [components...] [options]',

@@ -66,9 +66,11 @@ function failureCode(error: unknown): string {
   if (error instanceof PostCommitError) return 'POST_COMMIT_FAILED';
   return command === 'init'
     ? 'GENERATION_FAILED'
-    : command === 'ui'
-      ? 'UI_COMMAND_FAILED'
-      : 'UNKNOWN_COMMAND';
+    : command === 'add' || command === 'stack'
+      ? 'CAPABILITY_COMMAND_FAILED'
+      : command === 'ui'
+        ? 'UI_COMMAND_FAILED'
+        : 'UNKNOWN_COMMAND';
 }
 
 try {

@@ -1,0 +1,5 @@
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+export const aiUsage = sqliteTable('ai_usage', {
+  id: text('id').primaryKey(),
+  count: integer('count').notNull(),
+});

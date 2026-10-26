@@ -1,0 +1,4 @@
+@import '../../packages/styling/globals.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

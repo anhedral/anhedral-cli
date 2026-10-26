@@ -62,7 +62,18 @@ function runInstalledScaffold(installRoot) {
   for (const name of ['auth', 'billing', 'managed-email'])
     assert.equal(existsSync(path.join(projectRoot, 'packages', name)), false);
   assert.equal(existsSync(path.join(projectRoot, '.anhedral')), false);
-  for (const command of ['inspect', 'ship', 'auth', 'add', 'services']) {
+  const stack = JSON.parse(
+    run(binPath, ['stack', 'list', '--json', '--cwd', projectRoot], installRoot).stdout,
+  );
+  assert.equal(stack.capabilities.length, 13);
+  const addition = JSON.parse(
+    run(binPath, ['add', 'hono', '--skip-install', '--json', '--cwd', projectRoot], installRoot)
+      .stdout,
+  );
+  assert.equal(addition.sourceInstalled, true);
+  assert.ok(existsSync(path.join(projectRoot, 'apps/api/src/index.ts')));
+  assert.ok(existsSync(path.join(projectRoot, 'docs/anhedral/capabilities.md')));
+  for (const command of ['inspect', 'ship', 'auth', 'services']) {
     const result = spawnSyncPortable(
       process.execPath,
       [path.join(installRoot, 'node_modules/anhedral/dist/bin.js'), command, '--json'],

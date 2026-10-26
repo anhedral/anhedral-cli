@@ -1,0 +1,65 @@
+import Purchases, { type PurchasesPackage } from 'react-native-purchases';
+import { Platform } from 'react-native';
+import { authClient } from './auth-client';
+let initialized = false;
+let pending: Promise<unknown> = Promise.resolve();
+function serial<T>(work: () => Promise<T>) {
+  const result = pending.then(work, work);
+  pending = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
+async function subject() {
+  const session = await authClient.getSession();
+  if (!session.data) throw Error('Sign in before using purchases');
+  return session.data.user.id;
+}
+function publicKey() {
+  return Platform.OS === 'ios'
+    ? process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
+    : process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+}
+function requiredKey() {
+  const value = publicKey();
+  if (!value) throw Error('Configure the platform public SDK key');
+  return value;
+}
+async function connect() {
+  const appUserID = await subject();
+  const apiKey = requiredKey();
+  if (!initialized) {
+    Purchases.configure({ apiKey, appUserID });
+    initialized = true;
+  } else await Purchases.logIn(appUserID);
+  return Purchases.getOfferings();
+}
+export function connectPurchases() {
+  return serial(connect);
+}
+export function purchase(value: PurchasesPackage) {
+  return serial(async () => {
+    await connect();
+    return Purchases.purchasePackage(value);
+  });
+}
+export function restorePurchases() {
+  return serial(async () => {
+    await connect();
+    return Purchases.restorePurchases();
+  });
+}
+export function manageSubscriptions() {
+  return serial(async () => {
+    await connect();
+    return Purchases.showManageSubscriptions();
+  });
+}
+export function disconnectPurchases() {
+  return serial(async () => {
+    if (initialized) await Purchases.logOut();
+  });
+}
+// SDK identity transitions are serialized. Callbacks update presentation only;
+// Hono's canonical provider reconciliation owns all application access decisions.

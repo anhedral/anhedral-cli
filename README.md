@@ -23,9 +23,19 @@ Anhedral UI is a small catalog and CLI over official shadcn on web and React Nat
 
 For an existing Expo app, complete the upstream React Native Reusables NativeWind 4 setup first, then use `anhedral ui init --native`. Ambiguous workspaces require `--web`, `--native`, `--all` or an application-specific `--cwd`. UI installation does not require Hono, a database or authentication.
 
-Hono, Drizzle/D1, private R2, Better Auth, Expo, WXT and its Side Panel API, GPUI, Stripe, RevenueCat, realtime and AI are future application choices, added strategically. Their “if needed” conditions remain open. This CLI does not yet install those additions or manage provider accounts, deployments or billing. Anhedral Platform is a separate managed product; no Platform account is required here.
+Add the rest strategically through the CLI:
 
-See [stack standard](docs/stack-standard.md), [workflow](docs/software-factory.md) and [UI commands](docs/ui.md).
+```sh
+anhedral stack list
+anhedral add hono
+anhedral add database-auth
+anhedral add expo native-ui --dry-run --json
+anhedral add side-panel --with-dependencies --dry-run --json
+```
+
+The catalog includes private R2, Stripe, events, RTC, AI, Expo, native UI, RevenueCat, WXT, Side Panel and GPUI. Missing prerequisites require an explicit selection or `--with-dependencies`. “If needed” decisions remain open. Additions preserve edited source and do not provision providers, install credentials, migrate databases or deploy. Anhedral Platform remains a separate managed product; no Platform account is required.
+
+See [stack standard](docs/stack-standard.md), [workflow](docs/software-factory.md) and [UI commands](docs/ui.md) and [stack additions](docs/capabilities.md).
 
 ## Compatibility
 

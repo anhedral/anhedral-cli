@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      jsonc-parser:
+        specifier: 3.3.1
+        version: 3.3.1
       yaml:
         specifier: 2.9.1
         version: 2.9.1
@@ -37,6 +40,9 @@ packages:
     resolution: {integrity: sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==}
     engines: {node: '>=16.9.0'}
 
+  jsonc-parser@3.3.1:
+    resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
+
   prettier@3.9.10:
     resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
     engines: {node: '>=14'}
@@ -65,6 +71,8 @@ snapshots:
       undici-types: 6.21.0
 
   hono@4.13.13: {}
+
+  jsonc-parser@3.3.1: {}
 
   prettier@3.9.10: {}
 
