@@ -120,7 +120,17 @@ test('staging and main share one gate with scoped runtime smoke; broad validatio
     readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8'),
   );
   assert.deepEqual(workflow.on.pull_request.branches, ['staging', 'main']);
-  assert.equal(workflow.on.push, undefined, 'do not duplicate a PR run after merge');
+  assert.deepEqual(
+    workflow.on.push.branches,
+    ['staging'],
+    'maintainer staging pushes require CI; topic/main pushes do not duplicate PR checks',
+  );
+  const scopeStep = workflow.jobs.gate.steps.find((step) => step.id === 'scope');
+  assert.match(
+    scopeStep.env.CI_BASE_SHA,
+    /github.event.before/,
+    'pushes compare against their actual prior staging revision',
+  );
   assert.deepEqual(Object.keys(workflow.jobs), ['gate']);
   const gate = workflow.jobs.gate;
   assert.equal(gate.name, 'CI gate');

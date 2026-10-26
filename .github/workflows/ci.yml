@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [staging]
   pull_request:
     branches: [staging, main]
   workflow_dispatch:
@@ -26,7 +28,7 @@ jobs:
         env:
           CI_TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
           CI_HEAD_BRANCH: ${{ github.head_ref }}
-          CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: node scripts/ci-scope.mjs
       - name: Setup pnpm
         if: steps.scope.outputs.full == 'true'
