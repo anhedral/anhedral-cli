@@ -1,3 +1,9 @@
+# UI source and Expo SDK boundaries — October 25, 2026
+
+Prepared on an isolated branch from staging `5e211c0`, coordinated with the active native UI chat. The stack standard, generated README/AGENTS guidance and design skill now distinguish editable reviewed DOM/native source, shared tokens, the upstream review fork, host-owned Expo/React Native/React peers and direct Expo SDK capability usage. Application permissions, background work, uploads and push registration remain application responsibilities. Expo UI adoption is selective; custom native bridges and the ongoing native port are preserved.
+
+Validation: CLI build; all four standard scaffold tests; lint/typecheck/format/hygiene/release policy; static security; skills-only plugin check; skill frontmatter validation; and packlist policy (189 files, 462,179 packed bytes) passed. The stack-standard plugin reference was refreshed by the build. The skill validator initially lacked PyYAML; validation passed using an isolated temporary dependency directory without changing project dependencies. No runtime/component/dependency changes, new native acceptance claim, package publication, installed plugin update or Platform deployment occurred. The active native checkout was not edited, built or packaged. Its remaining OS/parity work is independent of this guidance change.
+
 # Next/OpenNext runtime gate — October 25, 2026
 
 Implemented in an isolated branch from staging; unrelated native registry work remains untouched. Relevant PRs compile the current init-only foundation and exercise actual OpenNext/workerd: prerendered home, dynamic SSR/RSC, synthetic Server Action/cookie round-trip, Hono service binding and immutable asset headers. The fixture remains local and has no configured database migrations or provider calls.

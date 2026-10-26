@@ -30,6 +30,16 @@ Drizzle begins with an empty schema. Generate and review SQL, then explicitly ap
 
 Use official shadcn components on web and the editable Anhedral native ports in packages/native-ui. Shared tokens live in packages/styling. The pinned upstream inventory, native APIs and device acceptance gaps are documented in native-ui.md. CLI updates do not overwrite existing applications.
 
+The shadcn fork is the upstream review and provenance source, not a whole-repository runtime dependency. Init distributes reviewed component source and its license/provenance records. Applications import their local UI source and explicitly review updates against their own edits; updating the CLI does not update an existing application's components.
+
+React Native supplies native rendering and accessibility primitives. Expo SDK packages supply device capabilities such as clipboard, documents, audio, camera, location and notifications. Use those packages directly in application features. A native UI adapter is appropriate when it adds presentation or interaction, such as a Copy button using Expo Clipboard or an attachment control using Expo DocumentPicker. Keep application permission policy, background work, uploads and push registration outside generic UI components. An in-app toast and an OS push notification are separate responsibilities.
+
+The mobile application selects the tested Expo/React Native/React runtime. Native UI peers must agree with that runtime; do not install a second React or React Native copy. Declare SDK dependencies where they are imported, and verify native autolinking/configuration in the consuming app. The copied UI includes the dependencies required by its reviewed source; additional application capabilities are installed only when needed, using Expo's compatibility-aware installer from apps/mobile. Do not install the entire SDK or add a second Anhedral abstraction for every Expo API. Review platform support and permission/config-plugin requirements for each package.
+
+Treat @expo/ui as an optional source of platform controls, not a replacement mandate for the native shadcn port. Select its SwiftUI/Compose controls only where their behavior fits the feature and the scaffold's tested SDK. Share tokens and contracts across Next and Expo, while retaining separate DOM and native implementations.
+
+Validate UI changes in the relevant browser and Android/iOS development builds. Changes to native dependencies or configuration require rebuilding the native client. Check keyboard/focus, accessibility, overlays and lifecycle behavior on each platform; test device-only capabilities on physical devices. An Expo web render, matching component name or successful compile does not establish native parity.
+
 ## Breaking scope change
 
 The scaffold-only release removes operational commands, the local project catalog/MCP dashboard, generated Better Auth/managed email, and Stripe/RevenueCat additions. Existing source and cloud resources are never migrated or deleted. Platform retains its old runtime artifacts until it explicitly adopts the new generator and replaces any dependency on removed commands such as inspect. A CLI release does not update installed plugins, runtime images or existing apps.
