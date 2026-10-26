@@ -10,7 +10,10 @@ const previous = process.env.ANHEDRAL_PLUGIN_DATA;
 process.env.ANHEDRAL_PLUGIN_DATA = path.join(temporary, 'catalog');
 try {
   const directory = path.join(temporary, 'app');
-  const options = parseStandardOptions([directory, '--skip-install', '--no-git']);
+  const options = {
+    ...parseStandardOptions([directory, '--skip-install', '--no-git']),
+    products: ['d1', 'expo', 'hono', 'next', 'r2', 'styling'],
+  };
   await scaffoldStandardProject(
     options,
     () => {

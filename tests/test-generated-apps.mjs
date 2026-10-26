@@ -39,7 +39,7 @@ for (const profile of selected) {
     console.log(
       'PASS generated ' +
         profile +
-        ': checks, local runtime and source contracts; live/device acceptance separate.',
+        ': checks, cache restoration and source contracts; runtime/device acceptance separate.',
     );
   } finally {
     if (previousCatalog === undefined) delete process.env.ANHEDRAL_PLUGIN_DATA;
