@@ -1,3 +1,4 @@
+import { runUiCommand } from './ui-command.js';
 import { commandArgumentError } from './cli-arguments.js';
 import type { OutputOptions } from './cli-output.js';
 import { parseStandardOptions, scaffoldStandardProject } from './standard.js';
@@ -7,8 +8,9 @@ export async function runCommand(
   args: string[],
   output: OutputOptions,
 ): Promise<void> {
+  if (command === 'ui') return runUiCommand(args, output);
   if (command !== 'init')
-    throw commandArgumentError(command, 'Only init is supported. Run anhedral --help.');
+    throw commandArgumentError(command, 'Use init or ui. Run anhedral --help.');
   let options;
   try {
     options = parseStandardOptions(args);

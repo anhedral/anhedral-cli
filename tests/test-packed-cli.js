@@ -47,7 +47,7 @@ function runInstalledScaffold(installRoot) {
   const plan = JSON.parse(
     run(binPath, ['init', projectRoot, '--dry-run', '--json'], installRoot).stdout,
   );
-  assert.deepEqual(plan.products, ['d1', 'expo', 'hono', 'next', 'r2', 'styling']);
+  assert.deepEqual(plan.products, ['next', 'styling']);
   assert.equal(existsSync(projectRoot), false);
   const created = JSON.parse(
     run(binPath, ['init', projectRoot, '--no-git', '--json'], installRoot).stdout,
@@ -55,7 +55,10 @@ function runInstalledScaffold(installRoot) {
   assert.equal(created.generated, true);
   assert.ok(existsSync(path.join(projectRoot, 'pnpm-lock.yaml')));
   assert.ok(existsSync(path.join(projectRoot, 'apps/web/node_modules/next/package.json')));
-  assert.ok(existsSync(path.join(projectRoot, 'packages/native-ui/src/native/dialog.tsx')));
+  assert.equal(existsSync(path.join(projectRoot, 'apps/mobile')), false);
+  assert.ok(existsSync(path.join(projectRoot, 'apps/web/.anhedral-ui.json')));
+  const catalog = JSON.parse(run(binPath, ['ui', 'list', '--json'], installRoot).stdout);
+  assert.ok(catalog.components.some((item) => item.name === 'button' && item.web && item.native));
   for (const name of ['auth', 'billing', 'managed-email'])
     assert.equal(existsSync(path.join(projectRoot, 'packages', name)), false);
   assert.equal(existsSync(path.join(projectRoot, '.anhedral')), false);

@@ -64,7 +64,11 @@ async function main(): Promise<void> {
 function failureCode(error: unknown): string {
   if (error instanceof CliArgumentError) return error.code;
   if (error instanceof PostCommitError) return 'POST_COMMIT_FAILED';
-  return command === 'init' ? 'GENERATION_FAILED' : 'UNKNOWN_COMMAND';
+  return command === 'init'
+    ? 'GENERATION_FAILED'
+    : command === 'ui'
+      ? 'UI_COMMAND_FAILED'
+      : 'UNKNOWN_COMMAND';
 }
 
 try {

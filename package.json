@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
   "version": "0.16.0",
-  "description": "Scaffold Next.js, Expo, shadcn, Hono/workerd, Drizzle/D1 and private R2 as editable source.",
+  "description": "Start with Next.js and source-owned Anhedral UI; extend web and Expo UI through upstream registries.",
   "type": "module",
   "exports": {
     ".": {
@@ -28,7 +28,8 @@
     "docs/verification.md",
     "docs/anhedral-stack.md",
     "assets/ui",
-    "docs/native-ui.md"
+    "docs/native-ui.md",
+    "docs/ui.md"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {

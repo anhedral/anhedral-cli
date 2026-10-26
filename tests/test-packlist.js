@@ -33,6 +33,13 @@ const requiredFiles = new Set([
   'assets/ui/theme.tsx',
   'assets/ui/LICENSE.shadcn',
   'assets/ui/UPSTREAM.json',
+  'assets/ui/catalog.json',
+  'assets/ui/extensions/registry.json',
+  'assets/ui/LICENSE.react-native-reusables',
+  'docs/ui.md',
+  'dist/ui-command.js',
+  'dist/ui-catalog.js',
+  'dist/ui-project.js',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -153,6 +160,11 @@ try {
   for (const file of packed.files) {
     const allowedNativeUI =
       nativeFiles.includes(file.path) ||
+      [
+        'assets/ui/catalog.json',
+        'assets/ui/extensions/registry.json',
+        'assets/ui/LICENSE.react-native-reusables',
+      ].includes(file.path) ||
       /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM(?:-LOCK)?\.json)$/.test(
         file.path,
       );
@@ -160,6 +172,7 @@ try {
     const allowedDocumentation =
       file.path === 'docs/anhedral-stack.md' ||
       file.path === 'docs/native-ui.md' ||
+      file.path === 'docs/ui.md' ||
       file.path === 'docs/native-registry.md' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||

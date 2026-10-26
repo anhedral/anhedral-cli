@@ -51,8 +51,27 @@ export function commandDefinition(command: string | undefined): CommandDefinitio
 }
 
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
+  ui: {
+    description: 'Anhedral UI: one source-owned catalog for web and native.',
+    usage: 'ui <init|add|list|diff|doctor> [components...] [options]',
+    options: [
+      { flag: '--web', description: 'Select the Next.js application.' },
+      { flag: '--native', description: 'Select the Expo/NativeWind 4 application.' },
+      { flag: '--all', description: 'Explicitly select every web/native application.' },
+      { flag: '--dry-run', description: 'Show the installer plan without writes or network.' },
+    ],
+    examples: [
+      'ui list',
+      'ui add button --web',
+      'ui add button --native',
+      'ui diff button',
+      'ui doctor',
+    ],
+    note: 'Component installation uses the pinned official shadcn CLI. Native falls back to React Native Reusables. No automatic overwrite, provider operations or full-parity promise.',
+  },
   init: {
-    description: 'Scaffold Next.js, Expo, shadcn UI, Hono/workerd, Drizzle/D1 and private R2.',
+    description:
+      'Scaffold Next.js/OpenNext with source-owned Anhedral UI; add capabilities only when needed.',
     usage: 'init [directory] [options]',
     options: [
       { flag: '--skip-install', description: 'Write source without installing dependencies.' },

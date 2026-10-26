@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
   "version": "0.16.0",
-  "description": "Scaffold the open-source Next.js, Expo, shadcn, Hono/workerd, Drizzle/D1 and private R2 foundation.",
+  "description": "Scaffold Next.js with Anhedral UI and extend source-owned web/native components.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Scaffold your app foundation",
-        "longDescription": "Skills for initializing the Anhedral stack, running it locally and extending its web/native UI. Editable source; no managed authentication, payments, provider accounts or hosting.",
+        "longDescription": "Start with one Next.js app and Anhedral UI. Add source-owned official shadcn or React Native Reusables components through the UI CLI; introduce backend services and extra clients only when needed.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
         "composerIcon": "./assets/anhedral-mark.svg",

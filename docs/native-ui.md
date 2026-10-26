@@ -1,5 +1,7 @@
 # Native shadcn components for Expo
 
+> Legacy port reference. New init does not generate this port. Current Anhedral UI uses official shadcn and React Native Reusables through [the UI CLI](ui.md); exhaustive native parity is not its release gate. This material and active port work are preserved for separate review.
+
 Anhedral CLI maintains React Native semantic adaptations for the **66 entries** in the [shadcn Components catalog](https://ui.shadcn.com/docs/components), reviewed 2026-10-24. This is the native component baseline; upstream's separate AI Elements, form-library integrations and ecosystem registry packages have independent scopes. New upstream components require a new review rather than inheriting a complete status automatically.
 
 ## Source and ownership
