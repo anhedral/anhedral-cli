@@ -177,3 +177,34 @@ test('native UI needs no backend and diff delegates without requesting overwrite
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('upstream runner declines each overwrite prompt without losing subsequent answers', async () => {
+  const root = temporary();
+  const previousPath = process.env.PATH;
+  try {
+    app(root, 'web');
+    const bin = path.join(root, 'bin');
+    mkdirSync(bin);
+    const script = `#!/usr/bin/env node
+let answers = 0;
+const ask = () => process.stdout.write('The file already exists. Would you like to overwrite? › \\u001b[90m(y/N)\\u001b[39m');
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (value) => {
+  if (value.trim() !== 'n') process.exit(2);
+  answers++;
+  if (answers === 2) { process.stdout.write('\\nSkipped 2 files: consumer files preserved.\\n'); }
+  else setTimeout(ask, 20);
+});
+process.stdin.on('end', () => process.exit(answers === 2 ? 0 : 3));
+ask();
+`;
+    writeFileSync(path.join(bin, 'pnpm'), script, { mode: 0o755 });
+    writeFileSync(path.join(bin, 'pnpm.cjs'), script);
+    process.env.PATH = bin + path.delimiter + previousPath;
+    await inside(root, () => runUiCommand(['add', 'button', 'card'], { quiet: true }));
+    assert.ok(existsSync(path.join(root, '.anhedral-ui.json')));
+  } finally {
+    process.env.PATH = previousPath;
+    rmSync(root, { recursive: true, force: true });
+  }
+});

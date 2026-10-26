@@ -1,35 +1,96 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
+import { spawn, spawnSync } from 'node:child_process';
 import { commandArguments, commandArgumentError } from './cli-arguments.js';
 import { resolveCommand } from './command.js';
 import type { OutputOptions } from './cli-output.js';
 import { UI_CATALOG, resolveUiItems, type UiPlatform } from './ui-catalog.js';
 import { detectUiTargets, initializeUiMetadata, inspectUiTarget } from './ui-project.js';
 
-export type UiRunner = (args: string[], cwd: string) => string;
-function runUpstream(args: string[], cwd: string): string {
+export type UiRunner = (args: string[], cwd: string) => string | Promise<string>;
+function runUpstream(args: string[], cwd: string): Promise<string> {
   const invocation = resolveCommand('pnpm', [
     'dlx',
     `shadcn@${UI_CATALOG.shadcnCliVersion}`,
     ...args,
   ]);
-  const result = spawnSync(invocation.command, invocation.args, {
-    cwd,
-    shell: false,
-    encoding: 'utf8',
-    // Decline overwrite prompts explicitly; upstream --yes skips confirmation only.
-    input: 'n\n'.repeat(512),
-    stdio: ['pipe', 'pipe', 'pipe'],
-    timeout: 120000,
-    maxBuffer: 4 * 1024 * 1024,
-    env: { ...process.env, CI: '1', NO_COLOR: '1' },
-  });
-  if (result.error || result.status !== 0)
-    throw Error(
-      `Upstream UI command failed in ${cwd}: ${(result.stderr || result.error?.message || 'check the project configuration').slice(-2000)}`,
+  return new Promise((resolve, reject) => {
+    const child = spawn(invocation.command, invocation.args, {
+      cwd,
+      shell: false,
+      detached: process.platform !== 'win32',
+      windowsHide: true,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, CI: '1', NO_COLOR: '1' },
+    });
+    let stdout = '',
+      stderr = '',
+      answered = 0,
+      bytes = 0;
+    const fail = (reason: string) => {
+      clearTimeout(timer);
+      if (child.pid) {
+        if (process.platform === 'win32')
+          spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], {
+            shell: false,
+            stdio: 'ignore',
+            windowsHide: true,
+            timeout: 5000,
+          });
+        else {
+          try {
+            process.kill(-child.pid, 'SIGKILL');
+          } catch {
+            child.kill();
+          }
+        }
+      }
+      reject(Error(`Upstream UI command failed in ${cwd}: ${reason}`));
+    };
+    const timer = setTimeout(
+      () => fail('installer timed out; inspect consumer changes before retrying'),
+      120000,
     );
-  return result.stdout;
+    child.stdin.on('error', () => {
+      /* Process exit can close stdin before its final answer. */
+    });
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    const receive = (chunk: string, stream: 'stdout' | 'stderr') => {
+      bytes += Buffer.byteLength(chunk);
+      if (bytes > 4 * 1024 * 1024) return fail('installer output exceeded its bound');
+      if (stream === 'stdout') stdout += chunk;
+      else stderr += chunk;
+      // shadcn --yes skips confirmation, not overwrite prompts. Reply to each
+      // pinned CLI prompt when it appears; prefeeding stdin loses later answers.
+      const visible = stripVTControlCharacters(stdout + stderr);
+      const prompts = visible.match(/› \(y\/N\)/g)?.length ?? 0;
+      while (answered < prompts) {
+        answered++;
+        child.stdin.write('n\r');
+      }
+      // prompts retains a stdin listener after confirmations. Close input only
+      // after the pinned installer reports its completed file operations.
+      if (answered && /(?:Created|Updated|Skipped) \d+ files?\b/.test(visible)) child.stdin.end();
+    };
+    child.stdout.on('data', (chunk: string) => receive(chunk, 'stdout'));
+    child.stderr.on('data', (chunk: string) => receive(chunk, 'stderr'));
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on('close', (status) => {
+      clearTimeout(timer);
+      if (status !== 0)
+        reject(
+          Error(
+            `Upstream UI command failed in ${cwd}: ${stderr.slice(-2000) || 'check the project configuration'}`,
+          ),
+        );
+      else resolve(stdout);
+    });
+  });
 }
 
 export async function runUiCommand(
@@ -134,7 +195,7 @@ export async function runUiCommand(
               { flag: 'wx' },
             );
           }
-          const vendorOutput = plan.command.length ? run(plan.command, plan.root) : '';
+          const vendorOutput = plan.command.length ? await run(plan.command, plan.root) : '';
           if (action === 'init' || action === 'add') initializeUiMetadata(plan.root, plan.platform);
           Object.assign(plan, { output: vendorOutput });
         }
