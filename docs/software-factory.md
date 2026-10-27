@@ -1,26 +1,39 @@
 # Scaffold workflow
 
-Anhedral CLI creates a foundation; consumers develop and operate it themselves. See stack-standard.md for architectural ownership.
+1. Preview an empty destination with `anhedral init my-app --dry-run --json`, then
+   run `anhedral init my-app` and `pnpm dev` inside it.
+2. Read the generated README, AGENTS, `anhedral.json`, environment examples and
+   Wrangler configuration. Use their recorded tool versions.
+3. Preview and add [capabilities](capabilities.md) as needed. Configure selected
+   providers/auth methods, apply reviewed migrations and validate actual runtime
+   behavior before deployment. Source installation is not provider activation.
+4. Extend [source-owned UI](ui.md), implement features and run consumer checks.
 
-1. Inspect an empty destination. Preview `anhedral init my-app --dry-run --json`.
-2. Run `anhedral init my-app`, or `--skip-install --no-git` for offline source generation.
-3. Review README.md, AGENTS.md, anhedral.json, environment examples and Wrangler configuration. Follow the recorded Node and pnpm versions.
-4. Run `pnpm dev` and open the address printed by the server. New projects contain only the web app. Add other clients only when required.
-5. Use `anhedral ui list/add/diff/doctor` to extend source-owned UI; see [UI commands](ui.md). Develop features and run `pnpm check`.
-6. Use `anhedral add` to compose selected [stack capabilities](capabilities.md), inspect the dry-run plan, configure the selected auth methods/providers and validate the consumer. Cloudflare, Stripe and RevenueCat Codex plugins can assist when installed and explicitly invoked; they are separate products with their own credentials and workflows.
+## Evidence-driven maintenance
 
-The CLI does not manage provider access, billing, infrastructure, deployments, releases or production acceptance. Generated Wrangler/OpenNext configuration and explicit database migration scripts remain editable consumer tooling.
+Inspect current Git state and preserve unrelated work. Verify runtime entrypoints,
+exports, generated consumers and operational safeguards before removing source;
+static findings and passing tests alone do not prove a path is unused.
 
-## Maintaining the scaffold
+Update the existing owning guide with behavior changes. Keep exact versions and
+defaults in manifests/source, not duplicated narratives. Store dated development,
+audit and verification notes in
+[docs/agent-notes](https://github.com/anhedral/anhedral-cli/tree/main/docs/agent-notes),
+with revision, checks, failures and remaining gaps. Keep raw reports in ignored
+`.artifacts/`. Historical notes are not current instructions.
 
-Preserve generated-consumer tests, source-generation safety, pinned dependencies, UI provenance, licenses and immutable release packaging. Check emitted source and the actual packed npm artifact. Preserve docs/verification.md as dated evidence. Keep one focused behavior per topic branch from staging; promote stable releases through main. A build does not publish npm or install a plugin.
+Canonical docs live in `docs/`; `pnpm build` refreshes bundled plugin references.
+Generated app guidance lives in `src/scaffold/documentation.ts`. Preserve shipped
+reference paths, source-generation safety, dependency patch gates, UI provenance,
+licenses and exact-artifact packaging. A build does not publish npm or update an
+installed plugin. See [Contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md)
+for staging, release identity and validation tiers.
 
-The Codex plugin ships skills and stack references only. It has no MCP server, project catalog, dashboard or provider credentials. Package validation checks the skills, references, versions and absence of a managed runtime.
+## Next/OpenNext runtime gate
 
-## Next/OpenNext runtime regression gate
-
-Relevant web generator, build dependency and runtime-harness PRs automatically compile one isolated generated foundation and run it in local workerd. The smoke verifies prerendered homepage output, dynamic SSR/RSC, a synthetic Server Action and cookie round-trip, static asset cache headers; Hono service binding is covered separately by the retained proxy contract tests. Synthetic routes exist only in the test workspace. It never deploys or migrates a configured database. Run `pnpm test:next-runtime` locally.
-
-The gate retains `.artifacts/next-runtime/{bundle,smoke}.json` for one day. Its initial 4 MiB gzip budget sums emitted Worker JS/Wasm modules individually, lists the largest modules, and fails when exceeded. This is a source artifact regression ceiling, not provider upload size, memory consumption or cold-request latency. Review measurement changes before adjusting the ceiling.
-
-New public homepages are prerenderable; request-dependent routes opt into dynamic rendering where needed. Generated `public/_headers` caches fingerprinted Next assets immutably; ordinary assets retain platform revalidation. Authenticated responses continue to require private/no-store policy. Existing apps must adopt generator changes explicitly.
+Relevant generator/build changes compile an isolated foundation and exercise it
+in workerd. Run `pnpm test:next-runtime` for SSR/RSC, Server Actions/cookies,
+prerendering and static cache checks. Hono proxy contracts have separate tests.
+The harness owns the module-size budget and short-lived `.artifacts/next-runtime/`
+receipts. Review measurement changes before adjusting limits. The smoke never
+deploys or migrates a configured database; it is not production acceptance.

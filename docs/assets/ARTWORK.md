@@ -11,7 +11,7 @@ Regenerate SVGs with:
 node docs/assets/render-stack.mjs
 ```
 
-With the inspector's existing development dependencies and Google Chrome installed,
+With `sharp` available (or `DOCS_NODE_MODULES` pointing to its node_modules directory),
 regenerate SVGs and PNGs together:
 
 ```sh
@@ -23,12 +23,11 @@ reference pages use the static PNGs; those two images are included in the npm pa
 so relative image references remain available. The renderer, icon source and SVGs
 are documentation source, outside the published runtime.
 
-The main path shows Expo web/iOS/Android → Hono → Drizzle/D1 and private R2.
-Better Auth, shared styling and workspace tools are quiet supporting defaults.
-Only Stripe and RevenueCat appear as optional additions. The diagram describes
-source architecture, not provisioned or verified provider state.
+The main path shows Next.js → Hono → Drizzle/D1 + Better Auth. Private R2,
+services and additional clients branch from that foundation. WXT owns the optional
+Chrome Side Panel entrypoint. The diagram describes source architecture, not
+provisioned or verified provider state.
 
-The website should reuse these generated SVGs for
-`apps/landing/public/work/anhedral-cli-stack.svg` and `anhedral-cli-stack-light.svg`.
-Keep the page's semantic descriptions and generated asset fingerprints synchronized
-when copying a reviewed revision. Do not maintain a second independent diagram layout.
+The website uses its own neutral light/dark variants generated from the shared
+layout. Preserve those theme adaptations when updating the CLI's navy artwork;
+keep page descriptions and asset fingerprints synchronized with copied revisions.
