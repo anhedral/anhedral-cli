@@ -1,0 +1,25 @@
+import { createAuthClient } from 'better-auth/react';
+import { expoClient } from '@better-auth/expo/client';
+import * as SecureStore from 'expo-secure-store';
+const configured = process.env.EXPO_PUBLIC_API_URL;
+const baseURL = configured || 'http://127.0.0.1:8787';
+if (configured && !__DEV__ && !configured.startsWith('https://'))
+  throw Error('Production API connections require HTTPS');
+export const authClient = createAuthClient({
+  baseURL,
+  plugins: [expoClient({ scheme: __SCHEME__, storagePrefix: __SCHEME__, storage: SecureStore })],
+});
+export async function apiRequest(route: string, init: RequestInit = {}) {
+  if (!/^\/[a-zA-Z0-9/_?=&%.-]*$/.test(route)) throw Error('Choose an application API path');
+  const headers = new Headers(init.headers);
+  headers.delete('authorization');
+  headers.delete('origin');
+  const cookie = await authClient.getCookie();
+  if (cookie) headers.set('cookie', cookie);
+  headers.set('expo-origin', __SCHEME__ + '://');
+  return fetch(baseURL.replace(/\/$/, '') + '/api' + route, {
+    ...init,
+    headers,
+    redirect: 'error',
+  });
+}

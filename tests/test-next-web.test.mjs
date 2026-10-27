@@ -145,13 +145,16 @@ test('Next development proxy removes stale wire headers after Node fetch decompr
   }
 });
 
-test('default workspace separates full Next web, native owned UI and privileged Hono runtime', async () => {
+test('explicit legacy workspace separates full Next web, native owned UI and privileged Hono runtime', async () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-next-contract-'));
   const root = path.join(temporary, 'product');
   const read = (file) => readFileSync(path.join(root, file), 'utf8');
   try {
     await scaffoldStandardProject(
-      parseStandardOptions([root, '--skip-install', '--no-git']),
+      {
+        ...parseStandardOptions([root, '--skip-install', '--no-git']),
+        products: ['d1', 'expo', 'hono', 'next', 'r2', 'styling'],
+      },
       () => {
         throw Error('offline generation');
       },

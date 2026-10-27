@@ -56,11 +56,9 @@
         "workspace",
         "typescript",
         "eslint",
-        "styling",
-        "hono"
+        "styling"
       ],
       "environment": [
-        "API_INTERNAL_URL",
         "ANHEDRAL_PREVIEW_ORIGIN"
       ],
       "installer": "recipe",
@@ -80,10 +78,10 @@
         ],
         "credentials": [],
         "resources": [
-          "Next.js Worker, assets and scoped ANHEDRAL_API binding"
+          "Next.js Worker and assets; no backend or database provisioned"
         ],
         "verify": [
-          "Request-rendered HTML, RSC, API transport"
+          "Request-rendered HTML, RSC and editable Anhedral UI source"
         ]
       }
     },

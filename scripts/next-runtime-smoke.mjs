@@ -20,7 +20,7 @@ const env = {
 };
 const run = (command, args, cwd = root) =>
   execFileSync(command, args, { cwd, env, stdio: 'inherit', timeout: 600000 });
-let api, web;
+let web;
 rmSync(output, { recursive: true, force: true });
 try {
   run(
@@ -41,7 +41,7 @@ export default async function Proof() {
 }\n`,
   );
   run('pnpm', ['install', '--no-frozen-lockfile']);
-  run('pnpm', ['--filter', './apps/web...', '--filter', './apps/api...', 'build']);
+  run('pnpm', ['--filter', './apps/web...', 'build']);
   mkdirSync(output, { recursive: true });
   const report = measureWorker(path.join(root, 'apps/web/dist'), 4 * 1024 * 1024);
   writeFileSync(path.join(output, 'bundle.json'), JSON.stringify(report, null, 2) + '\n');
@@ -69,8 +69,6 @@ export default async function Proof() {
       ],
       { cwd: path.join(root, `apps/${app}`), env },
     );
-  api = start('api');
-  await api.address();
   web = start('web');
   const origin = await web.address();
   const get = (route, init) =>
@@ -90,12 +88,8 @@ export default async function Proof() {
   assert.doesNotMatch(robots.headers.get('cache-control') ?? '', /immutable/);
   await robots.body.cancel();
   const health = await get('/api/health');
-  assert.equal(health.status, 200);
-  assert.deepEqual(await health.json(), { ok: true });
-  assert.match(health.headers.get('cache-control'), /no-store/);
-  const missing = await get('/api/absent');
-  assert.equal(missing.status, 404);
-  await missing.body.cancel();
+  assert.equal(health.status, 404, 'Minimal app has no backend proxy');
+  await health.body.cancel();
   const dynamic = await get('/runtime-proof');
   const markup = await dynamic.text();
   assert.match(markup, /data-preference="unset"/);
@@ -132,7 +126,7 @@ export default async function Proof() {
         rsc: true,
         serverActions: true,
         cookieRoundTrip: true,
-        apiBinding: true,
+        backendGenerated: false,
         assetHeaders: true,
         providerCalls: false,
       },
@@ -143,6 +137,5 @@ export default async function Proof() {
   console.log('PASS compiled Next/OpenNext foundation runtime and bundle budget');
 } finally {
   await web?.stop();
-  await api?.stop();
   rmSync(scratch, { recursive: true, force: true });
 }

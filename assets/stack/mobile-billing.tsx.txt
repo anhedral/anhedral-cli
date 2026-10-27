@@ -1,0 +1,63 @@
+import { useState } from 'react';
+import { View, Text } from 'react-native';
+import { type PurchasesPackage } from 'react-native-purchases';
+import {
+  connectPurchases,
+  purchase,
+  restorePurchases,
+  manageSubscriptions,
+} from '../lib/purchases';
+import { ActionButton } from './action-button';
+export function BillingControls() {
+  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function action(work: () => Promise<unknown>) {
+    setBusy(true);
+    try {
+      await work();
+      setMessage('Subscription updated.');
+    } catch {
+      setMessage('Purchase service is unavailable or the action was cancelled.');
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <View style={{ padding: 16, gap: 8 }}>
+      <ActionButton
+        label="View subscriptions"
+        disabled={busy}
+        onPress={() =>
+          void action(async () => {
+            const offerings = await connectPurchases();
+            setPackages(
+              (offerings.current?.availablePackages ?? []).filter(
+                (value) => value.product.subscriptionPeriod !== null,
+              ),
+            );
+          })
+        }
+      />
+      {packages.map((value) => (
+        <ActionButton
+          key={value.identifier}
+          label={value.product.title + ' ' + value.product.priceString}
+          disabled={busy}
+          onPress={() => void action(() => purchase(value))}
+        />
+      ))}
+      <ActionButton
+        label="Restore purchases"
+        disabled={busy}
+        onPress={() => void action(restorePurchases)}
+      />
+      <ActionButton
+        label="Manage subscriptions"
+        disabled={busy}
+        onPress={() => void action(manageSubscriptions)}
+      />
+      <Text accessibilityLiveRegion="polite">{message}</Text>
+    </View>
+  );
+}

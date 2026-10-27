@@ -1,0 +1,122 @@
+import { Hono, type Context } from 'hono';
+import { z } from 'zod';
+import { requireSession } from '../security';
+import type { AppEnv } from '../environment';
+export const rtcRoutes = new Hono<AppEnv>();
+const identifier = z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/);
+const configuration = z.object({ RTC_APP_ID: identifier, RTC_APP_SECRET: z.string().min(1) });
+const description = z.object({
+  type: z.enum(['offer', 'answer']),
+  sdp: z.string().min(1).max(128000),
+});
+const track = z.discriminatedUnion('location', [
+  z.object({ location: z.literal('local'), mid: identifier.optional(), trackName: identifier }),
+  z.object({ location: z.literal('remote'), sessionId: identifier, trackName: identifier }),
+]);
+const trackRequest = z.object({
+  sessionDescription: description.optional(),
+  tracks: z.array(track).min(1).max(10),
+});
+const closeRequest = z
+  .object({
+    force: z.boolean().default(false),
+    sessionDescription: description.optional(),
+    tracks: z
+      .array(z.object({ mid: identifier }))
+      .min(1)
+      .max(10),
+  })
+  .refine((value) => value.force || !!value.sessionDescription);
+const renegotiateRequest = z.object({
+  sessionDescription: description.extend({ type: z.literal('answer') }),
+});
+async function provider(env: AppEnv['Bindings'], path: string, body?: unknown, method = 'POST') {
+  return fetch(
+    'https://rtc.live.cloudflare.com/v1/apps/' + encodeURIComponent(env.RTC_APP_ID!) + path,
+    {
+      method,
+      headers: {
+        Authorization: 'Bearer ' + env.RTC_APP_SECRET,
+        'Content-Type': 'application/json',
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      signal: AbortSignal.timeout(10000),
+    },
+  );
+}
+async function owns(c: Context<AppEnv>, id: string) {
+  return !!(await c.env.DB.prepare('SELECT id FROM rtc_session WHERE id = ? AND user_id = ?')
+    .bind(id, c.get('userId'))
+    .first());
+}
+rtcRoutes.use('/rtc/*', requireSession);
+rtcRoutes.use('/rtc/*', async (c, next) => {
+  if (!configuration.safeParse(c.env).success)
+    return c.json({ error: 'Configure Cloudflare Realtime SFU first' }, 503);
+  await next();
+});
+rtcRoutes.use('/rtc/session/:id/*', async (c, next) => {
+  const id = identifier.safeParse(c.req.param('id'));
+  if (!id.success) return c.json({ error: 'Invalid session' }, 400);
+  if (!(await owns(c, id.data))) return c.json({ error: 'Not found' }, 404);
+  await next();
+});
+async function allocate(c: Context<AppEnv>, reservation: string) {
+  return c.env.DB.prepare(
+    'INSERT INTO rtc_session(id,user_id,created_at) SELECT ?,?,? WHERE (SELECT COUNT(*) FROM rtc_session WHERE user_id = ? AND created_at > ?) < 10',
+  )
+    .bind(reservation, c.get('userId'), Date.now(), c.get('userId'), Date.now() - 3600000)
+    .run();
+}
+async function createProviderSession(c: Context<AppEnv>) {
+  const response = await provider(c.env, '/sessions/new');
+  if (!response.ok) return null;
+  const body = (await response.json()) as { sessionId?: unknown };
+  const result = identifier.safeParse(body.sessionId);
+  return result.success ? result.data : null;
+}
+rtcRoutes.post('/rtc/session', async (c) => {
+  const reservation = crypto.randomUUID();
+  const quota = await allocate(c, reservation);
+  if (!quota.meta.changes) return c.json({ error: 'RTC session limit reached' }, 429);
+  // Uncertain provider failures retain the reservation for the bounded hour.
+  const sessionId = await createProviderSession(c);
+  if (!sessionId) return c.json({ error: 'RTC provider unavailable' }, 503);
+  await c.env.DB.prepare('UPDATE rtc_session SET id = ? WHERE id = ? AND user_id = ?')
+    .bind(sessionId, reservation, c.get('userId'))
+    .run();
+  return c.json({ sessionId }, 201);
+});
+async function operation(c: Context<AppEnv>, endpoint: string, body: unknown, method: string) {
+  const response = await provider(
+    c.env,
+    '/sessions/' + encodeURIComponent(c.req.param('id')!) + endpoint,
+    body,
+    method,
+  );
+  if (!response.ok) return c.json({ error: 'RTC operation rejected' }, 502);
+  return c.json(await response.json());
+}
+async function permitted(c: Context<AppEnv>, value: z.infer<typeof track>) {
+  if (value.location === 'local') return true;
+  // A multi-user product replaces this with reviewed room/membership rules.
+  return owns(c, value.sessionId);
+}
+rtcRoutes.post('/rtc/session/:id/tracks', async (c) => {
+  const body = trackRequest.safeParse(await c.req.json().catch(() => null));
+  if (!body.success) return c.json({ error: 'Invalid tracks' }, 400);
+  for (const value of body.data.tracks) {
+    if (!(await permitted(c, value))) return c.json({ error: 'Remote session forbidden' }, 403);
+  }
+  return operation(c, '/tracks/new', body.data, 'POST');
+});
+rtcRoutes.post('/rtc/session/:id/close', async (c) => {
+  const body = closeRequest.safeParse(await c.req.json().catch(() => null));
+  if (!body.success) return c.json({ error: 'Invalid close request' }, 400);
+  return operation(c, '/tracks/close', body.data, 'PUT');
+});
+rtcRoutes.post('/rtc/session/:id/renegotiate', async (c) => {
+  const body = renegotiateRequest.safeParse(await c.req.json().catch(() => null));
+  if (!body.success) return c.json({ error: 'Invalid SDP' }, 400);
+  return operation(c, '/renegotiate', body.data, 'PUT');
+});

@@ -7,16 +7,21 @@ import { execFile } from '../../dist/util.js';
 /** A real cache hit must restore generated types, rather than silently rerunning typegen. */
 export function verifyTypecheckCache(root) {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-typecheck-cache-'));
-  const applications = ['api', 'web'].map((app) => ({
-    directory: path.join(root, 'apps', app),
-    name: JSON.parse(readFileSync(path.join(root, 'apps', app, 'package.json'), 'utf8')).name,
-  }));
+  const applications = ['api', 'web']
+    .filter((app) => existsSync(path.join(root, 'apps', app, 'package.json')))
+    .map((app) => ({
+      directory: path.join(root, 'apps', app),
+      name: JSON.parse(readFileSync(path.join(root, 'apps', app, 'package.json'), 'utf8')).name,
+    }));
+  const web = applications.find((app) => app.directory.endsWith(path.join('apps', 'web')));
+  assert.ok(web, 'Next application must exist');
+  const api = applications.find((app) => app.directory.endsWith(path.join('apps', 'api')));
   const files = () => [
-    path.join(applications[0].directory, 'worker-configuration.d.ts'),
-    path.join(applications[1].directory, 'next-env.d.ts'),
-    ...readdirSync(path.join(applications[1].directory, '.next/types'), { recursive: true })
+    ...(api ? [path.join(api.directory, 'worker-configuration.d.ts')] : []),
+    path.join(web.directory, 'next-env.d.ts'),
+    ...readdirSync(path.join(web.directory, '.next/types'), { recursive: true })
       .filter((file) => /\.[cm]?ts$/.test(file))
-      .map((file) => path.join(applications[1].directory, '.next/types', file)),
+      .map((file) => path.join(web.directory, '.next/types', file)),
   ];
   const args = [
     'exec',

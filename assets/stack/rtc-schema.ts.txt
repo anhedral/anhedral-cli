@@ -1,0 +1,10 @@
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+export const rtcSession = sqliteTable(
+  'rtc_session',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [index('rtc_session_user_time').on(t.userId, t.createdAt)],
+);

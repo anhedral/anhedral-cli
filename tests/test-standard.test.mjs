@@ -8,11 +8,54 @@ const read = (root, file) => readFileSync(path.join(root, file), 'utf8');
 const noCommands = () => {
   throw Error('Offline generation must not execute tools.');
 };
-test('offline init connects the complete foundation without managed features or public object routes', async () => {
-  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-foundation-'));
+test('default offline init creates only the Next.js application with Anhedral UI', async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-minimal-'));
   const root = path.join(temporary, 'app');
   try {
     const options = parseStandardOptions([root, '--skip-install', '--no-git']);
+    assert.deepEqual(options.products, ['next', 'styling']);
+    await scaffoldStandardProject(options, noCommands, { quiet: true });
+    assert.deepEqual(readdirSync(path.join(root, 'apps')), ['web']);
+    for (const absent of [
+      'apps/api',
+      'apps/mobile',
+      'packages/db',
+      'packages/contracts',
+      'packages/native-ui',
+      'apps/web/app/api',
+      'apps/web/lib/server-api.ts',
+    ])
+      assert.equal(existsSync(path.join(root, absent)), false, absent);
+    assert.equal(JSON.parse(read(root, 'apps/web/.anhedral-ui.json')).platform, 'web');
+    for (const component of ['button', 'input', 'label'])
+      assert.ok(existsSync(path.join(root, `apps/web/components/ui/${component}.tsx`)));
+    const worker = JSON.parse(read(root, 'apps/web/wrangler.jsonc'));
+    assert.deepEqual(
+      worker.services.map((service) => service.binding),
+      ['WORKER_SELF_REFERENCE'],
+    );
+    assert.equal(worker.d1_databases, undefined);
+    assert.equal(worker.r2_buckets, undefined);
+    const pkg = JSON.parse(read(root, 'package.json'));
+    assert.equal(pkg.scripts['db:migrate'], undefined);
+    assert.doesNotMatch(
+      read(root, 'apps/web/package.json'),
+      /"(?:hono|drizzle-orm|expo|better-auth|stripe)"/,
+    );
+    assert.doesNotMatch(read(root, 'apps/web/next.config.ts'), /@workspace\/contracts/);
+    assert.equal(JSON.parse(read(root, 'anhedral.json')).registry.resourcesProvisioned, false);
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+test('explicit legacy source composition retains the full-stack recipes without managed features', async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-foundation-'));
+  const root = path.join(temporary, 'app');
+  try {
+    const options = {
+      ...parseStandardOptions([root, '--skip-install', '--no-git']),
+      products: ['d1', 'expo', 'hono', 'next', 'r2', 'styling'],
+    };
     assert.deepEqual(options.products, ['d1', 'expo', 'hono', 'next', 'r2', 'styling']);
     await scaffoldStandardProject(options, noCommands, { quiet: true });
     assert.deepEqual(readdirSync(path.join(root, 'apps')).sort(), ['api', 'mobile', 'web']);

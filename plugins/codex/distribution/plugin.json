@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
   "version": "0.16.0",
-  "description": "Scaffold the open-source Next.js, Expo, shadcn, Hono/workerd, Drizzle/D1 and private R2 foundation.",
+  "description": "Scaffold Next.js with Anhedral UI and progressively add selected APIs, data, clients, payments, realtime and AI.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Scaffold your app foundation",
-        "longDescription": "Skills for initializing the Anhedral stack, running it locally and extending its web/native UI. Editable source; no managed authentication, payments, provider accounts or hosting.",
+        "longDescription": "Start with one Next.js app and source-owned Anhedral UI. Add Hono, Drizzle/D1/Better Auth, storage, payments, realtime, AI, Expo, WXT/Side Panel or GPUI through explicit protected source recipes. No provider provisioning or deployment is performed.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
         "composerIcon": "./assets/anhedral-mark.svg",

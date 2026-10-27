@@ -70,7 +70,10 @@ test('offline generator ships the entire port, its inventory and public module p
   try {
     const root = path.join(temporary, 'app');
     await scaffoldStandardProject(
-      parseStandardOptions([root, '--skip-install', '--no-git']),
+      {
+        ...parseStandardOptions([root, '--skip-install', '--no-git']),
+        products: ['d1', 'expo', 'hono', 'next', 'r2', 'styling'],
+      },
       () => {
         throw Error('Native source generation must stay offline.');
       },

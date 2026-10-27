@@ -33,8 +33,12 @@ export function writeStandardRoot(
       lint: 'turbo lint',
       typecheck: 'turbo typecheck',
       test: 'turbo test',
-      'db:generate': 'turbo run db:generate --filter=@workspace/db',
-      'db:migrate': 'turbo run db:migrate --filter=@workspace/db',
+      ...(options.products.includes('d1')
+        ? {
+            'db:generate': 'turbo run db:generate --filter=@workspace/db',
+            'db:migrate': 'turbo run db:migrate --filter=@workspace/db',
+          }
+        : {}),
       audit: 'node scripts/audit.mjs',
       'audit:full': 'fallow --fail-on-issues',
       'audit:deps': 'node scripts/audit-deps.mjs',
@@ -56,8 +60,10 @@ process.exitCode = result.status ?? 1;
 `,
   );
   json(root, '.fallowrc.json', {
-    publicPackages: ['@workspace/native-ui'],
-    ignoreDependencies: ['react-native-reanimated', 'react-native-worklets'],
+    publicPackages: options.products.includes('expo') ? ['@workspace/native-ui'] : [],
+    ignoreDependencies: options.products.includes('expo')
+      ? ['react-native-reanimated', 'react-native-worklets']
+      : [],
     ignorePatterns: [
       'scripts/audit.mjs',
       'scripts/audit-deps.mjs',
@@ -82,11 +88,15 @@ process.exitCode = result.status ?? 1;
         outputs: ['worker-configuration.d.ts', 'next-env.d.ts', '.next/types/**'],
       },
       test: { dependsOn: ['^build'], outputs: ['coverage/**'] },
-      'db:generate': { cache: false },
-      'db:migrate': {
-        cache: false,
-        passThroughEnv: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'],
-      },
+      ...(options.products.includes('d1')
+        ? {
+            'db:generate': { cache: false },
+            'db:migrate': {
+              cache: false,
+              passThroughEnv: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'],
+            },
+          }
+        : {}),
       build: {
         dependsOn: ['^build'],
         outputs: ['dist/**', '.open-next/**', '.next/**', '!.next/cache/**'],
@@ -99,7 +109,7 @@ process.exitCode = result.status ?? 1;
     overrides: {
       '@node-minify/core>glob': OPENNEXT_GLOB_VERSION,
       // Expo CLI's two schema consumers use APIs supported by the patched Zod release.
-      '@expo/cli>zod': STACK_DEPENDENCIES.zod,
+      ...(options.products.includes('expo') ? { '@expo/cli>zod': STACK_DEPENDENCIES.zod } : {}),
       'miniflare>undici': STACK_DEPENDENCIES.undici,
     },
     sharedWorkspaceLockfile: true,

@@ -8,14 +8,7 @@ import {
 import { createResolutionContext } from './context.js';
 import type { Hosting, StandardOptions, StandardProduct, StackRegistryItem } from './types.js';
 
-export const CORE_PRODUCTS: readonly StandardProduct[] = [
-  'next',
-  'expo',
-  'hono',
-  'd1',
-  'r2',
-  'styling',
-];
+export const CORE_PRODUCTS: readonly StandardProduct[] = ['next', 'styling'];
 /** Every initialization uses the same foundation. */
 export function resolveStandardProducts(selected: Set<StandardProduct>, hosting: Hosting): void {
   if (hosting !== 'cloudflare') throw new Error('Anhedral applications use Cloudflare Workers.');
