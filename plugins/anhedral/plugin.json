@@ -1,0 +1,34 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "anhedral",
+  "version": "0.17.0",
+  "description": "Scaffold Next.js with Anhedral UI and progressively add selected APIs, data, clients, payments, realtime and AI.",
+  "author": {
+    "name": "Anhedral",
+    "email": "support@anhedral.com"
+  },
+  "repository": "https://github.com/anhedral/anhedral-cli",
+  "license": "Apache-2.0",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Anhedral",
+        "shortDescription": "Scaffold your app foundation",
+        "longDescription": "Start with one Next.js app and source-owned Anhedral UI. Add Hono, Drizzle/D1/Better Auth, storage, payments, realtime, AI, Expo, WXT/Side Panel or GPUI through explicit protected source recipes. No provider provisioning or deployment is performed.",
+        "developerName": "Anhedral",
+        "category": "Developer Tools",
+        "composerIcon": "./assets/anhedral-mark.svg",
+        "composerIconDark": "./assets/anhedral-mark-dark.svg",
+        "logo": "./assets/anhedral-mark.svg",
+        "logoDark": "./assets/anhedral-mark-dark.svg",
+        "defaultPrompt": [
+          "Initialize an application with the Anhedral stack, start it locally and open it in my browser."
+        ],
+        "capabilities": [
+          "Read",
+          "Write"
+        ]
+      }
+    }
+  }
+}
