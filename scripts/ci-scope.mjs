@@ -19,17 +19,6 @@ export function needsFullCI(files) {
   );
 }
 
-export function needsNativeUI(files) {
-  return (
-    files.length === 0 ||
-    files.some((file) =>
-      /^(?:assets\/ui\/(?:native\/|theme)|src\/(?:dependencies\.ts|scaffold\/(?:native-ui|styling)\.ts|platforms\/mobile\.ts)|tests\/(?:native-ui\/|test-native-ui-catalog\.test\.mjs)|scripts\/native-ui-|\.github\/workflows\/ci\.yml)/.test(
-        file,
-      ),
-    )
-  );
-}
-
 export function needsNextRuntime(files) {
   return (
     files.length === 0 ||
@@ -51,7 +40,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const base = process.env.CI_BASE_SHA;
   const comparable = /^[a-f0-9]{40}$/.test(base ?? '') && !/^0+$/.test(base);
   let full = true;
-  let native = true;
   let nextRuntime = true;
   if (['push', 'pull_request'].includes(process.env.GITHUB_EVENT_NAME) && comparable) {
     // Disable rename detection so moving executable source into docs cannot
@@ -62,13 +50,12 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       .split('\0')
       .filter(Boolean);
     full = needsFullCI(files);
-    native = needsNativeUI(files);
     nextRuntime = needsNextRuntime(files);
     if (!full) execFileSync('git', ['diff', '--check', base, 'HEAD'], { stdio: 'inherit' });
   }
   appendFileSync(
     process.env.GITHUB_OUTPUT,
-    `full=${full}\nrelease=${release}\nnative=${native}\nnextRuntime=${nextRuntime}\n`,
+    `full=${full}\nrelease=${release}\nnextRuntime=${nextRuntime}\n`,
   );
   console.log(
     full

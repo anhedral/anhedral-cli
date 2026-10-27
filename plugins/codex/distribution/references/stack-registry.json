@@ -86,45 +86,6 @@
       }
     },
     {
-      "name": "expo",
-      "version": "0.16.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "styling"
-      ],
-      "environment": [
-        "EXPO_PUBLIC_API_URL"
-      ],
-      "installer": "recipe",
-      "type": "application",
-      "description": "Native Expo iOS and Android application with Anhedral native shadcn UI",
-      "targets": [
-        "apps/mobile",
-        "packages/native-ui"
-      ],
-      "setup": {
-        "purpose": "Native iOS and Android application",
-        "tools": [
-          "Simulator or device"
-        ],
-        "access": [
-          "For requested native distribution only: client-owned Apple/Google developer accounts"
-        ],
-        "credentials": [
-          "For requested native builds only: platform signing credentials and EAS access when used"
-        ],
-        "resources": [
-          "Expo native client; signing and store configuration"
-        ],
-        "verify": [
-          "Simulator/device and signed-build acceptance"
-        ]
-      }
-    },
-    {
       "name": "hono",
       "version": "0.16.0",
       "selection": {},
@@ -250,7 +211,7 @@
         "access": [],
         "credentials": [],
         "resources": [
-          "Shared light/dark tokens, web CSS and Anhedral native shadcn port"
+          "Shared light/dark tokens, web CSS and optional RNR/NativeWind source"
         ],
         "verify": [
           "Consistency across selected interfaces; preserve platform-specific components"

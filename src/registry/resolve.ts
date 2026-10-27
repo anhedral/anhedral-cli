@@ -27,6 +27,10 @@ export function resolveStackRegistry(
 ): ResolvedStackRegistry {
   if (options.hosting !== 'cloudflare')
     throw new Error('Anhedral applications use Cloudflare Workers.');
+  if ((options.products as readonly string[]).includes('expo'))
+    throw new Error(
+      'Legacy Expo source composition is retired. Use anhedral add expo, then anhedral add native-ui. Existing applications are not changed.',
+    );
   for (const id of options.products)
     if (!(STANDARD_PRODUCTS as readonly string[]).includes(id))
       throw new Error(`Unknown stack product: ${id}.`);
