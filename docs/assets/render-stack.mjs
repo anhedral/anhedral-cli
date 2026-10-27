@@ -16,7 +16,7 @@ export function renderStack(light = false) {
   const border = light ? '#d8dee5' : '#343e49';
   const ink = light ? '#202830' : '#f0f6fc';
   const muted = light ? '#5d6977' : '#9aa7b5';
-  const accent = light ? '#24766d' : '#89cabc';
+  const accent = light ? '#58616d' : '#aeb8c4';
   const wire = light ? '#9aa9b4' : '#657786';
   const out = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
@@ -103,11 +103,11 @@ export function renderStack(light = false) {
   text(596, 532, 'ADDITIONAL APPLICATIONS', 14, muted);
   text(1096, 532, 'PAYMENTS & SUBSCRIPTIONS', 14, muted);
   row(96, 590, 'Private R2', 'Owner-scoped file storage', 'cloudflare.com');
-  row(96, 674, 'Events + RTC', 'Event streams · realtime media APIs');
-  row(96, 758, 'Workers AI', 'Text generation · usage quotas');
+  row(96, 674, 'Events + RTC', 'Event streams · realtime media APIs', 'cloudflare.com');
+  row(96, 758, 'Workers AI', 'Text generation · usage quotas', 'cloudflare.com');
   row(596, 590, 'Expo', 'iOS / Android · optional native UI', 'expo.dev');
-  row(596, 674, 'WXT', 'Browser extension + Chrome Side Panel');
-  row(596, 758, 'GPUI', 'Native desktop application in Rust');
+  row(596, 674, 'WXT', 'Browser extension + Chrome Side Panel', 'wxt.dev');
+  row(596, 758, 'GPUI', 'Native desktop application in Rust', 'gpui.rs');
   row(1096, 590, 'Stripe', 'Web subscription checkout', 'stripe.com');
   row(1096, 674, 'RevenueCat', 'Mobile subscriptions · requires Expo + Stripe', 'revenuecat.com');
   text(1096, 770, 'Server-enforced entitlements', 20, muted);
