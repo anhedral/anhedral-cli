@@ -16,7 +16,7 @@ export function renderStack(light = false) {
   const border = light ? '#d8dee5' : '#343e49';
   const ink = light ? '#202830' : '#f0f6fc';
   const muted = light ? '#5d6977' : '#9aa7b5';
-  const accent = light ? '#24766d' : '#89cabc';
+  const accent = light ? '#58616d' : '#aeb8c4';
   const wire = light ? '#9aa9b4' : '#657786';
   const out = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
