@@ -10,5 +10,6 @@ and observations clearly. Promote lasting instructions into the owning guide;
 avoid overlapping manuals. Keep secrets and customer data out of notes and raw
 reports under ignored `.artifacts/`.
 
-`verification-through-2026-10-26.md` and `legacy-native-ui.md` preserve prior work
-and limitations. They do not establish current provider or device acceptance.
+`verification-through-2026-10-26.md` preserves prior work and limitations; it does
+not establish current provider or device acceptance. The code-generated native
+checklist stays at `docs/native-ui.md` because legacy source consumers use it.
