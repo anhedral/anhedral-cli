@@ -1,5 +1,16 @@
 # Development notes
 
+## 2026-10-27 — CLI 0.17.0 preparation
+
+Prepare the preserved native-port retirement for a reviewed release. This is a
+breaking 0.x change: the legacy programmatic Expo initializer now fails before
+writes. Use progressive `add expo` and `add native-ui`; existing generated
+applications and Platform's immutable runtime pins are unchanged.
+
+Release validation and exact candidate integrities are recorded in the release
+PR and retained artifacts. Publish only the verified main candidate through the
+existing trusted-publishing workflow; source promotion alone is not publication.
+
 ## 2026-10-26 — Superseded native port retirement
 
 Archived all 493 uncommitted file entries from the old port at

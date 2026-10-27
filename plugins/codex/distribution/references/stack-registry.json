@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "name": "anhedral",
-  "cliVersion": "0.16.0",
+  "cliVersion": "0.17.0",
   "items": [
     {
       "name": "workspace",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [],
       "environment": [],
@@ -20,7 +20,7 @@
     },
     {
       "name": "typescript",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -35,7 +35,7 @@
     },
     {
       "name": "eslint",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [
         "workspace"
@@ -50,7 +50,7 @@
     },
     {
       "name": "next",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -87,7 +87,7 @@
     },
     {
       "name": "hono",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -120,7 +120,7 @@
     },
     {
       "name": "d1",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -156,7 +156,7 @@
     },
     {
       "name": "r2",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [
         "workspace",
@@ -191,7 +191,7 @@
     },
     {
       "name": "styling",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "selection": {},
       "registryDependencies": [
         "workspace",

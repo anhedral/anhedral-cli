@@ -10,7 +10,7 @@
         "source": "git-subdir",
         "url": "https://github.com/anhedral/anhedral-cli.git",
         "path": "./plugins/anhedral",
-        "ref": "plugin-v0.16.0"
+        "ref": "plugin-v0.17.0"
       },
       "policy": {
         "installation": "AVAILABLE"
