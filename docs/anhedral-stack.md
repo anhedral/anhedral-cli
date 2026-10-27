@@ -8,8 +8,6 @@ Use `anhedral add` to compose the selected [capabilities](capabilities.md) after
 
 ## Stack diagram
 
-![Anhedral progressive application stack](assets/anhedral-stack.png)
-
 The diagram follows the core dependency sequence and groups optional additions by purpose. WXT owns the optional Chrome Side Panel entrypoint; RevenueCat requires Expo and Stripe.
 
 Regenerate the dark and light SVGs with `node docs/assets/render-stack.mjs`. Add `--png` to export PNGs using the optional `sharp` documentation renderer. Set `DOCS_NODE_MODULES` to a directory containing `sharp` when it is installed outside this checkout. Artwork generation uses the checked-in vendor logo data and runs offline.
