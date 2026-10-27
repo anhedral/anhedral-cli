@@ -1,15 +1,10 @@
-# Agent notes
+# Development notes
 
-Dated development records belong here. Start current usage with the
-[CLI README](../../README.md), [capabilities](../capabilities.md),
-[UI](../ui.md) and [maintenance workflow](../software-factory.md).
+Keep brief dated entries in this file, with revision, result and remaining gaps.
+Promote lasting instructions into an existing guide. Store generated/raw reports
+in ignored `.artifacts/`, without credentials or customer data. Previous notes
+and verification records remain in Git history; they are not current runbooks.
 
-Use `YYYY-MM-DD-topic.md` for a new effort and update that note as work proceeds.
-State the revision, scope, checks, failures and remaining gaps. Label proposals
-and observations clearly. Promote lasting instructions into the owning guide;
-avoid overlapping manuals. Keep secrets and customer data out of notes and raw
-reports under ignored `.artifacts/`.
-
-`verification-through-2026-10-26.md` preserves prior work and limitations; it does
-not establish current provider or device acceptance. The code-generated native
-checklist stays at `docs/native-ui.md` because legacy source consumers use it.
+The repository permits at most 20 tracked Markdown files in total, including
+README, AGENTS, skills, bundled references and this log. Update existing files
+instead of adding another document.
