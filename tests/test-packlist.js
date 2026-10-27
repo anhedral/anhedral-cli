@@ -88,12 +88,17 @@ const requiredFiles = new Set([
   'dist/index.js',
   'package.json',
   'docs/anhedral-stack.md',
+  'docs/assets/anhedral-stack.png',
+  'docs/assets/anhedral-stack-light.png',
   'docs/stack-standard.md',
   'docs/software-factory.md',
   'docs/verification.md',
 ]);
 const allowedRootFiles = new Set(['LICENSE', 'README.md', 'package.json']);
-const allowedArtwork = new Set([]);
+const allowedArtwork = new Set([
+  'docs/assets/anhedral-stack.png',
+  'docs/assets/anhedral-stack-light.png',
+]);
 
 function assertPackedMarkdownLinks(sourcePath, markdown, packedFiles) {
   const references = [
