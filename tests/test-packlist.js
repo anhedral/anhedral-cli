@@ -17,7 +17,50 @@ const nativeFiles = [
   ...nativeRegistry.supportFiles,
   'registry.json',
 ].map((file) => 'assets/ui/native/' + file);
+const stackFiles = [
+  'assets/stack/ai-schema.ts.txt',
+  'assets/stack/ai.ts.txt',
+  'assets/stack/api-index.ts.txt',
+  'assets/stack/auth-features.ts.txt',
+  'assets/stack/auth-journal.json.txt',
+  'assets/stack/auth-migration.sql.txt',
+  'assets/stack/auth-routes.ts.txt',
+  'assets/stack/auth-schema.ts.txt',
+  'assets/stack/auth-snapshot.json.txt',
+  'assets/stack/auth.ts.txt',
+  'assets/stack/billing-mode.ts.txt',
+  'assets/stack/billing-schema.ts.txt',
+  'assets/stack/desktop.rs.txt',
+  'assets/stack/entitlement-guard.ts.txt',
+  'assets/stack/entitlements.ts.txt',
+  'assets/stack/events-schema.ts.txt',
+  'assets/stack/events.ts.txt',
+  'assets/stack/mobile-auth.ts.txt',
+  'assets/stack/mobile-billing.tsx.txt',
+  'assets/stack/mobile-session.tsx.txt',
+  'assets/stack/native-button.tsx.txt',
+  'assets/stack/native-global.css.txt',
+  'assets/stack/native-lib-utils.ts.txt',
+  'assets/stack/native-metro.config.js.txt',
+  'assets/stack/native-nativewind-env.d.ts.txt',
+  'assets/stack/native-tailwind.config.js.txt',
+  'assets/stack/native-text.tsx.txt',
+  'assets/stack/purchases.ts.txt',
+  'assets/stack/revenuecat.ts.txt',
+  'assets/stack/rtc-schema.ts.txt',
+  'assets/stack/rtc.ts.txt',
+  'assets/stack/security.ts.txt',
+  'assets/stack/storage.ts.txt',
+  'assets/stack/stripe.ts.txt',
+  'assets/stack/web-sign-in.tsx.txt',
+];
 const requiredFiles = new Set([
+  ...stackFiles,
+  'docs/capabilities.md',
+  'dist/capability-command.js',
+  'dist/capability-recipes.js',
+  'dist/capability-editor.js',
+  'dist/capability-references.js',
   'LICENSE',
   'README.md',
   'assets/patches/braces@3.0.3.patch',
@@ -33,6 +76,13 @@ const requiredFiles = new Set([
   'assets/ui/theme.tsx',
   'assets/ui/LICENSE.shadcn',
   'assets/ui/UPSTREAM.json',
+  'assets/ui/catalog.json',
+  'assets/ui/extensions/registry.json',
+  'assets/ui/LICENSE.react-native-reusables',
+  'docs/ui.md',
+  'dist/ui-command.js',
+  'dist/ui-catalog.js',
+  'dist/ui-project.js',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -153,6 +203,11 @@ try {
   for (const file of packed.files) {
     const allowedNativeUI =
       nativeFiles.includes(file.path) ||
+      [
+        'assets/ui/catalog.json',
+        'assets/ui/extensions/registry.json',
+        'assets/ui/LICENSE.react-native-reusables',
+      ].includes(file.path) ||
       /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM(?:-LOCK)?\.json)$/.test(
         file.path,
       );
@@ -160,6 +215,8 @@ try {
     const allowedDocumentation =
       file.path === 'docs/anhedral-stack.md' ||
       file.path === 'docs/native-ui.md' ||
+      file.path === 'docs/ui.md' ||
+      file.path === 'docs/capabilities.md' ||
       file.path === 'docs/native-registry.md' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
@@ -174,6 +231,7 @@ try {
     const allowed =
       allowedRootFiles.has(file.path) ||
       allowedNativeUI ||
+      stackFiles.includes(file.path) ||
       allowedDist ||
       allowedDocumentation ||
       allowedArtwork.has(file.path) ||

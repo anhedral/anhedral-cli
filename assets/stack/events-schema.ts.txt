@@ -1,0 +1,12 @@
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+export const applicationEvent = sqliteTable(
+  'application_event',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    topic: text('topic').notNull(),
+    data: text('data').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [index('application_event_user_time').on(t.userId, t.createdAt)],
+);

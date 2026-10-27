@@ -1,11 +1,13 @@
+import { initializeUiMetadata } from '../ui-project.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { resourceName, childPackageName, jsString } from '../render.js';
 import { WEB_DEPENDENCIES } from '../dependencies.js';
 import type { RecipeContext } from '../registry/types.js';
 import { json, put, workerConfig } from '../scaffold/files.js';
 
-export function scaffoldWeb({ root, options }: RecipeContext): void {
+export function scaffoldWeb({ root, options, has }: RecipeContext): void {
   const app = 'apps/web';
   json(root, `${app}/package.json`, {
     name: childPackageName(options.name, 'web'),
@@ -25,7 +27,7 @@ export function scaffoldWeb({ root, options }: RecipeContext): void {
     },
     dependencies: {
       ...WEB_DEPENDENCIES.dependencies,
-      '@workspace/contracts': 'workspace:*',
+      ...(has('hono') ? { '@workspace/contracts': 'workspace:*' } : {}),
       '@workspace/styling': 'workspace:*',
     },
     devDependencies: {
@@ -39,7 +41,9 @@ export function scaffoldWeb({ root, options }: RecipeContext): void {
     compatibility_flags: ['nodejs_compat', 'global_fetch_strictly_public'],
     assets: { directory: '.open-next/assets', binding: 'ASSETS' },
     services: [
-      { binding: 'ANHEDRAL_API', service: resourceName(options.name, 'api') },
+      ...(has('hono')
+        ? [{ binding: 'ANHEDRAL_API', service: resourceName(options.name, 'api') }]
+        : []),
       { binding: 'WORKER_SELF_REFERENCE', service: resourceName(options.name, 'web') },
     ],
   });
@@ -54,7 +58,7 @@ if (previewOrigin) {
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error('ANHEDRAL_PREVIEW_ORIGIN must be an HTTP(S) origin.');
   allowedDevOrigins = [url.hostname];
 }
-const config: NextConfig = { allowedDevOrigins, transpilePackages: ['@workspace/contracts', '@workspace/styling'], images: { unoptimized: true } };
+const config: NextConfig = { allowedDevOrigins, transpilePackages: ${JSON.stringify(has('hono') ? ['@workspace/contracts', '@workspace/styling'] : ['@workspace/styling'])}, images: { unoptimized: true } };
 export default config;
 `,
   );
@@ -122,6 +126,7 @@ export default defineConfig([...next, ...ts, globalIgnores(['.next/**', '.open-n
     },
     iconLibrary: 'lucide',
   });
+  initializeUiMetadata(path.join(root, app), 'web');
   put(
     root,
     `${app}/lib/utils.ts`,
@@ -185,11 +190,9 @@ export default function Layout({ children }: { children: React.ReactNode }) { re
   put(
     root,
     `${app}/app/page.tsx`,
-    `import { headers } from 'next/headers';
-import { FoundationExample } from '@/components/foundation-example';
-export default async function Home() {
-  const request = await headers();
-  return <section className="stack"><h1>${escapeJsx(options.name)}</h1><p>Next.js on Cloudflare, with a shared Hono API.</p><p className="muted" data-rendering="server">Rendered on the server for {request.get('host') ?? 'this request'}.</p><FoundationExample /></section>;
+    `import { FoundationExample } from '@/components/foundation-example';
+export default function Home() {
+  return <section className="stack"><h1>${escapeJsx(options.name)}</h1><p>Next.js on Cloudflare, with Anhedral UI.</p><p className="muted" data-rendering="server">Prerendered at build time; ready to hydrate in the browser.</p><FoundationExample /></section>;
 }
 `,
   );
@@ -217,6 +220,13 @@ export function FoundationExample() {
     `${app}/app/error.tsx`,
     `'use client';\nexport default function ErrorPage({ reset }: { reset: () => void }) { return <section><h1>Unable to load this page</h1><button onClick={reset}>Try again</button></section>; }\n`,
   );
+  put(
+    root,
+    `${app}/public/_headers`,
+    '/_next/static/*\n  Cache-Control: public, max-age=31536000, immutable\n/*\n  X-Content-Type-Options: nosniff\n',
+  );
+  put(root, `${app}/public/robots.txt`, 'User-agent: *\nAllow: /\n');
+  if (!has('hono')) return;
   put(root, `${app}/lib/api-proxy.ts`, WEB_API_PROXY);
   put(
     root,

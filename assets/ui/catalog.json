@@ -1,0 +1,891 @@
+{
+  "schemaVersion": 1,
+  "revision": "2026-10-26.1",
+  "nativeStyling": "nativewind4",
+  "shadcnCliVersion": "4.22.1",
+  "sources": {
+    "web": "https://ui.shadcn.com/r/index.json",
+    "native": "https://github.com/founded-labs/react-native-reusables/tree/385834c2196f8a303cbc9057d1ac768f3bde0a3b"
+  },
+  "components": [
+    {
+      "name": "accordion",
+      "web": {
+        "item": "accordion",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "accordion",
+        "dependencies": ["@rn-primitives/accordion"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "alert",
+      "web": {
+        "item": "alert",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "alert",
+        "dependencies": [],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "alert-dialog",
+      "web": {
+        "item": "alert-dialog",
+        "dependencies": [],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "alert-dialog",
+        "dependencies": ["@rn-primitives/alert-dialog"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/button.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json",
+          "https://reactnativereusables.com/r/nativewind/text.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "aspect-ratio",
+      "web": {
+        "item": "aspect-ratio",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "aspect-ratio",
+        "dependencies": ["@rn-primitives/aspect-ratio"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "attachment",
+      "web": {
+        "item": "attachment",
+        "dependencies": [],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "avatar",
+      "web": {
+        "item": "avatar",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "avatar",
+        "dependencies": ["@rn-primitives/avatar"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "badge",
+      "web": {
+        "item": "badge",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "badge",
+        "dependencies": ["@rn-primitives/slot"],
+        "registryDependencies": ["https://reactnativereusables.com/r/nativewind/text.json"],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "breadcrumb",
+      "web": {
+        "item": "breadcrumb",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "bubble",
+      "web": {
+        "item": "bubble",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "button",
+      "web": {
+        "item": "button",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "button",
+        "dependencies": [],
+        "registryDependencies": ["https://reactnativereusables.com/r/nativewind/text.json"],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "button-group",
+      "web": {
+        "item": "button-group",
+        "dependencies": [],
+        "registryDependencies": ["separator"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "calendar",
+      "web": {
+        "item": "calendar",
+        "dependencies": ["react-day-picker@latest", "date-fns"],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "card",
+      "web": {
+        "item": "card",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "card",
+        "dependencies": [],
+        "registryDependencies": ["https://reactnativereusables.com/r/nativewind/text.json"],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "carousel",
+      "web": {
+        "item": "carousel",
+        "dependencies": ["embla-carousel-react"],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "chart",
+      "web": {
+        "item": "chart",
+        "dependencies": ["recharts@3.8.0"],
+        "registryDependencies": ["card"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "checkbox",
+      "web": {
+        "item": "checkbox",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "checkbox",
+        "dependencies": ["@rn-primitives/checkbox"],
+        "registryDependencies": ["https://reactnativereusables.com/r/nativewind/icon.json"],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "code-block",
+      "web": {
+        "item": "code-block",
+        "dependencies": [],
+        "registryDependencies": ["button", "use-highlighted-code"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "collapsible",
+      "web": {
+        "item": "collapsible",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "collapsible",
+        "dependencies": ["@rn-primitives/collapsible"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "combobox",
+      "web": {
+        "item": "combobox",
+        "dependencies": ["@base-ui/react"],
+        "registryDependencies": ["button", "input-group"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "command",
+      "web": {
+        "item": "command",
+        "dependencies": ["cmdk"],
+        "registryDependencies": ["dialog", "input-group"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "context-menu",
+      "web": {
+        "item": "context-menu",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "context-menu",
+        "dependencies": ["@rn-primitives/context-menu"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "dialog",
+      "web": {
+        "item": "dialog",
+        "dependencies": [],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "dialog",
+        "dependencies": ["@rn-primitives/dialog"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "direction",
+      "web": {
+        "item": "direction",
+        "dependencies": ["@base-ui/react"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "drawer",
+      "web": {
+        "item": "drawer",
+        "dependencies": ["@base-ui/react"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "dropdown-menu",
+      "web": {
+        "item": "dropdown-menu",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "dropdown-menu",
+        "dependencies": ["@rn-primitives/dropdown-menu"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "empty",
+      "web": {
+        "item": "empty",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "field",
+      "web": {
+        "item": "field",
+        "dependencies": [],
+        "registryDependencies": ["label", "separator"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "form",
+      "web": {
+        "item": "form",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "hover-card",
+      "web": {
+        "item": "hover-card",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "hover-card",
+        "dependencies": ["@rn-primitives/hover-card"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "icon",
+      "web": null,
+      "native": {
+        "item": "icon",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "input",
+      "web": {
+        "item": "input",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "input",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "input-group",
+      "web": {
+        "item": "input-group",
+        "dependencies": [],
+        "registryDependencies": ["button", "input", "textarea"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "input-otp",
+      "web": {
+        "item": "input-otp",
+        "dependencies": ["input-otp"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "item",
+      "web": {
+        "item": "item",
+        "dependencies": [],
+        "registryDependencies": ["separator"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "kbd",
+      "web": {
+        "item": "kbd",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "label",
+      "web": {
+        "item": "label",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "label",
+        "dependencies": ["@rn-primitives/label"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "marker",
+      "web": {
+        "item": "marker",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "menubar",
+      "web": {
+        "item": "menubar",
+        "dependencies": [],
+        "registryDependencies": ["dropdown-menu"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "menubar",
+        "dependencies": ["@rn-primitives/menubar"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "message",
+      "web": {
+        "item": "message",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "message-scroller",
+      "web": {
+        "item": "message-scroller",
+        "dependencies": ["@shadcn/react"],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "native-only-animated-view",
+      "web": null,
+      "native": {
+        "item": "native-only-animated-view",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "native-select",
+      "web": {
+        "item": "native-select",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "navigation-menu",
+      "web": {
+        "item": "navigation-menu",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "pagination",
+      "web": {
+        "item": "pagination",
+        "dependencies": [],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "popover",
+      "web": {
+        "item": "popover",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "popover",
+        "dependencies": ["@rn-primitives/popover"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "progress",
+      "web": {
+        "item": "progress",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "progress",
+        "dependencies": ["@rn-primitives/progress"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "questionnaire",
+      "web": {
+        "item": "questionnaire",
+        "dependencies": ["@shadcn/react"],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "radio-group",
+      "web": {
+        "item": "radio-group",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "radio-group",
+        "dependencies": ["@rn-primitives/radio-group"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "resizable",
+      "web": {
+        "item": "resizable",
+        "dependencies": ["react-resizable-panels"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "scroll-area",
+      "web": {
+        "item": "scroll-area",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "select",
+      "web": {
+        "item": "select",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "select",
+        "dependencies": ["@rn-primitives/select"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "separator",
+      "web": {
+        "item": "separator",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "separator",
+        "dependencies": ["@rn-primitives/separator"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "sheet",
+      "web": {
+        "item": "sheet",
+        "dependencies": [],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "sidebar",
+      "web": {
+        "item": "sidebar",
+        "dependencies": [],
+        "registryDependencies": [
+          "button",
+          "input",
+          "separator",
+          "sheet",
+          "skeleton",
+          "tooltip",
+          "use-mobile"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "skeleton",
+      "web": {
+        "item": "skeleton",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "skeleton",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "slider",
+      "web": {
+        "item": "slider",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "sonner",
+      "web": {
+        "item": "sonner",
+        "dependencies": ["sonner", "next-themes"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "spinner",
+      "web": {
+        "item": "spinner",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "switch",
+      "web": {
+        "item": "switch",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "switch",
+        "dependencies": ["@rn-primitives/switch"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "table",
+      "web": {
+        "item": "table",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "tabs",
+      "web": {
+        "item": "tabs",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "tabs",
+        "dependencies": ["@rn-primitives/tabs"],
+        "registryDependencies": ["https://reactnativereusables.com/r/nativewind/text.json"],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "text",
+      "web": null,
+      "native": {
+        "item": "text",
+        "dependencies": ["@rn-primitives/slot"],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "textarea",
+      "web": {
+        "item": "textarea",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "textarea",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "toast",
+      "web": {
+        "item": "toast",
+        "dependencies": ["@base-ui/react"],
+        "registryDependencies": ["button"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    },
+    {
+      "name": "toggle",
+      "web": {
+        "item": "toggle",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "toggle",
+        "dependencies": ["@rn-primitives/toggle"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "toggle-group",
+      "web": {
+        "item": "toggle-group",
+        "dependencies": [],
+        "registryDependencies": ["toggle"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "toggle-group",
+        "dependencies": ["@rn-primitives/toggle-group"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/icon.json",
+          "https://reactnativereusables.com/r/nativewind/toggle.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "tooltip",
+      "web": {
+        "item": "tooltip",
+        "dependencies": [],
+        "registryDependencies": [],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": {
+        "item": "tooltip",
+        "dependencies": ["@rn-primitives/tooltip"],
+        "registryDependencies": [
+          "https://reactnativereusables.com/r/nativewind/text.json",
+          "https://reactnativereusables.com/r/nativewind/native-only-animated-view.json"
+        ],
+        "compatibility": "upstream-source; application validation required"
+      }
+    },
+    {
+      "name": "trace",
+      "web": {
+        "item": "trace",
+        "dependencies": [],
+        "registryDependencies": ["collapsible"],
+        "compatibility": "upstream-source; application validation required"
+      },
+      "native": null
+    }
+  ]
+}

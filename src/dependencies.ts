@@ -152,3 +152,61 @@ export const STACK_DEPENDENCIES = {
 export const WORKER_DEV_PORTS = {
   api: { http: 8787, inspector: 9231 },
 } as const;
+
+// Independently selected progressive client and service recipes.
+export const CAPABILITY_DEPENDENCIES = {
+  // renovate: datasource=npm depName=better-auth
+  'better-auth': '1.7.7',
+  // renovate: datasource=npm depName=@better-auth/drizzle-adapter
+  '@better-auth/drizzle-adapter': '1.7.7',
+  // renovate: datasource=npm depName=@better-auth/expo
+  '@better-auth/expo': '1.7.7',
+  // renovate: datasource=npm depName=stripe
+  stripe: '23.0.0',
+  // renovate: datasource=npm depName=react-native-purchases
+  'react-native-purchases': '10.14.0',
+  // renovate: datasource=npm depName=wxt
+  wxt: '0.21.5',
+  // renovate: datasource=npm depName=@wxt-dev/module-react
+  '@wxt-dev/module-react': '1.2.2',
+  // renovate: datasource=npm depName=expo
+  expo: '56.0.12',
+  // renovate: datasource=npm depName=react
+  react: '19.2.3',
+  // renovate: datasource=npm depName=react-native
+  'react-native': '0.85.3',
+  // renovate: datasource=npm depName=expo-secure-store
+  'expo-secure-store': '56.0.4',
+  // renovate: datasource=npm depName=expo-linking
+  'expo-linking': '56.0.14',
+  // renovate: datasource=npm depName=@types/react
+  '@types/react': '19.2.14',
+  // renovate: datasource=npm depName=babel-preset-expo
+  'babel-preset-expo': '56.0.8',
+  // renovate: datasource=npm depName=nativewind
+  nativewind: '4.2.7',
+  // renovate: datasource=npm depName=react-native-css-interop
+  'react-native-css-interop': '0.2.7',
+  // renovate: datasource=npm depName=react-native-reanimated
+  'react-native-reanimated': '4.3.1',
+  // renovate: datasource=npm depName=react-native-worklets
+  'react-native-worklets': '0.8.3',
+  // renovate: datasource=npm depName=react-native-safe-area-context
+  'react-native-safe-area-context': '5.7.0',
+  // renovate: datasource=npm depName=class-variance-authority
+  'class-variance-authority': '0.7.1',
+  // renovate: datasource=npm depName=clsx
+  clsx: '2.1.1',
+  // renovate: datasource=npm depName=tailwind-merge
+  'tailwind-merge': '3.5.0',
+  // renovate: datasource=npm depName=tailwindcss-animate
+  'tailwindcss-animate': '1.0.7',
+  // renovate: datasource=npm depName=@rn-primitives/portal
+  '@rn-primitives/portal': '1.5.2',
+  // renovate: datasource=npm depName=@rn-primitives/slot
+  '@rn-primitives/slot': '1.5.2',
+  // renovate: datasource=npm depName=tailwindcss
+  tailwindcss: '3.4.19',
+  // renovate: datasource=npm depName=@types/react-dom
+  '@types/react-dom': '19.2.3',
+} as const;

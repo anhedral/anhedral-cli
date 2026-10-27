@@ -54,7 +54,7 @@ export async function scaffoldStandardProject(
         if (entries.length) throw new Error('Destination changed before generation.');
       },
       build: async (stageRoot) => {
-        printProgress('Creating the Next.js/Expo/Hono workspace…', display);
+        printProgress('Creating the Next.js and Anhedral UI workspace…', display);
         bootstrapWorkspace(stageRoot, options.name, run);
         printProgress('Composing the selected stack…', display);
         await composeStack(stageRoot, options, plan.registry);

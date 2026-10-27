@@ -57,14 +57,7 @@ try {
   const target = path.join(root, 'planned');
   const result = run('init', target, '--dry-run', '--json');
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).products, [
-    'd1',
-    'expo',
-    'hono',
-    'next',
-    'r2',
-    'styling',
-  ]);
+  assert.deepEqual(JSON.parse(result.stdout).products, ['next', 'styling']);
   assert.equal(existsSync(target), false);
   assert.match(run('--help').stdout, /Expo/);
   assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify|anhedral cloud/);

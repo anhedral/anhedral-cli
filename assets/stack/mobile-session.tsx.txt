@@ -1,0 +1,83 @@
+import { useState, type ReactNode } from 'react';
+import { View, Text, TextInput } from 'react-native';
+import { authClient, apiRequest } from '../lib/auth-client';
+import { ActionButton } from './action-button';
+
+export function SessionControls({
+  children,
+  onSignOut,
+}: {
+  children?: ReactNode;
+  onSignOut?: () => Promise<void>;
+}) {
+  if (!process.env.EXPO_PUBLIC_API_URL) return <Text>Connection setup is required.</Text>;
+  return <ConfiguredSessionControls onSignOut={onSignOut}>{children}</ConfiguredSessionControls>;
+}
+function ConfiguredSessionControls({
+  children,
+  onSignOut,
+}: {
+  children?: ReactNode;
+  onSignOut?: () => Promise<void>;
+}) {
+  const { data: session } = authClient.useSession();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function verifySignIn() {
+    const result = await authClient.signIn.email({ email, password });
+    if (result.error) throw Error('Sign in failed');
+    const response = await apiRequest('/session');
+    if (!response.ok) throw Error('Session unavailable');
+  }
+  async function signIn() {
+    setBusy(true);
+    try {
+      await verifySignIn();
+      setMessage('Signed in');
+    } catch {
+      setMessage('Unable to sign in');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function signOut() {
+    try {
+      await onSignOut?.();
+    } catch {
+      setMessage('The purchase connection needs attention.');
+    } finally {
+      await authClient.signOut();
+    }
+  }
+  if (session)
+    return (
+      <View>
+        <Text>{session.user.email}</Text>
+        {children}
+        <ActionButton label="Sign out" onPress={() => void signOut()} />
+      </View>
+    );
+  return (
+    <View style={{ padding: 16, gap: 8 }}>
+      <Text>Sign in</Text>
+      <TextInput
+        accessibilityLabel="Email"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        accessibilityLabel="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <ActionButton label="Sign in" disabled={busy} onPress={() => void signIn()} />
+      <Text accessibilityLiveRegion="polite">{message}</Text>
+    </View>
+  );
+}

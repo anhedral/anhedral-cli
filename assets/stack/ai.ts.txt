@@ -1,0 +1,30 @@
+import { Hono } from 'hono';
+import { z } from 'zod';
+import { requireSession } from '../security';
+import type { AppEnv } from '../environment';
+export const aiRoutes = new Hono<AppEnv>();
+const configuration = z.object({
+  AI_MODEL: z.string().min(1),
+  AI_DAILY_LIMIT: z.coerce.number().int().min(1).max(1000),
+});
+const input = z.object({ prompt: z.string().trim().min(1).max(4000) });
+aiRoutes.post('/ai/generate', requireSession, async (c) => {
+  const config = configuration.safeParse(c.env);
+  if (!config.success)
+    return c.json({ error: 'Choose a model and a daily limit from 1 to 1000' }, 503);
+  const body = input.safeParse(await c.req.json().catch(() => null));
+  if (!body.success) return c.json({ error: 'Prompt must contain 1–4000 characters' }, 400);
+  const key = c.get('userId') + ':' + new Date().toISOString().slice(0, 10);
+  const quota = await c.env.DB.prepare(
+    'INSERT INTO ai_usage(id,count) VALUES (?,1) ON CONFLICT(id) DO UPDATE SET count = count + 1 WHERE count < ? RETURNING count',
+  )
+    .bind(key, config.data.AI_DAILY_LIMIT)
+    .first();
+  if (!quota) return c.json({ error: 'Daily AI limit reached' }, 429);
+  // Failed provider calls consume quota as well; retrying cannot bypass the limit.
+  const result = await c.env.AI.run(config.data.AI_MODEL as Parameters<Ai['run']>[0], {
+    messages: [{ role: 'user', content: body.data.prompt }],
+    max_tokens: 512,
+  });
+  return c.json({ result });
+});

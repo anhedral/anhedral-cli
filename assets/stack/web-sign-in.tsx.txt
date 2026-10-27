@@ -1,0 +1,51 @@
+'use client';
+import { useState } from 'react';
+import { authClient } from '@/lib/auth-client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+export default function SignIn() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      const result = await authClient.signIn.email({ email, password });
+      setMessage(result.error?.message ?? 'Signed in');
+    } catch {
+      setMessage('Unable to sign in');
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <form onSubmit={submit} className="stack">
+      <h1>Sign in</h1>
+      <Label htmlFor="email">Email</Label>
+      <Input
+        id="email"
+        type="email"
+        autoComplete="email"
+        required
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
+      <Label htmlFor="password">Password</Label>
+      <Input
+        id="password"
+        type="password"
+        autoComplete="current-password"
+        required
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+      />
+      <Button type="submit" disabled={busy}>
+        Sign in
+      </Button>
+      <p role="status">{message}</p>
+    </form>
+  );
+}

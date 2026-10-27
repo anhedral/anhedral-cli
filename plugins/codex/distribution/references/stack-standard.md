@@ -1,35 +1,23 @@
 # Stack standard
 
-Anhedral CLI scaffolds Next.js App Router with OpenNext, Expo iOS/Android, DOM shadcn and Anhedral’s native shadcn ports, Hono on Cloudflare Workers/workerd, Drizzle ORM with D1, and a private R2 bucket. The result is editable source owned and operated by its consumer. TypeScript, pnpm, Turborepo, shared API contracts and design tokens support that foundation.
+New applications begin with Next.js App Router, OpenNext for Cloudflare Workers and Anhedral UI. Init writes `apps/web`, shared tokens and workspace tooling. It does not generate Expo, Hono, database/contracts packages, authentication, private R2 or managed services.
 
-| Source | Responsibility |
-| --- | --- |
-| apps/web | Next.js App Router, SSR/RSC and DOM shadcn UI; OpenNext configuration |
-| apps/mobile | Native-only Expo and Anhedral-maintained native shadcn components |
-| apps/api | Hono Worker, server-owned database and storage access |
-| packages/contracts | Framework-independent validation and HTTP transport |
-| packages/db | Drizzle/D1 schema and explicit migration tooling |
-| packages/native-ui | Editable native shadcn port |
-| packages/styling | Shared design tokens |
+## Progressive composition
 
-Web adapts requests to Hono through the ANHEDRAL_API service binding; local development uses a loopback API origin. Native uses EXPO_PUBLIC_API_URL. Apps do not import another app’s source. Share contracts and tokens, not browser/native primitives. Next server actions adapt forms and call Hono; database access belongs to the API.
+Add Hono when a separate API is useful, then Drizzle/D1 and Better Auth when persistence and identity are useful. Add private R2, payments, realtime and AI for actual product requirements. Additional clients may use Expo, WXT with the Side Panel API, or GPUI for a native desktop application. Anhedral UI for Expo and RevenueCat remain conditional choices. The precise “if needed” conditions remain open; these are optional additions, without commercial tier labels.
 
-## Scope
+The public source interface implements `init`, progressive `add`, `stack list/status/doctor` and the `ui` family. See [capability recipes and safety](capabilities.md). Retired operational `auth`, `ship`, `inspect` and provider-management commands remain unavailable. The reintroduced `add` command composes source only. The programmatic generator retains explicit legacy recipes for compatibility tests; they are not the new-project default or the new UI architecture.
 
-`anhedral init` is the sole product command. It writes source and configuration, optionally installs dependencies and initializes local Git. `--dry-run --json` previews the same stack. `--skip-install --no-git` generates source without network. Init never contacts provider management APIs, creates cloud resources, installs credentials, deploys, or registers a managed project.
+When a backend is introduced, Hono owns privileged data and application authorization. Next server actions adapt forms and call that API. Share framework-independent contracts and tokens without cross-importing application source. Keep R2 private; implement identity, ownership and limits before exposing files. Database migrations are deliberate operations and never part of startup or build.
 
-Authentication, authorization, email, Stripe, RevenueCat, hosting, provider connections, analytics and release operations are consumer-owned application work. They are not selectable CLI additions. Anhedral Platform supplies a separate B2B managed product; the open-source scaffold has no Platform account or service dependency.
+## Anhedral UI
 
-## Private storage and data
+Anhedral UI is thin orchestration over official shadcn web and React Native Reusables native source. Its maintained surface is a versioned component catalog, CLI routing, setup metadata and a small reviewed native extension registry. Native resolution prefers an Anhedral extension, then RNR, then reports unavailable. The extension registry is initially empty. Do not revive the exhaustive native shadcn fork or require every component to reach parity before shipping a useful feature.
 
-The API declares a D1 DB binding and private R2 FILES binding. Configure real resource identities yourself when deploying. Local development uses Wrangler/workerd resources. Keep public R2 access disabled and storage credentials server-side. The starter exposes no object HTTP routes: implement identity, authorization, ownership and limits before adding file APIs. A private bucket alone does not authorize an application user.
+New web applications include a bounded Button/Input/Label starter and MIT attribution. Additional components are installed by the pinned shadcn CLI. Native currently supports the RNR NativeWind 4 registry only, in an already configured Expo application. Keep matching React/React Native/Expo dependencies and test the consuming app. The UI layer has no dependency on Hono, D1 or Better Auth.
 
-Drizzle begins with an empty schema. Generate and review SQL, then explicitly apply local migrations. Remote migrations require deliberate target selection. Builds and startup never migrate a configured database.
+Components belong to the consumer's source tree. Retain upstream licenses, use semantic theme tokens, review diffs and preserve local edits. No runtime UI package or automatic overwrite/update is introduced. Catalog availability means an upstream source exists; it does not assert API parity, accessibility or device acceptance. See [UI commands](ui.md).
 
-## UI maintenance
+## Operations and compatibility
 
-Use official shadcn components on web and the editable Anhedral native ports in packages/native-ui. Shared tokens live in packages/styling. The pinned upstream inventory, native APIs and device acceptance gaps are documented in native-ui.md. CLI updates do not overwrite existing applications.
-
-## Breaking scope change
-
-The scaffold-only release removes operational commands, the local project catalog/MCP dashboard, generated Better Auth/managed email, and Stripe/RevenueCat additions. Existing source and cloud resources are never migrated or deleted. Platform retains its old runtime artifacts until it explicitly adopts the new generator and replaces any dependency on removed commands such as inspect. A CLI release does not update installed plugins, runtime images or existing apps.
+Init writes editable source and can install dependencies and initialize Git. It never provisions providers, creates credentials, deploys or registers a managed project. Consumers own application security and operations; Platform is a separate managed product. Existing applications, native port work and Platform runtime artifacts retain their explicit reviewed pins until separately adopted. A CLI build or release does not update them.

@@ -10,4 +10,4 @@ export function commandHelp(command: string): string | undefined {
   if (!entry) return undefined;
   return `${entry.description}\n\nUsage: anhedral ${entry.usage}\n\nOptions:\n${[...entry.options, ...GLOBAL_OPTIONS.map(optionHelp)].map((option) => `  ${option}`).join('\n')}\n\n${entry.note}\n`;
 }
-export const STANDARD_USAGE = `Anhedral — an open-source stack foundation\n\n${commandHelp('init')}\n  -v, --version  Show the CLI version.\n`;
+export const STANDARD_USAGE = `Anhedral — an open-source stack foundation\n\n${commandHelp('init')}\n${commandHelp('ui')}\n${commandHelp('add')}\n${commandHelp('stack')}\n  -v, --version  Show the CLI version.\n`;

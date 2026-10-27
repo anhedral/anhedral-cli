@@ -145,13 +145,16 @@ test('Next development proxy removes stale wire headers after Node fetch decompr
   }
 });
 
-test('default workspace separates full Next web, native owned UI and privileged Hono runtime', async () => {
+test('explicit legacy workspace separates full Next web, native owned UI and privileged Hono runtime', async () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-next-contract-'));
   const root = path.join(temporary, 'product');
   const read = (file) => readFileSync(path.join(root, file), 'utf8');
   try {
     await scaffoldStandardProject(
-      parseStandardOptions([root, '--skip-install', '--no-git']),
+      {
+        ...parseStandardOptions([root, '--skip-install', '--no-git']),
+        products: ['d1', 'expo', 'hono', 'next', 'r2', 'styling'],
+      },
       () => {
         throw Error('offline generation');
       },
@@ -181,7 +184,8 @@ test('default workspace separates full Next web, native owned UI and privileged 
     assert.match(web.scripts.dev, /^next dev/);
     assert.match(web.scripts.build, /opennextjs-cloudflare build/);
     assert.doesNotMatch(read('apps/web/next.config.ts'), /output:.*export/);
-    assert.match(read('apps/web/app/page.tsx'), /await headers\(\)/);
+    assert.doesNotMatch(read('apps/web/app/page.tsx'), /headers\(|cookies\(|force-dynamic/);
+    assert.match(read('apps/web/public/_headers'), /max-age=31536000, immutable/);
     assert.equal(existsSync(path.join(root, 'apps/web/app/account/page.tsx')), false);
     assert.match(read('apps/web/components/ui/button.tsx'), /@base-ui\/react\/button/);
     assert.match(read('apps/web/components/ui/input.tsx'), /@base-ui\/react\/input/);

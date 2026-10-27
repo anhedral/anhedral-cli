@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [staging]
   pull_request:
     branches: [staging, main]
   workflow_dispatch:
@@ -16,7 +18,7 @@ jobs:
   gate:
     name: CI gate
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -26,7 +28,7 @@ jobs:
         env:
           CI_TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
           CI_HEAD_BRANCH: ${{ github.head_ref }}
-          CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: node scripts/ci-scope.mjs
       - name: Setup pnpm
         if: steps.scope.outputs.full == 'true'
@@ -52,13 +54,24 @@ jobs:
         run: pnpm format:check && pnpm check:hygiene && pnpm check:security && pnpm check:release-policy
       - name: Fast contract smoke tests
         if: steps.scope.outputs.full == 'true'
-        run: node --test tests/test-cli-validation.test.mjs tests/test-ci-scope.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-util-exec.test.mjs tests/test-native-ui-catalog.test.mjs
+        run: node --test tests/test-cli-validation.test.mjs tests/test-ui-command.test.mjs tests/test-standard.test.mjs tests/test-capabilities.test.mjs tests/test-ci-scope.test.mjs tests/test-next-web.test.mjs tests/test-worker-measurement.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-util-exec.test.mjs tests/test-native-ui-catalog.test.mjs
       - name: Native component contracts when their source changes
         if: steps.scope.outputs.native == 'true'
         run: |
           pnpm --dir tests/native-ui install --frozen-lockfile --ignore-scripts
           pnpm --dir tests/native-ui typecheck
           pnpm --dir tests/native-ui test
+      - name: Compiled Next/OpenNext runtime and bundle budget
+        if: steps.scope.outputs.nextRuntime == 'true'
+        run: node scripts/next-runtime-smoke.mjs
+      - name: Retain Next runtime measurements
+        if: always() && steps.scope.outputs.nextRuntime == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: next-runtime
+          path: .artifacts/next-runtime/
+          if-no-files-found: ignore
+          retention-days: 1
       - name: Build plugin only for an explicitly requested main candidate
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         run: pnpm plugin:build

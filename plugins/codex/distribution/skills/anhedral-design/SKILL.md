@@ -1,12 +1,18 @@
 ---
 name: anhedral-design
-description: "Explain and extend the scaffold's shared tokens, DOM shadcn UI and Anhedral native shadcn ports."
+description: "Use Anhedral UI as a thin source-owned layer over official shadcn web and React Native Reusables native."
 ---
 
 # Anhedral Design
 
-Read the generated app's instructions and source. Web uses Next.js App Router and DOM shadcn components; native uses Expo and the editable Anhedral native shadcn port in packages/native-ui. Share contracts and tokens, not platform primitives. Keep theme tokens in packages/styling and use existing components before introducing custom primitives.
+Read consumer instructions and source. Anhedral UI is a catalog and CLI over official shadcn on web and React Native Reusables on native, plus a small reviewed Anhedral native extension registry. Do not create another runtime component library, browser emulation layer or exhaustive shadcn native fork.
 
-Use the generated apps/web ui:add and ui:view scripts for official web shadcn components. Native APIs and device acceptance differ; inspect the copied native component source and ../../references/native-ui.md before adapting it. Preserve keyboard focus, accessibility labels, loading/error states and platform-specific interaction. Read version-matched framework guidance and test the requested user flow.
+Read ../../references/ui.md. Use `anhedral ui list`, `init`, `add`, `diff` and `doctor`. Select --web/--native/--all when multiple apps exist. Preview with --dry-run --json. Native prefers declared Anhedral extensions, then RNR, then reports unavailable; the initial extension registry is empty. Availability does not establish API parity or device acceptance.
 
-This skill describes a foundation. Application authentication, billing, integrations and hosting are consumer-owned work; choose separate provider plugins or official SDKs when requested.
+New web apps already include Anhedral UI with three reviewed starter components. For an Anhedral workspace, use add expo then add native-ui to prepare the optional native interface. For other existing Expo projects, complete upstream RNR NativeWind 4 setup first; native UI init does not create a mobile app or rewrite native configuration. UI has no Hono/database/auth prerequisite. Do not add a second styling engine.
+
+Components are consumer-owned source. Preserve edits and MIT attribution; inspect diffs before updates. CLI commands never request overwrite. Share semantic tokens and contracts, while keeping DOM/native implementations separate. Use existing components and conventions before custom primitives. Read installed version-matched framework guides and validate the user flow.
+
+Use Expo APIs directly for device features and keep permission, upload, background and notification policy in application services. Install only required packages with Expo's compatibility-aware installer. Test native keyboard, accessibility, overlays and lifecycle in Android/iOS development builds; browser rendering and typechecking are not native acceptance. Do not revive the legacy port's whole-catalog gate.
+
+See ../../references/capabilities.md for progressive clients and services. Adding a client does not justify adding every UI component. Keep existing App/source edits and shared tokens; composition adapters are fingerprinted and must be reconciled when customized.
