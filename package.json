@@ -29,11 +29,16 @@
     "docs/anhedral-stack.md",
     "docs/assets/anhedral-stack.png",
     "docs/assets/anhedral-stack-light.png",
-    "assets/ui",
     "docs/native-ui.md",
     "docs/ui.md",
     "assets/stack",
-    "docs/capabilities.md"
+    "docs/capabilities.md",
+    "assets/ui/web",
+    "assets/ui/catalog.json",
+    "assets/ui/extensions",
+    "assets/ui/LICENSE.shadcn",
+    "assets/ui/LICENSE.react-native-reusables",
+    "assets/ui/UPSTREAM.json"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -84,9 +89,6 @@
     "plugin:build": "node scripts/check-plugin.mjs",
     "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
-    "test:native-ui": "pnpm build && pnpm --dir tests/native-ui typecheck && pnpm --dir tests/native-ui test",
-    "native-ui:docs": "node scripts/native-ui-catalog.mjs --write",
-    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream",
     "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs"
   },
   "keywords": [

@@ -2,15 +2,15 @@ import { capabilityReferences } from '../capability-references.js';
 import type { StandardOptions } from '../registry/types.js';
 import { put } from './files.js';
 export function writeSetupDocumentation(root: string, options: StandardOptions): void {
-  if (!options.products.includes('hono') && !options.products.includes('expo')) {
-    for (const [file, source] of Object.entries(capabilityReferences())) put(root, file, source);
-    put(
-      root,
-      'README.md',
-      `# ${options.name}
+  for (const [file, source] of Object.entries(capabilityReferences())) put(root, file, source);
+  put(
+    root,
+    'README.md',
+    `# ${options.name}
 
 Next.js on Cloudflare Workers through OpenNext, with Anhedral UI from the start.
-Init creates only apps/web. Use anhedral stack status to inspect later source additions.
+Init starts with apps/web. Review anhedral.json for explicitly composed API/data source.
+Use anhedral stack status to inspect later source additions.
 No providers are provisioned by source generation.
 
 ## Develop
@@ -45,12 +45,18 @@ to review changes, then apply them. Missing parents require explicit selection o
 source-protection contract. No provision or deployment command is implemented here.
 Consumers own integrations, deployment and application distribution. Run pnpm check
 and review your changes before deployment. Builds/startup never migrate databases.
+
+Hono owns privileged API operations when selected. Clients and Next server actions
+call the API; applications never import one another's source. Keep database and
+storage credentials server-side. Implement identity, authorization and ownership
+checks before exposing data or files; private storage is not user authorization.
+Review generated SQL and apply migrations explicitly through the selected database tooling.
 `,
-    );
-    put(
-      root,
-      'AGENTS.md',
-      `# Minimal application foundation
+  );
+  put(
+    root,
+    'AGENTS.md',
+    `# Minimal application foundation
 
 Start with Next.js/OpenNext/Workers and source-owned Anhedral UI. Do not add an API,
 database, authentication, R2 or native client without a concrete feature need.
@@ -63,73 +69,19 @@ UI requires its application platform, not Hono or a database. Share tokens, not
 DOM/native primitives. Preserve consumer edits, attribution and upstream metadata.
 Never automatically overwrite installed components. Read version-matched framework
 guides and run pnpm check. Never migrate a configured database during checks/builds.
-`,
-    );
-    put(
-      root,
-      'docs/architecture.md',
-      '# Architecture\n\nNext.js → OpenNext → Cloudflare Workers, with Anhedral UI. Record feature-driven additions here.\n',
-    );
-    put(
-      root,
-      'docs/verification.md',
-      '# Verification\n\nRecord commands, outcomes and environment. Source generation is not deployment acceptance.\n',
-    );
-    return;
-  }
-
-  put(
-    root,
-    'README.md',
-    `# ${options.name}
-
-Next.js App Router/OpenNext + Expo native + shadcn UI + Hono/workerd + Drizzle/D1 + private R2.
-
-## Develop locally
-
-Use the Node and pnpm versions in package.json. Run pnpm install if generation used --skip-install. Run pnpm dev and open the web URL printed by Next (normally http://localhost:3000). Hono runs on http://127.0.0.1:8787; web /api/health proxies to it. No accounts or secrets are needed for the starter health flow.
-
-Start native separately with pnpm --dir apps/mobile start. Copy apps/mobile/.env.example to apps/mobile/.env and set EXPO_PUBLIC_API_URL to the API origin reachable from the device. Local HTTP is development-only; use HTTPS outside development.
-
-## UI and device capabilities
-
-Web uses DOM shadcn; native uses editable source in packages/native-ui. Share tokens through packages/styling. The shadcn fork is an upstream review source, not an application runtime dependency. Review copied provenance and licenses; adopt later UI changes explicitly without overwriting your edits.
-
-Use Expo SDK packages directly for application capabilities. UI components may compose them for presentation, such as a Copy button using Expo Clipboard; application permissions, background work, uploads and push registration belong to your application. Keep the tested Expo/React Native/React runtime consistent with native-ui peers. Add packages as needed from apps/mobile with pnpm expo install <package>, checking platform support and native configuration. Rebuild the development client after native dependency/configuration changes. Validate web separately from Android/iOS; use physical devices for device-only capabilities.
-
-## Data and private storage
-
-Add tables in packages/db/src/schema.ts. Run pnpm db:generate, review SQL, then explicitly run pnpm db:migrate (local by default). Builds and startup do not migrate databases. Configure real D1 and private R2 identities in apps/api/wrangler.jsonc for your own deployment. Never enable public bucket access or put service credentials in clients.
-
-apps/api/src/private-storage.ts is a server-side helper; it exposes no file routes. Implement your application's identity, authorization, ownership and limits before exposing database or object APIs.
-
-## Your application
-
-You own development, authentication, email, payments and hosting. Add Stripe or RevenueCat yourself if needed. This scaffold has no Platform account, managed provider connection or production activation. Generated configuration and scripts are yours to change. See docs/stack.md and run pnpm check before reviewing changes.
-`,
-  );
-  put(
-    root,
-    'AGENTS.md',
-    `# Application foundation
-
-Use Next.js App Router/OpenNext for web, Expo for native, DOM shadcn and the Anhedral native shadcn port, Hono on Workers/workerd, Drizzle/D1 and private R2. Shared contracts belong in packages/contracts, native components in packages/native-ui, tokens in packages/styling, and server schema/migrations in packages/db.
-
-Hono owns privileged operations. Clients and Next server actions call the API; apps never import one another's source. Keep database/storage credentials server-side. The starter has no authentication, payment integration or public file APIs. Implement identity and authorization before exposing private data. A private bucket is not user authorization.
-
-Keep DOM shadcn and native UI implementations separate, sharing tokens and contracts. Import editable application-local UI source; preserve its provenance, licenses and consumer edits during explicit updates. Use Expo SDK APIs directly for feature capabilities, adding UI adapters only for meaningful presentation or interaction. Keep permission policy and background/provider behavior in application services. The mobile app owns the tested Expo/React Native/React runtime; native-ui peers must match it. Add only needed SDK packages using Expo's compatible installer from apps/mobile and inspect platform support/autolinking/config plugins. Rebuild development clients for native changes and verify Android/iOS behavior separately from browser rendering. Consider @expo/ui controls selectively; do not replace the native port wholesale.
-
-Use pnpm dev for web/API and pnpm --dir apps/mobile start for native. Read version-matched framework documentation. Run pnpm check and exercise changed flows. Review generated SQL and apply migrations explicitly; never migrate a configured remote database during tests, build or startup. Consumers own integration and hosting decisions. Preserve existing source; never reinitialize over an application.
+Hono owns privileged operations when present. Clients call its API; applications
+must not import another application's source. Keep database/storage secrets on
+the server and implement authorization before exposing private data or files.
 `,
   );
   put(
     root,
     'docs/architecture.md',
-    '# Architecture\n\nNext.js / Expo → Hono → Drizzle/D1 and private R2. Record application-owned identity, access rules and integrations here.\n',
+    '# Architecture\n\nNext.js → OpenNext → Cloudflare Workers, with Anhedral UI. Record feature-driven additions here.\n',
   );
   put(
     root,
     'docs/verification.md',
-    '# Verification\n\nRecord commands, outcomes and environment. Generated source is not production acceptance.\n',
+    '# Verification\n\nRecord commands, outcomes and environment. Source generation is not deployment acceptance.\n',
   );
 }

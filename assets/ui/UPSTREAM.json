@@ -10,30 +10,13 @@
       "source": "https://ui.shadcn.com/r/styles/base-nova/input.json",
       "sha256": "b4d1fa668ce203a2d78af7eb23e3769de303d46c983e3e40bed7018423efccb2"
     },
-    "card": {
-      "source": "https://ui.shadcn.com/r/styles/base-nova/card.json",
-      "sha256": "a3b2cb98311bb9ce9475b6cf07d28b9a8eaac282ea6ff51ea77d1d3516947e54"
-    },
     "label": {
       "source": "https://ui.shadcn.com/r/styles/base-nova/label.json",
       "sha256": "ef2ca2ddbd0eb67f3a0f59ee5d970c213172a8edc7bb2b28c9d69020bc6ba950"
-    },
-    "dialog": {
-      "source": "https://ui.shadcn.com/r/styles/base-nova/dialog.json",
-      "sha256": "ace3d5ba732f66e14bd1062306f9022a32040f7c168a697ebb483b4e80cbd7fd"
     }
   },
   "adaptations": [
     "The Base Nova web Button uses the local cn utility, an explicit React client boundary and a public variant export.",
-    "Native components are Anhedral-maintained React Native ports, isolated from DOM components and without React Native Reusables.",
-    "Native themes derive their colors from the generated shared semantic tokens; no separate native palette is installed.",
-    "Native Dialog restores focus to its actionable trigger on both iOS dismissal and Android close transitions.",
     "Recovered Input and Label use the local cn utility; Input delegates keyboard focus styling to the existing shared global focus rule."
-  ],
-  "native": {
-    "catalog": "native/registry.json",
-    "baseline": "https://ui.shadcn.com/docs/components",
-    "retrieved": "2026-10-24",
-    "implementation": "Anhedral-owned React Native semantic adaptations. Native APIs replace browser-only DOM and interaction APIs; device acceptance is tracked separately."
-  }
+  ]
 }

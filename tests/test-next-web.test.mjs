@@ -145,7 +145,7 @@ test('Next development proxy removes stale wire headers after Node fetch decompr
   }
 });
 
-test('explicit legacy workspace separates full Next web, native owned UI and privileged Hono runtime', async () => {
+test('explicit API/data workspace separates Next web and privileged Hono runtime', async () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-next-contract-'));
   const root = path.join(temporary, 'product');
   const read = (file) => readFileSync(path.join(root, file), 'utf8');
@@ -153,7 +153,7 @@ test('explicit legacy workspace separates full Next web, native owned UI and pri
     await scaffoldStandardProject(
       {
         ...parseStandardOptions([root, '--skip-install', '--no-git']),
-        products: ['d1', 'expo', 'hono', 'next', 'r2', 'styling'],
+        products: ['d1', 'hono', 'next', 'r2', 'styling'],
       },
       () => {
         throw Error('offline generation');
@@ -161,26 +161,16 @@ test('explicit legacy workspace separates full Next web, native owned UI and pri
       { quiet: true },
     );
     const web = JSON.parse(read('apps/web/package.json'));
-    const native = JSON.parse(read('apps/mobile/package.json'));
     assert.equal(JSON.parse(read('apps/web/components.json')).style, 'base-nova');
     assert.match(read('pnpm-workspace.yaml'), /@node-minify\/core>glob.*10\.5\.0/);
-    assert.match(read('pnpm-workspace.yaml'), /@expo\/cli>zod.*4\.6\.6/);
     assert.match(read('pnpm-workspace.yaml'), /miniflare>undici.*7\.30\.1/);
     assert.equal(web.dependencies.next, '16.4.2');
     assert.equal(web.dependencies['@opennextjs/cloudflare'], '1.20.12');
     assert.equal(web.devDependencies.wrangler, '4.151.0');
     for (const name of ['react-native', 'react-native-web', 'expo', '@workspace/native-ui'])
       assert.equal(web.dependencies[name], undefined);
-    assert.equal(native.dependencies['react-native-web'], undefined);
-    assert.equal(native.dependencies.nativewind, undefined);
-    assert.deepEqual(JSON.parse(read('apps/mobile/app.json')).expo.platforms, ['ios', 'android']);
-    assert.equal(existsSync(path.join(root, 'apps/mobile/wrangler.jsonc')), false);
-    assert.equal(
-      native.scripts.dev,
-      undefined,
-      'Metro is explicit, not started in ordinary web development',
-    );
-    assert.match(native.scripts.start, /expo start/);
+    assert.equal(existsSync(path.join(root, 'apps/mobile')), false);
+    assert.equal(existsSync(path.join(root, 'packages/native-ui')), false);
     assert.match(web.scripts.dev, /^next dev/);
     assert.match(web.scripts.build, /opennextjs-cloudflare build/);
     assert.doesNotMatch(read('apps/web/next.config.ts'), /output:.*export/);
@@ -192,9 +182,6 @@ test('explicit legacy workspace separates full Next web, native owned UI and pri
     assert.doesNotMatch(read('apps/web/components/ui/input.tsx'), /focus-visible:(?:ring|border)/);
     assert.equal(existsSync(path.join(root, 'apps/web/app/sign-in/page.tsx')), false);
     assert.match(read('apps/web/UPSTREAM.json'), /shadcn/);
-    assert.match(read('packages/native-ui/src/native/button.tsx'), /Pressable/);
-    // Native dialog behavior is exercised by the real generated-source native suite.
-    assert.match(read('packages/native-ui/src/theme.tsx'), /@workspace\/styling/);
     const worker = JSON.parse(read('apps/web/wrangler.jsonc'));
     assert.equal(worker.main, '.open-next/worker.js');
     assert.equal(worker.assets.binding, 'ASSETS');

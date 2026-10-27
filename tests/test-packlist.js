@@ -9,14 +9,6 @@ import { parseNpmPackJson } from './support/npm-pack.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
-const nativeRegistry = JSON.parse(
-  readFileSync(path.join(repoRoot, 'assets/ui/native/registry.json'), 'utf8'),
-);
-const nativeFiles = [
-  ...nativeRegistry.components.map((item) => item.file),
-  ...nativeRegistry.supportFiles,
-  'registry.json',
-].map((file) => 'assets/ui/native/' + file);
 const stackFiles = [
   'assets/stack/ai-schema.ts.txt',
   'assets/stack/ai.ts.txt',
@@ -68,12 +60,10 @@ const requiredFiles = new Set([
   'assets/patches/node-forge@1.4.0.patch',
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
-  ...nativeFiles,
   'docs/native-ui.md',
-  'assets/ui/native/button.tsx',
+  'assets/ui/web/button.tsx',
   'assets/ui/web/input.tsx',
   'assets/ui/web/label.tsx',
-  'assets/ui/theme.tsx',
   'assets/ui/LICENSE.shadcn',
   'assets/ui/UPSTREAM.json',
   'assets/ui/catalog.json',
@@ -95,6 +85,11 @@ const requiredFiles = new Set([
   'docs/verification.md',
 ]);
 const allowedRootFiles = new Set(['LICENSE', 'README.md', 'package.json']);
+const webProvenance = JSON.parse(
+  readFileSync(path.join(repoRoot, 'assets/ui/UPSTREAM.json'), 'utf8'),
+);
+assert.equal(webProvenance.native, undefined, 'Web provenance must not reference the retired port');
+assert.deepEqual(Object.keys(webProvenance.files).sort(), ['button', 'input', 'label']);
 const allowedArtwork = new Set([
   'docs/assets/anhedral-stack.png',
   'docs/assets/anhedral-stack-light.png',
@@ -206,14 +201,18 @@ try {
   );
 
   for (const file of packed.files) {
+    assert.doesNotMatch(
+      file.path,
+      /^(?:assets\/ui\/(?:native\/|native-portal\/|theme(?:-storage)?\.)|dist\/(?:platforms\/mobile\.|scaffold\/(?:native-ui|expo-runtime)\.))/,
+      'Retired native port must not return to the published CLI',
+    );
     const allowedNativeUI =
-      nativeFiles.includes(file.path) ||
       [
         'assets/ui/catalog.json',
         'assets/ui/extensions/registry.json',
         'assets/ui/LICENSE.react-native-reusables',
       ].includes(file.path) ||
-      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|theme\.tsx|theme-storage\.ts|LICENSE\.shadcn|UPSTREAM(?:-LOCK)?\.json)$/.test(
+      /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|LICENSE\.shadcn|UPSTREAM(?:-LOCK)?\.json)$/.test(
         file.path,
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
