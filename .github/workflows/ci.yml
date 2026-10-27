@@ -24,6 +24,8 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Enforce Markdown documentation budget
+        run: node scripts/check-docs-budget.mjs
       - id: scope
         env:
           CI_TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}

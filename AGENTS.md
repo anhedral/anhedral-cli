@@ -12,3 +12,11 @@ This repository owns the Anhedral CLI, source generators and skills-only Codex p
 The public surface is minimal Next.js/Anhedral UI init, progressive add, stack list/status/doctor and ui init/add/list/diff/doctor. See [UI ownership](docs/ui.md). Preserve the prior native port as compatibility material; do not use exhaustive parity as the new UI release gate or substitute unreleased source into Platform’s reviewed artifacts.
 
 Capability composition and generated assets follow [the addition contract](docs/capabilities.md). Never report source installation as provider activation. Preserve journaled writes, the dependency patch gate, disabled-by-default auth methods and explicit source-only dry runs.
+
+## Documentation budget
+
+Keep at most 20 tracked Markdown files in the entire repository, including skills
+and agent notes. Update an existing guide with behavior changes. Keep dated notes
+in `docs/agent-notes/README.md`; older records remain in Git history. Do not create
+parallel manuals or rename ordinary guides to evade the budget. Source-consumed
+text assets and third-party license/provenance notices retain their owning paths.
