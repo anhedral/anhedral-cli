@@ -5,6 +5,11 @@
 
 Anhedral CLI scaffolds applications progressively: Next.js on Cloudflare Workers, a Hono API, Drizzle/D1 and Better Auth, then mobile, browser extension and desktop clients, storage, payments, realtime and AI. Each addition writes editable source into your project.
 
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/anhedral-stack-light.png">
+  <img alt="Progressive scaffold: Next.js, then Hono, then Drizzle/D1 and Better Auth, with optional storage, services, clients and payments." src="docs/assets/anhedral-stack.png" width="1600">
+</picture>
+
 ## Start a project
 
 Start with a Next.js application configured for OpenNext on Cloudflare Workers, with Anhedral UI included as editable source:
