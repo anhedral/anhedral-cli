@@ -60,10 +60,6 @@ process.exitCode = result.status ?? 1;
 `,
   );
   json(root, '.fallowrc.json', {
-    publicPackages: options.products.includes('expo') ? ['@workspace/native-ui'] : [],
-    ignoreDependencies: options.products.includes('expo')
-      ? ['react-native-reanimated', 'react-native-worklets']
-      : [],
     ignorePatterns: [
       'scripts/audit.mjs',
       'scripts/audit-deps.mjs',
@@ -108,8 +104,6 @@ process.exitCode = result.status ?? 1;
     // OpenNext's node-minify dependency pins the vulnerable glob CLI.
     overrides: {
       '@node-minify/core>glob': OPENNEXT_GLOB_VERSION,
-      // Expo CLI's two schema consumers use APIs supported by the patched Zod release.
-      ...(options.products.includes('expo') ? { '@expo/cli>zod': STACK_DEPENDENCIES.zod } : {}),
       'miniflare>undici': STACK_DEPENDENCIES.undici,
     },
     sharedWorkspaceLockfile: true,

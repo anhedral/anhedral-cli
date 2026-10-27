@@ -36,5 +36,3 @@ yarn-error.log*
 **/.output/
 **/playwright-report/
 **/test-results/
-
-/tests/native-ui/.generated/

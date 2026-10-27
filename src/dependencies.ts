@@ -4,50 +4,6 @@ export interface DependencyGroup {
   devDependencies?: Record<string, string>;
 }
 
-// renovate: datasource=npm depName=eslint
-export const NATIVE_ESLINT_VERSION = '10.0.3';
-
-export const MOBILE_APP_DEPENDENCIES: DependencyGroup = {
-  dependencies: {
-    // renovate: datasource=npm depName=expo
-    expo: '57.0.8',
-    // renovate: datasource=npm depName=expo-dev-client
-    'expo-dev-client': '57.0.20',
-    // renovate: datasource=npm depName=expo-linking
-    'expo-linking': '57.0.4',
-    // renovate: datasource=npm depName=expo-router
-    'expo-router': '57.0.8',
-    // renovate: datasource=npm depName=expo-status-bar
-    'expo-status-bar': '57.0.1',
-    // renovate: datasource=npm depName=react
-    react: '19.2.3',
-    // renovate: datasource=npm depName=react-native
-    'react-native': '0.86.0',
-    // renovate: datasource=npm depName=react-native-reanimated
-    'react-native-reanimated': '4.5.0',
-    // renovate: datasource=npm depName=react-native-safe-area-context
-    'react-native-safe-area-context': '5.7.0',
-    // renovate: datasource=npm depName=react-native-screens
-    'react-native-screens': '4.26.2',
-    // renovate: datasource=npm depName=react-native-worklets
-    'react-native-worklets': '0.10.0',
-  },
-  devDependencies: {
-    // renovate: datasource=npm depName=@babel/core
-    '@babel/core': '7.29.7',
-    // renovate: datasource=npm depName=babel-preset-expo
-    'babel-preset-expo': '57.0.14',
-    // renovate: datasource=npm depName=@testing-library/dom
-    '@testing-library/dom': '10.4.1',
-    // renovate: datasource=npm depName=@react-native/metro-config
-    '@react-native/metro-config': '0.86.0',
-    // renovate: datasource=npm depName=@types/react
-    '@types/react': '19.2.10',
-    // renovate: datasource=npm depName=typescript
-    typescript: '6.0.3',
-  },
-};
-
 export const WEB_DEPENDENCIES: DependencyGroup = {
   dependencies: {
     // renovate: datasource=npm depName=next
@@ -88,19 +44,6 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
     '@types/react-dom': '19.2.3',
     // renovate: datasource=npm depName=wrangler
     wrangler: '4.151.0',
-  },
-};
-
-export const NATIVE_UI_DEPENDENCIES: DependencyGroup = {
-  dependencies: {
-    // renovate: datasource=npm depName=react-native-svg
-    'react-native-svg': '15.15.4',
-    // renovate: datasource=npm depName=expo-clipboard
-    'expo-clipboard': '57.0.2',
-    // renovate: datasource=npm depName=@react-native-async-storage/async-storage
-    '@react-native-async-storage/async-storage': '2.2.0',
-    // renovate: datasource=npm depName=expo-system-ui
-    'expo-system-ui': '57.0.3',
   },
 };
 

@@ -48,17 +48,17 @@ test('default offline init creates only the Next.js application with Anhedral UI
     rmSync(temporary, { recursive: true, force: true });
   }
 });
-test('explicit legacy source composition retains the full-stack recipes without managed features', async () => {
+test('explicit API/data composition retains server boundaries without the retired native port', async () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-foundation-'));
   const root = path.join(temporary, 'app');
   try {
     const options = {
       ...parseStandardOptions([root, '--skip-install', '--no-git']),
-      products: ['d1', 'expo', 'hono', 'next', 'r2', 'styling'],
+      products: ['d1', 'hono', 'next', 'r2', 'styling'],
     };
-    assert.deepEqual(options.products, ['d1', 'expo', 'hono', 'next', 'r2', 'styling']);
+    assert.deepEqual(options.products, ['d1', 'hono', 'next', 'r2', 'styling']);
     await scaffoldStandardProject(options, noCommands, { quiet: true });
-    assert.deepEqual(readdirSync(path.join(root, 'apps')).sort(), ['api', 'mobile', 'web']);
+    assert.deepEqual(readdirSync(path.join(root, 'apps')).sort(), ['api', 'web']);
     const config = JSON.parse(read(root, 'anhedral.json'));
     assert.deepEqual(Object.keys(config).sort(), [
       'identity',
@@ -94,14 +94,15 @@ test('explicit legacy source composition retains the full-stack recipes without 
       'pnpm-lock.yaml',
     ])
       assert.equal(existsSync(path.join(root, absent)), false, absent);
-    for (const app of ['web', 'mobile', 'api'])
+    for (const app of ['web', 'api'])
       assert.doesNotMatch(
         read(root, `apps/${app}/package.json`),
         /better-auth|react-native-purchases|"stripe"|eas-cli/,
       );
     assert.match(read(root, 'packages/db/src/index.ts'), /drizzle-orm\/d1/);
     assert.match(read(root, 'apps/web/components/ui/button.tsx'), /@base-ui\/react\/button/);
-    assert.match(read(root, 'packages/native-ui/src/native/button.tsx'), /Pressable/);
+    assert.equal(existsSync(path.join(root, 'packages/native-ui')), false);
+    assert.equal(existsSync(path.join(root, 'apps/mobile')), false);
   } finally {
     rmSync(temporary, { recursive: true, force: true });
   }
@@ -115,6 +116,25 @@ test('payment selectors are rejected and dry-run creates no destination', async 
     await scaffoldStandardProject(parseStandardOptions([root, '--dry-run']), noCommands, {
       quiet: true,
     });
+    assert.equal(existsSync(root), false);
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+test('retired programmatic Expo composition fails before writing an application', async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-retired-native-'));
+  const root = path.join(temporary, 'app');
+  try {
+    await assert.rejects(
+      scaffoldStandardProject(
+        {
+          ...parseStandardOptions([root, '--skip-install', '--no-git']),
+          products: ['next', 'styling', 'expo'],
+        },
+        noCommands,
+      ),
+      /Legacy Expo source composition is retired.*anhedral add expo.*anhedral add native-ui/,
+    );
     assert.equal(existsSync(root), false);
   } finally {
     rmSync(temporary, { recursive: true, force: true });

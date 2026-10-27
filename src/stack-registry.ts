@@ -5,7 +5,6 @@ import { GENERATOR_VERSION } from './version.js';
 import { scaffoldApi } from './scaffold/api.js';
 import { scaffoldDatabase } from './scaffold/database.js';
 import { scaffoldWeb } from './platforms/web.js';
-import { scaffoldExpo } from './platforms/mobile.js';
 import { scaffoldPrivateStorage } from './scaffold/storage.js';
 import { sharedPackage } from './scaffold/files.js';
 import type {
@@ -72,22 +71,6 @@ const PRODUCT_ITEMS = defineItems({
     ),
     install: scaffoldWeb,
     environment: ['ANHEDRAL_PREVIEW_ORIGIN'],
-  },
-  expo: {
-    type: 'application',
-    description: 'Native Expo iOS and Android application with Anhedral native shadcn UI',
-    targets: ['apps/mobile', 'packages/native-ui'],
-    registryDependencies: ['workspace', 'typescript', 'eslint', 'styling'],
-    setup: requirements(
-      'Native iOS and Android application',
-      ['Simulator or device'],
-      ['For requested native distribution only: client-owned Apple/Google developer accounts'],
-      ['For requested native builds only: platform signing credentials and EAS access when used'],
-      ['Expo native client; signing and store configuration'],
-      ['Simulator/device and signed-build acceptance'],
-    ),
-    install: scaffoldExpo,
-    environment: ['EXPO_PUBLIC_API_URL'],
   },
   hono: {
     type: 'application',
@@ -162,7 +145,7 @@ const PRODUCT_ITEMS = defineItems({
       [],
       [],
       [],
-      ['Shared light/dark tokens, web CSS and Anhedral native shadcn port'],
+      ['Shared light/dark tokens, web CSS and optional RNR/NativeWind source'],
       ['Consistency across selected interfaces; preserve platform-specific components'],
     ),
     package: packageSource(

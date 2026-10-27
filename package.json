@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Start with Next.js and Anhedral UI, then progressively add APIs, data, clients, payments, realtime and AI as editable source.",
   "type": "module",
   "exports": {
@@ -27,11 +27,18 @@
     "docs/software-factory.md",
     "docs/verification.md",
     "docs/anhedral-stack.md",
-    "assets/ui",
+    "docs/assets/anhedral-stack.png",
+    "docs/assets/anhedral-stack-light.png",
     "docs/native-ui.md",
     "docs/ui.md",
     "assets/stack",
-    "docs/capabilities.md"
+    "docs/capabilities.md",
+    "assets/ui/web",
+    "assets/ui/catalog.json",
+    "assets/ui/extensions",
+    "assets/ui/LICENSE.shadcn",
+    "assets/ui/LICENSE.react-native-reusables",
+    "assets/ui/UPSTREAM.json"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -82,9 +89,6 @@
     "plugin:build": "node scripts/check-plugin.mjs",
     "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
-    "test:native-ui": "pnpm build && pnpm --dir tests/native-ui typecheck && pnpm --dir tests/native-ui test",
-    "native-ui:docs": "node scripts/native-ui-catalog.mjs --write",
-    "native-ui:upstream": "node scripts/native-ui-catalog.mjs --upstream",
     "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs"
   },
   "keywords": [

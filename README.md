@@ -1,7 +1,7 @@
 # Anhedral CLI
 
 > [!WARNING]
-> **Under construction.** Anhedral CLI is under active development. Commands, generated source and integrations are evolving, and breaking changes are expected. See the [verification record](docs/verification.md) for current progress.
+> **Under construction.** Anhedral CLI is under active development. Commands, generated source and integrations are evolving, and breaking changes are expected. Commands and source-generation details are documented below.
 
 Anhedral CLI scaffolds applications progressively: Next.js on Cloudflare Workers, a Hono API, Drizzle/D1 and Better Auth, then mobile, browser extension and desktop clients, storage, payments, realtime and AI. Each addition writes editable source into your project.
 
