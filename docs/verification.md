@@ -1,3 +1,7 @@
+# README construction status and WXT grouping — October 26, 2026
+
+Restored the under-construction notice, replaced exclusion-focused README copy with affirmative descriptions and grouped Chrome Side Panel API support under WXT. GPUI is described separately as the Rust desktop target. The README describes all 13 capability IDs against the source catalog, their prerequisites, staged and dependency-inclusive composition examples, UI commands and the service-activation lifecycle. The existing `side-panel` CLI selection remains grouped under WXT. README whitespace, capability coverage and local-link checks passed. Documentation-only change; commands and generated source are unchanged.
+
 # Progressive init and thin Anhedral UI — October 26, 2026
 
 Prepared on `codex/progressive-ui` from staging `97c4f28` in an isolated checkout. The primary checkout's ongoing native port is preserved. New init generates only Next.js/OpenNext/Workers with editable Anhedral UI (three reviewed web starter components), shared tokens and tooling. The CLI adds ui init/add/list/diff/doctor, a packaged upstream catalog and an empty reviewed native extension registry. Web uses official shadcn; native falls back to RNR NativeWind 4. No new whole-library fork or runtime UI package is introduced. Existing Platform pins and installed plugins are unchanged.
