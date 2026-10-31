@@ -3,8 +3,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { unlink } from 'node:fs/promises';
 import { z } from 'zod';
-import { commandArguments, commandArgumentError } from './cli-arguments.js';
-import type { OutputOptions } from './cli-output.js';
+import { CliArgumentError, commandArguments, commandArgumentError } from './cli-arguments.js';
+import { CliFailure } from './cli-errors.js';
+import { stripVTControlCharacters } from 'node:util';
+import { createReporter, type OutputOptions } from './cli-output.js';
 import {
   canonicalCliJson,
   cliPlanInputSchema,
@@ -26,6 +28,7 @@ import {
   secretStore,
   writePrivate,
   type SecretStore,
+  type PlatformFailureCategory,
 } from './platform-state.js';
 const credential = cliLoginSchema.extend({ origin: z.string() });
 const pending = z
@@ -41,22 +44,114 @@ const uploadState = z
   })
   .strict();
 const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+interface PlatformDependencies {
+  store?: SecretStore;
+  fetch?: typeof fetch;
+  sleep?: (ms: number) => Promise<void>;
+}
+
+function visible(value: unknown): string {
+  return stripVTControlCharacters(String(value ?? '')).replace(/[\x00-\x1f\x7f]/g, ' ');
+}
+
+function formatPlatformResult(command: string, result: unknown): string {
+  const data = result as Record<string, unknown>;
+  if (data.status === 'authorization_required')
+    return `Approve CLI access at ${visible(data.verificationUrl)}\nConfirm code ${visible(data.userCode)}.\nNext: ${visible(data.nextAction)}`;
+  if (data.status === 'authenticated')
+    return `Signed in to ${visible(data.origin)}.\nExpires: ${visible(data.expiresAt)}.`;
+  if (data.status === 'logged_out') return `Logged out of ${visible(data.origin)}.`;
+  if (data.status === 'unlinked') return 'Removed the local project link.';
+  if (command === 'whoami') {
+    const context = data.context as
+      | {
+          credential?: { kind: string };
+          project?: { name: string; projectId: string; teamId: string } | null;
+        }
+      | undefined;
+    return [
+      `Signed in as ${visible(data.name)} (${visible(data.principalId)}).`,
+      `API origin: ${visible(data.origin)}.`,
+      `Expires: ${visible(data.expiresAt)}.`,
+      ...(context
+        ? [
+            `Credential store: ${visible(context.credential?.kind)}.`,
+            context.project
+              ? `Saved local project: ${visible(context.project.name)} (${visible(context.project.projectId)}), team ${visible(context.project.teamId)}. Project access has not been verified.`
+              : 'No local project link is saved.',
+          ]
+        : []),
+    ].join('\n');
+  }
+  if (command === 'link')
+    return `Linked to ${visible(data.name)} (${visible(data.projectId)}).\nTeam: ${visible(data.teamId)}.`;
+  if (data.status === 'dry_run')
+    return `Source archive preview: ${visible(data.files)} files, ${visible(data.bytes)} source bytes, ${visible(data.archiveBytes)} archive bytes.\nNo source was uploaded. Review the included paths with --json.`;
+  if (command === 'source')
+    return `Source ${visible(data.state)} (${visible(data.id)}).\nSource revision: ${visible(data.sourceRevision ?? 'not sealed')}.\nUpload does not activate a runtime or deployment.`;
+  if (command === 'deploy')
+    return [
+      data.state
+        ? `Candidate ${visible(data.state)} (${visible(data.candidateId)}).`
+        : `Deployment plan prepared (${visible(data.id)}).`,
+      `Source revision: ${visible(data.sourceRevision)}.`,
+      'Server policy controls runtime admission. No preview or deployment was activated.',
+    ].join('\n');
+  return 'Platform command completed.';
+}
+
 export async function runPlatformCommand(
   command: string,
   args: string[],
   output: OutputOptions,
-  dependencies: {
-    store?: SecretStore;
-    fetch?: typeof fetch;
-    sleep?: (ms: number) => Promise<void>;
-  } = {},
+  dependencies: PlatformDependencies = {},
+): Promise<void> {
+  try {
+    await runPlatformOperation(command, args, output, dependencies);
+  } catch (error) {
+    if (error instanceof CliArgumentError || error instanceof CliFailure) throw error;
+    if (error instanceof z.ZodError)
+      throw createPlatformFailure(
+        'Platform data or saved context does not match the supported protocol. Preserve saved state and verify the selected context before retrying.',
+        `Run anhedral ${command} --help.`,
+        'context',
+      );
+    if (error instanceof SyntaxError)
+      throw createPlatformFailure(
+        'Selected local Platform input is not valid JSON. Preserve saved state and review the selected input before retrying.',
+        `Run anhedral ${command} --help.`,
+        'context',
+      );
+    if (
+      ['ENOENT', 'ENOTDIR', 'EISDIR', 'EACCES', 'EPERM'].includes(
+        (error as NodeJS.ErrnoException)?.code ?? '',
+      )
+    )
+      throw createPlatformFailure(
+        'A required local Platform file is missing or inaccessible. Review the selected working directory, manifest and credential store.',
+        `Run anhedral ${command} --help.`,
+        'context',
+      );
+    throw error;
+  }
+}
+
+async function runPlatformOperation(
+  command: string,
+  args: string[],
+  output: OutputOptions,
+  dependencies: PlatformDependencies,
 ) {
-  void output;
-  const platformFailure = (message: string) =>
-    createPlatformFailure(message, `Run anhedral ${command} --help.`);
+  const reporter = createReporter(output, (result) => formatPlatformResult(command, result), true);
+  const platformFailure = (
+    message: string,
+    category: PlatformFailureCategory = 'context',
+    retryable = false,
+    nextAction = `Run anhedral ${command} --help.`,
+  ) => createPlatformFailure(message, nextAction, category, retryable);
   const options = commandArguments(command, args),
     origin = platformOrigin(options.value('--api-url'));
-  const emit = (result: unknown) => console.log(JSON.stringify(result));
+  const emit = (result: unknown) => reporter.result(result);
   if (
     ['login', 'logout', 'whoami', 'link', 'unlink'].includes(command) &&
     options.positional.length
@@ -81,6 +176,15 @@ export async function runPlatformCommand(
     (options.has('--manifest') || options.has('--new'))
   )
     throw commandArgumentError(command, 'Manifest and --new options apply to deploy plan only.');
+  if (
+    command === 'link' &&
+    (!z.uuid().safeParse(options.value('--project')).success ||
+      !z.uuid().safeParse(options.value('--team')).success)
+  )
+    throw commandArgumentError(
+      command,
+      'Supply existing project and team UUIDs with --project and --team.',
+    );
   const root = process.cwd(),
     stateDir = join(root, '.anhedral', 'platform'),
     linkPath = join(stateDir, 'project.json'),
@@ -117,6 +221,20 @@ export async function runPlatformCommand(
       origin,
       options.value('--credential-file') ? resolve(options.value('--credential-file')!) : undefined,
     );
+  const readCredential = async () => {
+    try {
+      return await store.read();
+    } catch (error) {
+      if (error instanceof SyntaxError)
+        throw platformFailure(
+          'Saved credential data is not valid JSON. Preserve it and reconcile the selected credential store.',
+          'auth',
+          false,
+          'Run anhedral login --help.',
+        );
+      throw error;
+    }
+  };
   const request = async (
     path: string,
     method: string,
@@ -146,12 +264,17 @@ export async function runPlatformCommand(
               : JSON.stringify(body),
       });
     } catch {
-      throw platformFailure('Platform request was interrupted. Retry the same command to resume.');
+      throw platformFailure(
+        'Platform request was interrupted. Retry the same command to resume.',
+        'network',
+        true,
+        `Retry anhedral ${command} with the same API origin, working directory and options to resume.`,
+      );
     }
     const data: unknown = await readSourceBounded(response.body, 65536)
       .then((b) => JSON.parse(new TextDecoder().decode(b)))
       .catch(() => {
-        throw platformFailure('Platform returned an invalid response.');
+        throw platformFailure('Platform returned an invalid response.', 'network');
       });
     if (!response.ok) {
       if (path === '/auth/token') {
@@ -178,6 +301,17 @@ export async function runPlatformCommand(
             : response.status === 403
               ? 'Current project build access is unavailable.'
               : `Platform request failed (${response.status}).`,
+        response.status === 401
+          ? 'auth'
+          : response.status === 403
+            ? 'permission'
+            : response.status === 409
+              ? 'conflict'
+              : 'network',
+        response.status === 429 || response.status >= 500,
+        response.status === 401
+          ? 'Run anhedral login with the same API origin and credential store.'
+          : `Run anhedral ${command} --help.`,
       );
     }
     return data;
@@ -185,7 +319,7 @@ export async function runPlatformCommand(
   if (command === 'login') {
     if (options.positional.length)
       throw commandArgumentError(command, 'Login does not accept positional arguments.');
-    let state = pending.safeParse(await store.read());
+    let state = pending.safeParse(await readCredential());
     if (
       !options.has('--resume') ||
       !state.success ||
@@ -204,7 +338,7 @@ export async function runPlatformCommand(
     }
     if (!state.success) throw platformFailure('Login state is unavailable. Start login again.');
     const saved = state.data;
-    if (options.has('--start') || (!process.stdin.isTTY && !options.has('--resume'))) {
+    if (options.has('--start') || (!reporter.canPrompt && !options.has('--resume'))) {
       emit({
         status: 'authorization_required',
         verificationUrl: saved.device.verification_uri_complete,
@@ -215,7 +349,7 @@ export async function runPlatformCommand(
       });
       return;
     }
-    console.error(
+    reporter.diagnostic(
       `Approve CLI access at ${saved.device.verification_uri_complete}\nConfirm code ${saved.device.user_code}.`,
     );
     let interval = saved.device.interval * 1000;
@@ -240,9 +374,14 @@ export async function runPlatformCommand(
     await store.clear();
     throw platformFailure('Device approval expired. Start login again.');
   }
-  const saved = credential.safeParse(await store.read());
+  const saved = credential.safeParse(await readCredential());
   if (!saved.success || saved.data.origin !== origin)
-    throw platformFailure('Log in to the selected API origin first.');
+    throw platformFailure(
+      'Log in to the selected API origin first.',
+      'auth',
+      false,
+      'Run anhedral login with the same API origin and credential store.',
+    );
   const token = saved.data.token;
   if (command === 'logout') {
     await request('/auth/logout', 'POST', {}, token);
@@ -259,7 +398,56 @@ export async function runPlatformCommand(
     })
     .parse(await request('/actor', 'GET', undefined, token));
   if (command === 'whoami') {
-    emit({ ...actor, origin, expiresAt: saved.data.expiresAt });
+    const identity = { ...actor, origin, expiresAt: saved.data.expiresAt };
+    if (!options.has('--context')) {
+      emit(identity);
+      return;
+    }
+    const savedLink = await readPrivate(linkPath);
+    const localLink = savedLink === null ? null : linkSchema.safeParse(savedLink);
+    if (
+      localLink &&
+      (!localLink.success ||
+        localLink.data.origin !== origin ||
+        localLink.data.principalId !== actor.principalId)
+    )
+      throw platformFailure(
+        'The saved project link does not match the selected API origin and signed-in identity. Preserve it and explicitly link the intended project.',
+        'context',
+        false,
+        'Run anhedral link --help.',
+      );
+    const file = options.value('--credential-file');
+    emit({
+      ...identity,
+      context: {
+        apiOrigin: { value: origin, source: options.has('--api-url') ? 'flag' : 'default' },
+        identityVerification: 'live-platform',
+        credential: {
+          source: file ? 'flag' : dependencies.store ? 'injected' : 'os-secret-store',
+          kind: file
+            ? 'owner-only-file'
+            : dependencies.store
+              ? 'injected'
+              : process.platform === 'darwin'
+                ? 'macos-keychain'
+                : process.platform === 'linux'
+                  ? 'linux-secret-service'
+                  : 'unsupported',
+        },
+        project:
+          localLink && localLink.success
+            ? {
+                projectId: localLink.data.projectId,
+                teamId: localLink.data.teamId,
+                name: localLink.data.name,
+                source: '.anhedral/platform/project.json',
+                verification: 'saved-local-link',
+                access: 'not-verified',
+              }
+            : null,
+      },
+    });
     return;
   }
 
@@ -357,7 +545,14 @@ export async function runPlatformCommand(
         const info = await handle.stat();
         if (!info.isFile() || info.size > 32768)
           throw platformFailure('Deployment manifest exceeds its limit.');
-        manifest = JSON.parse(await handle.readFile('utf8'));
+        try {
+          manifest = JSON.parse(await handle.readFile('utf8'));
+        } catch {
+          throw commandArgumentError(
+            command,
+            'The deployment manifest is not valid JSON. Review it before retrying.',
+          );
+        }
       } finally {
         await handle.close();
       }
