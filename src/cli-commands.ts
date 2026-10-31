@@ -1,3 +1,4 @@
+import { runPlatformCommand } from './platform-command.js';
 import { runCapabilityCommand } from './capability-command.js';
 import { runUiCommand } from './ui-command.js';
 import { commandArgumentError } from './cli-arguments.js';
@@ -9,6 +10,8 @@ export async function runCommand(
   args: string[],
   output: OutputOptions,
 ): Promise<void> {
+  if (['login', 'logout', 'whoami', 'link', 'unlink', 'source', 'deploy'].includes(command))
+    return runPlatformCommand(command, args, output);
   if (command === 'add' || command === 'stack') return runCapabilityCommand(command, args, output);
   if (command === 'ui') return runUiCommand(args, output);
   if (command !== 'init')

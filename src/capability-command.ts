@@ -15,6 +15,7 @@ import { put } from './scaffold/files.js';
 import { execFile } from './util.js';
 import { capabilityReferences } from './capability-references.js';
 import { configureDependencyPatches } from './dependency-patches.js';
+import { composeSourceProvenance } from './composition.js';
 import type { StandardRunner } from './registry/types.js';
 
 function projectRoot(cwd: string) {
@@ -136,11 +137,17 @@ export async function runCapabilityCommand(
       parsed.has('--with-dependencies'),
     );
     const installed = [...state.installed, ...additions];
+    const composition = composeSourceProvenance(
+      e.json('anhedral.json').composition,
+      installed,
+      additions,
+    );
     for (const id of additions) addCapabilityRecipe(e, id, manifest.name);
     if (additions.length) {
       for (const [file, source] of Object.entries(capabilityReferences()))
         if (e.read(file) === null) e.create(file, source);
       composeCapabilities(e, installed);
+      e.set('anhedral.json', ['composition'], composition);
       e.set('anhedral.json', ['capabilities'], {
         schemaVersion: 1,
         installed,

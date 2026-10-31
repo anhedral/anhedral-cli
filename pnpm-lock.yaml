@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      ignore:
+        specifier: 7.0.14
+        version: 7.0.14
       jsonc-parser:
         specifier: 3.3.1
         version: 3.3.1
       yaml:
         specifier: 2.9.1
         version: 2.9.1
+      zod:
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: 20.19.43
@@ -27,9 +33,6 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
-      zod:
-        specifier: 4.6.6
-        version: 4.6.6
 
 packages:
 
@@ -39,6 +42,10 @@ packages:
   hono@4.13.13:
     resolution: {integrity: sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==}
     engines: {node: '>=16.9.0'}
+
+  ignore@7.0.14:
+    resolution: {integrity: sha512-wCBiZ77u1tuWde6G/nfOtLaCTYcFDU5yCzARzK10y+rLhzYoL7a7yEemcopcc2Mzow7gZOIjnV2ym1NYmdiJOQ==}
+    engines: {node: '>= 4'}
 
   jsonc-parser@3.3.1:
     resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
@@ -71,6 +78,8 @@ snapshots:
       undici-types: 6.21.0
 
   hono@4.13.13: {}
+
+  ignore@7.0.14: {}
 
   jsonc-parser@3.3.1: {}
 

@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./deployment": {
+      "types": "./dist/contracts/deployment.d.ts",
+      "import": "./dist/contracts/deployment.js"
     }
   },
   "types": "./dist/index.d.ts",
@@ -38,7 +42,8 @@
     "assets/ui/extensions",
     "assets/ui/LICENSE.shadcn",
     "assets/ui/LICENSE.react-native-reusables",
-    "assets/ui/UPSTREAM.json"
+    "assets/ui/UPSTREAM.json",
+    "assets/contracts"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -111,11 +116,12 @@
     "@types/node": "20.19.43",
     "hono": "4.13.13",
     "prettier": "3.9.10",
-    "typescript": "5.9.3",
-    "zod": "4.6.6"
+    "typescript": "5.9.3"
   },
   "dependencies": {
     "jsonc-parser": "3.3.1",
-    "yaml": "2.9.1"
+    "yaml": "2.9.1",
+    "zod": "4.6.6",
+    "ignore": "7.0.14"
   }
 }

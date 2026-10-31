@@ -133,6 +133,19 @@ try {
   );
   assert.equal(packageJson.bin.anhedral, 'dist/bin.js');
   assert.equal(packageJson.types, './dist/index.d.ts');
+  assert.ok(packageJson.dependencies.zod, 'portable schemas require Zod in production installs');
+  assert.equal(
+    run(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        "import { deploymentContractVersion, deploymentIntentSchema } from 'anhedral/deployment'; console.log(deploymentContractVersion, deploymentIntentSchema.safeParse({contractVersion:1,runtimeProfile:'fixture',environment:'preview',visibility:'protected'}).success);",
+      ],
+      installRoot,
+    ).stdout.trim(),
+    '1 true',
+  );
   assert.match(runInstalledCli(installRoot).stdout, /anhedral init/);
   runInstalledScaffold(installRoot);
   assert.equal(existsSync(path.join(npmCache, 'plugin-data')), false);

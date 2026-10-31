@@ -1,0 +1,13 @@
+{
+  "contractVersion": 1,
+  "owner": "anhedral/platform-contracts/deployment",
+  "sourceRevision": "b61d5e7c32d7fe3b5364e2b3045853573b99fdff",
+  "files": {
+    "cli-transport.ts": "9e8f596f0a4630fb78a8df79b7ef19d4cde326fb3318b004de7b502d23065e18",
+    "source-profile.ts": "6e715dd9ff2f762de302bdb2380c22ea19f138283da1d2bd61c1cc258c7e2d67",
+    "source-bundle.ts": "d2a09fe88dc5954b31c57ab30d4353ca894b004c4939835b3a4baa9a21cd09e3",
+    "deployment.ts": "52614eb03862d4edd3275c0a9e5b703f18bd099f038e49278987193cb11498ab",
+    "fixtures.json": "b87b793b851ae59d976a2a55983b17bf7e1e6d81f8086b05af53a379683f2174",
+    "acceptance.mjs": "9de5bbe134cd4e98225318e69cc061433ebce4f3a6cc4574ea251c9bb398bb48"
+  }
+}
