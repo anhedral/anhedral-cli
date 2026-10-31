@@ -1,5 +1,12 @@
 # Development notes
 
+## 2026-10-31 — CLI 0.18.0 source preparation
+
+Prepare reviewed Platform login, source handoff and build-status commands for a
+minor release. Hosting stays disabled and Windows credential storage unsupported.
+The generated glob pin includes GHSA-3g3m-2fjr-6pw4 cancellation remediation.
+This source checkpoint does not publish npm or update an installed plugin.
+
 ## 2026-10-30 — Isolated build admission
 
 Local staging consumes the shared build-state/receipt schemas. Exact build-only
