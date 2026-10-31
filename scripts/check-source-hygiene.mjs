@@ -6,6 +6,7 @@ const directories = [
   '.agents',
   '.github',
   'assets/patches',
+  'assets/security',
   'assets/stack',
   'docs',
   'plugins/codex/distribution',

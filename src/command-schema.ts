@@ -123,7 +123,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       },
     ],
     examples: ['deploy plan --manifest deployment.json', 'deploy prepare', 'deploy status'],
-    note: 'Preparation runs an isolated build only with exact server runtime admission and a configured private builder; otherwise it awaits runtime. No preview or deployment is activated.',
+    note: 'Preparation reserves a candidate; server policy controls build admission. No preview or deployment is activated.',
   },
   source: {
     description: 'Upload an immutable source checkpoint with resumable chunks.',

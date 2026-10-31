@@ -61,13 +61,12 @@ rejects symlinks and recognized credential material, and hashes every bounded
 chunk plus the complete archive and canonical source inventory. Credential scanning
 is deliberately conservative; inspect source before uploading.
 
-Limits and archive policy live in the hash-checked Platform transport snapshot in
-`src/contracts`; protocol code is in `src/platform-command.ts`. Sealed source feeds
-Platform's existing candidate pipeline. Hosted admission remains disabled and
-upload does not deploy, activate providers, migrate a database or replace existing
-application identities. Run `tests/test-platform.test.mjs` after building; the
-Platform API fixture can also exercise this built CLI against real Hono/isolated
-PostgreSQL routes by setting `ANHEDRAL_CLI_DIST` to this repository's `dist` directory.
+Public upload limits and message shapes live in `src/contracts`; protocol code is
+in `src/platform-command.ts`. The server independently authenticates the caller,
+checks current tenant/project authority and revocation, validates source, and
+enforces admission. Client checks and supplied IDs cannot grant access. Upload
+does not deploy, activate providers, migrate a database or replace identities.
+Run `tests/test-platform.test.mjs` after building for isolated client fixtures.
 
 `deploy plan --manifest <file>` plans from the saved sealed upload, independently
 of subsequent local edits. The manifest follows Platform's `deploymentManifestSchema`
@@ -77,13 +76,17 @@ preview Hono/D1 profile is currently planned. Plans bind source/lockfile/migrati
 routing state, principal epoch and project authority. Artifact provenance and
 runtime configuration remain explicitly unverified; null receipts are not approval.
 
-`deploy prepare` reserves an immutable candidate. With exact server admission of
-the CLI artifact, Linux image, dependency lock and build tool plus a configured
-private builder, it starts a disposable isolated build. Otherwise it remains
-`awaiting-runtime`. `deploy status` reads `building`, `built` or `failed` with a
-private build digest. A built candidate grants no preview or publishing capability.
-These commands never provision, migrate, activate a preview or deploy. Hosted
-admission stays closed. Lost responses resume the same saved request. Changed manifest inputs or
+`deploy prepare` reserves an immutable candidate. `deploy status` reads
+`awaiting-runtime`, `building`, `built` or `failed`. A built candidate grants no
+preview or publishing capability. Runtime admission and build enforcement are
+server-owned. These commands never provision, migrate, activate a preview or
+deploy. Lost responses resume the same saved request. Changed manifest inputs or
 routing require `deploy plan --manifest <file> --new`. Plan/source expiry and
 revocation fail closed. State under `.anhedral/platform/deployment.json` contains
 no credentials and cannot select a network origin or change the signed-in identity.
+
+The CLI and skills-only plugin share one release version. Build prepares the
+marketplace pointer to that version's immutable `plugin-v<version>` tag; it does
+not create the tag or publish either artifact. During review that pointer may be
+unavailable. Install an already published version until the coordinated release
+has completed and its tag and artifact integrities have been verified.

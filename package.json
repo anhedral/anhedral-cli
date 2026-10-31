@@ -43,7 +43,8 @@
     "assets/ui/LICENSE.shadcn",
     "assets/ui/LICENSE.react-native-reusables",
     "assets/ui/UPSTREAM.json",
-    "assets/contracts"
+    "assets/contracts",
+    "assets/security"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -89,8 +90,8 @@
     "test:standard": "pnpm build && node --test tests/test-standard.test.mjs",
     "test:unit": "node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
     "test:integration": "pnpm build && node tests/test-generated-apps.mjs",
-    "format": "prettier --write src scripts tests \"assets/patches/*.mjs\" assets/ui && node scripts/stack-template-format.mjs --write",
-    "format:check": "prettier --check src scripts tests \"assets/patches/*.mjs\" assets/ui && node scripts/stack-template-format.mjs",
+    "format": "prettier --write src scripts tests \"assets/patches/*.mjs\" assets/ui assets/security && node scripts/stack-template-format.mjs --write",
+    "format:check": "prettier --check src scripts tests \"assets/patches/*.mjs\" assets/ui assets/security && node scripts/stack-template-format.mjs",
     "plugin:build": "node scripts/check-plugin.mjs",
     "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",

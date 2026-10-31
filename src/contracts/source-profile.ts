@@ -1,5 +1,5 @@
 // Shared by trusted Worker source tools and native checkpoint inventory.
-export const INVENTORY_PROFILE = "anhedral-vinext-source-v2";
+export const INVENTORY_PROFILE = 'anhedral-vinext-source-v2';
 export const excludedSource =
   /(?:^|\/)(?:node_modules|\.git|\.anhedral|\.next|\.turbo|\.wrangler|dist|build)(?:\/|$)/;
 export const generatedSource =
