@@ -112,6 +112,16 @@ const ENVIRONMENT_OPTIONS: readonly CommandOption[] = [
   { flag: '--new', description: 'Start another import instead of resuming saved identity.' },
   { flag: '--dry-run', description: 'Validate input locally and print names and types only.' },
 ];
+const STAGING_OPTIONS: readonly CommandOption[] = [
+  ...PLATFORM_OPTIONS,
+  {
+    flag: '--candidate',
+    value: 'uuid',
+    arity: 'required',
+    description: 'Select a ready, runtime-verified deployment candidate.',
+  },
+  { flag: '--new', description: 'Start a new staging deployment using the current generation.' },
+];
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   completion: {
     description: 'Print an offline shell completion script.',
@@ -255,6 +265,89 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     conflicts: [['--file', '--stdin']],
     examples: ['env list', 'env import --environment staging --file .env.local --dry-run'],
     note: 'Values never appear in output or retry state. Platform enforces project roles and production approvals; saving configuration does not change an existing deployment.',
+  },
+  staging: {
+    description: 'Manage persistent staging deployments for the linked project.',
+    usage: 'staging <status|deploy> [options]',
+    options: STAGING_OPTIONS,
+    positional: { name: 'operation', min: 1, max: 1, choices: ['status', 'deploy'] },
+    children: {
+      status: {
+        description: 'Read staging history and active deployment.',
+        usage: 'staging status',
+        options: PLATFORM_OPTIONS,
+        positional: { name: 'operation', min: 0, max: 0 },
+        examples: ['staging status --json'],
+      },
+      deploy: {
+        description: 'Deploy a ready candidate to staging.',
+        usage: 'staging deploy --candidate <uuid> [--new]',
+        options: STAGING_OPTIONS,
+        positional: { name: 'operation', min: 0, max: 0 },
+        examples: ['staging deploy --candidate <uuid>'],
+      },
+    },
+    examples: ['staging status', 'staging deploy --candidate <uuid>'],
+    note: 'Retried requests retain the same identity and generation. Configuration is frozen for each new staging deployment; production approval stays in Platform.',
+  },
+  logs: {
+    description: 'Read redacted runtime logs for the linked project.',
+    usage: 'logs [options]',
+    positional: { name: 'arguments', min: 0, max: 0 },
+    options: [
+      ...PLATFORM_OPTIONS,
+      {
+        flag: '--environment',
+        value: 'staging|production',
+        arity: 'required',
+        choices: ['staging', 'production'],
+        description: 'Choose the environment (default: staging).',
+      },
+      {
+        flag: '--deployment',
+        value: 'uuid',
+        arity: 'required',
+        description: 'Filter one deployment.',
+      },
+      {
+        flag: '--level',
+        value: 'level',
+        arity: 'required',
+        choices: ['debug', 'info', 'warn', 'error'],
+        description: 'Filter the event level.',
+      },
+      {
+        flag: '--source',
+        value: 'source',
+        arity: 'required',
+        choices: ['request', 'console', 'exception'],
+        description: 'Filter request, console or exception events.',
+      },
+      {
+        flag: '--range',
+        value: 'range',
+        arity: 'required',
+        choices: ['1h', '24h', '7d'],
+        description: 'Choose a time range (default: 24h).',
+      },
+      {
+        flag: '--search',
+        value: 'text',
+        arity: 'required',
+        description: 'Search redacted message text.',
+      },
+      {
+        flag: '--cursor',
+        value: 'cursor',
+        arity: 'required',
+        description: 'Read the next page using a returned cursor.',
+      },
+    ],
+    examples: [
+      'logs --environment staging --level error --json',
+      'logs --environment production --range 1h',
+    ],
+    note: 'Runtime collection is best effort and reports unavailable coverage and dropped events. Retention is seven days; source/build logs remain separate.',
   },
   source: {
     description: 'Upload an immutable source checkpoint with resumable chunks.',

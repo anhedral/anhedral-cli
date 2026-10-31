@@ -77,6 +77,9 @@ project. Files must be owner-only. Values never appear in CLI arguments, output
 or saved retry state; production changes require Platform policy approval.
 The optional plugin connects to Platform through OAuth for project tools and
 browser-based secret imports. See [the Platform workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
+Use `anhedral staging status` or `anhedral staging deploy --candidate <uuid>` for
+verified candidates, and `anhedral logs --environment staging --level error` for
+redacted runtime events. Production release requests retain Platform approval.
 
 ## Build the stack progressively
 

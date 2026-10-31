@@ -105,6 +105,16 @@ existing variables, and resume one request after a lost response. Use `--new` fo
 a different import. Receipts are checked against names, types and expected versions.
 Production changes remain subject to Platform approval and deployment policy.
 
+`staging status` reads persistent staging history. `staging deploy --candidate
+<uuid>` selects a ready candidate, freezes the current staging configuration and
+retains one generation-bound request across retries. `--new` starts another
+deployment after reviewing the current state. CLI runtime admission remains a
+separate server gate; a built source upload alone is not a ready candidate.
+`logs` reads bounded, redacted runtime events, defaulting to staging. Select
+production explicitly with `--environment production`; filter by deployment,
+level, source or range, and pass `--cursor` for the next page. Coverage, dropped
+events and seven-day retention are part of the response.
+
 The plugin includes source skills plus one remote MCP connection at
 `https://platform.anhedral.com/api/mcp`. OAuth consent grants scoped project
 access; CLI credentials are separate. Secret imports initiated through ChatGPT
