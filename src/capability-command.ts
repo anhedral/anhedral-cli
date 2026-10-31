@@ -1,7 +1,7 @@
 import { existsSync, realpathSync, statSync, chmodSync } from 'node:fs';
 import path from 'node:path';
 import { commandArguments, commandArgumentError } from './cli-arguments.js';
-import type { OutputOptions } from './cli-output.js';
+import { createReporter, type OutputOptions } from './cli-output.js';
 import {
   CAPABILITIES,
   CAPABILITY_IDS,
@@ -205,14 +205,11 @@ export async function runCapabilityCommand(
       dependenciesInstalled: !parsed.has('--dry-run') && !parsed.has('--skip-install'),
     };
   }
-  if (output.json) console.log(JSON.stringify(result, null, 2));
-  else if (!output.quiet) {
+  const format = () => {
     if (command === 'add')
-      console.log(
-        `${parsed.has('--dry-run') ? 'Plan' : 'Source additions'}: ${(result.added as string[]).join(', ') || 'already installed'}\n${(result.files as string[]).map((file) => '  ' + file).join('\n')}\nReview capability configuration and migrations before deployment. No resources were provisioned.`,
-      );
+      return `${parsed.has('--dry-run') ? 'Plan' : 'Source additions'}: ${(result.added as string[]).join(', ') || 'already installed'}\n${(result.files as string[]).map((file) => '  ' + file).join('\n')}\nReview capability configuration and migrations before deployment. No resources were provisioned.`;
     else
-      console.log(
+      return (
         (
           result.capabilities as {
             id: string;
@@ -225,7 +222,8 @@ export async function runCapabilityCommand(
             (item) =>
               `${item.id}\t${item.sourceState ?? item.name}\t${item.requires?.join(', ') ?? ''}`,
           )
-          .join('\n') + '\nSource state is not live provider activation.',
+          .join('\n') + '\nSource state is not live provider activation.'
       );
-  }
+  };
+  createReporter(output, format).result(result);
 }

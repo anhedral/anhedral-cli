@@ -3,11 +3,25 @@ import { createHash, randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { lstat, mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { CliArgumentError } from './cli-arguments.js';
+import { CliFailure } from './cli-errors.js';
 
-export const platformFailure = (message: string, nextAction = 'Run anhedral login --help.') =>
-  new CliArgumentError(message, nextAction, 'PLATFORM_ACCESS_FAILED');
+export type PlatformFailureCategory = ConstructorParameters<typeof CliFailure>[3];
+export const platformFailure = (
+  message: string,
+  nextAction = 'Run anhedral login --help.',
+  category: PlatformFailureCategory = 'context',
+  retryable = false,
+) => new CliFailure(message, 'PLATFORM_ACCESS_FAILED', nextAction, category, retryable);
 export function platformOrigin(value = 'https://platform.anhedral.com') {
-  const url = new URL(value);
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new CliArgumentError(
+      'Choose a valid HTTPS API origin with --api-url.',
+      'Run anhedral login --help.',
+    );
+  }
   if (
     url.username ||
     url.password ||
@@ -17,8 +31,9 @@ export function platformOrigin(value = 'https://platform.anhedral.com') {
     (url.protocol !== 'https:' &&
       !(url.protocol === 'http:' && ['127.0.0.1', '[::1]'].includes(url.hostname)))
   )
-    throw platformFailure(
+    throw new CliArgumentError(
       'Choose an HTTPS API origin (literal loopback is allowed for local testing).',
+      'Run anhedral login --help.',
     );
   return url.origin;
 }
@@ -63,7 +78,15 @@ export async function readPrivate(path: string): Promise<unknown | null> {
     (process.platform !== 'win32' && ((info.mode & 0o077) !== 0 || info.uid !== process.getuid?.()))
   )
     throw platformFailure('State file must be owned by you with mode 0600.');
-  return JSON.parse(await readFile(path, 'utf8'));
+  const text = await readFile(path, 'utf8');
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw platformFailure(
+      'Saved Platform state is not valid JSON. Preserve the file and reconcile the selected context.',
+      'Run anhedral whoami --context --help.',
+    );
+  }
 }
 export async function writePrivate(path: string, data: unknown) {
   await safeDirectory(dirname(path));

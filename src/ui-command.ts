@@ -4,7 +4,7 @@ import { stripVTControlCharacters } from 'node:util';
 import { spawn, spawnSync } from 'node:child_process';
 import { commandArguments, commandArgumentError } from './cli-arguments.js';
 import { resolveCommand } from './command.js';
-import type { OutputOptions } from './cli-output.js';
+import { createReporter, type OutputOptions } from './cli-output.js';
 import { UI_CATALOG, resolveUiItems, type UiPlatform } from './ui-catalog.js';
 import { detectUiTargets, initializeUiMetadata, inspectUiTarget } from './ui-project.js';
 
@@ -208,47 +208,45 @@ export async function runUiCommand(
       };
     }
   }
-  if (output.json) console.log(JSON.stringify(result, null, 2));
-  else if (!output.quiet)
-    console.log(
-      action === 'list'
-        ? UI_CATALOG.components
-            .filter((item) => !selector || selector === 'all' || item[selector])
-            .map(
-              (item) =>
-                `${item.name}\tweb: ${item.web ? 'shadcn' : 'unavailable'}\tnative: ${item.native ? 'RNR (validation required)' : 'unavailable'}`,
+  createReporter(output, () =>
+    action === 'list'
+      ? UI_CATALOG.components
+          .filter((item) => !selector || selector === 'all' || item[selector])
+          .map(
+            (item) =>
+              `${item.name}\tweb: ${item.web ? 'shadcn' : 'unavailable'}\tnative: ${item.native ? 'RNR (validation required)' : 'unavailable'}`,
+          )
+          .join('\n')
+      : action === 'doctor'
+        ? (result as { targets: ReturnType<typeof inspectUiTarget>[] }).targets
+            .map((report) =>
+              [
+                `${report.platform}: ${report.configurationReady ? 'configuration ready' : 'setup needed'} (${report.root})`,
+                ...report.issues,
+                'Runtime acceptance: not evaluated.',
+              ].join('\n'),
             )
-            .join('\n')
-        : action === 'doctor'
-          ? (result as { targets: ReturnType<typeof inspectUiTarget>[] }).targets
-              .map((report) =>
-                [
-                  `${report.platform}: ${report.configurationReady ? 'configuration ready' : 'setup needed'} (${report.root})`,
-                  ...report.issues,
-                  'Runtime acceptance: not evaluated.',
-                ].join('\n'),
-              )
-              .join('\n\n')
-          : (
-              result as {
-                targets: { root: string; platform: string; command: string[]; output?: string }[];
-              }
-            ).targets
-              .map((target) =>
-                [
-                  `${action}${parsed.has('--dry-run') ? ' (dry run)' : ''}: ${target.platform} (${target.root})`,
-                  ...(parsed.has('--dry-run')
-                    ? [
-                        target.command.length
-                          ? `shadcn@${UI_CATALOG.shadcnCliVersion} ${target.command.join(' ')}`
-                          : 'Validate existing configuration; initialize metadata and attribution if absent.',
-                      ]
-                    : []),
-                  target.output?.trim() ?? '',
-                ]
-                  .filter(Boolean)
-                  .join('\n'),
-              )
-              .join('\n\n'),
-    );
+            .join('\n\n')
+        : (
+            result as {
+              targets: { root: string; platform: string; command: string[]; output?: string }[];
+            }
+          ).targets
+            .map((target) =>
+              [
+                `${action}${parsed.has('--dry-run') ? ' (dry run)' : ''}: ${target.platform} (${target.root})`,
+                ...(parsed.has('--dry-run')
+                  ? [
+                      target.command.length
+                        ? `shadcn@${UI_CATALOG.shadcnCliVersion} ${target.command.join(' ')}`
+                        : 'Validate existing configuration; initialize metadata and attribution if absent.',
+                    ]
+                  : []),
+                target.output?.trim() ?? '',
+              ]
+                .filter(Boolean)
+                .join('\n'),
+            )
+            .join('\n\n'),
+  ).result(result);
 }

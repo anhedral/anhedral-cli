@@ -2,7 +2,9 @@ import { runPlatformCommand } from './platform-command.js';
 import { runCapabilityCommand } from './capability-command.js';
 import { runUiCommand } from './ui-command.js';
 import { commandArgumentError } from './cli-arguments.js';
-import type { OutputOptions } from './cli-output.js';
+import { createReporter, type OutputOptions } from './cli-output.js';
+import { completionScript } from './completion.js';
+import { commandArguments } from './cli-arguments.js';
 import { parseStandardOptions, scaffoldStandardProject } from './standard.js';
 
 export async function runCommand(
@@ -10,6 +12,13 @@ export async function runCommand(
   args: string[],
   output: OutputOptions,
 ): Promise<void> {
+  if (command === 'completion') {
+    const parsed = commandArguments(command, args);
+    const shell = parsed.positional[0] as 'bash' | 'zsh';
+    const script = completionScript(shell);
+    createReporter(output, () => script.trimEnd()).result({ shell, script });
+    return;
+  }
   if (['login', 'logout', 'whoami', 'link', 'unlink', 'source', 'deploy'].includes(command))
     return runPlatformCommand(command, args, output);
   if (command === 'add' || command === 'stack') return runCapabilityCommand(command, args, output);
