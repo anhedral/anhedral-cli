@@ -18,36 +18,34 @@ const fixture = JSON.parse(
 );
 deploymentAcceptance(contract, fixture);
 
-test('contract import checks all snapshot bytes before writing and supports offline drift checks', () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-contract-import-'));
-  const artifact = path.join(root, 'artifact');
-  const output = path.join(root, 'output');
-  const rejected = path.join(root, 'rejected');
+test('public contract manifest checks drift and rejects private export imports', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-contract-manifest-'));
   const script = path.resolve('scripts/sync-deployment-contract.mjs');
+  const run = (cwd, ...args) =>
+    spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8' });
   try {
-    for (const directory of [artifact, output, rejected]) mkdirSync(directory);
-    writeFileSync(
-      path.join(artifact, 'manifest.json'),
-      readFileSync('assets/contracts/deployment-provenance.json'),
-    );
-    for (const [name, file] of Object.entries({
-      'deployment.ts': 'src/contracts/deployment.ts',
+    assert.equal(run(process.cwd(), '--check').status, 0);
+    assert.notEqual(run(process.cwd(), root).status, 0);
+    assert.deepEqual(readdirSync(root), []);
+    const manifest = JSON.parse(readFileSync('assets/contracts/deployment-provenance.json'));
+    assert.deepEqual(Object.keys(manifest).sort(), ['contractVersion', 'files']);
+    assert.equal(contract.hostingPolicySchema, undefined);
+    assert.equal(contract.hostingCompatibility, undefined);
+    const sources = {
       'cli-transport.ts': 'src/contracts/cli-transport.ts',
       'source-profile.ts': 'src/contracts/source-profile.ts',
       'source-bundle.ts': 'src/contracts/source-bundle.ts',
+      'deployment.ts': 'src/contracts/deployment.ts',
       'fixtures.json': 'tests/fixtures/deployment-contract/fixtures.json',
       'acceptance.mjs': 'tests/fixtures/deployment-contract/acceptance.mjs',
-    }))
-      writeFileSync(path.join(artifact, name), readFileSync(file));
-    const run = (cwd, ...args) =>
-      spawnSync(process.execPath, [script, artifact, ...args], { cwd, encoding: 'utf8' });
-    assert.equal(run(output).status, 0);
-    assert.equal(run(output, '--check').status, 0);
-    writeFileSync(path.join(output, 'src/contracts/deployment.ts'), 'drift');
-    assert.notEqual(run(output, '--check').status, 0);
-    writeFileSync(path.join(artifact, 'acceptance.mjs'), 'tampered');
-    assert.notEqual(run(rejected).status, 0);
-    assert.deepEqual(readdirSync(rejected), []);
+    };
+    for (const file of [...Object.values(sources), 'assets/contracts/deployment-provenance.json']) {
+      mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+      writeFileSync(path.join(root, file), readFileSync(file));
+    }
+    assert.equal(run(root, '--check').status, 0);
+    writeFileSync(path.join(root, sources['deployment.ts']), 'changed contract');
+    assert.notEqual(run(root, '--check').status, 0);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

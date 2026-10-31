@@ -861,10 +861,10 @@ for (const relativePath of ['dangling.txt', 'dangling-parent/created.txt']) {
 
 const orphanRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-orphan-roots-'));
 try {
-  const token = '2147483647-00000000-0000-4000-8000-000000000000';
+  const transactionId = '2147483647-00000000-0000-4000-8000-000000000000';
   const transactionDirectory = path.join(orphanRoot, '.anhedral-txn');
-  const orphanStage = path.join(transactionDirectory, `stage-${token}`);
-  const orphanBackup = path.join(transactionDirectory, `backup-${token}`);
+  const orphanStage = path.join(transactionDirectory, `stage-${transactionId}`);
+  const orphanBackup = path.join(transactionDirectory, `backup-${transactionId}`);
   mkdirSync(orphanStage, { recursive: true });
   mkdirSync(orphanBackup, { recursive: true });
   writeFileSync(path.join(orphanStage, 'seed-copy.txt'), 'stale staged copy\n');

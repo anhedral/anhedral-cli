@@ -52,25 +52,6 @@
     "migrationDigests": ["2222222222222222222222222222222222222222222222222222222222222222"],
     "requiredAuthority": "preview"
   },
-  "policy": {
-    "contractVersion": 1,
-    "profiles": [
-      {
-        "id": "progressive-next-hono-d1-v1",
-        "identity": "better-auth-d1-v1",
-        "capabilities": ["hono", "database-auth"],
-        "cliArtifacts": [
-          {
-            "version": "0.17.0",
-            "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-          }
-        ],
-        "runtimeImage": "registry.example.com/fixture/candidate@sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-        "environments": ["preview"]
-      }
-    ]
-  },
   "event": {
     "contractVersion": 1,
     "requestId": "00000000-0000-4000-8000-000000000001",
