@@ -50,7 +50,93 @@ export function commandDefinition(command: string | undefined): CommandDefinitio
   return COMMANDS[command ?? ''];
 }
 
+const PLATFORM_OPTIONS: readonly CommandOption[] = [
+  {
+    flag: '--api-url',
+    value: 'origin',
+    arity: 'required',
+    description: 'Explicit Platform API origin; defaults to https://platform.anhedral.com.',
+  },
+  {
+    flag: '--credential-file',
+    value: 'file',
+    arity: 'required',
+    description: 'Explicit owner-only credential file instead of the OS secret store.',
+  },
+];
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
+  login: {
+    description: 'Approve a short-lived CLI session in your browser.',
+    usage: 'login [--start|--resume]',
+    options: [
+      ...PLATFORM_OPTIONS,
+      { flag: '--start', description: 'Start approval and return without polling.' },
+      { flag: '--resume', description: 'Resume saved browser approval.' },
+    ],
+    examples: ['login', 'login --start --json', 'login --resume'],
+    note: 'Device secrets and API tokens stay in your credential store. Server CLI access must be configured.',
+  },
+  logout: {
+    description: 'Revoke this CLI session.',
+    usage: 'logout',
+    options: PLATFORM_OPTIONS,
+    examples: ['logout'],
+    note: 'Revokes server access before clearing local credentials.',
+  },
+  whoami: {
+    description: 'Show the current CLI identity.',
+    usage: 'whoami',
+    options: PLATFORM_OPTIONS,
+    examples: ['whoami --json'],
+  },
+  link: {
+    description: 'Link this workspace to an existing project.',
+    usage: 'link --project <uuid> --team <uuid>',
+    options: [
+      ...PLATFORM_OPTIONS,
+      { flag: '--project', value: 'uuid', arity: 'required', description: 'Existing project ID.' },
+      { flag: '--team', value: 'uuid', arity: 'required', description: 'Owning team ID.' },
+    ],
+    examples: ['link --project <uuid> --team <uuid>'],
+    note: 'Requires current project build access. Existing application identities are preserved.',
+  },
+  unlink: {
+    description: 'Remove the local project link.',
+    usage: 'unlink',
+    options: PLATFORM_OPTIONS,
+    examples: ['unlink'],
+  },
+  deploy: {
+    description: 'Plan deployment and reserve a candidate from sealed source.',
+    usage: 'deploy <plan|prepare|status> [options]',
+    options: [
+      ...PLATFORM_OPTIONS,
+      {
+        flag: '--manifest',
+        value: 'file',
+        arity: 'required',
+        description: 'Explicit deployment manifest matching sealed source.',
+      },
+      {
+        flag: '--new',
+        description: 'Explicitly create a new plan request after inputs or routing change.',
+      },
+    ],
+    examples: ['deploy plan --manifest deployment.json', 'deploy prepare', 'deploy status'],
+    note: 'Preparation runs an isolated build only with exact server runtime admission and a configured private builder; otherwise it awaits runtime. No preview or deployment is activated.',
+  },
+  source: {
+    description: 'Upload an immutable source checkpoint with resumable chunks.',
+    usage: 'source <upload|status> [options]',
+    options: [
+      ...PLATFORM_OPTIONS,
+      { flag: '--dry-run', description: 'Package and inspect source without upload.' },
+      { flag: '--new', description: 'Explicitly start a new request after changing source.' },
+    ],
+    examples: ['source upload --dry-run', 'source upload', 'source status'],
+    note: 'Honors .gitignore, excludes secrets and generated files, rejects symlinks and credential material. Sealing source does not enable hosted admission or deploy.',
+  },
+
   add: {
     description: 'Add selected stack capabilities to an existing Anhedral project.',
     usage: 'add <capabilities...> [options]',

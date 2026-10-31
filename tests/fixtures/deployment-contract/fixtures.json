@@ -1,0 +1,107 @@
+{
+  "notice": "Synthetic acceptance fixture only. Does not approve a CLI artifact, runtime image or live hosting profile.",
+  "manifest": {
+    "contractVersion": 1,
+    "foundation": "next-opennext",
+    "capabilities": ["hono", "database-auth"],
+    "identity": "better-auth-d1-v1",
+    "cliArtifact": {
+      "version": "0.17.0",
+      "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+    },
+    "intent": {
+      "contractVersion": 1,
+      "runtimeProfile": "progressive-next-hono-d1-v1",
+      "environment": "preview",
+      "visibility": "protected"
+    }
+  },
+  "plan": {
+    "contractVersion": 1,
+    "requestId": "00000000-0000-4000-8000-000000000001",
+    "projectId": "00000000-0000-4000-8000-000000000002",
+    "manifest": {
+      "contractVersion": 1,
+      "foundation": "next-opennext",
+      "capabilities": ["hono", "database-auth"],
+      "identity": "better-auth-d1-v1",
+      "cliArtifact": {
+        "version": "0.17.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+      },
+      "intent": {
+        "contractVersion": 1,
+        "runtimeProfile": "progressive-next-hono-d1-v1",
+        "environment": "preview",
+        "visibility": "protected"
+      }
+    },
+    "source": {
+      "inventoryVersion": 2,
+      "inventoryProfile": "fixture-source-v1",
+      "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "lockfileDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "manifestDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "policyDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "runtimeImage": "registry.example.com/fixture/candidate@sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "configurationRevision": "1111111111111111111111111111111111111111111111111111111111111111",
+    "expectedGeneration": 0,
+    "migrationDigests": ["2222222222222222222222222222222222222222222222222222222222222222"],
+    "requiredAuthority": "preview"
+  },
+  "policy": {
+    "contractVersion": 1,
+    "profiles": [
+      {
+        "id": "progressive-next-hono-d1-v1",
+        "identity": "better-auth-d1-v1",
+        "capabilities": ["hono", "database-auth"],
+        "cliArtifacts": [
+          {
+            "version": "0.17.0",
+            "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+          }
+        ],
+        "runtimeImage": "registry.example.com/fixture/candidate@sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "environments": ["preview"]
+      }
+    ]
+  },
+  "event": {
+    "contractVersion": 1,
+    "requestId": "00000000-0000-4000-8000-000000000001",
+    "operationId": "00000000-0000-4000-8000-000000000003",
+    "sequence": 0,
+    "state": "building",
+    "occurredAt": "2026-10-30T12:00:00Z"
+  },
+  "pending": {
+    "contractVersion": 1,
+    "requestId": "00000000-0000-4000-8000-000000000001",
+    "operationId": "00000000-0000-4000-8000-000000000003",
+    "status": "pending",
+    "state": "building"
+  },
+  "ready": {
+    "contractVersion": 1,
+    "requestId": "00000000-0000-4000-8000-000000000001",
+    "operationId": "00000000-0000-4000-8000-000000000003",
+    "status": "ready",
+    "candidateId": "00000000-0000-4000-8000-000000000004",
+    "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "artifactDigest": "3333333333333333333333333333333333333333333333333333333333333333",
+    "configurationRevision": "1111111111111111111111111111111111111111111111111111111111111111",
+    "url": "https://fixture.anhedral.app"
+  },
+  "error": {
+    "code": "STALE_PLAN",
+    "message": "Source or configuration changed.",
+    "recovery": "Create a fresh plan.",
+    "stateChanged": false,
+    "operationId": null
+  }
+}

@@ -24,6 +24,16 @@ Preview initialization with `anhedral init my-app --dry-run --json`, or use `--s
 
 Init creates `apps/web` plus shared tooling and tokens. It includes three reviewed web starter components (Button, Input and Label), official shadcn configuration and Anhedral UI metadata.
 
+## Link and upload source
+
+Local staging includes browser-approved `login`, `link --project <uuid> --team <uuid>`,
+`source upload`, `source status`, and `deploy plan|prepare|status`. Deployment
+preparation runs an isolated build only after exact runtime admission; otherwise it awaits runtime. Platform access is disabled until separately
+configured; upload never deploys or enables hosted admission. Run
+`source upload --dry-run` offline to inspect the source archive. See
+[Platform access and secure resumable upload](docs/software-factory.md#platform-cli-access-and-source-upload)
+for credential storage, API origin selection and interruption recovery.
+
 ## Build the stack progressively
 
 Scaffold the API, database, authentication and Expo app as your product grows:

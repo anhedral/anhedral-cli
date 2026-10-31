@@ -55,6 +55,28 @@ Repeated additions leave source unchanged; the normal command still resolves and
 
 ## Source state and activation
 
+New minimal foundations and progressive additions record nonsecret `composition`
+provenance in `anhedral.json`: generator version, capability source versions and
+application identity contract. Legacy source versions remain unknown (`null`);
+adding a capability does not relabel older source. Source-only dry runs and failed
+transactions preserve the existing manifest. Retained programmatic registry
+compositions keep their original metadata and require separate hosting review.
+
+The portable `anhedral/deployment` export supplies versioned manifest, plan,
+event/result/error and compatibility schemas. Optional deployment intent requires
+explicit environment and visibility; credentials and local project links do not
+belong in it. Installed source is never a hosting approval. The first proposed
+managed profile preserves standalone Better Auth/D1 identity; it cannot silently
+substitute Platform's application-service auth template. No CLI artifact is admitted
+for that profile until the origin/binding adapter and pinned runtime are accepted.
+
+Platform owns the canonical transport source. Import a reviewed local export with
+`node scripts/sync-deployment-contract.mjs <export-directory>` and use `--check`
+to detect drift. `assets/contracts/deployment-provenance.json` records exact hashes
+and the source checkout revision; uncommitted bytes are identified by those hashes.
+The snapshot includes shared synthetic acceptance fixtures and has no database or
+provider imports. It does not update Platform runtime pins or enable deployment.
+
 `stack list` shows the complete catalog. `stack status` reports `locked`, `available`, `installed` or `incomplete` source state. `stack doctor` exits unsuccessfully when declared source is missing. Neither command inspects live providers or proves deployment/activation. An installed capability can still need credentials, migrations, resource IDs and runtime verification.
 
 The intended operational sequence remains source selection → resource provisioning → bindings/secrets/migrations → runtime validation/deployment → verified active service. Client binaries run on their target platforms, independently of Cloudflare server deployments.

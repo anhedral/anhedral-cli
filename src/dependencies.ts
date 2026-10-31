@@ -48,7 +48,7 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
 };
 
 // renovate: datasource=npm depName=glob
-export const OPENNEXT_GLOB_VERSION = '10.5.0';
+export const OPENNEXT_GLOB_VERSION = '14.0.2';
 
 export const WORKSPACE_NODE_ENGINE = '^22.13.0 || >=24.0.0';
 

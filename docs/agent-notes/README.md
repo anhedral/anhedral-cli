@@ -1,5 +1,51 @@
 # Development notes
 
+## 2026-10-31 — CLI 0.18.0 source preparation
+
+Prepare reviewed Platform login, source handoff and build-status commands for a
+minor release. Hosting stays disabled and Windows credential storage unsupported.
+The generated glob pin includes GHSA-3g3m-2fjr-6pw4 cancellation remediation.
+This source checkpoint does not publish npm or update an installed plugin.
+
+## 2026-10-30 — Isolated build admission
+
+Local staging consumes the shared build-state/receipt schemas. Exact build-only
+runtime admission is owned by Platform; deploy prepare/status surface building,
+built and failed without granting hosted capabilities. Plans remain immutable.
+Build, lint/security, 121 unit tests (one existing skip), packlist and installed
+package smoke passed. Platform native builds and D1 identity/session continuity
+passed, with root checks/build. No npm publication or deployment occurred.
+
+## 2026-10-30 — Deployment planning and candidate reservation
+
+Local staging adds deploy plan/prepare/status, immutable sealed-source plans and
+response-loss recovery. Real API/isolated PostgreSQL fixtures exercise the built
+CLI, stale routing, identity-change rejection and held candidate capabilities.
+Candidates await runtime admission; no build, preview, provider deployment or
+configured-database migration occurred. Build, lint, security policy, 121 unit
+tests (one existing skip), packlist and installed-package checks passed, alongside
+Platform root checks/build and the real CLI planning/reservation fixtures.
+
+## 2026-10-30 — Platform access and resumable source
+
+Local staging adds browser-approved CLI-only login, secure credential storage,
+origin/principal-bound project links and immutable resumable source requests.
+Platform fixtures exercise the built CLI against real Hono and isolated SQL,
+including a lost chunk response and candidate source sealing. Hosted admission
+and deployed access remain disabled. Build, lint, security policy, 121 unit tests
+(one existing skip), packlist and installed-package smoke passed, as did Platform
+root checks/build and the real CLI login/upload integration. No npm publication,
+provider deployment or configured-database migration occurred.
+
+## 2026-10-30 — CLI/Platform contract checkpoint
+
+Local staging adds portable deployment schemas and a hash-checked Platform source
+snapshot, plus composition provenance that preserves unknown legacy versions and
+existing identity. Build, lint, unit/composition fixtures, packlist and installed
+package smoke passed. This does not admit a hosted runtime, provision resources,
+publish npm or update an installed plugin. The origin/binding adapter and pinned runtime acceptance are implemented in
+Platform local staging; see [capabilities](../capabilities.md).
+
 ## 2026-10-27 — CLI 0.17.0 preparation
 
 Prepare the preserved native-port retirement for a reviewed release. This is a
