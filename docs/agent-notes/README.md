@@ -1,5 +1,28 @@
 # Development notes
 
+## 2026-10-31 — CLI discovery and scripting compatibility
+
+Candidate implementation `18d8513` on `codex/cli-design-increments`, based on
+staging `11c0f7c`, implements contextual example-based help, shared argument
+parsing, consistent reporters and typed recovery, offline Bash/zsh completion
+and opt-in `whoami --context`. Platform keeps compact implicit JSON; `--human`
+is opt-in, explicit JSON survives quiet, and numeric failure status remains 1.
+The public init parser preserves its return shape, Git defaults and legacy
+identical booleans; empty explicit paths fail before writes.
+
+Independent agent review repaired extra leaf help arguments and empty-directory
+handling; final review found no further actionable defects. Node 24.14.0
+`pnpm release:check` passed: 155 tests passed, one conditional patch unit test
+skipped, followed by successful explicit braces/node-forge install regressions,
+packed generated-project installation and packlist checks (751125 packed bytes).
+Type/format/hygiene, release/security policy and OSV checks passed. Plugin check
+and the 20/20 Markdown budget passed. Bash and zsh syntax/behavior ran locally;
+Linux CI may skip zsh when unavailable. New suites are in the required CI gate.
+PR #97 targets staging; hosted validation and retained exact-package acceptance
+are tracked there. No npm/plugin publication, main promotion, provider activation
+or database changes were performed. Presentation-only work does not establish
+live Platform or native-device acceptance.
+
 ## 2026-10-31 — Public CLI boundary review candidate
 
 Keep consumer manifests and Platform client messages public. Hosting policy,
