@@ -67,7 +67,7 @@
     "build": "pnpm clean && tsc && node scripts/prepare-cli.mjs",
     "prepare": "pnpm build",
     "typecheck": "tsc --noEmit",
-    "check:hygiene": "node scripts/check-source-hygiene.mjs",
+    "check:hygiene": "node scripts/check-source-hygiene.mjs && node scripts/check-environment-contract.mjs",
     "check:security": "node scripts/check-security-policy.mjs",
     "check:release-policy": "node scripts/check-release-policy.mjs",
     "check:release-secrets": "node scripts/check-release-secrets.mjs",

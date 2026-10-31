@@ -1,3 +1,4 @@
+import { runEnvironmentCommand } from './platform-environment.js';
 import { constants } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
@@ -198,6 +199,7 @@ async function runPlatformOperation(
     emit({ status: 'unlinked' });
     return;
   }
+  if (command === 'env' && options.has('--dry-run')) return runEnvironmentCommand(args, output);
   if (command === 'source' && options.has('--dry-run')) {
     if (options.positional[0] !== 'upload')
       throw commandArgumentError(command, 'Use source upload --dry-run.');
@@ -271,7 +273,10 @@ async function runPlatformOperation(
         `Retry anhedral ${command} with the same API origin, working directory and options to resume.`,
       );
     }
-    const data: unknown = await readSourceBounded(response.body, 65536)
+    const data: unknown = await readSourceBounded(
+      response.body,
+      /\/projects\/[^/]+\/environment$/.test(path) ? 1024 * 1024 : 65536,
+    )
       .then((b) => JSON.parse(new TextDecoder().decode(b)))
       .catch(() => {
         throw platformFailure('Platform returned an invalid response.', 'network');
@@ -466,6 +471,17 @@ async function runPlatformOperation(
     await writePrivate(linkPath, { ...link, origin });
     emit({ ...link, origin });
     return;
+  }
+  if (command === 'env') {
+    const link = linkSchema.parse(await readPrivate(linkPath));
+    if (link.origin !== origin || link.principalId !== actor.principalId)
+      throw platformFailure('Link this project to the selected API origin and signed-in identity.');
+    return runEnvironmentCommand(
+      args,
+      output,
+      { origin, principalId: actor.principalId, projectId: link.projectId, teamId: link.teamId },
+      (path, method, body) => request(path, method, body, token, link.teamId),
+    );
   }
   if (
     !['source', 'deploy'].includes(command) ||

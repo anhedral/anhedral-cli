@@ -1,3 +1,4 @@
+import { validatePluginRemote } from './plugin-remote.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -73,8 +74,9 @@ export function buildPluginArchive(root) {
   ]) {
     if (!names.has(name)) throw new Error(`Plugin distribution is missing required file: ${name}`);
   }
-  if ([...names].some((name) => name === 'mcp.json' || name.startsWith('runtime/')))
-    throw new Error('Scaffold plugin must contain skills and references only.');
+  if ([...names].some((name) => name.startsWith('runtime/')))
+    throw new Error('Plugin cannot package an executable managed runtime.');
+  validatePluginRemote(JSON.parse(readFileSync(path.join(pluginRoot, 'mcp.json'), 'utf8')));
   const interface_ = manifest.extensions?.['com.openai']?.interface;
   for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
     const asset = interface_?.[field];

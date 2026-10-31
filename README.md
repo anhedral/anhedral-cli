@@ -70,6 +70,14 @@ configured; upload never deploys or enables hosted admission. Run
 [Platform access and secure resumable upload](docs/software-factory.md#platform-cli-access-and-source-upload)
 for credential storage, API origin selection and interruption recovery.
 
+Manage linked-project configuration with `anhedral env list` or
+`anhedral env import --environment staging --file .env.local --dry-run`.
+Remove `--dry-run` to submit a private import after signing in and linking the
+project. Files must be owner-only. Values never appear in CLI arguments, output
+or saved retry state; production changes require Platform policy approval.
+The optional plugin connects to Platform through OAuth for project tools and
+browser-based secret imports. See [the Platform workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
+
 ## Build the stack progressively
 
 Scaffold the API, database, authentication and Expo app as your product grows:

@@ -81,6 +81,37 @@ const PLATFORM_OPTIONS: readonly CommandOption[] = [
     description: 'Explicit owner-only credential file instead of the OS secret store.',
   },
 ];
+const ENVIRONMENT_OPTIONS: readonly CommandOption[] = [
+  ...PLATFORM_OPTIONS,
+  {
+    flag: '--environment',
+    value: 'staging|production',
+    arity: 'required',
+    choices: ['staging', 'production'],
+    description: 'Select the target environment explicitly.',
+  },
+  {
+    flag: '--file',
+    value: 'file',
+    kind: 'file',
+    arity: 'required',
+    description: 'Read an owner-only UTF-8 file (up to64KiB); never put values in arguments.',
+  },
+  { flag: '--stdin', description: 'Read private UTF-8 input from a pipe.' },
+  {
+    flag: '--type',
+    value: 'secret|config',
+    arity: 'required',
+    choices: ['secret', 'config'],
+    description: 'Set the variable type; public prefixes default to config, others to secret.',
+  },
+  {
+    flag: '--replace',
+    description: 'Explicitly allow replacing existing variables with version checks.',
+  },
+  { flag: '--new', description: 'Start another import instead of resuming saved identity.' },
+  { flag: '--dry-run', description: 'Validate input locally and print names and types only.' },
+];
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   completion: {
     description: 'Print an offline shell completion script.',
@@ -190,6 +221,40 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     },
     examples: ['deploy plan --manifest deployment.json', 'deploy prepare', 'deploy status'],
     note: 'Preparation reserves a candidate; server policy controls build admission. No preview or deployment is activated.',
+  },
+  env: {
+    description: 'Manage project configuration and write-only secrets through Platform.',
+    usage: 'env <list|import|set> [options]',
+    options: ENVIRONMENT_OPTIONS,
+    children: {
+      list: {
+        description: 'List names, types and versions; values are never returned.',
+        usage: 'env list [--environment staging|production]',
+        options: ENVIRONMENT_OPTIONS.filter((option) =>
+          ['--api-url', '--credential-file', '--environment'].includes(option.flag),
+        ),
+        examples: ['env list --json'],
+      },
+      import: {
+        description: 'Import a private dotenv file atomically.',
+        usage: 'env import --environment staging|production --file <file> [--replace] [--new]',
+        options: ENVIRONMENT_OPTIONS,
+        examples: [
+          'env import --environment staging --file .env.local --dry-run',
+          'env import --environment production --stdin --replace --new',
+        ],
+      },
+      set: {
+        description: 'Set one variable from a private file or stdin.',
+        usage: 'env set <NAME> --environment staging|production --stdin [--replace] [--new]',
+        options: ENVIRONMENT_OPTIONS,
+        positional: { name: 'NAME', min: 1, max: 1 },
+        examples: ['env set SERVICE_API_KEY --environment staging --stdin'],
+      },
+    },
+    conflicts: [['--file', '--stdin']],
+    examples: ['env list', 'env import --environment staging --file .env.local --dry-run'],
+    note: 'Values never appear in output or retry state. Platform enforces project roles and production approvals; saving configuration does not change an existing deployment.',
   },
   source: {
     description: 'Upload an immutable source checkpoint with resumable chunks.',

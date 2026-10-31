@@ -1,3 +1,4 @@
+import { validatePluginRemote } from './plugin-remote.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
@@ -159,8 +160,9 @@ export function loadPluginRelease(metadataPath) {
     stack.items.some((item) => item.version !== release.version)
   )
     throw new Error('Plugin archive release identity mismatch.');
-  if (files.some((file) => file.name === 'mcp.json' || file.name.startsWith('runtime/')))
-    throw new Error('Scaffold plugin cannot ship a managed runtime.');
+  if (files.some((file) => file.name.startsWith('runtime/')))
+    throw new Error('Plugin cannot package an executable managed runtime.');
+  validatePluginRemote(json('mcp.json'));
   for (const skill of ['init', 'design'])
     if (!files.some((file) => file.name === `skills/anhedral-${skill}/SKILL.md`))
       throw new Error('Plugin skill is missing.');

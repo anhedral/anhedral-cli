@@ -1,0 +1,11 @@
+{
+  "contractVersion": 1,
+  "owner": "anhedral/platform-contracts/environment",
+  "license": "Apache-2.0",
+  "sourceRevision": "0050910091dbc653c12118850af31655075f58c3",
+  "files": {
+    "environment-transport.ts": "833b61ecb43c2cbc86c15ed07092ddb364469681d03a23af94e805463c201940",
+    "environment-file.ts": "29b00c2babab896a6373f93ae5eb2672c00f25862b13b00c20e23a17d2dd83a3",
+    "LICENSE": "6d89bce3e7760469015287d1b6a45d31ef7924475c9b54eabe974bcce373980b"
+  }
+}

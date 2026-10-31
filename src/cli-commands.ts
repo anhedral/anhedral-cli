@@ -19,7 +19,7 @@ export async function runCommand(
     createReporter(output, () => script.trimEnd()).result({ shell, script });
     return;
   }
-  if (['login', 'logout', 'whoami', 'link', 'unlink', 'source', 'deploy'].includes(command))
+  if (['login', 'logout', 'whoami', 'link', 'unlink', 'source', 'deploy', 'env'].includes(command))
     return runPlatformCommand(command, args, output);
   if (command === 'add' || command === 'stack') return runCapabilityCommand(command, args, output);
   if (command === 'ui') return runUiCommand(args, output);
