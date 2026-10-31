@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Start with Next.js and Anhedral UI, then progressively add APIs, data, clients, payments, realtime and AI as editable source.",
   "type": "module",
   "exports": {
