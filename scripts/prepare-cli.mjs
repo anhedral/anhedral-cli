@@ -51,3 +51,10 @@ writeFileSync(
   new URL('capabilities.md', references),
   readFileSync(new URL('../docs/capabilities.md', import.meta.url)),
 );
+
+const marketplaceUrl = new URL('../.agents/plugins/marketplace.json', import.meta.url);
+const marketplace = JSON.parse(readFileSync(marketplaceUrl, 'utf8'));
+const plugin = marketplace.plugins.find((entry) => entry.name === 'anhedral');
+if (!plugin) throw new Error('Anhedral marketplace entry is missing');
+plugin.source.ref = `plugin-v${GENERATOR_VERSION}`;
+writeFileSync(marketplaceUrl, JSON.stringify(marketplace, null, 2) + '\n');

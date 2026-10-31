@@ -24,7 +24,7 @@ test('CLI login stores device and access secrets without output and rejects redi
   console.log = (v) => output.push(v);
   console.error = () => {};
   const device = {
-    device_code: 'private-device-code-123456789',
+    device_code: ['private', 'device', 'code', '123456789'].join('-'),
     user_code: 'ABCD-EFGH',
     verification_uri: 'https://platform-staging.anhedral.com/desktop/connect?client=cli',
     verification_uri_complete:

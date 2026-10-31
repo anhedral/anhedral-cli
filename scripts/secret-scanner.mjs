@@ -1,3 +1,7 @@
+import {
+  CREDENTIAL_PATTERNS,
+  isCredentialPlaceholder,
+} from '../assets/security/credential-patterns.mjs';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -15,41 +19,8 @@ const SECRET_PATTERNS = Object.freeze([
     id: 'email-address',
     pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
   },
-  { id: 'private-key', pattern: /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/g },
-  {
-    id: 'github-token',
-    pattern: /\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})\b/g,
-  },
-  { id: 'npm-token', pattern: /\bnpm_[A-Za-z0-9]{30,}\b/g },
-  { id: 'stripe-live-key', pattern: /\b(?:sk|rk)_live_[A-Za-z0-9]{16,}\b/g },
-  { id: 'clerk-secret-key', pattern: /\bsk_(?:test|live)_[A-Za-z0-9_-]{24,}\b/g },
-  { id: 'slack-token', pattern: /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/g },
-  { id: 'aws-access-key', pattern: /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g },
-  { id: 'google-api-key', pattern: /\bAIza[0-9A-Za-z_-]{35}\b/g },
-  {
-    id: 'credentialed-database-uri',
-    pattern:
-      /\b(?:postgres(?:ql)?|rediss|mongodb(?:\+srv)?):\/\/[^:/\s"'<>]+:[^@/\s"'<>]{8,}@[^\s/"'<>]+/gi,
-  },
-  {
-    id: 'credential-assignment',
-    pattern:
-      /\b[A-Z0-9_]*(?:SECRET|TOKEN|PASSWORD|API_KEY|ACCESS_KEY)[A-Z0-9_]*\s*[:=]\s*["']?[A-Za-z0-9+/_=-]{32,}["']?/g,
-  },
+  ...CREDENTIAL_PATTERNS,
 ]);
-
-const PLACEHOLDER_VALUES = Object.freeze(
-  new Set(['***', 'change-me', 'changeme', 'example', 'not-a-secret', 'replace-me']),
-);
-
-function isPlaceholderValue(value) {
-  const normalized = value.trim().toLowerCase();
-  return (
-    PLACEHOLDER_VALUES.has(normalized) ||
-    /^(?:change|replace)(?:[-_ ]?me)?(?:[-_ ].*)?$/.test(normalized) ||
-    /^(?:placeholder|your value|your-value|your_value)$/.test(normalized)
-  );
-}
 
 const TEXT_EXTENSIONS = new Set([
   '',
@@ -106,17 +77,8 @@ function isAllowedMatch(id, relativePath, match, text) {
     return true;
   // Explicitly published project contact; not a private address or credential.
   if (id === 'email-address' && /^(?:support|business)@anhedral\.com$/i.test(match[0])) return true;
-  // A fully interpolated URI builder contains no embedded credential. Mixed
-  // literal/interpolated credentials still match and remain blocking.
-  if (
-    id === 'credentialed-database-uri' &&
-    /\.(?:mjs|cjs|js|ts)$/.test(relativePath) &&
-    /^postgres(?:ql)?:\/\/\$\{[^{}]+\}:\$\{[^{}]+\}@\$\{[^{}]+\}$/.test(match[0])
-  )
-    return true;
+  if (isCredentialPlaceholder(id, match[0])) return true;
   const assignedValue = match[0].match(/[:=]\s*["']?([^"'\s]+)["']?$/)?.[1];
-  if (id === 'credential-assignment' && assignedValue && isPlaceholderValue(assignedValue))
-    return true;
   // Saved demos declare local-only placeholders in environment examples.
   // The same assignment in a runtime .env is still reported.
   if (

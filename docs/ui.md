@@ -28,6 +28,6 @@ All commands accept the global `--cwd`, `--json` and `--quiet` options. `--web`,
 
 `.anhedral-ui.json` records platform, catalog revision and source ownership; it does not automatically update components. `ANHEDRAL_UI_LICENSES/` retains the relevant MIT notice. No Anhedral runtime package is introduced. Theme through consumer CSS variables and existing tokens. Future native extensions require a focused product need, upstream provenance/license and native consumer evidence; broad parity is not a release prerequisite.
 
-Validate web flows in a browser. Validate native interactions in Android/iOS development builds, including accessibility, overlays, keyboard and lifecycle. Typechecking or an Expo web export does not establish device acceptance. The retired exhaustive port is preserved outside the active CLI; `docs/native-ui.md` records its recovery identity and migration path.
+Validate web flows in a browser. Validate native interactions in Android/iOS development builds, including accessibility, overlays, keyboard and lifecycle. Typechecking or an Expo web export does not establish device acceptance. The retired exhaustive port is preserved outside the active CLI; `docs/native-ui.md` describes the migration path.
 
 For a generated Anhedral workspace, `anhedral add expo` creates the native application after its core source prerequisites, and `anhedral add native-ui` prepares its NativeWind/RNR integration without replacing product UI. The UI component commands remain independent of backend activation. See [stack additions](capabilities.md).

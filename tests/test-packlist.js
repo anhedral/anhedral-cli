@@ -48,6 +48,8 @@ const stackFiles = [
 ];
 const requiredFiles = new Set([
   'assets/contracts/deployment-provenance.json',
+  'assets/security/credential-patterns.mjs',
+  'assets/security/credential-patterns.d.mts',
   'dist/contracts/deployment.js',
   'dist/contracts/deployment.d.ts',
   ...stackFiles,
@@ -238,6 +240,10 @@ try {
     const allowed =
       allowedRootFiles.has(file.path) ||
       file.path === 'assets/contracts/deployment-provenance.json' ||
+      [
+        'assets/security/credential-patterns.mjs',
+        'assets/security/credential-patterns.d.mts',
+      ].includes(file.path) ||
       allowedNativeUI ||
       stackFiles.includes(file.path) ||
       allowedDist ||
@@ -251,6 +257,30 @@ try {
         /(^|\/)(?:\.env|src|tests?|scripts?|\.github|node_modules|\.git)(?:\/|$)/,
       );
     assert.doesNotMatch(file.path, /\.(?:map|tgz|tsbuildinfo)$/);
+  }
+
+  const publicDeployment = readFileSync(
+    path.join(repoRoot, 'dist/contracts/deployment.js'),
+    'utf8',
+  );
+  assert.doesNotMatch(publicDeployment, /hostingPolicySchema|hostingCompatibility/);
+  const publicTransport = readFileSync(
+    path.join(repoRoot, 'dist/contracts/cli-transport.js'),
+    'utf8',
+  );
+  assert.doesNotMatch(
+    publicTransport,
+    /cliBuildPolicySchema|cliBuildEvidenceSchema|workspaceMiB|rootFilesystem/,
+  );
+  const provenance = JSON.parse(
+    readFileSync(path.join(repoRoot, 'assets/contracts/deployment-provenance.json')),
+  );
+  assert.deepEqual(Object.keys(provenance).sort(), ['contractVersion', 'files']);
+  for (const file of files.filter((name) => name.endsWith('.md'))) {
+    assert.doesNotMatch(
+      readFileSync(path.join(repoRoot, file), 'utf8'),
+      /refs\/archive\/|repository\.bundle|\$HOME\/Documents\/Codex\//,
+    );
   }
 
   const binEntry = packed.files.find((file) => file.path === 'dist/bin.js');
