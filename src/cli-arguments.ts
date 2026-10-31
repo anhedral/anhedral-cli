@@ -74,7 +74,7 @@ export function globalArguments(input: readonly string[]) {
       const option = commandOptions(command).find(
         (entry) => entry.flag === arg || entry.aliases?.includes(arg),
       );
-      if (option?.arity && input[index + 1] !== undefined && input[index + 1] !== '--')
+      if (option?.arity && input[index + 1] !== undefined && !input[index + 1].startsWith('-'))
         args.push(input[++index]);
     }
   }
