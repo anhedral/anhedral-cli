@@ -37,3 +37,53 @@ prerendering and static cache checks. Hono proxy contracts have separate tests.
 The harness owns the module-size budget and short-lived `.artifacts/next-runtime/`
 receipts. Review measurement changes before adjusting limits. The smoke never
 deploys or migrates a configured database; it is not production acceptance.
+
+## Platform CLI access and source upload
+
+`login --start` prints browser approval instructions; `login --resume` redeems the
+saved approval. Interactive `login` polls after showing the URL and confirmation
+code. Tokens and device secrets use macOS Keychain or Linux Secret Service;
+`--credential-file <path>` explicitly selects an owner-only file. Credential
+storage is currently unsupported on Windows. Credentials are
+bound to the explicit `--api-url` origin (HTTPS, with literal loopback for fixtures).
+Do not use repository configuration to select the credential destination. `logout`
+revokes server access before removing the saved credential; `whoami` checks live
+identity. API access must be separately enabled by Platform operators.
+
+`link --project <uuid> --team <uuid>` checks current build authority and saves an
+origin/principal-bound link under ignored `.anhedral/platform/`. `unlink` removes
+that local link. `source upload --dry-run` inspects packaging; `source upload`
+resumes the same immutable source request after interruption, including lost
+responses. `source status` reads its server receipt. Changed source requires an
+explicit `source upload --new`; an expired request also requires a new request.
+The client honors nested `.gitignore`, excludes generated output and secret paths,
+rejects symlinks and recognized credential material, and hashes every bounded
+chunk plus the complete archive and canonical source inventory. Credential scanning
+is deliberately conservative; inspect source before uploading.
+
+Limits and archive policy live in the hash-checked Platform transport snapshot in
+`src/contracts`; protocol code is in `src/platform-command.ts`. Sealed source feeds
+Platform's existing candidate pipeline. Hosted admission remains disabled and
+upload does not deploy, activate providers, migrate a database or replace existing
+application identities. Run `tests/test-platform.test.mjs` after building; the
+Platform API fixture can also exercise this built CLI against real Hono/isolated
+PostgreSQL routes by setting `ANHEDRAL_CLI_DIST` to this repository's `dist` directory.
+
+`deploy plan --manifest <file>` plans from the saved sealed upload, independently
+of subsequent local edits. The manifest follows Platform's `deploymentManifestSchema`
+in `src/contracts/deployment.ts`; it must match the archive's recorded composition,
+capabilities, CLI version and existing standalone identity. Only the protected
+preview Hono/D1 profile is currently planned. Plans bind source/lockfile/migrations,
+routing state, principal epoch and project authority. Artifact provenance and
+runtime configuration remain explicitly unverified; null receipts are not approval.
+
+`deploy prepare` reserves an immutable candidate. With exact server admission of
+the CLI artifact, Linux image, dependency lock and build tool plus a configured
+private builder, it starts a disposable isolated build. Otherwise it remains
+`awaiting-runtime`. `deploy status` reads `building`, `built` or `failed` with a
+private build digest. A built candidate grants no preview or publishing capability.
+These commands never provision, migrate, activate a preview or deploy. Hosted
+admission stays closed. Lost responses resume the same saved request. Changed manifest inputs or
+routing require `deploy plan --manifest <file> --new`. Plan/source expiry and
+revocation fail closed. State under `.anhedral/platform/deployment.json` contains
+no credentials and cannot select a network origin or change the signed-in identity.

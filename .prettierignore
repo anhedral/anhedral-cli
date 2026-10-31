@@ -3,3 +3,7 @@ node_modules/
 .artifacts/
 
 tests/native-ui/.generated/
+
+# Byte-identical Platform deployment contract snapshot; update with sync-deployment-contract.
+src/contracts/
+tests/fixtures/deployment-contract/

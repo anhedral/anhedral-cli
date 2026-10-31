@@ -1,4 +1,6 @@
 import { writeProjectSection } from '../project-config.js';
+import { sourceCompositionSchema } from '../contracts/deployment.js';
+import { GENERATOR_VERSION } from '../version.js';
 import {
   OPENNEXT_GLOB_VERSION,
   STACK_DEPENDENCIES,
@@ -101,7 +103,7 @@ process.exitCode = result.status ?? 1;
   });
   setPnpmPolicy(root, {
     ...(!updating ? { packages: ['apps/*', 'packages/*'] } : {}),
-    // OpenNext's node-minify dependency pins the vulnerable glob CLI.
+    // Override node-minify's glob with the reviewed cancellation fix.
     overrides: {
       '@node-minify/core>glob': OPENNEXT_GLOB_VERSION,
       'miniflare>undici': STACK_DEPENDENCIES.undici,
@@ -144,5 +146,17 @@ process.exitCode = result.status ?? 1;
     resourcesProvisioned: false,
   });
   writeProjectSection(root, 'setup', createSetupPlan({ ...options, dryRun: false }, registry));
+  if (!updating && options.products.every((id) => ['next', 'styling'].includes(id)))
+    writeProjectSection(
+      root,
+      'composition',
+      sourceCompositionSchema.parse({
+        contractVersion: 1,
+        foundation: 'next-opennext',
+        generatorVersion: GENERATOR_VERSION,
+        identity: 'none',
+        capabilities: {},
+      }),
+    );
   if (!updating) writeSetupDocumentation(root, options);
 }

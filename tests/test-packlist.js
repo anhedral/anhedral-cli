@@ -47,6 +47,9 @@ const stackFiles = [
   'assets/stack/web-sign-in.tsx.txt',
 ];
 const requiredFiles = new Set([
+  'assets/contracts/deployment-provenance.json',
+  'dist/contracts/deployment.js',
+  'dist/contracts/deployment.d.ts',
   ...stackFiles,
   'docs/capabilities.md',
   'dist/capability-command.js',
@@ -234,6 +237,7 @@ try {
     ].includes(file.path);
     const allowed =
       allowedRootFiles.has(file.path) ||
+      file.path === 'assets/contracts/deployment-provenance.json' ||
       allowedNativeUI ||
       stackFiles.includes(file.path) ||
       allowedDist ||
