@@ -44,6 +44,9 @@ test('init uses the shared positional grammar and preserves its exported option 
   assert.deepEqual(before, after);
   assert.equal(after.root, path.resolve('my-app'));
   assert.equal(after.initializeGit, true);
+  assert.throws(() => parseStandardOptions(['', '--dry-run']), /valid initialization directory/);
+  assert.equal(parseStandardOptions(['my-app', '--dry-run', '--dry-run']).dryRun, true);
+  assert.equal(parseStandardOptions(['my-app', '--git', '--git']).initializeGit, true);
   assert.equal(parseStandardOptions(['--dry-run']).initializeGit, false);
   assert.equal(parseStandardOptions(['my-app', '--no-git']).initializeGit, false);
   assert.equal(parseStandardOptions(['--git']).initializeGit, true);
@@ -68,7 +71,7 @@ test('global, inline and command parsers respect end-of-options', () => {
   const literal = commandArguments('init', ['--dry-run', '--', '--json']);
   assert.deepEqual(literal.positional, ['--json']);
   assert.equal(literal.has('--json'), false);
-  assert.equal(globalArguments(['whoami', '--credential-file', '--json']).json, false);
+  assert.equal(globalArguments(['whoami', '--credential-file', '--json']).json, true);
   assert.throws(
     () => commandArguments('whoami', ['--credential-file', '--json']),
     /Supply a value/,

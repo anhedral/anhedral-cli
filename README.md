@@ -24,6 +24,42 @@ Preview initialization with `anhedral init my-app --dry-run --json`, or use `--s
 
 Init creates `apps/web` plus shared tooling and tokens. It includes three reviewed web starter components (Button, Input and Label), official shadcn configuration and Anhedral UI metadata.
 
+## Command help, scripts and shell completion
+
+Run `anhedral --help` for a command index, then `anhedral help source upload`
+or `anhedral source upload --help` for contextual options and examples. Init
+accepts the directory before or after options. Use `--` to end option parsing;
+for example, `anhedral init --dry-run --json -- -my-app` previews a literal
+flag-looking directory. An explicit empty directory is rejected.
+
+`--json` requests machine-readable results on stdout. Errors go to stderr as
+`{error, code, nextAction}` with additive category/retryability information;
+failures continue to exit 1. Post-commit errors include committed paths and explain
+how to finish the failed follow-up without regenerating source. Human diagnostic
+and progress messages do not enter JSON stdout.
+
+Platform commands retain their compact JSON default for existing scripts. Use
+`--human` for readable summaries, or keep `--json` explicit in automation.
+`--quiet` suppresses ordinary output, including implicit Platform JSON, while
+`--quiet --json` retains the requested JSON result. Errors remain visible.
+`--non-interactive` prevents interactive approval polling; `login --resume` is
+an explicit request to redeem an existing approval, including in CI. CI or a
+redirected input/output stream never implies consent or starts a new polling flow.
+
+Generate completion without network access or automatic shell-profile changes:
+
+```sh
+anhedral completion bash > ~/.anhedral-completion.bash
+source ~/.anhedral-completion.bash
+```
+
+For zsh, generate `anhedral completion zsh > ~/.anhedral-completion.zsh`, initialize
+completion with `autoload -Uz compinit && compinit`, then
+`source ~/.anhedral-completion.zsh`. Add the source command to your shell profile
+only if you want it enabled in future sessions. Completion includes local command,
+capability and component names and file/directory arguments; it never discovers
+remote projects or reads credentials.
+
 ## Link and upload source
 
 Local staging includes browser-approved `login`, `link --project <uuid> --team <uuid>`,
@@ -59,20 +95,20 @@ anhedral add side-panel --with-dependencies --dry-run --json
 
 The core progression is **Next.js → Hono → Drizzle/D1 + Better Auth**. After that, choose the capabilities your application needs:
 
-| Add | Scaffolded source and configuration | Requires |
-| --- | --- | --- |
-| `hono` | Hono API Worker, health route and web/API connection | Next.js foundation |
-| `database-auth` | Drizzle schema and migrations, D1 binding, Better Auth and sign-in starter | `hono` |
-| `r2` | Private R2 binding and authenticated, owner-scoped file routes | `database-auth` |
-| `stripe` | Stripe subscription Checkout, signed webhooks and server-side access checks | `database-auth` |
-| `realtime` | Durable events and resumable server-sent event streams | `database-auth` |
-| `rtc` | Cloudflare Realtime SFU session and track API adapter | `database-auth` |
-| `ai` | Workers AI text-generation route, authentication and daily quota | `database-auth` |
-| `expo` | Expo iOS/Android app with Better Auth and SecureStore session integration | `database-auth` |
-| `native-ui` | NativeWind 4, shared theme styling and RNR Button/Text starter for Expo | `expo` |
-| `revenuecat` | Mobile subscription SDK/UI, webhooks and server-side entitlement reconciliation | `expo`, `stripe` |
+| Add                               | Scaffolded source and configuration                                                                                      | Requires                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `hono`                            | Hono API Worker, health route and web/API connection                                                                     | Next.js foundation                                          |
+| `database-auth`                   | Drizzle schema and migrations, D1 binding, Better Auth and sign-in starter                                               | `hono`                                                      |
+| `r2`                              | Private R2 binding and authenticated, owner-scoped file routes                                                           | `database-auth`                                             |
+| `stripe`                          | Stripe subscription Checkout, signed webhooks and server-side access checks                                              | `database-auth`                                             |
+| `realtime`                        | Durable events and resumable server-sent event streams                                                                   | `database-auth`                                             |
+| `rtc`                             | Cloudflare Realtime SFU session and track API adapter                                                                    | `database-auth`                                             |
+| `ai`                              | Workers AI text-generation route, authentication and daily quota                                                         | `database-auth`                                             |
+| `expo`                            | Expo iOS/Android app with Better Auth and SecureStore session integration                                                | `database-auth`                                             |
+| `native-ui`                       | NativeWind 4, shared theme styling and RNR Button/Text starter for Expo                                                  | `expo`                                                      |
+| `revenuecat`                      | Mobile subscription SDK/UI, webhooks and server-side entitlement reconciliation                                          | `expo`, `stripe`                                            |
 | `wxt`, with optional `side-panel` | WXT browser extension; `side-panel` adds Chrome Side Panel API support to render the extension in the browser side panel | `wxt` requires `database-auth`; `side-panel` requires `wxt` |
-| `gpui` | Rust/GPUI native desktop application and build scripts | `database-auth` |
+| `gpui`                            | Rust/GPUI native desktop application and build scripts                                                                   | `database-auth`                                             |
 
 Include prerequisites explicitly or use `--with-dependencies` to add them in order. These dependencies define the Anhedral scaffold's composition rules. Additions preserve edited application source.
 

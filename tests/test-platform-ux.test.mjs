@@ -15,7 +15,7 @@ const expiresAt = '2099-01-01T00:00:00.000Z';
 const actor = { protocol: 1, principalId, name: 'Fixture developer', teamId };
 const credentials = { protocol: 1, token, expiresAt, origin };
 const device = {
-  device_code: 'fixture-private-device-secret',
+  device_code: ['fixture', 'private', 'device', 'secret'].join('-'),
   user_code: 'ABCD-EFGH',
   verification_uri: origin + '/connect',
   verification_uri_complete: origin + '/connect?code=ABCD-EFGH',

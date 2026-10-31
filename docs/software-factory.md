@@ -48,7 +48,13 @@ storage is currently unsupported on Windows. Credentials are
 bound to the explicit `--api-url` origin (HTTPS, with literal loopback for fixtures).
 Do not use repository configuration to select the credential destination. `logout`
 revokes server access before removing the saved credential; `whoami` checks live
-identity. API access must be separately enabled by Platform operators.
+identity. Add `whoami --context --human` (or `--context --json`) to inspect the
+selected origin, credential-store kind and saved local team/project link. Identity
+is checked live; the saved project link is explicitly not proof of current project
+access. A link for a different origin or principal fails closed. Normal `whoami`
+JSON is unchanged and context inspection never creates a project or starts login.
+Explicit `--api-url` and `--credential-file` select the origin/store; saved state
+cannot override either. API access must be separately enabled by Platform operators.
 
 `link --project <uuid> --team <uuid>` checks current build authority and saves an
 origin/principal-bound link under ignored `.anhedral/platform/`. `unlink` removes
@@ -90,3 +96,27 @@ marketplace pointer to that version's immutable `plugin-v<version>` tag; it does
 not create the tag or publish either artifact. During review that pointer may be
 unavailable. Install an already published version until the coordinated release
 has completed and its tag and artifact integrities have been verified.
+
+## CLI presentation compatibility
+
+The command schema owns options, nested help and offline shell completion. Root
+help is an index; leaf help includes examples. Keep executable and exported parser
+contracts covered by `test-cli-discovery`, `test-cli-experience`, `test-cli-output`,
+`test-completion` and `test-platform-ux`. The CI gate runs these alongside existing
+contracts; the executable suite accepts `ANHEDRAL_CLI_BIN` to validate an installed
+exact candidate without contacting Platform.
+
+Results belong on stdout; errors and permitted diagnostics belong on stderr.
+Platform retains implicit compact JSON for compatibility, with opt-in `--human`.
+Other families retain human defaults and explicit `--json`. Quiet suppresses
+ordinary results unless JSON was explicitly requested. Explicit JSON, quiet,
+headless input/output, CI and `--non-interactive` cannot initiate interactive
+approval polling; `login --resume` explicitly redeems an existing approval.
+
+Numeric failure status remains 1. Existing error fields/code families remain;
+usage errors classify invalid origins and selectors before credential/network
+access. Categories and retryability are additive diagnostics, not authorization
+to repeat a mutation. In particular, post-commit failures retain source, expose
+committed paths and require repairing only the failed follow-up. Upload/deployment
+retries keep the existing immutable request identity. None of these presentation
+changes alters server admission or activates hosted execution.
