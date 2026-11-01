@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import * as contract from '../dist/contracts/deployment.js';
+import * as transport from '../dist/contracts/cli-transport.js';
 import { composeSourceProvenance } from '../dist/composition.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
 import { CAPABILITY_IDS, CAPABILITIES } from '../dist/capability-catalog.js';
@@ -155,4 +156,30 @@ test('generated source records composition transactionally without changing iden
     process.chdir(beforeCwd);
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('reviewed public candidate receipt accepts ready web admission without exporting private policies', () => {
+  const receipt = {
+    protocol: 1,
+    planId: crypto.randomUUID(),
+    planDigest: 'a'.repeat(64),
+    candidateId: crypto.randomUUID(),
+    sourceRevision: 'b'.repeat(64),
+    state: 'ready',
+    hostedAdmission: true,
+    identityAction: 'preserve',
+  };
+  assert.deepEqual(transport.cliPreparationSchema.parse(receipt), receipt);
+  assert.ok(
+    transport.cliPreparationSchema.safeParse({ ...receipt, state: 'built', hostedAdmission: false })
+      .success,
+  );
+  assert.equal(
+    transport.cliPreparationSchema.safeParse({ ...receipt, state: 'published' }).success,
+    false,
+  );
+  assert.equal(transport.cliBuildPolicySchema, undefined);
+  assert.equal(transport.cliBuildEvidenceSchema, undefined);
+  assert.equal(contract.hostingPolicySchema, undefined);
+  assert.equal(contract.hostingCompatibility, undefined);
 });

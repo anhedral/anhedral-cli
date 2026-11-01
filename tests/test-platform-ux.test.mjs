@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { canonicalCliJson } from '../dist/contracts/cli-transport.js';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runPlatformCommand } from '../dist/platform-command.js';
-import { platformOrigin, readPrivate, writePrivate } from '../dist/platform-state.js';
+import {
+  platformOrigin,
+  readPrivate,
+  writePrivate,
+  runCredentialProcess,
+  secretStore,
+} from '../dist/platform-state.js';
 
 const origin = 'https://platform.example';
 const principalId = 'a0b9d370-073d-4cf3-ab6c-4aaa03726b91';
@@ -310,4 +319,216 @@ test('whoami context fails closed on a saved link for a different identity or AP
     );
     assert.equal(output.out, '');
   }
+});
+
+test('environment, staging and log selectors fail before credentials, input or network', async () => {
+  for (const [command, values] of [
+    ['staging', ['deploy', '--candidate', 'typo']],
+    ['staging', ['deploy']],
+    ['staging', ['status', '--new']],
+    ['logs', ['--deployment', 'typo']],
+    ['logs', ['--cursor', 'x'.repeat(513)]],
+    ['env', ['import', '--file', '/missing-private-file']],
+    ['env', ['import', '--environment', 'staging']],
+    ['env', ['set', 'invalid-name', '--environment', 'staging', '--stdin']],
+    ['env', ['list', '--file', '/missing-private-file']],
+  ]) {
+    let accessed = false;
+    await assert.rejects(
+      runPlatformCommand(
+        command,
+        args(...values),
+        {},
+        {
+          store: {
+            ...store(),
+            read: async () => {
+              accessed = true;
+              return credentials;
+            },
+          },
+          fetch: async () => {
+            accessed = true;
+            throw Error('unexpected network');
+          },
+        },
+      ),
+      (error) => error.code === 'INVALID_ARGUMENT',
+    );
+    assert.equal(accessed, false, command + ' ' + values.join(' '));
+  }
+});
+
+test('logout reports revoked access separately when local credential removal fails', async () => {
+  const output = capture();
+  let revoked = false;
+  await assert.rejects(
+    runPlatformCommand(
+      'logout',
+      args(),
+      { json: true, io: output.io },
+      {
+        store: {
+          ...store(),
+          clear: async () => {
+            throw Error('private backend details');
+          },
+        },
+        fetch: async (url) => {
+          assert.ok(url.endsWith('/auth/logout'));
+          revoked = true;
+          return Response.json({ revoked: true });
+        },
+      },
+    ),
+    (error) =>
+      error.code === 'PLATFORM_ACCESS_FAILED' &&
+      /revoked.*could not be removed/.test(error.message) &&
+      !error.message.includes('private backend'),
+  );
+  assert.equal(revoked, true);
+  assert.equal(output.out, '');
+});
+
+test('credential helper bounds stalled processes and preserves ordinary completion', async () => {
+  assert.equal(
+    await runCredentialProcess(
+      process.execPath,
+      ['-e', 'process.stdout.write("safe result")'],
+      '',
+      5000,
+    ),
+    'safe result',
+  );
+  await assert.rejects(
+    runCredentialProcess(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], '', 50),
+    /timed out/,
+  );
+  await assert.rejects(
+    runCredentialProcess(process.execPath, ['-e', 'process.exit(2)'], '', 5000),
+    /could not be accessed/,
+  );
+  await assert.rejects(
+    runCredentialProcess('/nonexistent-anhedral-credential-helper', [], '', 5000),
+    /unavailable/,
+  );
+  await assert.rejects(
+    runCredentialProcess(
+      process.execPath,
+      ['-e', 'process.stdout.write("x".repeat(65537))'],
+      '',
+      5000,
+    ),
+    /too much data/,
+  );
+});
+
+test('OS credential clear propagates backend failures and accepts successful deletion', async () => {
+  if (!['darwin', 'linux'].includes(process.platform)) return;
+  const commands = [];
+  const success = secretStore(origin, undefined, async (binary, values) => {
+    commands.push([binary, values]);
+    return '';
+  });
+  await success.clear();
+  assert.equal(commands.length, 1);
+  assert.ok(
+    commands[0][1].includes(process.platform === 'darwin' ? 'delete-generic-password' : 'clear'),
+  );
+  const failure = secretStore(origin, undefined, async () => {
+    throw Error('simulated credential service failure');
+  });
+  await assert.rejects(failure.clear(), /simulated credential service failure/);
+});
+
+test('prepare and status accept a ready server candidate without activating deployment', async (t) => {
+  await fixture(t);
+  const manifest = JSON.parse(
+    readFileSync(new URL('./fixtures/deployment-contract/fixtures.json', import.meta.url)),
+  ).manifest;
+  const input = {
+    protocol: 1,
+    requestId: crypto.randomUUID(),
+    uploadId: crypto.randomUUID(),
+    manifest,
+  };
+  const unsigned = {
+    protocol: 1,
+    id: crypto.randomUUID(),
+    requestId: input.requestId,
+    projectId,
+    uploadId: input.uploadId,
+    manifest,
+    sourceRevision: 'b'.repeat(64),
+    inventoryDigest: 'c'.repeat(64),
+    lockDigest: 'd'.repeat(64),
+    routing: { generation: 0, activeReleaseId: null, desiredReleaseId: null },
+    routingRevision: 'e'.repeat(64),
+    expectedGeneration: 0,
+    policyDigest: 'f'.repeat(64),
+    migrationDigests: [],
+    expiresAt,
+    runtimeImage: null,
+    configurationRevision: null,
+    artifactVerified: false,
+    hostedAdmission: false,
+    identityAction: 'preserve',
+    blockers: ['HOSTED_ADMISSION_DISABLED', 'ARTIFACT_UNREVIEWED', 'CONFIGURATION_UNVERIFIED'],
+  };
+  const plan = {
+    ...unsigned,
+    digest: createHash('sha256').update(canonicalCliJson(unsigned)).digest('hex'),
+  };
+  const receipt = {
+    protocol: 1,
+    planId: plan.id,
+    planDigest: plan.digest,
+    candidateId: crypto.randomUUID(),
+    sourceRevision: plan.sourceRevision,
+    state: 'ready',
+    hostedAdmission: true,
+    identityAction: 'preserve',
+  };
+  await writePrivate(join(process.cwd(), '.anhedral/platform/project.json'), {
+    protocol: 1,
+    origin,
+    principalId,
+    projectId,
+    teamId,
+    name: 'Fixture project',
+  });
+  await writePrivate(join(process.cwd(), '.anhedral/platform/deployment.json'), {
+    origin,
+    principalId,
+    projectId,
+    planInput: input,
+    plan,
+  });
+  const calls = [];
+  const fetch = async (url, init) => {
+    calls.push([url, init.method]);
+    if (url.endsWith('/actor')) return Response.json(actor);
+    if (url.endsWith('/candidates') || url.endsWith('/candidates/' + receipt.candidateId))
+      return Response.json(receipt);
+    throw Error('unexpected endpoint');
+  };
+  for (const operation of ['prepare', 'status']) {
+    const output = capture();
+    await runPlatformCommand(
+      'deploy',
+      args(operation),
+      { json: true, io: output.io },
+      { store: store(), fetch },
+    );
+    assert.deepEqual(JSON.parse(output.out), receipt);
+  }
+  assert.deepEqual(
+    calls.map(([url]) => new URL(url).pathname),
+    [
+      '/api/cli/v1/actor',
+      '/api/cli/v1/candidates',
+      '/api/cli/v1/actor',
+      '/api/cli/v1/candidates/' + receipt.candidateId,
+    ],
+  );
 });

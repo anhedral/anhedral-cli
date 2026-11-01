@@ -1,5 +1,21 @@
 # Development notes
 
+## 2026-11-01 — Platform client recovery fixes
+
+Based on staging `1096f7f`, the public `cliPreparationSchema` block was reviewed
+against Platform `e786cd642075bbb7d73d2047a93434b5aeb1d5f9` and fingerprinted through the explicit deployment
+contract sync. Private hosting/build policy exports were omitted; existing source
+scanning, public exports and runtime pins were preserved. Invalid environment, staging
+and log selectors fail before credentials/network access; helper execution is
+bounded, local logout cleanup failures remain visible, and saved staging receipts
+are checked against their request identity. The existing package allowlist omitted
+the environment/operations public provenance and license assets introduced in #98;
+those exact paths are now both required and allowed. Build, 58 focused regressions,
+lint/typecheck, static security, explicit contract fingerprints, plugin checks and
+package-file policy and the installed exact-package/generated-app smoke passed. `check:boundaries` is unavailable on this staging base;
+the pending primary-checkout boundary implementation was not imported. No provider operation, production
+promotion or package publication is part of this change.
+
 ## 2026-10-31 — CLI discovery and scripting compatibility
 
 Candidate implementation `18d8513` on `codex/cli-design-increments`, based on

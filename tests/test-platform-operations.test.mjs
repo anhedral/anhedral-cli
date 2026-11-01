@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runStagingCommand, runLogsCommand } from '../dist/platform-operations.js';
 import { commandHelp } from '../dist/registry/usage.js';
+import { writePrivate } from '../dist/platform-state.js';
 import { validateCommand } from '../dist/cli-arguments.js';
 const context = {
   origin: 'https://platform.anhedral.com',
@@ -210,4 +211,40 @@ test('runtime logs default to staging, preserve filters and neutralize terminal 
     entries: [],
   }));
   assert.equal(json.read().logs.environment, 'production');
+});
+
+test('staging rejects inconsistent saved receipts before replay, even with --new', async () => {
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'anhedral-staging-saved-'))),
+    previous = process.cwd();
+  process.chdir(root);
+  try {
+    const input = { requestId: crypto.randomUUID(), candidateId, expectedGeneration: 3 };
+    for (const mismatch of [
+      { developmentId: crypto.randomUUID() },
+      { requestId: crypto.randomUUID() },
+      { candidateId: crypto.randomUUID() },
+      { generation: 9 },
+    ]) {
+      const file = join(root, '.anhedral/platform/staging.json');
+      await writePrivate(file, { ...context, input, receipt: { ...receipt(input), ...mismatch } });
+      const before = await readFile(file, 'utf8');
+      for (const extra of [[], ['--new']]) {
+        await assert.rejects(
+          runStagingCommand(
+            ['deploy', '--candidate', candidateId, ...extra],
+            capture().output,
+            context,
+            async () => {
+              throw Error('unexpected network');
+            },
+          ),
+          /Saved staging receipt differs/,
+        );
+      }
+      assert.equal(await readFile(file, 'utf8'), before);
+    }
+  } finally {
+    process.chdir(previous);
+    await rm(root, { recursive: true, force: true });
+  }
 });
