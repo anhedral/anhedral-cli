@@ -46,8 +46,15 @@ const stackFiles = [
   'assets/stack/stripe.ts.txt',
   'assets/stack/web-sign-in.tsx.txt',
 ];
-const requiredFiles = new Set([
+const publicContractAssets = [
   'assets/contracts/deployment-provenance.json',
+  'assets/contracts/environment-provenance.json',
+  'assets/contracts/operations-provenance.json',
+  'assets/contracts/LICENSE.environment',
+  'assets/contracts/LICENSE.operations',
+];
+const requiredFiles = new Set([
+  ...publicContractAssets,
   'assets/security/credential-patterns.mjs',
   'assets/security/credential-patterns.d.mts',
   'dist/contracts/deployment.js',
@@ -239,7 +246,7 @@ try {
     ].includes(file.path);
     const allowed =
       allowedRootFiles.has(file.path) ||
-      file.path === 'assets/contracts/deployment-provenance.json' ||
+      publicContractAssets.includes(file.path) ||
       [
         'assets/security/credential-patterns.mjs',
         'assets/security/credential-patterns.d.mts',

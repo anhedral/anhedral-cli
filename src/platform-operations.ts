@@ -27,16 +27,42 @@ const stateSchema = contextSchema
 const visible = (value: unknown) =>
   stripVTControlCharacters(String(value ?? '')).replace(/[\x00-\x1f\x7f]/g, ' ');
 
+export function validateStagingArguments(args: string[]) {
+  const options = commandArguments('staging', args);
+  const [operation] = options.positional;
+  if (operation === 'status' && (options.has('--candidate') || options.has('--new')))
+    throw commandArgumentError('staging', 'Candidate and --new apply to staging deploy only.');
+  if (operation === 'deploy' && !z.uuid().safeParse(options.value('--candidate')).success)
+    throw commandArgumentError('staging', 'Select a ready candidate UUID with --candidate.');
+  return options;
+}
+export function validateLogsArguments(args: string[]) {
+  const options = commandArguments('logs', args);
+  const parsed = runtimeLogQuerySchema.safeParse({
+    environment: options.value('--environment') ?? 'staging',
+    deploymentId: options.value('--deployment'),
+    level: options.value('--level'),
+    source: options.value('--source'),
+    range: options.value('--range'),
+    search: options.value('--search'),
+    cursor: options.value('--cursor'),
+  });
+  if (!parsed.success)
+    throw commandArgumentError(
+      'logs',
+      'Check the environment, deployment, level, source, range and cursor filters.',
+    );
+  return parsed.data;
+}
+
 export async function runStagingCommand(
   args: string[],
   output: OutputOptions,
   context: Context,
   request: Request,
 ) {
-  const options = commandArguments('staging', args);
+  const options = validateStagingArguments(args);
   const [operation] = options.positional;
-  if (options.positional.length !== 1 || !['status', 'deploy'].includes(operation ?? ''))
-    throw commandArgumentError('staging', 'Use staging status or staging deploy --candidate <id>.');
   const reporter = createReporter(
     output,
     (value) => {
@@ -64,8 +90,6 @@ export async function runStagingCommand(
     return state;
   };
   if (operation === 'status') {
-    if (options.has('--candidate') || options.has('--new'))
-      throw commandArgumentError('staging', 'Candidate and --new apply to staging deploy only.');
     reporter.result({
       status: 'read',
       environment: 'staging',
@@ -75,8 +99,6 @@ export async function runStagingCommand(
     return;
   }
   const candidateId = options.value('--candidate');
-  if (!z.uuid().safeParse(candidateId).success)
-    throw commandArgumentError('staging', 'Select a ready candidate UUID with --candidate.');
   const file = join(process.cwd(), '.anhedral', 'platform', 'staging.json');
   const raw = await readPrivate(file);
   const parsed = raw === null ? null : stateSchema.safeParse(raw);
@@ -95,6 +117,16 @@ export async function runStagingCommand(
   if (previous && !options.has('--new') && previous.input.candidateId !== candidateId)
     throw platformFailure(
       'The candidate differs from the pending staging deployment. Use --new for another deployment.',
+    );
+  if (
+    previous?.receipt &&
+    (previous.receipt.developmentId !== context.projectId ||
+      previous.receipt.requestId !== previous.input.requestId ||
+      previous.receipt.candidateId !== previous.input.candidateId ||
+      previous.receipt.generation !== previous.input.expectedGeneration + 1)
+  )
+    throw platformFailure(
+      'Saved staging receipt differs from its request. Preserve state and reconcile before retrying.',
     );
   if (previous?.receipt && !options.has('--new')) {
     reporter.result({
@@ -150,25 +182,9 @@ export async function runLogsCommand(
   context: Context,
   request: Request,
 ) {
-  const options = commandArguments('logs', args);
-  if (options.positional.length)
-    throw commandArgumentError('logs', 'Use logs with environment and filter options.');
-  const parsed = runtimeLogQuerySchema.safeParse({
-    environment: options.value('--environment') ?? 'staging',
-    deploymentId: options.value('--deployment'),
-    level: options.value('--level'),
-    source: options.value('--source'),
-    range: options.value('--range'),
-    search: options.value('--search'),
-    cursor: options.value('--cursor'),
-  });
-  if (!parsed.success)
-    throw commandArgumentError(
-      'logs',
-      'Check the environment, deployment, level, source, range and cursor filters.',
-    );
+  const query = validateLogsArguments(args);
   const params = new URLSearchParams(
-    Object.entries(parsed.data).filter(
+    Object.entries(query).filter(
       (entry): entry is [string, string] => typeof entry[1] === 'string',
     ),
   );
@@ -176,11 +192,11 @@ export async function runLogsCommand(
     await request(`/projects/${context.projectId}/runtime-logs?${params}`, 'GET'),
   );
   if (
-    page.environment !== parsed.data.environment ||
+    page.environment !== query.environment ||
     page.entries.some(
       (entry) =>
-        entry.environment !== parsed.data.environment ||
-        (parsed.data.deploymentId && entry.deploymentId !== parsed.data.deploymentId),
+        entry.environment !== query.environment ||
+        (query.deploymentId && entry.deploymentId !== query.deploymentId),
     )
   )
     throw platformFailure(

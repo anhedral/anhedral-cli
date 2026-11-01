@@ -131,7 +131,7 @@ export const cliPreparationSchema = z
     planDigest: sourceHashSchema,
     candidateId: z.uuid(),
     sourceRevision: sourceHashSchema,
-    state: z.enum(['awaiting-runtime', 'building', 'built', 'failed']),
+    state: z.enum(['awaiting-runtime', 'building', 'built', 'ready', 'failed']),
     buildDigest: sourceHashSchema.nullable().optional(),
     error: z.string().max(300).nullable().optional(),
     admission: z
@@ -143,7 +143,7 @@ export const cliPreparationSchema = z
       .strict()
       .nullable()
       .optional(),
-    hostedAdmission: z.literal(false),
+    hostedAdmission: z.boolean(),
     identityAction: z.literal('preserve'),
   })
   .strict();

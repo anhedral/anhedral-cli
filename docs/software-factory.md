@@ -83,9 +83,10 @@ routing state, principal epoch and project authority. Artifact provenance and
 runtime configuration remain explicitly unverified; null receipts are not approval.
 
 `deploy prepare` reserves an immutable candidate. `deploy status` reads
-`awaiting-runtime`, `building`, `built` or `failed`. A built candidate grants no
-preview or publishing capability. Runtime admission and build enforcement are
-server-owned. These commands never provision, migrate, activate a preview or
+`awaiting-runtime`, `building`, `built`, `ready` or `failed`. A built candidate grants no
+preview or publishing capability. A `ready` receipt reports Platform-admitted hosted
+readiness; it does not approve production publication. Runtime admission and build
+enforcement remain server-owned. These commands never provision, migrate, activate a preview or
 deploy. Lost responses resume the same saved request. Changed manifest inputs or
 routing require `deploy plan --manifest <file> --new`. Plan/source expiry and
 revocation fail closed. State under `.anhedral/platform/deployment.json` contains
@@ -108,7 +109,8 @@ Production changes remain subject to Platform approval and deployment policy.
 `staging status` reads persistent staging history. `staging deploy --candidate
 <uuid>` selects a ready candidate, freezes the current staging configuration and
 retains one generation-bound request across retries. `--new` starts another
-deployment after reviewing the current state. CLI runtime admission remains a
+deployment after reviewing the current state. Saved receipts must match their
+project, candidate, request and generation before replay. CLI runtime admission remains a
 separate server gate; a built source upload alone is not a ready candidate.
 `logs` reads bounded, redacted runtime events, defaulting to staging. Select
 production explicitly with `--environment production`; filter by deployment,
@@ -146,7 +148,9 @@ approval polling; `login --resume` explicitly redeems an existing approval.
 
 Numeric failure status remains 1. Existing error fields/code families remain;
 usage errors classify invalid origins and selectors before credential/network
-access. Categories and retryability are additive diagnostics, not authorization
+access, including environment, staging and log selectors. Credential-store helpers
+have bounded execution. Logout revokes server access first; a failed local deletion
+reports cleanup still pending instead of successful logout. Categories and retryability are additive diagnostics, not authorization
 to repeat a mutation. In particular, post-commit failures retain source, expose
 committed paths and require repairing only the failed follow-up. Upload/deployment
 retries keep the existing immutable request identity. None of these presentation

@@ -99,6 +99,33 @@ async function stdinBytes(): Promise<Uint8Array> {
     clearTimeout(timeout);
   }
 }
+export function validateEnvironmentArguments(args: string[]) {
+  const options = commandArguments('env', args);
+  const [operation, name] = options.positional;
+  if (operation === 'list') {
+    if (
+      ['--file', '--stdin', '--type', '--replace', '--new', '--dry-run'].some((flag) =>
+        options.has(flag),
+      )
+    )
+      throw commandArgumentError('env', 'env list accepts only context and environment options.');
+  } else {
+    if (!options.value('--environment'))
+      throw commandArgumentError(
+        'env',
+        'An explicit --environment staging|production is required.',
+      );
+    if (options.has('--file') === options.has('--stdin'))
+      throw commandArgumentError(
+        'env',
+        'Choose exactly one --file <file> or --stdin. Values cannot be supplied in arguments.',
+      );
+    if (operation === 'set' && !environmentNameSchema.safeParse(name).success)
+      throw commandArgumentError('env', 'Use an uppercase variable name.');
+  }
+  return options;
+}
+
 export async function runEnvironmentCommand(
   args: string[],
   output: OutputOptions,
@@ -106,13 +133,8 @@ export async function runEnvironmentCommand(
   request?: Request,
   readInput = stdinBytes,
 ) {
-  const options = commandArguments('env', args);
+  const options = validateEnvironmentArguments(args);
   const [operation, name] = options.positional;
-  if (
-    !['list', 'import', 'set'].includes(operation ?? '') ||
-    options.positional.length !== (operation === 'set' ? 2 : 1)
-  )
-    throw commandArgumentError('env', 'Use env list, env import, or env set <NAME>.');
   const reporter = createReporter(
     output,
     (value) => {
@@ -135,15 +157,6 @@ export async function runEnvironmentCommand(
   if (environment && !projectEnvironmentSchema.safeParse(environment).success)
     throw commandArgumentError('env', 'Choose staging or production.');
   if (operation === 'list') {
-    if (
-      options.has('--file') ||
-      options.has('--stdin') ||
-      options.has('--type') ||
-      options.has('--replace') ||
-      options.has('--new') ||
-      options.has('--dry-run')
-    )
-      throw commandArgumentError('env', 'env list accepts only context and environment options.');
     if (!context || !request)
       throw platformFailure('Link and sign in to the intended project first.');
     const metadata = environmentMetadataSchema.parse(
@@ -159,18 +172,7 @@ export async function runEnvironmentCommand(
     });
     return;
   }
-  if (!environment)
-    throw commandArgumentError('env', 'An explicit --environment staging|production is required.');
-  if (options.has('--file') === options.has('--stdin'))
-    throw commandArgumentError(
-      'env',
-      'Choose exactly one --file <file> or --stdin. Values cannot be supplied in arguments.',
-    );
-  if (operation === 'set' && !environmentNameSchema.safeParse(name).success)
-    throw commandArgumentError('env', 'Use an uppercase variable name.');
   const explicitKind = options.value('--type');
-  if (explicitKind && !['secret', 'config'].includes(explicitKind))
-    throw commandArgumentError('env', 'Choose --type secret or --type config.');
   let entries: { name: string; value: string }[];
   try {
     const bytes = options.has('--file')

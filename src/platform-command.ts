@@ -1,5 +1,10 @@
-import { runEnvironmentCommand } from './platform-environment.js';
-import { runStagingCommand, runLogsCommand } from './platform-operations.js';
+import { runEnvironmentCommand, validateEnvironmentArguments } from './platform-environment.js';
+import {
+  runStagingCommand,
+  runLogsCommand,
+  validateStagingArguments,
+  validateLogsArguments,
+} from './platform-operations.js';
 import { constants } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
@@ -153,6 +158,9 @@ async function runPlatformOperation(
   ) => createPlatformFailure(message, nextAction, category, retryable);
   const options = commandArguments(command, args),
     origin = platformOrigin(options.value('--api-url'));
+  if (command === 'env') validateEnvironmentArguments(args);
+  if (command === 'staging') validateStagingArguments(args);
+  if (command === 'logs') validateLogsArguments(args);
   const emit = (result: unknown) => reporter.result(result);
   if (
     ['login', 'logout', 'whoami', 'link', 'unlink'].includes(command) &&
@@ -401,7 +409,16 @@ async function runPlatformOperation(
   const token = saved.data.token;
   if (command === 'logout') {
     await request('/auth/logout', 'POST', {}, token);
-    await store.clear();
+    try {
+      await store.clear();
+    } catch {
+      throw platformFailure(
+        'Platform access was revoked, but the saved local credential could not be removed.',
+        'context',
+        false,
+        'Remove the saved credential from the selected credential store before signing in again.',
+      );
+    }
     emit({ status: 'logged_out', origin });
     return;
   }
