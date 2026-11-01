@@ -3,3 +3,10 @@ node_modules/
 .artifacts/
 
 tests/native-ui/.generated/
+
+# Immutable Apache-2.0 Platform-owned snapshots retain their canonical bytes.
+# check-environment-contract verifies provenance hashes and the portable boundary.
+src/contracts/environment-transport.ts
+src/contracts/environment-file.ts
+src/contracts/staging-transport.ts
+src/contracts/runtime-logs-transport.ts

@@ -1,3 +1,5 @@
+import { runEnvironmentCommand } from './platform-environment.js';
+import { runStagingCommand, runLogsCommand } from './platform-operations.js';
 import { constants } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
@@ -198,6 +200,7 @@ async function runPlatformOperation(
     emit({ status: 'unlinked' });
     return;
   }
+  if (command === 'env' && options.has('--dry-run')) return runEnvironmentCommand(args, output);
   if (command === 'source' && options.has('--dry-run')) {
     if (options.positional[0] !== 'upload')
       throw commandArgumentError(command, 'Use source upload --dry-run.');
@@ -271,7 +274,12 @@ async function runPlatformOperation(
         `Retry anhedral ${command} with the same API origin, working directory and options to resume.`,
       );
     }
-    const data: unknown = await readSourceBounded(response.body, 65536)
+    const data: unknown = await readSourceBounded(
+      response.body,
+      /\/projects\/[^/]+\/(environment|staging|runtime-logs)(\?|$)/.test(path)
+        ? 1024 * 1024
+        : 65536,
+    )
       .then((b) => JSON.parse(new TextDecoder().decode(b)))
       .catch(() => {
         throw platformFailure('Platform returned an invalid response.', 'network');
@@ -297,9 +305,17 @@ async function runPlatformOperation(
           : response.status === 409
             ? command === 'deploy'
               ? 'Deployment plan is stale or inputs conflict. Review deploy plan --new.'
-              : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
+              : command === 'staging'
+                ? 'Candidate, configuration or staging generation changed. Review staging status before starting a new deployment.'
+                : command === 'env'
+                  ? 'Environment versions or import contents conflict. Review env list and preserve saved retry state before starting a new import.'
+                  : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
             : response.status === 403
-              ? 'Current project build access is unavailable.'
+              ? command === 'env'
+                ? 'Current project environment access or administrator permission is unavailable.'
+                : command === 'logs'
+                  ? 'Current project log access is unavailable.'
+                  : 'Current project build access is unavailable.'
               : `Platform request failed (${response.status}).`,
         response.status === 401
           ? 'auth'
@@ -466,6 +482,23 @@ async function runPlatformOperation(
     await writePrivate(linkPath, { ...link, origin });
     emit({ ...link, origin });
     return;
+  }
+  if (['env', 'staging', 'logs'].includes(command)) {
+    const link = linkSchema.parse(await readPrivate(linkPath));
+    if (link.origin !== origin || link.principalId !== actor.principalId)
+      throw platformFailure('Link this project to the selected API origin and signed-in identity.');
+    const operation =
+      command === 'env'
+        ? runEnvironmentCommand
+        : command === 'staging'
+          ? runStagingCommand
+          : runLogsCommand;
+    return operation(
+      args,
+      output,
+      { origin, principalId: actor.principalId, projectId: link.projectId, teamId: link.teamId },
+      (path, method, body) => request(path, method, body, token, link.teamId),
+    );
   }
   if (
     !['source', 'deploy'].includes(command) ||

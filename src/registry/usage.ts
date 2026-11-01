@@ -47,6 +47,9 @@ Optional Platform access:
   link/unlink   Select an existing project or remove its local link.
   source        Upload source or inspect its receipt.
   deploy        Plan, prepare or inspect a candidate; never activates it.
+  env           Import private configuration or list variable metadata.
+  staging       Deploy verified candidates to persistent staging.
+  logs          Read redacted runtime logs for a linked project.
 
 Shell setup:
   completion    Print Bash or zsh completion without editing profiles.

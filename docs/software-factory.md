@@ -91,7 +91,38 @@ routing require `deploy plan --manifest <file> --new`. Plan/source expiry and
 revocation fail closed. State under `.anhedral/platform/deployment.json` contains
 no credentials and cannot select a network origin or change the signed-in identity.
 
-The CLI and skills-only plugin share one release version. Build prepares the
+`env list` returns names, types, environments and versions. `env import --environment
+staging|production --file <path>` reads a private dotenv file; `--stdin` accepts a
+pipe. `env set <NAME>` reads one literal value from a file or pipe. Values are
+never arguments, output or retry-state contents. Non-public names default to
+secrets; `--type config` is explicit readable configuration. Public-prefixed
+secrets, reserved names, duplicate names and oversized input fail before upload.
+Files require owner-only permissions and a regular non-symlink final file;
+ancestor checks reject observed symlinks but are not an atomic directory lock.
+Use `--dry-run` without authentication for names/types only. Actual imports bind
+API origin, principal, team, project and environment, require `--replace` for
+existing variables, and resume one request after a lost response. Use `--new` for
+a different import. Receipts are checked against names, types and expected versions.
+Production changes remain subject to Platform approval and deployment policy.
+
+`staging status` reads persistent staging history. `staging deploy --candidate
+<uuid>` selects a ready candidate, freezes the current staging configuration and
+retains one generation-bound request across retries. `--new` starts another
+deployment after reviewing the current state. CLI runtime admission remains a
+separate server gate; a built source upload alone is not a ready candidate.
+`logs` reads bounded, redacted runtime events, defaulting to staging. Select
+production explicitly with `--environment production`; filter by deployment,
+level, source or range, and pass `--cursor` for the next page. Coverage, dropped
+events and seven-day retention are part of the response.
+
+The plugin includes source skills plus one remote MCP connection at
+`https://platform.anhedral.com/api/mcp`. OAuth consent grants scoped project
+access; CLI credentials are separate. Secret imports initiated through ChatGPT
+open a secure browser form rather than accepting values as tool arguments.
+The plugin packages no executable server, credential or authorization header. Its root `mcp.json` uses the [official remote OAuth declaration](https://developers.openai.com/plugins/build/plugins#bundled-mcp-servers-and-lifecycle-hooks), DCR and read-only default scopes; write access requires additional consent.
+Server features remain unavailable until their operator-controlled gates are enabled.
+
+The CLI and plugin share one release version. Build prepares the
 marketplace pointer to that version's immutable `plugin-v<version>` tag; it does
 not create the tag or publish either artifact. During review that pointer may be
 unavailable. Install an already published version until the coordinated release
