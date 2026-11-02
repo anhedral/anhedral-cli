@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
   "version": "0.18.0",
-  "description": "Start with Next.js and Anhedral UI, then progressively add APIs, data, clients, payments, realtime and AI as editable source.",
+  "description": "Start with TanStack Start and Anhedral UI, then progressively add API, database, authentication, storage and payments as editable source.",
   "type": "module",
   "exports": {
     ".": {

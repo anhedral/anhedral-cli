@@ -2,10 +2,10 @@
   "contractVersion": 1,
   "owner": "anhedral/platform-contracts/deployment",
   "license": "Apache-2.0",
-  "sourceRevision": "080b55a71c3c3e11e66da551a8369b182fac0b90",
+  "sourceRevision": "580aaeae26f81b0c24009a2ce858292c0c9aa5fa",
   "files": {
     "cli-transport.ts": "fb8b017d38d7fb25ac7ead8e519ea15de387cee65c1621a814ed0f32ea5878ec",
-    "source-profile.ts": "6e715dd9ff2f762de302bdb2380c22ea19f138283da1d2bd61c1cc258c7e2d67",
+    "source-profile.ts": "6129f41a908161a0b726af6dce8a29d47716cf593cecc74bcef91596c348daa6",
     "source-bundle.ts": "99df4874f9337a604da544093215de24f19f136182017be15629f78b5180a52b",
     "deployment.ts": "d195d9cfefd41b418bac339255a3d1f13fba05cc27954ef541eeab7b210a59e1",
     "fixtures.json": "d624a5bf4911318c0063c344acf8f117a8d4d19fbb051c238beecb0c3254a192",

@@ -98,9 +98,17 @@ test('private state rejects insecure files and symlinks; source excludes secrets
     await writeFile(join(root, 'src', 'kept.ts'), 'export const value=1;');
     await writeFile(join(root, 'src', 'skip.local'), 'skip');
     await writeFile(join(root, 'src', 'keep.local'), 'kept');
+    await mkdir(join(root, 'apps', 'web', '.tanstack'), { recursive: true });
+    await mkdir(join(root, 'apps', 'web', 'src'), { recursive: true });
+    await writeFile(join(root, 'apps', 'web', '.tanstack', 'cache.json'), '{}');
+    await writeFile(join(root, 'apps', 'web', 'worker-configuration.d.ts'), 'generated');
+    await writeFile(join(root, 'apps', 'web', 'src', 'routeTree.gen.ts'), 'export {};');
     let source = await packageSource(root),
       files = await unpackSource(source.archive, true);
     assert.ok(files.has('src/kept.ts'));
+    assert.ok(files.has('apps/web/src/routeTree.gen.ts'));
+    assert.equal(files.has('apps/web/.tanstack/cache.json'), false);
+    assert.equal(files.has('apps/web/worker-configuration.d.ts'), false);
     assert.ok(files.has('src/keep.local'));
     for (const path of ['.env.production', 'ignored.txt', 'src/skip.local', 'private/state.json'])
       assert.equal(files.has(path), false);
