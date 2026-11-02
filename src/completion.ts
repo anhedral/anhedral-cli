@@ -29,7 +29,7 @@ function nodes(): [string, CommandDefinition][] {
 function choices(definition: CommandDefinition): readonly string[] {
   if (definition.children) return Object.keys(definition.children);
   const positional = definition.positional;
-  if (positional?.kind === 'capability') return CAPABILITY_IDS;
+  if (positional?.kind === 'capability') return ['backend', ...CAPABILITY_IDS];
   if (positional?.kind === 'component') return UI_CATALOG.components.map((entry) => entry.name);
   return positional?.choices ?? [];
 }

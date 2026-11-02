@@ -74,7 +74,15 @@ for (const recreate of [false, true])
     try {
       assert.equal(command(['init', root, '--skip-install', '--no-git']).status, 0);
       const original = JSON.parse(readFileSync(path.join(root, 'anhedral.json'), 'utf8'));
-      const args = ['add', 'hono', '--skip-install', '--cwd', root, '--json'];
+      const args = [
+        'add',
+        'stripe',
+        '--with-dependencies',
+        '--skip-install',
+        '--cwd',
+        root,
+        '--json',
+      ];
       assert.equal(
         command(
           args,
@@ -110,7 +118,7 @@ for (const recreate of [false, true])
         assert.ok(
           JSON.parse(
             readFileSync(path.join(root, 'anhedral.json'), 'utf8'),
-          ).capabilities.installed.includes('hono'),
+          ).capabilities.installed.includes('stripe'),
         );
         assert.equal(existsSync(path.join(root, '.anhedral-journal.json')), false);
       }

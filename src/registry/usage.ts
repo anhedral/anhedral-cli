@@ -34,8 +34,8 @@ export const STANDARD_USAGE = `Anhedral CLI — source generation and optional P
 Usage: anhedral <command> [options]
 
 Start a project:
-  init          Scaffold Next.js with Anhedral UI.
-  add           Add API, data, Expo and other source capabilities.
+  init          Create the complete web launch stack.
+  add           Add Stripe or other open-source capabilities.
 
 Inspect source and UI:
   stack         List capabilities, inspect source or run doctor.

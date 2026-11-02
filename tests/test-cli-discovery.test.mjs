@@ -14,7 +14,7 @@ import { parseStandardOptions } from '../dist/registry/options.js';
 test('root help is compact and detailed topics render existing examples', () => {
   assert.ok(STANDARD_USAGE.trimEnd().split('\n').length <= 45);
   assert.match(STANDARD_USAGE, /anhedral init my-app/);
-  assert.match(STANDARD_USAGE, /Expo/);
+  assert.match(STANDARD_USAGE, /web launch stack/);
   assert.match(commandHelp('init'), /Examples:\n  anhedral init my-app/);
   assert.doesNotMatch(commandHelp('whoami'), /undefined/);
   const upload = commandHelp(['source', 'upload']);

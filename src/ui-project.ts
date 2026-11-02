@@ -30,7 +30,8 @@ export function detectUiTargets(cwd: string, selector?: UiPlatform | 'all'): UiT
     if (!existsSync(file)) return;
     const manifest = readUiJson(file) as Manifest;
     const dependencies = { ...manifest.devDependencies, ...manifest.dependencies };
-    if (dependencies.next) targets.push({ root: directory, platform: 'web', manifest });
+    if (dependencies.next || dependencies['@tanstack/react-start'])
+      targets.push({ root: directory, platform: 'web', manifest });
     if (dependencies.expo) targets.push({ root: directory, platform: 'native', manifest });
   }
   for (;;) {
@@ -49,7 +50,7 @@ export function detectUiTargets(cwd: string, selector?: UiPlatform | 'all'): UiT
     targets = targets.filter((target) => target.platform === selector);
   if (!targets.length)
     throw Error(
-      'No matching Next.js or Expo application found. Use --cwd to select an application.',
+      'No matching Next.js, TanStack Start or Expo application found. Use --cwd to select an application.',
     );
   if (targets.length > 1 && selector !== 'all')
     throw Error(

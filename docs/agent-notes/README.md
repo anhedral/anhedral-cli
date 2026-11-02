@@ -1,5 +1,15 @@
 # Development notes
 
+## 2026-11-02 Web launch initializer
+
+`codex/web-launch-init` starts at staging `4749139`. Broader source is retained on
+`codex/preserved-progressive-stack-20261102`; local changes on
+`codex/preserved-cli-local-20261102` (`f4aedda09790a82fecb71f7f0db8ab886466ef45`).
+The primary checkout is unchanged. Init creates TanStack Start/UI only; `add backend`
+adds Hono/Better Auth/Drizzle-D1 together, then R2/Stripe independently. Legacy
+source remains. Provenance v2 is separate from hosted admission. Compiled local
+acceptance covers SSR, sessions and R2 ownership; no publication/provider activation.
+
 ## 2026-11-02 Filesystem recovery and runtime scope follow-up
 
 Based on staging `c4dda0f`, fixes preserve recreated post-crash source and retain
@@ -86,7 +96,5 @@ not run. Focused checks cover public contract drift, credential rejection and
 local plugin pointer preparation. Exact package/plugin review artifacts remain
 local; no tag, package publication, provider activation or database change occurs.
 
-Keep this rolling log focused on public CLI changes and unresolved limitations.
-Record private operational evidence outside the public repository. Historical
-commits remain unchanged. Keep this file within 100 lines and the repository
-within its 20 tracked Markdown file budget.
+Keep public CLI notes within 100 lines and the repository within 20 Markdown files.
+Private operational evidence stays outside this repository; history remains in Git.

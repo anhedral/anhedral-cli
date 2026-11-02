@@ -107,7 +107,7 @@ test('explicit API/data composition retains server boundaries without the retire
     rmSync(temporary, { recursive: true, force: true });
   }
 });
-test('payment selectors are rejected and dry-run creates no destination', async () => {
+test('unsupported selectors are rejected and legacy dry-run creates no destination', async () => {
   for (const flag of ['--stripe', '--revenuecat', '--next', '--expo', '--hosting'])
     assert.throws(() => parseStandardOptions(['/tmp/no-write', flag]), /Unknown init option/);
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-plan-'));

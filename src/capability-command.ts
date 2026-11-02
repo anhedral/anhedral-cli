@@ -72,6 +72,7 @@ export async function runCapabilityCommand(
       throw commandArgumentError('stack', 'Use stack list, status or doctor.');
     if (action === 'list')
       result = {
+        launchAdditions: { backend: ['hono', 'database-auth'], r2: ['r2'], stripe: ['stripe'] },
         capabilities: CAPABILITY_IDS.map((id) => ({ id, ...CAPABILITIES[id] })),
         provisioning: 'Separate from source installation',
       };
@@ -85,7 +86,14 @@ export async function runCapabilityCommand(
         );
         const installed = state.installed.includes(id);
         const missingFiles = installed
-          ? CAPABILITIES[id].targets.filter((target) => !existsSync(path.join(root, target)))
+          ? CAPABILITIES[id].targets
+              .map((target) =>
+                target === 'apps/web/lib/auth-client.ts' &&
+                e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
+                  ? 'apps/web/src/lib/auth-client.ts'
+                  : target,
+              )
+              .filter((target) => !existsSync(path.join(root, target)))
           : [];
         return {
           id,
@@ -105,7 +113,10 @@ export async function runCapabilityCommand(
       });
       const foundationReady =
         existsSync(path.join(root, 'apps/web/package.json')) &&
-        !!e.json('apps/web/package.json').dependencies?.next;
+        !!(
+          e.json('apps/web/package.json').dependencies?.next ||
+          e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
+        );
       const sourceReady =
         foundationReady && capabilities.every((c) => c.sourceState !== 'incomplete');
       result = {
@@ -133,16 +144,30 @@ export async function runCapabilityCommand(
     const manifest = e.json('package.json');
     if (typeof manifest.name !== 'string' || !manifest.name)
       throw Error('The workspace needs a package name.');
-    if (!e.json('apps/web/package.json').dependencies?.next)
-      throw Error('A Next.js foundation is required.');
+    if (!(
+      e.json('apps/web/package.json').dependencies?.next ||
+      e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
+    ))
+      throw Error('An Anhedral Next.js or TanStack Start foundation is required.');
     for (const id of state.installed)
-      for (const target of CAPABILITIES[id].targets)
+      for (const original of CAPABILITIES[id].targets) {
+        const target =
+          original === 'apps/web/lib/auth-client.ts' &&
+          e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
+            ? 'apps/web/src/lib/auth-client.ts'
+            : original;
         if (!existsSync(path.join(root, target)))
           throw Error(
             `Installed capability is incomplete: ${id} (${target}). Reconcile its source first.`,
           );
+      }
+    const requested = [
+      ...new Set(
+        parsed.positional.flatMap((id) => (id === 'backend' ? ['hono', 'database-auth'] : [id])),
+      ),
+    ];
     const additions = capabilityOrder(
-      parsed.positional,
+      requested,
       state.installed,
       parsed.has('--with-dependencies'),
     );
@@ -170,7 +195,9 @@ export async function runCapabilityCommand(
       root,
       added: additions,
       alreadyInstalled: parsed.positional.filter((id) =>
-        state.installed.includes(id as Capability),
+        id === 'backend'
+          ? state.installed.includes('hono') && state.installed.includes('database-auth')
+          : state.installed.includes(id as Capability),
       ),
       installed,
       files,

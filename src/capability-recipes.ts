@@ -4,6 +4,7 @@ import { CapabilityEditor, fingerprint } from './capability-editor.js';
 import { CAPABILITY_DEPENDENCIES as P } from './dependencies.js';
 import { STACK_DEPENDENCIES as D } from './dependencies.js';
 import { resourceName } from './render.js';
+import { composeTanstack, addTanstackAuth } from './platforms/tanstack.js';
 import { WEB_API_PROXY } from './platforms/web.js';
 import type { Capability } from './capability-catalog.js';
 
@@ -126,8 +127,15 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         });
       else
         e.set(web, ['services'], [{ binding: 'ANHEDRAL_API', service: resourceName(name, 'api') }]);
+      const tanstack = !!e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'];
+      if (tanstack)
+        e.set(
+          'apps/api/package.json',
+          ['devDependencies', 'wrangler'],
+          e.json('apps/web/package.json').devDependencies.wrangler,
+        );
       e.create(
-        'apps/web/lib/api-proxy.ts',
+        tanstack ? 'apps/web/src/lib/api-proxy.ts' : 'apps/web/lib/api-proxy.ts',
         WEB_API_PROXY.replace(
           "'idempotency-key'",
           "'idempotency-key', 'stripe-signature', 'last-event-id'",
@@ -136,9 +144,10 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           "AbortSignal.timeout(request.headers.get('accept')?.includes('text/event-stream') ? 35000 : 15000)",
         ),
       );
-      e.create(
-        'apps/web/lib/server-api.ts',
-        `import 'server-only';
+      if (!tanstack) {
+        e.create(
+          'apps/web/lib/server-api.ts',
+          `import 'server-only';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { proxyApi,type ApiBinding } from './api-proxy';
 function apiBinding(candidate:unknown):ApiBinding|undefined {
@@ -152,15 +161,16 @@ export async function apiRequest(request:Request):Promise<Response>{
  return proxyApi(request,{development:false,binding:apiBinding(Reflect.get(env,'ANHEDRAL_API'))});
 }
 `,
-      );
-      e.create(
-        'apps/web/app/api/[[...path]]/route.ts',
-        "import { apiRequest } from '@/lib/server-api';\nexport const dynamic = 'force-dynamic';\nexport const GET = apiRequest;\nexport const POST = apiRequest;\nexport const PUT = apiRequest;\nexport const PATCH = apiRequest;\nexport const DELETE = apiRequest;\nexport const HEAD = apiRequest;\nexport const OPTIONS = apiRequest;\n",
-      );
-      e.create(
-        'apps/web/README.hono.md',
-        '# Hono development\n\nSet this in apps/web/.env.local for local development:\n\n```dotenv\nAPI_INTERNAL_URL=http://127.0.0.1:8787\n```\n\nProduction uses the ANHEDRAL_API service binding.\n',
-      );
+        );
+        e.create(
+          'apps/web/app/api/[[...path]]/route.ts',
+          "import { apiRequest } from '@/lib/server-api';\nexport const dynamic = 'force-dynamic';\nexport const GET = apiRequest;\nexport const POST = apiRequest;\nexport const PUT = apiRequest;\nexport const PATCH = apiRequest;\nexport const DELETE = apiRequest;\nexport const HEAD = apiRequest;\nexport const OPTIONS = apiRequest;\n",
+        );
+        e.create(
+          'apps/web/README.hono.md',
+          '# Hono development\n\nSet this in apps/web/.env.local for local development:\n\n```dotenv\nAPI_INTERNAL_URL=http://127.0.0.1:8787\n```\n\nProduction uses the ANHEDRAL_API service binding.\n',
+        );
+      }
       break;
     }
     case 'database-auth': {
@@ -240,11 +250,15 @@ export async function apiRequest(request:Request):Promise<Response>{
       e.create('apps/api/src/auth-features.ts', template('auth-features.ts.txt'));
       e.create('apps/api/src/security.ts', template('security.ts.txt'));
       e.create('apps/api/src/features/auth.ts', template('auth-routes.ts.txt'));
-      e.create('apps/web/app/sign-in/page.tsx', template('web-sign-in.tsx.txt'));
-      e.create(
-        'apps/web/lib/auth-client.ts',
-        "'use client';\nimport { createAuthClient } from 'better-auth/react';\nexport const authClient = createAuthClient();\n",
-      );
+      if (e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'])
+        addTanstackAuth(e);
+      else {
+        e.create('apps/web/app/sign-in/page.tsx', template('web-sign-in.tsx.txt'));
+        e.create(
+          'apps/web/lib/auth-client.ts',
+          "'use client';\nimport { createAuthClient } from 'better-auth/react';\nexport const authClient = createAuthClient();\n",
+        );
+      }
       e.merge('package.json', 'scripts', {
         'db:generate': 'pnpm --dir packages/db db:generate',
         'db:migrate': 'pnpm --dir packages/db db:migrate',
@@ -591,6 +605,8 @@ function taskContract(e: CapabilityEditor, name: string, patch: Record<string, u
 }
 
 export function composeCapabilities(e: CapabilityEditor, installed: Capability[]) {
+  if (e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'])
+    composeTanstack(e, installed);
   if (installed.includes('wxt')) {
     taskContract(e, '@workspace/extension#build', {
       outputs: ['.output/**'],

@@ -1,14 +1,14 @@
 # Progressive stack additions
 
-New projects start with Next.js, OpenNext for Cloudflare Workers and Anhedral UI. Add only the parts required by the product. Nothing is called a commercial tier, and the specific “if needed” decisions remain open.
+Executable `anhedral init` creates only TanStack Start SSR/server functions and source-owned Anhedral UI. `add backend` atomically selects Hono, Better Auth and Drizzle/D1. Private R2 and Stripe subscriptions are later optional additions. Existing Next.js applications and the legacy exported `scaffoldStandardProject` generator retain their progressive source workflow; init does not migrate them.
 
 ```sh
 anhedral init my-app
 cd my-app
 anhedral stack list
-anhedral add hono --dry-run --json
-anhedral add hono
-anhedral add database-auth
+anhedral add backend --dry-run --json
+anhedral add backend
+anhedral add r2 stripe
 anhedral stack status --json
 ```
 
@@ -18,7 +18,8 @@ anhedral stack status --json
 
 | Name            | Adds                                                                                              | Required source capabilities |
 | --------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `hono`          | API Worker, web proxy/service binding, health route                                               | Next.js foundation           |
+| `backend`       | Convenience selection composing `hono` and `database-auth` together                              | Anhedral web foundation      |
+| `hono`          | API Worker, web proxy/service binding, health route                                               | Anhedral web foundation      |
 | `database-auth` | Drizzle/D1, Better Auth, schema/migration tooling, web sign-in starter                            | `hono`                       |
 | `r2`            | Private R2 binding and authenticated owner-scoped file routes                                     | `database-auth`              |
 | `stripe`        | Stripe SDK, Checkout subscription starter, signed webhook receipts, canonical access checks       | `database-auth`              |
@@ -32,7 +33,7 @@ anhedral stack status --json
 | `side-panel`    | Chromium Side Panel entrypoint and background registration                                        | `wxt`                        |
 | `gpui`          | Rust/GPUI desktop application and native build scripts                                            | `database-auth`              |
 
-The progression is Next.js → Hono → database/auth, followed by independently selected branches. These are Anhedral's source-builder rules, not intrinsic restrictions of those technologies. `anhedral ui` still requires only the target Next.js or Expo application; it has no backend prerequisite. See [UI commands](ui.md).
+The launch progression is TanStack Start/Anhedral UI → `add backend` → optional `add r2` and/or `add stripe`. `backend` is a convenience selection, not an independently installed capability: state records `hono` and `database-auth`. Use `add r2 stripe --with-dependencies` to include the backend prerequisites in one atomic source plan. Expo/native UI, RevenueCat, extensions, GPUI, events, RTC and AI remain open-source recipes outside the initial Platform launch's supported hosting and testing scope. Legacy Next.js composition follows Next.js → Hono → database/auth before optional branches. These are source-builder rules, not intrinsic technology restrictions. `anhedral ui` requires its target TanStack Start, Next.js or Expo application, with no backend prerequisite. See [UI commands](ui.md).
 
 ```sh
 anhedral add expo native-ui --dry-run --json
@@ -45,7 +46,7 @@ Missing prerequisites stop the command before writes. Explicitly list the parent
 
 ## Protecting existing applications
 
-Additions require an Anhedral workspace with a Next.js foundation. They do not reinitialize it. All selected recipes are planned in memory before any installation. A late collision rejects the entire plan. JSON/JSONC changes preserve unrelated keys and comments; existing bindings and dependency pins that conflict require reconciliation. New source files never replace existing files.
+Additions require a recognized Anhedral web foundation and compatible recipe prerequisites. They do not reinitialize it. All selected recipes are planned in memory before any installation. A late collision rejects the entire plan. JSON/JSONC changes preserve unrelated keys and comments; existing bindings and dependency pins that conflict require reconciliation. New source files never replace existing files.
 
 CLI-owned composition adapters are fingerprinted in `anhedral.json`. Their edits are protected too: if an adapter was customized, a later addition stops rather than replacing it. Add business routes in `apps/api/src/index.ts`, custom binding/variable types in `custom-environment.ts`, auth methods in `auth-features.ts`/`auth.ts`, and native product UI in `apps/mobile/App.tsx`. Keep additional application behavior outside composition adapters.
 
@@ -55,9 +56,11 @@ Repeated additions leave source unchanged; the normal command still resolves and
 
 ## Source state and activation
 
-New minimal foundations and progressive additions record nonsecret `composition`
-provenance in `anhedral.json`: generator version, capability source versions and
-application identity contract. Legacy source versions remain unknown (`null`);
+Foundations and progressive additions record nonsecret `composition` provenance in
+`anhedral.json`: generator version, capability source versions and application
+identity contract. The TanStack launch foundation uses source composition version 2;
+legacy Next/OpenNext uses version 1. This distinction is source provenance, not an
+extension of the portable deployment or hosting contract. Legacy source versions remain unknown (`null`);
 adding a capability does not relabel older source. Source-only dry runs and failed
 transactions preserve the existing manifest. Retained programmatic registry
 compositions keep their original metadata and require separate hosting review.
@@ -93,7 +96,7 @@ and diagnostic tails on failure; verbose mode remains explicit.
 
 Run dependency installation, inspect the generated files, then run `pnpm check`. The normal `add` path resolves lockfiles, stages any applicable reviewed patches and performs a frozen install. The consumer's `audit:deps` retains raw findings and accepts only the existing reviewed exact patches. Source-only generation does not apply a patch to a dependency that has not been resolved yet.
 
-For API development, use the web service binding in production and `API_INTERNAL_URL=http://127.0.0.1:8787` in `apps/web/.env.local` locally. Copy selected API values from `apps/api/.dev.vars.example` to `.dev.vars`; never put server secrets in client public variables. Set a sufficiently long auth secret and the actual `PUBLIC_APP_URL` before enabling identity-dependent features.
+Minimal launch `pnpm dev` runs the web Worker through Vite. After `add backend`, the same process includes the auxiliary Hono Worker and local D1; R2 is local when selected. The web/API service binding is shared by local and production configurations. Legacy Next.js applications use the production service binding and `API_INTERNAL_URL=http://127.0.0.1:8787` in `apps/web/.env.local` locally. Copy selected API values from `apps/api/.dev.vars.example` to `.dev.vars`; never put server secrets in client public variables. Set a sufficiently long auth secret and the actual `PUBLIC_APP_URL` before enabling identity-dependent features.
 
 D1's initial resource ID is deliberately a placeholder. Configure the actual D1 identity and private R2 bucket yourself. Keep R2 public access disabled. Generate and review additional SQL, then deliberately apply it to an isolated local database:
 
@@ -108,7 +111,7 @@ Better Auth starts with email/password disabled, and no OAuth, passkeys, MFA or 
 
 ## Payments
 
-The included routes form a subscription starter, rather than a complete commerce product. Choose the allowed Stripe price and RevenueCat entitlement. `BILLING_PROVIDER` selects `stripe`, `revenuecat` or `either` for the shared server access guard. The default billing environment is `sandbox`; a deliberate `BILLING_ENVIRONMENT=live` selection must match the provider key and webhook environment. The CLI sets neither live credentials nor live mode.
+Stripe is an optional launch subscription starter after the backend, not a complete commerce product. After adding it, run `pnpm db:generate`, review the generated billing SQL, and deliberately apply it before accepting webhooks. Choose the allowed Stripe price. RevenueCat remains an open-source mobile recipe outside launch scope; consumers selecting it must configure their own entitlement and store acceptance. `BILLING_PROVIDER` selects `stripe`, `revenuecat` or `either` for the shared server access guard. The default billing environment is `sandbox`; a deliberate `BILLING_ENVIRONMENT=live` selection must match the provider key and webhook environment. The CLI sets neither live credentials nor live mode.
 
 Checkout derives identity from the authenticated session, uses a server-selected price and requires an idempotency key. Stripe verifies the untouched body/signature through the web proxy. RevenueCat validates its configured authorization header, app scope and environment. D1 receipts deduplicate delivery. Webhook order, redirects and SDK callbacks never grant access.
 

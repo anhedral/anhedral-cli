@@ -63,6 +63,21 @@ const requiredFiles = new Set([
   'dist/contracts/deployment.js',
   'dist/contracts/deployment.d.ts',
   ...stackFiles,
+  ...[
+    'minimal-server.ts.txt',
+    'minimal-application.server.ts.txt',
+    'request-context.ts.txt',
+    'router.tsx.txt',
+    'root.tsx.txt',
+    'home.tsx.txt',
+    'server.ts.txt',
+    'auth-client.ts.txt',
+    'sign-in.tsx.txt',
+    'application.server.ts.txt',
+    'styles.css.txt',
+  ].map((name) => `assets/launch/${name}`),
+  'dist/launch.js',
+  'dist/platforms/tanstack.js',
   'docs/capabilities.md',
   'dist/capability-command.js',
   'dist/capability-recipes.js',
@@ -257,6 +272,7 @@ try {
       ].includes(file.path) ||
       allowedNativeUI ||
       stackFiles.includes(file.path) ||
+      (file.path.startsWith('assets/launch/') && requiredFiles.has(file.path)) ||
       allowedDist ||
       allowedDocumentation ||
       allowedArtwork.has(file.path) ||

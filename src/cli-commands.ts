@@ -3,9 +3,10 @@ import { runCapabilityCommand } from './capability-command.js';
 import { runUiCommand } from './ui-command.js';
 import { commandArgumentError } from './cli-arguments.js';
 import { createReporter, type OutputOptions } from './cli-output.js';
+import { scaffoldLaunchProject } from './launch.js';
 import { completionScript } from './completion.js';
 import { commandArguments } from './cli-arguments.js';
-import { parseStandardOptions, scaffoldStandardProject } from './standard.js';
+import { parseStandardOptions } from './standard.js';
 
 export async function runCommand(
   command: string,
@@ -44,5 +45,5 @@ export async function runCommand(
   } catch (error) {
     throw commandArgumentError('init', error instanceof Error ? error.message : String(error));
   }
-  await scaffoldStandardProject(options, undefined, output);
+  await scaffoldLaunchProject(options, undefined, output);
 }

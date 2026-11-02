@@ -3,26 +3,31 @@
 > [!WARNING]
 > **Under construction.** Anhedral CLI is under active development. Commands, generated source and integrations are evolving, and breaking changes are expected. Commands and source-generation details are documented below.
 
-Anhedral CLI scaffolds applications progressively: Next.js on Cloudflare Workers, a Hono API, Drizzle/D1 and Better Auth, then mobile, browser extension and desktop clients, storage, payments, realtime and AI. Each addition writes editable source into your project.
-
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/anhedral-stack-light.png">
-  <img alt="Progressive scaffold: Next.js, then Hono, then Drizzle/D1 and Better Auth, with optional storage, services, clients and payments." src="docs/assets/anhedral-stack.png" width="1600">
-</picture>
+Anhedral CLI starts with TanStack Start server rendering/server functions and source-owned Anhedral UI. Add the Hono/Better Auth/Drizzle-D1 backend together when needed, then private R2 storage or Stripe subscriptions. The Platform launch is web-only; the broader open-source source catalog remains available outside launch support.
 
 ## Start a project
-
-Start with a Next.js application configured for OpenNext on Cloudflare Workers, with Anhedral UI included as editable source:
 
 ```sh
 anhedral init my-app
 cd my-app
-pnpm dev
 ```
 
-Preview initialization with `anhedral init my-app --dry-run --json`, or use `--skip-install --no-git` to handle dependency installation and Git setup yourself.
+Init creates `apps/web` and shared tooling, without an API, database, authentication, storage or payments. The web application includes source-owned shadcn Button, Input and Label components. Preview with `anhedral init my-app --dry-run --json`; `--skip-install --no-git` leaves dependency installation and Git setup to you.
 
-Init creates `apps/web` plus shared tooling and tokens. It includes three reviewed web starter components (Button, Input and Label), official shadcn configuration and Anhedral UI metadata.
+Run `pnpm dev` to start the minimal web application. Add services progressively:
+
+```sh
+anhedral add backend --dry-run --json
+anhedral add backend
+anhedral add r2
+anhedral add stripe
+# Or include missing backend prerequisites in one planned addition:
+anhedral add r2 stripe --with-dependencies
+```
+
+`add backend` atomically composes Hono, Better Auth and Drizzle/D1 into `apps/api` and `packages/db`. After adding it, copy `apps/api/.dev.vars.example` to `apps/api/.dev.vars`, configure `PUBLIC_APP_URL` and a private `BETTER_AUTH_SECRET`, and follow the emitted README. Apply reviewed SQL deliberately to isolated local D1 with `pnpm db:migrate --local`. The same Vite process then serves the web Worker and auxiliary Hono Worker; R2 is local when selected. Builds and startup never migrate databases. Better Auth methods remain disabled until explicitly configured and enabled. After adding Stripe, generate and review its SQL with `pnpm db:generate`, then apply the migration before testing webhooks.
+
+Generation creates no provider resources, live credentials or managed deployment. TanStack source composition uses version 2 and remains distinct from artifact/runtime acceptance and reviewed runtime pins. Matching Platform source/runtime integration is developed separately; local source support does not establish live hosted admission. Existing applications are not migrated. The exported legacy `scaffoldStandardProject` programmatic generator retains its Next.js/OpenNext behavior.
 
 ## Command help, scripts and shell completion
 
@@ -81,58 +86,18 @@ Use `anhedral staging status` or `anhedral staging deploy --candidate <uuid>` fo
 verified candidates, and `anhedral logs --environment staging --level error` for
 redacted runtime events. Production release requests retain Platform approval.
 
-## Build the stack progressively
+## Source additions and launch scope
 
-Scaffold the API, database, authentication and Expo app as your product grows:
+The starter includes only TanStack Start and Anhedral UI. `add backend` is a convenience selection for `hono` plus `database-auth`; installed state records those concrete capabilities. Use `anhedral stack status` or `anhedral stack doctor` to inspect source completeness, and `anhedral stack list` for the complete catalog. `add` plans editable source changes, protects customized composition adapters, and installs dependencies unless `--skip-install` is selected. Missing prerequisites require explicit selection or `--with-dependencies`.
 
-```sh
-anhedral add hono
-anhedral add database-auth
-anhedral add expo native-ui
-```
+| Launch source | State after init |
+| --- | --- |
+| TanStack Start and Anhedral UI | Included |
+| Hono, Drizzle/D1 and Better Auth | Optional: `add backend` |
+| Private R2 storage | Optional after backend: `add r2` |
+| Stripe subscriptions | Optional after backend: `add stripe` |
 
-Or add that complete foundation to a newly initialized project in one step:
-
-```sh
-anhedral add expo native-ui --with-dependencies
-```
-
-Explore additional capabilities and preview their generated source:
-
-```sh
-anhedral stack list
-anhedral add side-panel --with-dependencies --dry-run --json
-```
-
-The core progression is **Next.js → Hono → Drizzle/D1 + Better Auth**. After that, choose the capabilities your application needs:
-
-| Add                               | Scaffolded source and configuration                                                                                      | Requires                                                    |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| `hono`                            | Hono API Worker, health route and web/API connection                                                                     | Next.js foundation                                          |
-| `database-auth`                   | Drizzle schema and migrations, D1 binding, Better Auth and sign-in starter                                               | `hono`                                                      |
-| `r2`                              | Private R2 binding and authenticated, owner-scoped file routes                                                           | `database-auth`                                             |
-| `stripe`                          | Stripe subscription Checkout, signed webhooks and server-side access checks                                              | `database-auth`                                             |
-| `realtime`                        | Durable events and resumable server-sent event streams                                                                   | `database-auth`                                             |
-| `rtc`                             | Cloudflare Realtime SFU session and track API adapter                                                                    | `database-auth`                                             |
-| `ai`                              | Workers AI text-generation route, authentication and daily quota                                                         | `database-auth`                                             |
-| `expo`                            | Expo iOS/Android app with Better Auth and SecureStore session integration                                                | `database-auth`                                             |
-| `native-ui`                       | NativeWind 4, shared theme styling and RNR Button/Text starter for Expo                                                  | `expo`                                                      |
-| `revenuecat`                      | Mobile subscription SDK/UI, webhooks and server-side entitlement reconciliation                                          | `expo`, `stripe`                                            |
-| `wxt`, with optional `side-panel` | WXT browser extension; `side-panel` adds Chrome Side Panel API support to render the extension in the browser side panel | `wxt` requires `database-auth`; `side-panel` requires `wxt` |
-| `gpui`                            | Rust/GPUI native desktop application and build scripts                                                                   | `database-auth`                                             |
-
-Include prerequisites explicitly or use `--with-dependencies` to add them in order. These dependencies define the Anhedral scaffold's composition rules. Additions preserve edited application source.
-
-```sh
-anhedral add r2 stripe realtime rtc ai
-anhedral add revenuecat --with-dependencies
-anhedral add wxt side-panel --with-dependencies
-anhedral add gpui --with-dependencies
-anhedral stack status
-anhedral stack doctor
-```
-
-The CLI generates application source, bindings, configuration examples and migration tooling. Complete service activation with resource provisioning, credentials, reviewed migrations and runtime validation, then deploy the server applications and build/distribute the selected clients. Better Auth methods become usable after you explicitly enable and configure them. The [capability guide](docs/capabilities.md) covers setup and acceptance for each addition. `stack status` and `stack doctor` report the installed source and its completeness.
+Expo, native UI, RevenueCat, WXT/Side Panel, GPUI, events, RTC and AI recipes remain in the open-source catalog. These are outside the initial Platform launch's hosting, migration and testing promise. Legacy Next.js projects retain their progressive addition workflow; retaining a recipe does not establish compatibility with every foundation or provider readiness. See [the capability guide](docs/capabilities.md) for prerequisites, source protection and activation responsibilities.
 
 ## Anhedral UI
 
@@ -147,7 +112,7 @@ Anhedral UI is a small catalog and CLI over official shadcn on web and React Nat
 
 For an existing Expo app, complete the upstream React Native Reusables NativeWind 4 setup first, then use `anhedral ui init --native`. Ambiguous workspaces require `--web`, `--native`, `--all` or an application-specific `--cwd`.
 
-Install additional components as needed with `anhedral ui add`. Use `ui list` to explore availability, `ui diff` to review changes and `ui doctor` to check setup. Shared theme tokens connect the web and native design language while each platform receives its own component source.
+Install additional components as needed with `anhedral ui add`. Use `ui list` to explore availability, `ui diff` to review changes and `ui doctor` to check setup. Legacy web/native projects can share semantic theme tokens while retaining separate component source. The launch starter is web-only.
 
 ## Documentation
 

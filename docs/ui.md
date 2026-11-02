@@ -1,6 +1,6 @@
 # Anhedral UI
 
-One CLI routes source installation to official shadcn for Next.js and React Native Reusables for Expo. It owns the catalog and a small native extension registry, rather than a fork of either library. New `anhedral init` applications already have web UI configuration and three starter components.
+One CLI routes source installation to official shadcn for TanStack Start/Next.js and React Native Reusables for Expo. It owns the catalog and a small native extension registry, rather than a fork of either library. New `anhedral init` applications contain only TanStack Start and Anhedral UI, with UI configuration and three starter components. Backend, authentication, database, storage and payments are later source additions. Native tooling remains available to open-source consumers outside Platform launch support.
 
 ```sh
 anhedral ui list --json
@@ -12,7 +12,7 @@ anhedral ui doctor --all
 anhedral ui add card --all --dry-run --json
 ```
 
-All commands accept the global `--cwd`, `--json` and `--quiet` options. `--web`, `--native` and `--all` are mutually exclusive. Without a selector, a single detected Next.js or Expo app is used; ambiguous workspaces require selection. Detection supports an app itself or applications immediately under a workspace's `apps/` directory. Web and native use separate directories.
+All commands accept the global `--cwd`, `--json` and `--quiet` options. `--web`, `--native` and `--all` are mutually exclusive. Without a selector, a single detected TanStack Start, Next.js or Expo app is used; ambiguous workspaces require selection. Detection supports an app itself or applications immediately under a workspace's `apps/` directory. Web and native use separate directories.
 
 `list` reads the packaged catalog without network access. `doctor` checks static configuration and exits unsuccessfully for missing setup; it does not claim runtime acceptance. `--dry-run` previews init/add/diff without network or writes. Every selected target is preflighted before installation starts, including CLI-owned
 metadata and attribution path components; linked or dangling metadata/license paths
@@ -32,6 +32,6 @@ are refused without following them outside the application. Upstream installatio
 
 Validate web flows in a browser. Validate native interactions in Android/iOS development builds, including accessibility, overlays, keyboard and lifecycle. Typechecking or an Expo web export does not establish device acceptance. The retired exhaustive port is preserved outside the active CLI; `docs/native-ui.md` describes the migration path.
 
-For a generated Anhedral workspace, `anhedral add expo` creates the native application after its core source prerequisites, and `anhedral add native-ui` prepares its NativeWind/RNR integration without replacing product UI. The UI component commands remain independent of backend activation. See [stack additions](capabilities.md).
+For a compatible legacy Anhedral workspace, `anhedral add expo` creates the native application after its core source prerequisites, and `anhedral add native-ui` prepares its NativeWind/RNR integration without replacing product UI. The UI component commands remain independent of backend activation. See [stack additions](capabilities.md).
 
 UI discovery and diagnostics read bounded regular JSON targets. Consumer manifest and components configuration symlinks remain supported when their resolved targets are regular files within the input size limit. CLI-owned metadata writes retain their stricter symlink rejection. FIFO/device/directory and oversized JSON inputs fail before upstream installation.

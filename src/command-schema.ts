@@ -380,7 +380,8 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   },
 
   add: {
-    description: 'Add selected stack capabilities to an existing Anhedral project.',
+    description:
+      'Add backend (API/database/auth together), R2, Stripe or other source capabilities.',
     usage: 'add <capabilities...> [options]',
     options: [
       { flag: '--with-dependencies', description: 'Explicitly include missing prerequisites.' },
@@ -392,7 +393,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     ],
     positional: { name: 'capabilities', min: 1, max: 50, kind: 'capability' },
     examples: [
-      'add hono',
+      'add backend',
       'add database-auth',
       'add expo native-ui stripe revenuecat --with-dependencies --dry-run --json',
     ],
@@ -477,7 +478,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   },
   init: {
     description:
-      'Scaffold Next.js/OpenNext with source-owned Anhedral UI; add capabilities only when needed.',
+      'Start with TanStack Start and Anhedral UI; add backend, storage and payments progressively.',
     usage: 'init [directory] [options]',
     options: [
       { flag: '--skip-install', description: 'Write source without installing dependencies.' },

@@ -44,7 +44,8 @@
     "assets/ui/LICENSE.react-native-reusables",
     "assets/ui/UPSTREAM.json",
     "assets/contracts",
-    "assets/security"
+    "assets/security",
+    "assets/launch"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -96,7 +97,8 @@
     "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
     "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs",
-    "check:boundaries": "node scripts/repository-boundaries.mjs"
+    "check:boundaries": "node scripts/repository-boundaries.mjs",
+    "test:tanstack-runtime": "pnpm build && node scripts/tanstack-runtime-smoke.mjs"
   },
   "keywords": [
     "cli",

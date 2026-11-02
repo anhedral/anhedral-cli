@@ -57,9 +57,9 @@ try {
   const target = path.join(root, 'planned');
   const result = run('init', target, '--dry-run', '--json');
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).products, ['next', 'styling']);
+  assert.deepEqual(JSON.parse(result.stdout).products, ['tanstack-start']);
   assert.equal(existsSync(target), false);
-  assert.match(run('--help').stdout, /Expo/);
+  assert.match(run('--help').stdout, /web launch stack/);
   assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify|anhedral cloud/);
   assert.match(run('--version').stdout, /^\d+\.\d+\.\d+\n$/);
 } finally {
