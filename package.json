@@ -71,7 +71,7 @@
     "check:security": "node scripts/check-security-policy.mjs",
     "check:release-policy": "node scripts/check-release-policy.mjs",
     "check:release-secrets": "node scripts/check-release-secrets.mjs",
-    "lint": "pnpm typecheck && pnpm format:check && pnpm check:hygiene && pnpm check:release-policy",
+    "lint": "pnpm typecheck && pnpm format:check && pnpm check:hygiene && pnpm check:release-policy && pnpm check:boundaries",
     "audit:osv": "node scripts/audit-osv.mjs",
     "test": "pnpm test:unit",
     "pretest": "pnpm build",
@@ -95,7 +95,8 @@
     "plugin:build": "node scripts/check-plugin.mjs",
     "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
-    "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs"
+    "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs",
+    "check:boundaries": "node scripts/repository-boundaries.mjs"
   },
   "keywords": [
     "cli",

@@ -282,6 +282,10 @@ export async function apiRequest(request:Request):Promise<Response>{
       e.create('packages/db/src/events-schema.ts', template('events-schema.ts.txt'));
       schemaExport(e, 'events-schema');
       e.create('apps/api/src/features/events.ts', template('events.ts.txt'));
+      e.create(
+        'packages/db/operations/event-retention.sql.example',
+        template('event-retention.sql.txt'),
+      );
       break;
     case 'rtc':
       e.create('apps/api/src/features/rtc.ts', template('rtc.ts.txt'));
@@ -566,7 +570,41 @@ function addDesktop(e: CapabilityEditor) {
   );
 }
 
+function taskContract(e: CapabilityEditor, name: string, patch: Record<string, unknown>) {
+  const previous = e.json('turbo.json').tasks?.[name] ?? {};
+  if (!previous || typeof previous !== 'object' || Array.isArray(previous))
+    throw Error(`Preserve invalid task ${name}; reconcile turbo.json first.`);
+  const next = { ...previous };
+  for (const [key, value] of Object.entries(patch)) {
+    if (Array.isArray(value)) {
+      const old = previous[key] ?? [];
+      if (!Array.isArray(old) || old.some((item) => typeof item !== 'string'))
+        throw Error(`Preserve ${name}.${key}; reconcile turbo.json first.`);
+      next[key] = [...new Set([...old, ...value])];
+    } else {
+      if (previous[key] !== undefined && previous[key] !== value)
+        throw Error(`Preserve ${name}.${key}; reconcile turbo.json first.`);
+      next[key] = value;
+    }
+  }
+  e.set('turbo.json', ['tasks', name], next);
+}
+
 export function composeCapabilities(e: CapabilityEditor, installed: Capability[]) {
+  if (installed.includes('wxt')) {
+    taskContract(e, '@workspace/extension#build', {
+      outputs: ['.output/**'],
+      env: ['WXT_API_ORIGIN'],
+    });
+    taskContract(e, '@workspace/extension#dev', {
+      cache: false,
+      persistent: true,
+      env: ['WXT_API_ORIGIN'],
+    });
+    taskContract(e, '@workspace/extension#typecheck', { outputs: ['.wxt/**'] });
+    taskContract(e, '@workspace/extension#lint', { outputs: ['.wxt/**'] });
+  }
+  if (installed.includes('gpui')) taskContract(e, '@workspace/desktop#build', { cache: false });
   if (!installed.includes('hono')) return;
   if (installed.includes('expo')) composeMobile(e, installed);
   if (installed.includes('wxt'))

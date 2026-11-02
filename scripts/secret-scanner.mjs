@@ -105,6 +105,13 @@ function isAllowedMatch(id, relativePath, match, text) {
 }
 
 export function scanText(relativePath, contents) {
+  const basename = path.basename(relativePath);
+  const knownText =
+    TEXT_EXTENSIONS.has(path.extname(basename).toLowerCase()) ||
+    basename.startsWith('.env') ||
+    basename === 'LICENSE';
+  if (knownText && contents.length > MAX_TEXT_BYTES)
+    return [{ path: relativePath, line: 1, pattern: 'unscanned-oversized-text' }];
   if (!looksLikeText(relativePath, contents)) return [];
   const text = contents.toString('utf8');
   const findings = [];

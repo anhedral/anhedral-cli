@@ -1,3 +1,4 @@
+import { assertPluginPackageFiles } from './plugin-package-policy.mjs';
 import { validatePluginRemote } from './plugin-remote.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -144,6 +145,7 @@ export function loadPluginRelease(metadataPath) {
   )
     throw new Error('Plugin release integrity mismatch.');
   const files = readStoredArchive(bytes);
+  assertPluginPackageFiles(files.map((file) => file.name));
   const json = (name) => {
     const file = files.find((file) => file.name === name);
     if (!file || file.contents.length > 1024 * 1024)

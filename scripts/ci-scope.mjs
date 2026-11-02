@@ -23,7 +23,7 @@ export function needsNextRuntime(files) {
   return (
     files.length === 0 ||
     files.some((file) =>
-      /^(?:src\/(?:platforms\/web\.ts|scaffold\/|dependencies\.ts|dependency-patches\.ts)|assets\/(?:patches\/|ui\/web\/)|tests\/(?:support\/|test-next-|test-worker-measurement|test-generated-apps)|scripts\/(?:next-runtime|measure-worker|ci-scope)|package\.json$|pnpm-(?:lock\.yaml|workspace\.yaml)$|\.github\/workflows\/ci\.yml$)/.test(
+      /^(?:src\/(?:platforms\/web\.ts|capability-recipes\.ts|scaffold\/|dependencies\.ts|dependency-patches\.ts)|assets\/(?:patches\/|stack\/(?:api-|auth|web-|security|storage|stripe|billing-|entitlement|events|rtc|ai|revenuecat)|ui\/web\/)|tests\/(?:support\/|test-next-|test-worker-measurement|test-generated-apps)|scripts\/(?:next-runtime|measure-worker|ci-scope)|package\.json$|pnpm-(?:lock\.yaml|workspace\.yaml)$|\.github\/workflows\/ci\.yml$)/.test(
         file,
       ),
     )

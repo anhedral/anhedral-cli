@@ -1,8 +1,10 @@
+import { checkRepositoryBoundary } from './repository-boundaries.mjs';
 import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { STACK_REGISTRY, validateStackCatalog } from '../dist/stack-registry.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
 
+checkRepositoryBoundary();
 validateStackCatalog();
 const entry = fileURLToPath(new URL('../dist/bin.js', import.meta.url));
 if (!readFileSync(entry, 'utf8').startsWith('#!/usr/bin/env node\n')) {

@@ -16,6 +16,7 @@ test('candidate build coordinates the marketplace pointer without publishing a t
   try {
     write('package.json', JSON.stringify({ type: 'module' }));
     write('scripts/prepare-cli.mjs', readFileSync('scripts/prepare-cli.mjs'));
+    write('scripts/repository-boundaries.mjs', 'export function checkRepositoryBoundary() {}\n');
     write('dist/bin.js', '#!/usr/bin/env node\n');
     write('dist/version.js', `export const GENERATOR_VERSION = '${version}';`);
     write(

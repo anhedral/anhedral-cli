@@ -1,5 +1,6 @@
+import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from './bounded-file.js';
 import { createHash } from 'node:crypto';
-import { existsSync, lstatSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync } from 'node:fs';
 import path from 'node:path';
 import { parse, modify, applyEdits, type ParseError } from 'jsonc-parser';
 
@@ -36,9 +37,7 @@ export class CapabilityEditor {
     const file = this.file(relative);
     if (this.writes.has(relative)) return this.writes.get(relative)!;
     if (!this.before.has(relative)) {
-      const value = existsSync(file) ? readFileSync(file) : null;
-      if (value && value.length > 2 * 1024 * 1024)
-        throw Error(`Configuration exceeds its bound: ${relative}`);
+      const value = existsSync(file) ? readBoundedFile(file, MAX_PROJECT_JSON_BYTES) : null;
       this.before.set(relative, value?.toString('utf8') ?? null);
     }
     return this.before.get(relative)!;
@@ -97,7 +96,9 @@ export class CapabilityEditor {
   verify() {
     for (const [relative, before] of this.before) {
       const file = this.file(relative);
-      const current = existsSync(file) ? readFileSync(file, 'utf8') : null;
+      const current = existsSync(file)
+        ? readBoundedFile(file, MAX_PROJECT_JSON_BYTES).toString('utf8')
+        : null;
       if (before !== current)
         throw Error(`Source changed during addition: ${relative}. Retry after reviewing it.`);
     }

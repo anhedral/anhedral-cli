@@ -6,7 +6,12 @@ import { commandArguments, commandArgumentError } from './cli-arguments.js';
 import { resolveCommand } from './command.js';
 import { createReporter, type OutputOptions } from './cli-output.js';
 import { UI_CATALOG, resolveUiItems, type UiPlatform } from './ui-catalog.js';
-import { detectUiTargets, initializeUiMetadata, inspectUiTarget } from './ui-project.js';
+import {
+  assertUiMetadataPaths,
+  detectUiTargets,
+  initializeUiMetadata,
+  inspectUiTarget,
+} from './ui-project.js';
 
 export type UiRunner = (args: string[], cwd: string) => string | Promise<string>;
 function runUpstream(args: string[], cwd: string): Promise<string> {
@@ -129,6 +134,7 @@ export async function runUiCommand(
     } else {
       // Preflight every target before invoking any installer, including explicit --all.
       const plans = targets.map((target) => {
+        assertUiMetadataPaths(target.root);
         const report = inspectUiTarget(target);
         const configExists = existsSync(path.join(target.root, 'components.json'));
         const nativeInit = action === 'init' && target.platform === 'native';

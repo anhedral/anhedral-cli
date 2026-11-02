@@ -1,3 +1,4 @@
+import { loadPluginRelease } from './publish-plugin-source.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -126,3 +127,6 @@ function verifyPlugin(plugin, version, directory) {
     throw new Error('Plugin integrity mismatch');
 }
 verifyPlugin(metadata.plugin, metadata.version, path.dirname(metadataPath));
+
+// Format, paths, required files and release identity must pass before npm publication.
+loadPluginRelease(metadataPath);

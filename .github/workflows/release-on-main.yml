@@ -7,6 +7,11 @@ on:
         description: Exact reviewed main commit
         required: true
         type: string
+      finalize_only:
+        description: Finalize an already published exact artifact without another npm publication
+        required: false
+        default: false
+        type: boolean
       cli_integrity:
         description: SHA-512 integrity of the reviewed CLI tarball
         required: true
@@ -38,15 +43,23 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           ref: main
+          fetch-depth: 0
           persist-credentials: false
       - name: Require exact reviewed commit
         id: review
         env:
           REVIEWED_SHA: ${{ inputs.release_sha }}
+          FINALIZE_ONLY: ${{ inputs.finalize_only }}
           REVIEWED_CLI: ${{ inputs.cli_integrity }}
           REVIEWED_PLUGIN: ${{ inputs.plugin_integrity }}
         run: |
-          if ! [[ "$REVIEWED_SHA" =~ ^[a-f0-9]{40}$ ]] || [ "$(git rev-parse HEAD)" != "$REVIEWED_SHA" ]; then
+          if ! [[ "$REVIEWED_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "The reviewed commit must be an exact SHA"
+            exit 1
+          fi
+          if [ "$FINALIZE_ONLY" = "true" ]; then
+            git merge-base --is-ancestor "$REVIEWED_SHA" HEAD || exit 1
+          elif [ "$(git rev-parse HEAD)" != "$REVIEWED_SHA" ]; then
             echo "The reviewed commit must be the current main commit"
             exit 1
           fi
@@ -77,5 +90,6 @@ jobs:
     uses: ./.github/workflows/release.yml
     with:
       release_sha: ${{ needs.prepare.outputs.release_sha }}
+      finalize_only: ${{ inputs.finalize_only }}
       cli_integrity: ${{ inputs.cli_integrity }}
       plugin_integrity: ${{ inputs.plugin_integrity }}

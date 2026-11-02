@@ -1,5 +1,6 @@
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -99,8 +100,31 @@ export function inspectUiTarget(target: UiTarget) {
   };
 }
 
+/** Check CLI-owned destinations before upstream or attribution writes. */
+export function assertUiMetadataPaths(root: string) {
+  for (const [relative, directory] of [
+    ['.anhedral-ui.json', false],
+    ['ANHEDRAL_UI_LICENSES', true],
+    ['ANHEDRAL_UI_LICENSES/LICENSE.shadcn', false],
+    ['ANHEDRAL_UI_LICENSES/LICENSE.react-native-reusables', false],
+  ] as const) {
+    let info;
+    try {
+      info = lstatSync(path.join(root, relative));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue;
+      throw error;
+    }
+    if (info.isSymbolicLink() || (directory ? !info.isDirectory() : !info.isFile()))
+      throw Error(
+        `Unsafe UI metadata path: ${relative}. Preserve it and reconcile before installing.`,
+      );
+  }
+}
+
 /** New metadata and attribution only; never overwrite consumer-owned files. */
 export function initializeUiMetadata(root: string, platform: UiPlatform) {
+  assertUiMetadataPaths(root);
   const file = path.join(root, '.anhedral-ui.json');
   if (existsSync(file)) {
     const existing = JSON.parse(readFileSync(file, 'utf8'));

@@ -29,13 +29,24 @@ licenses and exact-artifact packaging. A build does not publish npm or update an
 installed plugin. See [Contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md)
 for staging, release identity and validation tiers.
 
+The reviewed public module inventory in `scripts/public-package-policy.json` and
+`pnpm check:boundaries` constrain compilation and package preparation; an unexpected
+dist module or private import requires explicit review. Portable contracts are
+synced only from a reviewed, licensed Platform projection with exact provenance,
+never as a build side effect. Local credential scanning additionally retains the
+CLI's stricter source-upload policy. Plugin packaging accepts its explicit reviewed
+MCP-inclusive file set, refuses linked distribution roots and verifies the bounded
+publisher archive format before npm publication. Oversized unscanned text is an
+explicit review failure, not a clean secret scan.
+
 ## Next/OpenNext runtime gate
 
 Relevant generator/build changes compile an isolated foundation and exercise it
 in workerd. Run `pnpm test:next-runtime` for SSR/RSC, Server Actions/cookies,
 prerendering and static cache checks. Hono proxy contracts have separate tests.
 The harness owns the module-size budget and short-lived `.artifacts/next-runtime/`
-receipts. Review measurement changes before adjusting limits. The smoke never
+receipts, including the resolved generated lock and source/tool identity. Prepared,
+passed and failed results remain distinct. Review measurement changes before adjusting limits. The smoke never
 deploys or migrates a configured database; it is not production acceptance.
 
 ## Platform CLI access and source upload
@@ -77,8 +88,8 @@ Run `tests/test-platform.test.mjs` after building for isolated client fixtures.
 `deploy plan --manifest <file>` plans from the saved sealed upload, independently
 of subsequent local edits. The manifest follows Platform's `deploymentManifestSchema`
 in `src/contracts/deployment.ts`; it must match the archive's recorded composition,
-capabilities, CLI version and existing standalone identity. Only the protected
-preview Hono/D1 profile is currently planned. Plans bind source/lockfile/migrations,
+capabilities, CLI version and existing standalone identity. Runtime-profile admission is server-owned. Staged server sources include Hono/D1
+and web candidates; source support does not establish a deployed cohort or provider readiness. Plans bind source/lockfile/migrations,
 routing state, principal epoch and project authority. Artifact provenance and
 runtime configuration remain explicitly unverified; null receipts are not approval.
 
