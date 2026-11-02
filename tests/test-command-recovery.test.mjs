@@ -177,8 +177,8 @@ test('legacy missing-backup journal cannot authorize an occupied target', () => 
         '-e',
         `
       import fs from 'node:fs';import{recoverInterruptedTransaction}from ${JSON.stringify(transaction)};
-      const root=${JSON.stringify(root)};fs.mkdirSync(root);const token='2147483647-22222222-2222-4222-8222-222222222222';
-      const backupRoot=root+'/.anhedral-txn/backup-'+token,stageRoot=root+'/.anhedral-txn/stage-'+token;
+      const root=${JSON.stringify(root)};fs.mkdirSync(root);const transactionId='2147483647-22222222-2222-4222-8222-222222222222';
+      const backupRoot=root+'/.anhedral-txn/backup-'+transactionId,stageRoot=root+'/.anhedral-txn/stage-'+transactionId;
       fs.mkdirSync(backupRoot,{recursive:true});fs.mkdirSync(stageRoot,{recursive:true});fs.writeFileSync(root+'/value','consumer-recreated');
       fs.writeFileSync(root+'/.anhedral-journal.json',JSON.stringify({version:2,backupRoot,stageRoot,entries:[{relativePath:'value',backupPath:backupRoot+'/value',installed:false,installedFingerprint:null}],createdDirectories:[]}));
       try{recoverInterruptedTransaction(root)}catch(error){console.error(error.message);process.exitCode=1}
