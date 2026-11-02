@@ -95,6 +95,10 @@ try {
   assert.match(quietFailure.stdout, /Command failed \(exit 7\)/);
   assert.equal(quietFailure.stderr, '', 'quiet mode must suppress child diagnostics');
 
+  const capped = runExecFile([noisySuccess], { ANHEDRAL_COMMAND_OUTPUT_BYTES: '1024' });
+  assert.equal(capped.status, 1);
+  assert.match(capped.stdout, /output exceeded its capture limit/);
+
   const hanging = path.join(temporaryRoot, 'hanging.mjs');
   writeFileSync(hanging, 'setInterval(() => {}, 1000);');
   for (const mode of [{}, { ANHEDRAL_VERBOSE: '1' }, { ANHEDRAL_QUIET: '1' }]) {

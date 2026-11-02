@@ -1,19 +1,6 @@
-import {
-  chmodSync,
-  closeSync,
-  existsSync,
-  fstatSync,
-  mkdirSync,
-  mkdtempSync,
-  openSync,
-  readFileSync,
-  readSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolveCommand } from './command.js';
 import { spawnSync } from 'node:child_process';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const FAILURE_TAIL_BYTES = 128 * 1024;
@@ -62,36 +49,6 @@ export function appendGitignore(root: string, lines: string[]): void {
   writeFile(filePath, `${existing}${separator}${additions.join(newline)}${newline}`);
 }
 
-function readTail(filePath: string): string {
-  const file = openSync(filePath, 'r');
-  try {
-    const size = fstatSync(file).size;
-    const length = Math.min(size, FAILURE_TAIL_BYTES);
-    if (length === 0) return '';
-    const buffer = Buffer.allocUnsafe(length);
-    readSync(file, buffer, 0, length, size - length);
-    return buffer.toString();
-  } finally {
-    closeSync(file);
-  }
-}
-
-function dumpFailure(
-  cmd: string,
-  status: number | null,
-  stdoutPath: string,
-  stderrPath: string,
-  spawnError?: Error,
-): never {
-  const stdoutText = readTail(stdoutPath);
-  const stderrText = readTail(stderrPath);
-  if (process.env.ANHEDRAL_QUIET !== '1') {
-    if (stdoutText) process.stderr.write(stdoutText);
-    if (stderrText) process.stderr.write(stderrText);
-  }
-  throw commandFailure(cmd, status, spawnError);
-}
-
 export function execFile(executable: string, args: readonly string[], cwd: string): void {
   const invocation = resolveCommand(executable, args);
   const quiet = process.env.ANHEDRAL_QUIET === '1';
@@ -111,30 +68,26 @@ export function execFile(executable: string, args: readonly string[], cwd: strin
     return;
   }
 
-  const captureRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-exec-'));
-  const stdoutPath = path.join(captureRoot, 'stdout.log');
-  const stderrPath = path.join(captureRoot, 'stderr.log');
-  const stdout = openSync(stdoutPath, 'w');
-  const stderr = openSync(stderrPath, 'w');
-  try {
-    const result = spawnSync(invocation.command, invocation.args, {
-      cwd,
-      shell: false,
-      stdio: ['ignore', stdout, stderr],
-      ...deadline,
-    });
-    closeSync(stdout);
-    closeSync(stderr);
-    if (result.error || result.status !== 0) {
-      dumpFailure(display, result.status, stdoutPath, stderrPath, result.error);
-    }
-  } finally {
-    try {
-      closeSync(stdout);
-    } catch {}
-    try {
-      closeSync(stderr);
-    } catch {}
-    rmSync(captureRoot, { recursive: true, force: true });
+  const requested = Number(process.env.ANHEDRAL_COMMAND_OUTPUT_BYTES);
+  const maximum =
+    Number.isSafeInteger(requested) && requested >= 1024 && requested <= 16 * 1024 * 1024
+      ? requested
+      : 16 * 1024 * 1024;
+  const result = spawnSync(invocation.command, invocation.args, {
+    cwd,
+    shell: false,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: maximum,
+    ...deadline,
+  });
+  if (result.error || result.status !== 0) {
+    if (!quiet)
+      for (const bytes of [result.stdout, result.stderr])
+        if (bytes?.length) process.stderr.write(bytes.subarray(-FAILURE_TAIL_BYTES));
+    if ((result.error as NodeJS.ErrnoException | undefined)?.code === 'ENOBUFS')
+      throw Error(
+        `Command output exceeded its capture limit: ${display}. Inspect the tool before retrying.`,
+      );
+    throw commandFailure(display, result.status, result.error);
   }
 }
