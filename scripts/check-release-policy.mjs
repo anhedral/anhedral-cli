@@ -180,7 +180,10 @@ function validateGitHubReleaseAssets(releaseWorkflow) {
   if (
     !/METADATA="\.artifacts\/release\/metadata\.json"/.test(tagJob) ||
     !/gh release upload[\s\S]*?"\$METADATA#release integrity metadata"/.test(tagJob) ||
-    !/gh release create "\$TAG" \\\n\s+--draft \\/.test(tagJob) ||
+    !/gh release create "\$TAG" \\\n\s+--draft "\$\{LATEST_ARGS\[@\]\}" \\/.test(tagJob) ||
+    !tagJob.includes('if [ "$FINALIZE_ONLY" = "true" ]; then LATEST_ARGS=(--latest=false); fi') ||
+    [...tagJob.matchAll(/gh release edit "\$TAG" --draft=false "\$\{LATEST_ARGS\[@\]\}"/g)]
+      .length !== 2 ||
     releasePublishCount !== 2 ||
     !/gh release download[\s\S]*?--pattern metadata\.json/.test(tagJob) ||
     !/cmp "\$ASSET" "\$DOWNLOAD_DIR\/\$TARBALL"/.test(tagJob) ||

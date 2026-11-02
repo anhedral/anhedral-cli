@@ -73,3 +73,16 @@ test('current-main admission remains required for publication; only historical-m
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('historical finalization never reassigns GitHub latest release', () => {
+  const release = readFileSync('.github/workflows/release.yml', 'utf8');
+  assert.match(
+    release,
+    /if \[ "\$FINALIZE_ONLY" = "true" \]; then LATEST_ARGS=\(--latest=false\); fi/,
+  );
+  assert.match(release, /gh release create "\$TAG" \\\n\s+--draft "\$\{LATEST_ARGS\[@\]\}"/);
+  assert.equal(
+    (release.match(/gh release edit "\$TAG" --draft=false "\$\{LATEST_ARGS\[@\]\}"/g) ?? []).length,
+    2,
+  );
+});

@@ -118,3 +118,20 @@ test('release verification always requires both CLI and plugin archives', () => 
     rmSync(fixture.directory, { recursive: true, force: true });
   }
 });
+
+test('matching review hashes cannot admit malformed plugin ZIP bytes', () => {
+  const fixture = candidate();
+  try {
+    const bytes = Buffer.from('not an archive even when exactly reviewed');
+    const plugin = fixture.metadata.plugin;
+    writeFileSync(path.join(fixture.directory, plugin.filename), bytes);
+    plugin.integrity = integrity(bytes);
+    plugin.size = bytes.length;
+    fixture.save();
+    const result = fixture.verify({ ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: plugin.integrity });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /ZIP|archive|directory/i);
+  } finally {
+    rmSync(fixture.directory, { recursive: true, force: true });
+  }
+});

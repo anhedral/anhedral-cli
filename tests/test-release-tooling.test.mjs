@@ -296,7 +296,7 @@ try {
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replace('              --draft \\\n', ''),
+    releaseWorkflow.replace('              --draft "${LATEST_ARGS[@]}" \\\n', ''),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),

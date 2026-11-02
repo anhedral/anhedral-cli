@@ -369,7 +369,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TARBALL: ${{ needs.verify.outputs.tarball }}
           VERSION: ${{ needs.verify.outputs.version }}
+          FINALIZE_ONLY: ${{ inputs.finalize_only }}
         run: |
+          # Historical completion must never replace the current latest release.
+          LATEST_ARGS=()
+          if [ "$FINALIZE_ONLY" = "true" ]; then LATEST_ARGS=(--latest=false); fi
           TAG="v$VERSION"
           ASSET=".artifacts/release/$TARBALL"
           METADATA=".artifacts/release/metadata.json"
@@ -384,11 +388,11 @@ jobs:
                 "$PLUGIN#Anhedral plugin" \
                 "$PLUGIN_METADATA#plugin integrity metadata" \
                 --clobber
-              gh release edit "$TAG" --draft=false
+              gh release edit "$TAG" --draft=false "${LATEST_ARGS[@]}"
             fi
           else
             gh release create "$TAG" \
-              --draft \
+              --draft "${LATEST_ARGS[@]}" \
               --verify-tag \
               --generate-notes \
               --title "$TAG"
@@ -397,7 +401,7 @@ jobs:
               "$METADATA#release integrity metadata" \
               "$PLUGIN#Anhedral plugin" \
               "$PLUGIN_METADATA#plugin integrity metadata"
-            gh release edit "$TAG" --draft=false
+            gh release edit "$TAG" --draft=false "${LATEST_ARGS[@]}"
           fi
 
           DOWNLOAD_DIR=$(mktemp -d "$RUNNER_TEMP/anhedral-release.XXXXXX")
