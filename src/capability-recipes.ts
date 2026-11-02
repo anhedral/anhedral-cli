@@ -282,6 +282,10 @@ export async function apiRequest(request:Request):Promise<Response>{
       e.create('packages/db/src/events-schema.ts', template('events-schema.ts.txt'));
       schemaExport(e, 'events-schema');
       e.create('apps/api/src/features/events.ts', template('events.ts.txt'));
+      e.create(
+        'packages/db/operations/event-retention.sql.example',
+        template('event-retention.sql.txt'),
+      );
       break;
     case 'rtc':
       e.create('apps/api/src/features/rtc.ts', template('rtc.ts.txt'));
