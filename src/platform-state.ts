@@ -149,8 +149,9 @@ export function secretStore(
   origin: string,
   file?: string,
   runProcess = runCredentialProcess,
+  platform = process.platform,
 ): SecretStore {
-  if (file && process.platform === 'win32')
+  if (file && platform === 'win32')
     throw platformFailure(
       'Secure Windows credential storage is not implemented. Use macOS Keychain or Linux Secret Service for this preview.',
     );
@@ -166,7 +167,7 @@ export function secretStore(
       },
     };
   const account = createHash('sha256').update(origin).digest('hex');
-  if (process.platform === 'darwin') {
+  if (platform === 'darwin') {
     // -i reads commands on stdin, keeping secret values out of process argv.
     const run = (command: string) => runProcess('/usr/bin/security', ['-i'], command + '\n');
     const quote = (v: string) => '"' + v.replaceAll('\\', '\\\\').replaceAll('"', '\\"') + '"';
@@ -213,7 +214,7 @@ export function secretStore(
       },
     };
   }
-  if (process.platform === 'linux')
+  if (platform === 'linux')
     return {
       read: async () => {
         const value = await runProcess('secret-tool', [

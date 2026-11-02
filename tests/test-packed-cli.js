@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
 import { parseNpmPackJson } from './support/npm-pack.js';
 
@@ -147,7 +147,46 @@ try {
     '1 true',
   );
   assert.match(runInstalledCli(installRoot).stdout, /anhedral init/);
-  runInstalledScaffold(installRoot);
+  const { supportsWorkspaceRuntime } = await import(
+    pathToFileURL(path.join(installRoot, 'node_modules/anhedral/dist/runtime-policy.js'))
+  );
+  if (supportsWorkspaceRuntime(process.versions.node)) runInstalledScaffold(installRoot);
+  else {
+    const destination = path.join(installRoot, 'unsupported-workspace');
+    const result = spawnSyncPortable(
+      process.execPath,
+      [
+        path.join(installRoot, 'node_modules/anhedral/dist/bin.js'),
+        'init',
+        destination,
+        '--skip-install',
+        '--no-git',
+        '--json',
+      ],
+      { cwd: installRoot, encoding: 'utf8' },
+    );
+    assert.equal(result.status, 1);
+    assert.match(JSON.parse(result.stderr).error, /Generated workspaces require Node.js/);
+    assert.equal(
+      existsSync(destination),
+      false,
+      'unsupported workspace initialization writes no files',
+    );
+    const preview = JSON.parse(
+      run(
+        process.execPath,
+        [
+          path.join(installRoot, 'node_modules/anhedral/dist/bin.js'),
+          'init',
+          destination,
+          '--dry-run',
+          '--json',
+        ],
+        installRoot,
+      ).stdout,
+    );
+    assert.equal(preview.dryRun, true);
+  }
   assert.equal(existsSync(path.join(npmCache, 'plugin-data')), false);
   run(
     process.execPath,

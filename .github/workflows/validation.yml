@@ -96,7 +96,7 @@ jobs:
         run: pnpm audit:osv
 
       - name: Smoke test packed CLI
-        if: ${{ needs.scope.outputs.full == 'true' && (matrix.node != '22.12.0') }}
+        if: ${{ needs.scope.outputs.full == 'true' }}
         run: node tests/test-packed-cli.js
 
       - name: Enforce package allowlist
@@ -140,7 +140,7 @@ jobs:
         if: ${{ needs.scope.outputs.full == 'true' }}
       - run: pnpm build
         if: ${{ needs.scope.outputs.full == 'true' }}
-      - run: node --test tests/test-cli-validation.test.mjs tests/test-standard.test.mjs tests/test-util-exec.test.mjs
+      - run: node --test tests/test-cli-validation.test.mjs tests/test-standard.test.mjs tests/test-util-exec.test.mjs tests/test-platform-ux.test.mjs
         if: ${{ needs.scope.outputs.full == 'true' }}
       - run: node tests/test-packed-cli.js
         if: ${{ needs.scope.outputs.full == 'true' }}

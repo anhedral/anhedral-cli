@@ -532,3 +532,33 @@ test('prepare and status accept a ready server candidate without activating depl
     ],
   );
 });
+
+test('credential command construction covers Darwin and Linux under mocks on every host', async () => {
+  for (const platform of ['darwin', 'linux']) {
+    const commands = [];
+    const value = { origin, token, expiresAt, protocol: 1 };
+    const store = secretStore(
+      origin,
+      undefined,
+      async (binary, argv, input) => {
+        commands.push({ binary, argv, input });
+        return JSON.stringify(value);
+      },
+      platform,
+    );
+    await store.write(value);
+    assert.deepEqual(await store.read(), value);
+    await store.clear();
+    assert.ok(commands.every((command) => !command.argv.some((arg) => arg.includes(token))));
+    assert.ok(commands.some((command) => command.input?.includes(token)));
+    if (platform === 'darwin') {
+      assert.ok(commands.every((command) => command.binary === '/usr/bin/security'));
+      assert.ok(commands.some((command) => command.argv[0] === '-i'));
+      assert.equal(commands.at(-1).argv[0], 'delete-generic-password');
+    } else {
+      assert.ok(commands.every((command) => command.binary === 'secret-tool'));
+      assert.equal(commands[0].argv[0], 'store');
+      assert.equal(commands.at(-1).argv[0], 'clear');
+    }
+  }
+});
