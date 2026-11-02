@@ -99,19 +99,36 @@ export async function stripeEntitled(env: AppEnv['Bindings'], userId: string) {
   requireMatchingKey(env, config.STRIPE_SECRET_KEY);
   const stripe = client(config.STRIPE_SECRET_KEY);
   const subject = userId.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
-  const found = await stripe.subscriptions.search({
-    query: "metadata['userId']:'" + subject + "'",
-    limit: 100,
-  });
-  const canonical = await Promise.all(
-    found.data.map((value) => stripe.subscriptions.retrieve(value.id)),
-  );
-  return canonical.some(
-    (value) =>
-      value.metadata.userId === userId &&
-      value.livemode === (billingEnvironment(env) === 'live') &&
-      activePrice(value, config.STRIPE_PRICE_ID),
-  );
+  let page: string | undefined;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const found = await stripe.subscriptions.search({
+      query: "metadata['userId']:'" + subject + "'",
+      limit: 100,
+      ...(page ? { page } : {}),
+    });
+    // Bound canonical reads; search results alone never grant access.
+    for (let offset = 0; offset < found.data.length; offset += 4) {
+      const canonical = await Promise.all(
+        found.data
+          .slice(offset, offset + 4)
+          .map((value) => stripe.subscriptions.retrieve(value.id)),
+      );
+      if (
+        canonical.some(
+          (value) =>
+            value.metadata.userId === userId &&
+            value.livemode === (billingEnvironment(env) === 'live') &&
+            activePrice(value, config.STRIPE_PRICE_ID),
+        )
+      )
+        return true;
+    }
+    if (!found.has_more) return false;
+    if (!found.next_page || found.next_page === page)
+      throw Error('Subscription search is incomplete');
+    page = found.next_page;
+  }
+  throw Error('Subscription search exceeds its bounded page budget');
 }
 stripeRoutes.get('/billing/status', requireSession, async (c) => {
   try {
