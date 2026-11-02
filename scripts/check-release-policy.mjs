@@ -107,13 +107,22 @@ export function validateRenovateExtraction(root, renovate) {
 
 function validateTrustedRelease(releaseWorkflow) {
   const failures = [];
+  const tag = releaseWorkflow.split('\n  tag:')[1] ?? '';
+  const beforeTag = releaseWorkflow.split('\n  tag:')[0];
   if (
-    /ref:\s*\$\{\{\s*inputs\./.test(releaseWorkflow) ||
-    (releaseWorkflow.match(/ref: main/g) ?? []).length !== 4 ||
-    (releaseWorkflow.match(/name: Require the prepared main commit/g) ?? []).length !== 4
+    /ref:\s*\$\{\{\s*inputs\./.test(beforeTag) ||
+    (beforeTag.match(/ref: main/g) ?? []).length !== 3 ||
+    (beforeTag.match(/name: Require the prepared main commit/g) ?? []).length !== 3 ||
+    !tag.includes('ref: ${{ inputs.release_sha }}') ||
+    !tag.includes('name: Require the published candidate commit') ||
+    !tag.includes(
+      'node scripts/check-release-registry.mjs verify .artifacts/release/metadata.json',
+    ) ||
+    !releaseWorkflow.includes('if: inputs.finalize_only != true') ||
+    !releaseWorkflow.includes('name: Require existing exact publication before finalization')
   ) {
     failures.push(
-      '.github/workflows/release.yml: executable checkouts must use trusted main and verify the prepared commit before execution',
+      '.github/workflows/release.yml: publication checkouts require current main; finalization requires exact published candidate and registry identity',
     );
   }
   const releaseTrigger =
