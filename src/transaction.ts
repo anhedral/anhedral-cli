@@ -27,6 +27,7 @@ const LOCAL_TRANSACTION_ROOT_PATTERN =
 type JournalEntry = {
   relativePath: string;
   backupPath: string | null;
+  backupFingerprint?: string;
   installed: boolean;
   installedFingerprint: string | null;
 };
@@ -383,7 +384,13 @@ function validateJournal(root: string, value: unknown): TransactionJournal {
     }
     assertExactObjectKeys(
       entry,
-      ['relativePath', 'backupPath', 'installed', 'installedFingerprint'],
+      [
+        'relativePath',
+        'backupPath',
+        'installed',
+        'installedFingerprint',
+        ...(Object.hasOwn(entry, 'backupFingerprint') ? ['backupFingerprint'] : []),
+      ],
       `transaction journal entry at index ${index}`,
     );
     assertRelativePath(entry.relativePath);
@@ -393,6 +400,12 @@ function validateJournal(root: string, value: unknown): TransactionJournal {
     if (entry.backupPath !== null && typeof entry.backupPath !== 'string') {
       throw new Error(`Invalid transaction backup path at index ${index}`);
     }
+    if (
+      Object.hasOwn(entry, 'backupFingerprint') &&
+      (typeof entry.backupFingerprint !== 'string' ||
+        !/^[a-f0-9]{64}$/.test(entry.backupFingerprint))
+    )
+      throw new Error(`Invalid backup transaction fingerprint at index ${index}`);
     const installedFingerprint = entry.installedFingerprint;
     if (
       installedFingerprint !== null &&
@@ -415,6 +428,9 @@ function validateJournal(root: string, value: unknown): TransactionJournal {
     return {
       relativePath: entry.relativePath,
       backupPath: entry.backupPath,
+      ...(typeof entry.backupFingerprint === 'string'
+        ? { backupFingerprint: entry.backupFingerprint }
+        : {}),
       installed: entry.installed,
       installedFingerprint,
     };
@@ -558,12 +574,31 @@ function restoreJournal(root: string, journal: TransactionJournal): void {
     if (entry.backupPath) {
       assertNoSymlinkComponents(journal.backupRoot, entry.relativePath);
       if (pathEntryExists(entry.backupPath)) {
+        if (pathEntryExists(target))
+          throw new Error(
+            `Transaction recovery target was recreated: ${entry.relativePath}. Recovery stopped without modifying it; preserve the journal, target and backup for manual inspection.`,
+          );
+        const backupFingerprint = fingerprintEntry(entry.backupPath);
+        if (entry.backupFingerprint && entry.backupFingerprint !== backupFingerprint)
+          throw new Error(
+            `Transaction backup changed: ${entry.relativePath}. Preserve the journal and backup for manual inspection.`,
+          );
+        // Persist original identity before restore so a crash after rename can be replayed.
+        entry.backupFingerprint = backupFingerprint;
+        writeJournal(root, journal);
         mkdirSync(path.dirname(target), { recursive: true });
         renameDurably(entry.backupPath, target, root);
-      } else if (!pathEntryExists(target)) {
-        throw new Error(`Cannot recover missing transaction backup: ${entry.backupPath}`);
+      } else if (
+        !pathEntryExists(target) ||
+        !entry.backupFingerprint ||
+        fingerprintEntry(target) !== entry.backupFingerprint
+      ) {
+        throw new Error(
+          `Cannot recover missing transaction backup or unverified target: ${entry.backupPath}. Recovery stopped; preserve the journal and target for manual inspection.`,
+        );
       }
       entry.backupPath = null;
+      delete entry.backupFingerprint;
       writeJournal(root, journal);
     }
   }
@@ -720,6 +755,7 @@ function commitJournal(
       const backup = resolveTransactionPath(backupRoot, entry.relativePath);
       mkdirSync(path.dirname(backup), { recursive: true });
       entry.backupPath = backup;
+      entry.backupFingerprint = fingerprintEntry(target);
       writeJournal(root, journal);
       renameDurably(target, backup, root);
     }
