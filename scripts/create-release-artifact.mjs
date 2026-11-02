@@ -1,3 +1,4 @@
+import { assertPublishedModules } from './repository-boundaries.mjs';
 import { releaseDirectory } from './release-directory.mjs';
 import { packagePlugin } from './package-plugin.mjs';
 import { createHash } from 'node:crypto';
@@ -70,6 +71,7 @@ try {
   }
 
   const packageResult = packed[0];
+  assertPublishedModules(packageResult.files.map((file) => file.path));
   if (packageResult.name !== packageJson.name || packageResult.version !== packageJson.version) {
     throw new Error(
       `Packed identity ${packageResult.name}@${packageResult.version} does not match package.json ` +

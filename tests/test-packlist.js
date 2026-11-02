@@ -1,3 +1,4 @@
+import { assertPublishedModules } from '../scripts/repository-boundaries.mjs';
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -26,6 +27,7 @@ const stackFiles = [
   'assets/stack/entitlement-guard.ts.txt',
   'assets/stack/entitlements.ts.txt',
   'assets/stack/events-schema.ts.txt',
+  'assets/stack/event-retention.sql.txt',
   'assets/stack/events.ts.txt',
   'assets/stack/mobile-auth.ts.txt',
   'assets/stack/mobile-billing.tsx.txt',
@@ -48,6 +50,7 @@ const stackFiles = [
 ];
 const publicContractAssets = [
   'assets/contracts/deployment-provenance.json',
+  'assets/contracts/LICENSE',
   'assets/contracts/environment-provenance.json',
   'assets/contracts/operations-provenance.json',
   'assets/contracts/LICENSE.environment',
@@ -187,6 +190,7 @@ try {
     `unpacked artifact should remain below 3 MB; received ${packed.unpackedSize}`,
   );
 
+  assertPublishedModules(files);
   for (const requiredFile of requiredFiles) {
     assert.ok(files.includes(requiredFile), `packlist should contain ${requiredFile}`);
   }
@@ -282,7 +286,15 @@ try {
   const provenance = JSON.parse(
     readFileSync(path.join(repoRoot, 'assets/contracts/deployment-provenance.json')),
   );
-  assert.deepEqual(Object.keys(provenance).sort(), ['contractVersion', 'files']);
+  assert.deepEqual(Object.keys(provenance).sort(), [
+    'contractVersion',
+    'files',
+    'license',
+    'owner',
+    'sourceRevision',
+  ]);
+  assert.equal(provenance.owner, 'anhedral/platform-contracts/deployment');
+  assert.equal(provenance.license, 'Apache-2.0');
   for (const file of files.filter((name) => name.endsWith('.md'))) {
     assert.doesNotMatch(
       readFileSync(path.join(repoRoot, file), 'utf8'),

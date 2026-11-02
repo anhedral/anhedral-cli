@@ -1,3 +1,4 @@
+import { sourceContainsCredential as localCredentialMaterial } from '../assets/security/credential-patterns.mjs';
 import { constants } from 'node:fs';
 import { lstat, readFile, readdir, open } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -94,7 +95,7 @@ export async function packageSource(root: string) {
       }
       if (content.length !== info.size)
         throw platformFailure('Source changed during packaging. Retry after saving your files.');
-      if (sourceContainsCredential(content))
+      if (sourceContainsCredential(content) || localCredentialMaterial(content))
         throw platformFailure('Source contains credential material. Remove it before uploading.');
       files.set(path, content);
       setSourceExecutable(files, path, Boolean(info.mode & 0o111));

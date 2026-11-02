@@ -1,6 +1,5 @@
-import { z } from 'zod';
-import { deploymentManifestSchema } from './deployment.ts';
-export const CLI_CLIENT_ID = 'anhedral-cli';
+import { z } from "zod";import { deploymentManifestSchema } from "./deployment.ts";
+export const CLI_CLIENT_ID = "anhedral-cli";
 export const SOURCE_LIMITS = {
   bytes: 16 * 1024 * 1024,
   archiveBytes: 24 * 1024 * 1024,
@@ -50,7 +49,7 @@ export const sourceUploadInputSchema = z
   .strict()
   .refine(
     (v) => v.chunks.length === Math.ceil(v.archiveBytes / SOURCE_LIMITS.chunkBytes),
-    'Chunk count differs from archive size.',
+    "Chunk count differs from archive size.",
   );
 export const sourceUploadReceiptSchema = z
   .object({
@@ -61,15 +60,19 @@ export const sourceUploadReceiptSchema = z
     archiveDigest: sourceHashSchema,
     inventoryDigest: sourceHashSchema,
     received: z.array(z.number().int().min(0).max(15)).max(16),
-    state: z.enum(['uploading', 'sealed', 'cancelled']),
+    state: z.enum(["uploading", "sealed", "cancelled"]),
     expiresAt: z.iso.datetime(),
     sourceRevision: sourceHashSchema.nullable(),
   })
   .strict();
 export type SourceUploadInput = z.infer<typeof sourceUploadInputSchema>;
 
-/** Defense in depth only; the server independently validates uploaded source. */
-export { sourceContainsCredential } from '../../assets/security/credential-patterns.mjs';
+/** High-confidence credential material must not enter a source checkpoint. */
+export function sourceContainsCredential(bytes: Uint8Array) {
+  return /\bacl_[a-f0-9]{64}\b|"device_code"\s*:\s*"[A-Za-z0-9_-]{20,191}"|-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\bAKIA[A-Z0-9]{16}\b|\bnpm_[A-Za-z0-9]{36}\b|\bsk-proj-[A-Za-z0-9_-]{30,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{24,}/.test(
+    new TextDecoder().decode(bytes),
+  );
+}
 
 /** Planning reserves source only. It cannot grant a runtime, preview or deployment. */
 export const cliPlanInputSchema = z
@@ -108,11 +111,11 @@ export const cliPlanSchema = z
     configurationRevision: z.null(),
     artifactVerified: z.literal(false),
     hostedAdmission: z.literal(false),
-    identityAction: z.literal('preserve'),
+    identityAction: z.literal("preserve"),
     blockers: z.tuple([
-      z.literal('HOSTED_ADMISSION_DISABLED'),
-      z.literal('ARTIFACT_UNREVIEWED'),
-      z.literal('CONFIGURATION_UNVERIFIED'),
+      z.literal("HOSTED_ADMISSION_DISABLED"),
+      z.literal("ARTIFACT_UNREVIEWED"),
+      z.literal("CONFIGURATION_UNVERIFIED"),
     ]),
   })
   .strict();
@@ -131,30 +134,30 @@ export const cliPreparationSchema = z
     planDigest: sourceHashSchema,
     candidateId: z.uuid(),
     sourceRevision: sourceHashSchema,
-    state: z.enum(['awaiting-runtime', 'building', 'built', 'ready', 'failed']),
+    state: z.enum(["awaiting-runtime", "building", "built", "ready", "failed"]),
     buildDigest: sourceHashSchema.nullable().optional(),
     error: z.string().max(300).nullable().optional(),
     admission: z
       .object({
         policyDigest: sourceHashSchema,
         image: z.string().regex(/^sha256:[a-f0-9]{64}$/),
-        scope: z.literal('isolated-build'),
+        scope: z.literal("isolated-build"),
       })
       .strict()
       .nullable()
       .optional(),
     hostedAdmission: z.boolean(),
-    identityAction: z.literal('preserve'),
+    identityAction: z.literal("preserve"),
   })
   .strict();
 
 /** Canonical JSON for immutable plan and request digests across SQL JSONB and clients. */
 export function canonicalCliJson(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonicalCliJson).join(',')}]`;
-  if (value !== null && typeof value === 'object')
+  if (Array.isArray(value)) return `[${value.map(canonicalCliJson).join(",")}]`;
+  if (value !== null && typeof value === "object")
     return `{${Object.entries(value)
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([key, v]) => `${JSON.stringify(key)}:${canonicalCliJson(v)}`)
-      .join(',')}}`;
+      .join(",")}}`;
   return JSON.stringify(value);
 }

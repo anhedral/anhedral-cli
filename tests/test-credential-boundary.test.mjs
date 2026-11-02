@@ -3,7 +3,7 @@ import test from 'node:test';
 import { mkdtemp, writeFile, rm, realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { sourceContainsCredential } from '../dist/contracts/cli-transport.js';
+import { sourceContainsCredential } from '../assets/security/credential-patterns.mjs';
 import * as transport from '../dist/contracts/cli-transport.js';
 import { packageSource } from '../dist/platform-source.js';
 import { scanText } from '../scripts/secret-scanner.mjs';

@@ -10,3 +10,11 @@ src/contracts/environment-transport.ts
 src/contracts/environment-file.ts
 src/contracts/staging-transport.ts
 src/contracts/runtime-logs-transport.ts
+
+# Exact reviewed portable deployment snapshot.
+src/contracts/cli-transport.ts
+src/contracts/source-profile.ts
+src/contracts/source-bundle.ts
+src/contracts/deployment.ts
+tests/fixtures/deployment-contract/acceptance.mjs
+tests/fixtures/deployment-contract/fixtures.json
