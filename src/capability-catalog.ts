@@ -2,13 +2,30 @@ export const CAPABILITIES = {
   hono: {
     name: 'Hono backend API',
     requires: [],
-    targets: ['apps/api'],
+    targets: [
+      'apps/api/package.json',
+      'apps/api/wrangler.jsonc',
+      'apps/api/src/index.ts',
+      'apps/api/src/environment.ts',
+      'apps/api/src/capabilities.ts',
+      'apps/api/src/custom-environment.ts',
+    ],
     configuration: ['ANHEDRAL_API service binding'],
   },
   'database-auth': {
     name: 'Drizzle / D1 / Better Auth',
     requires: ['hono'],
-    targets: ['packages/db', 'apps/api/src/auth.ts'],
+    targets: [
+      'packages/db/package.json',
+      'packages/db/src/index.ts',
+      'packages/db/src/schema.ts',
+      'apps/api/src/auth.ts',
+      'apps/api/src/auth-features.ts',
+      'apps/api/src/security.ts',
+      'apps/api/src/auth-platform.ts',
+      'apps/api/src/features/auth.ts',
+      'apps/web/lib/auth-client.ts',
+    ],
     configuration: [
       'D1 resource ID',
       'BETTER_AUTH_SECRET',
@@ -26,7 +43,14 @@ export const CAPABILITIES = {
   stripe: {
     name: 'Stripe payments',
     requires: ['database-auth'],
-    targets: ['apps/api/src/features/stripe.ts'],
+    targets: [
+      'apps/api/src/features/stripe.ts',
+      'apps/api/src/features/entitlements.ts',
+      'apps/api/src/entitlement-guard.ts',
+      'apps/api/src/billing-mode.ts',
+      'apps/api/src/billing-providers.ts',
+      'packages/db/src/billing-schema.ts',
+    ],
     configuration: [
       'Stripe test credentials',
       'allowed prices',
@@ -37,25 +61,31 @@ export const CAPABILITIES = {
   realtime: {
     name: 'Realtime events',
     requires: ['database-auth'],
-    targets: ['apps/api/src/features/events.ts'],
+    targets: ['apps/api/src/features/events.ts', 'packages/db/src/events-schema.ts'],
     configuration: ['event schema migration'],
   },
   rtc: {
     name: 'Realtime RTC',
     requires: ['database-auth'],
-    targets: ['apps/api/src/features/rtc.ts'],
+    targets: ['apps/api/src/features/rtc.ts', 'packages/db/src/rtc-schema.ts'],
     configuration: ['Cloudflare Realtime SFU app ID and secret'],
   },
   ai: {
     name: 'Workers AI',
     requires: ['database-auth'],
-    targets: ['apps/api/src/features/ai.ts'],
+    targets: ['apps/api/src/features/ai.ts', 'packages/db/src/ai-schema.ts'],
     configuration: ['Workers AI binding', 'explicit model selection and daily quota'],
   },
   expo: {
     name: 'Expo mobile app',
     requires: ['database-auth'],
-    targets: ['apps/mobile'],
+    targets: [
+      'apps/mobile/package.json',
+      'apps/mobile/App.tsx',
+      'apps/mobile/anhedral-entry.tsx',
+      'apps/mobile/lib/auth-client.ts',
+      'apps/mobile/components/session-controls.tsx',
+    ],
     configuration: [
       'device-reachable API URL',
       'trusted native origin',
@@ -65,7 +95,13 @@ export const CAPABILITIES = {
   'native-ui': {
     name: 'Anhedral UI for Expo',
     requires: ['expo'],
-    targets: ['apps/mobile/components.json'],
+    targets: [
+      'apps/mobile/components.json',
+      'apps/mobile/global.css',
+      'apps/mobile/metro.config.js',
+      'apps/mobile/components/ui/button.tsx',
+      'apps/mobile/components/ui/text.tsx',
+    ],
     configuration: ['Android/iOS interaction validation'],
   },
   revenuecat: {
@@ -80,19 +116,27 @@ export const CAPABILITIES = {
   wxt: {
     name: 'WXT browser extension',
     requires: ['database-auth'],
-    targets: ['apps/extension'],
+    targets: [
+      'apps/extension/package.json',
+      'apps/extension/wxt.config.ts',
+      'apps/extension/anhedral-background.ts',
+      'apps/extension/entrypoints/background.ts',
+    ],
     configuration: ['API origin and host permissions', 'extension authentication flow'],
   },
   'side-panel': {
     name: 'Side Panel API',
     requires: ['wxt'],
-    targets: ['apps/extension/entrypoints/sidepanel'],
+    targets: [
+      'apps/extension/entrypoints/sidepanel/index.html',
+      'apps/extension/entrypoints/sidepanel/main.tsx',
+    ],
     configuration: ['Chromium side panel validation'],
   },
   gpui: {
     name: 'GPUI native desktop app',
     requires: ['database-auth'],
-    targets: ['apps/desktop'],
+    targets: ['apps/desktop/package.json', 'apps/desktop/Cargo.toml', 'apps/desktop/src/main.rs'],
     configuration: [
       'Rust toolchain and native platform libraries',
       'native account flow and distribution',

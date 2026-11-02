@@ -17,11 +17,27 @@ export { parseStandardOptions, STANDARD_USAGE };
 export { STANDARD_PRODUCTS } from './stack-registry.js';
 export type { StandardOptions, StandardProduct, StandardRunner } from './registry/types.js';
 
+function assertInitDestination(root: string): void {
+  let info;
+  try {
+    info = lstatSync(root);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw error;
+  }
+  if (info.isSymbolicLink() || !info.isDirectory())
+    throw Error('Destination must be a real directory.');
+  const unexpected = readdirSync(root).filter((name) => !['.git', '.gitignore'].includes(name));
+  if (unexpected.length)
+    throw Error(`Destination must be empty (apart from .git/.gitignore): ${unexpected[0]}`);
+}
+
 export async function scaffoldStandardProject(
   options: StandardOptions,
   run: StandardRunner = execFile,
   output: OutputOptions = {},
 ): Promise<void> {
+  assertInitDestination(options.root);
   const plan = createSetupPlan(options);
   const display = { ...output, json: options.json };
   if (options.dryRun) {
@@ -38,11 +54,7 @@ export async function scaffoldStandardProject(
       mkdirSync(root, { recursive: true });
       created = true;
     }
-    if (lstatSync(root).isSymbolicLink() || !lstatSync(root).isDirectory())
-      throw new Error('Destination must be a real directory.');
-    const unexpected = readdirSync(root).filter((name) => !['.git', '.gitignore'].includes(name));
-    if (unexpected.length)
-      throw new Error(`Destination must be empty (apart from .git/.gitignore): ${unexpected[0]}`);
+    assertInitDestination(root);
     const commitPaths: string[] = [];
     await runStagedTransaction(root, {
       commitPaths,
