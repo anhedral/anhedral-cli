@@ -55,6 +55,12 @@ Use a separate version-preparation PR into staging for each targeted release. Ke
 
 Merge staging → main with a merge commit. Explicitly run CI on main to build the candidate. Review its CLI/plugin SHA-512 integrities and dispatch **Release Reviewed Candidate** against the exact current main SHA. Existing exact-artifact verification, protected npm environment, portability, trusted publishing, provenance and immutable tags remain required. Main merges never automatically publish npm. Confirm npm version/integrity and GitHub release assets after publication.
 
+If publication succeeded but immutable tags/plugin assets were interrupted,
+`finalize_only` can resume the exact accepted main ancestor only after verifying its
+existing registry identity and trusted successful candidate artifact. It skips npm
+publication and completes only that immutable candidate's release assets. New
+publication still requires current main admission and separate authorization.
+
 Main and staging must require `CI gate`, prevent force pushes/deletion, and require resolved conversations. Preserve main's CodeQL requirements and the shared maintainer review process; do not add a separate `rswearin review` rule. `CODEOWNERS` lists all three maintainers for review routing. Enable merge commits alongside squash; do not enable automatic deletion of long-lived staging. New contribution PRs target staging; review and retarget existing PRs individually so unrelated or obsolete work is not silently included.
 
 The entire repository is limited to 20 tracked Markdown files. Use existing guides

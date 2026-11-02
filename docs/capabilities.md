@@ -16,21 +16,21 @@ anhedral stack status --json
 
 ## Capabilities
 
-| Name | Adds | Required source capabilities |
-| --- | --- | --- |
-| `hono` | API Worker, web proxy/service binding, health route | Next.js foundation |
-| `database-auth` | Drizzle/D1, Better Auth, schema/migration tooling, web sign-in starter | `hono` |
-| `r2` | Private R2 binding and authenticated owner-scoped file routes | `database-auth` |
-| `stripe` | Stripe SDK, Checkout subscription starter, signed webhook receipts, canonical access checks | `database-auth` |
-| `realtime` | Authenticated D1-backed events and resumable SSE | `database-auth` |
-| `rtc` | Cloudflare Realtime SFU session/track adapter with ownership checks | `database-auth` |
-| `ai` | Workers AI binding, authenticated text-generation route and atomic daily quota | `database-auth` |
-| `expo` | Expo app and Better Auth/SecureStore client | `database-auth` |
-| `native-ui` | NativeWind 4, shared theme CSS, RNR Button/Text starter, portal/root adapter, UI catalog metadata | `expo` |
-| `revenuecat` | Native subscription SDK/UI, scoped webhooks and server-side entitlement reconciliation | `expo`, `stripe` |
-| `wxt` | WXT React extension, scoped API host permission and editable popup | `database-auth` |
-| `side-panel` | Chromium Side Panel entrypoint and background registration | `wxt` |
-| `gpui` | Rust/GPUI desktop application and native build scripts | `database-auth` |
+| Name            | Adds                                                                                              | Required source capabilities |
+| --------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `hono`          | API Worker, web proxy/service binding, health route                                               | Next.js foundation           |
+| `database-auth` | Drizzle/D1, Better Auth, schema/migration tooling, web sign-in starter                            | `hono`                       |
+| `r2`            | Private R2 binding and authenticated owner-scoped file routes                                     | `database-auth`              |
+| `stripe`        | Stripe SDK, Checkout subscription starter, signed webhook receipts, canonical access checks       | `database-auth`              |
+| `realtime`      | Authenticated D1-backed events and resumable SSE                                                  | `database-auth`              |
+| `rtc`           | Cloudflare Realtime SFU session/track adapter with ownership checks                               | `database-auth`              |
+| `ai`            | Workers AI binding, authenticated text-generation route and atomic daily quota                    | `database-auth`              |
+| `expo`          | Expo app and Better Auth/SecureStore client                                                       | `database-auth`              |
+| `native-ui`     | NativeWind 4, shared theme CSS, RNR Button/Text starter, portal/root adapter, UI catalog metadata | `expo`                       |
+| `revenuecat`    | Native subscription SDK/UI, scoped webhooks and server-side entitlement reconciliation            | `expo`, `stripe`             |
+| `wxt`           | WXT React extension, scoped API host permission and editable popup                                | `database-auth`              |
+| `side-panel`    | Chromium Side Panel entrypoint and background registration                                        | `wxt`                        |
+| `gpui`          | Rust/GPUI desktop application and native build scripts                                            | `database-auth`              |
 
 The progression is Next.js → Hono → database/auth, followed by independently selected branches. These are Anhedral's source-builder rules, not intrinsic restrictions of those technologies. `anhedral ui` still requires only the target Next.js or Expo application; it has no backend prerequisite. See [UI commands](ui.md).
 
@@ -77,9 +77,17 @@ not private checkout identities. Importing raw server contract exports is unsupp
 Hosting policies, artifact allowlists and build enforcement stay on the server;
 client validation never grants authority. Wire formats remain versioned and strict.
 
-`stack list` shows the complete catalog. `stack status` reports `locked`, `available`, `installed` or `incomplete` source state. `stack doctor` exits unsuccessfully when declared source is missing. Neither command inspects live providers or proves deployment/activation. An installed capability can still need credentials, migrations, resource IDs and runtime verification.
+`stack list` shows the complete catalog. `stack status` reports `locked`, `available`, `installed` or `incomplete` source state. `stack doctor` exits unsuccessfully when required generated source leaves are missing;
+present consumer-edited files remain valid. Neither command inspects live providers or proves deployment/activation. An installed capability can still need credentials, migrations, resource IDs and runtime verification.
 
 The intended operational sequence remains source selection → resource provisioning → bindings/secrets/migrations → runtime validation/deployment → verified active service. Client binaries run on their target platforms, independently of Cloudflare server deployments.
+
+WXT tasks compose their output/cache and API-origin environment contracts without
+replacing consumer task settings. Native desktop build caching stays disabled until
+its toolchain/output contract is accepted. Source configuration reads are bounded;
+init dry runs validate destination occupancy without locks, writes or journal recovery.
+Captured subprocess output and deadlines are bounded, with owned process cleanup
+and diagnostic tails on failure; verbose mode remains explicit.
 
 ## Configuration and local validation
 
@@ -110,7 +118,11 @@ Use provider test credentials and store sandboxes for acceptance. No real charge
 
 ## Events, RTC and AI
 
-Events are durable, owner-scoped D1 records. SSE uses `(created_at, id)` cursors and `Last-Event-ID`; batches do not advance past undelivered records. The starter is a private event feed, not an automatic room/membership model. Choose retention and application topics deliberately.
+Events are durable, owner-scoped D1 records. SSE uses `(created_at, id)` cursors and `Last-Event-ID`; batches do not advance past undelivered records. The starter is a private event feed, not an automatic room/membership model. Choose retention and application topics deliberately. The generated owner/age-scoped
+`packages/db/operations/event-retention.sql.example` demonstrates a bounded deletion
+batch only. A consumer must review its replay horizon and earliest available cursor
+before deliberately scheduling it; installation activates no cleanup. The isolated
+consumer fixture verifies owner isolation, replay gaps and retained AI/RTC uncertainty.
 
 The initial RTC adapter uses Cloudflare Realtime SFU. It provides session creation, tracks, renegotiation and close operations, keeps app secrets server-side, bounds session allocation and checks session ownership. Remote tracks are limited to the same authenticated user's sessions. A multi-user product must add its reviewed room/membership rules and WebRTC client flow. Configure provider lifecycle/retention and validate media behavior before rollout; an adapter install is not a working conference UI.
 
@@ -125,7 +137,6 @@ Expo uses public API configuration and SecureStore-backed Better Auth cookies. S
 WXT defaults to Chromium Manifest V3, with an explicit API-origin host permission. Side Panel support is Chromium-specific. Configure extension authentication and browser acceptance separately; no extension is installed into a user's browser by the CLI.
 
 GPUI uses the upstream `runtime_shaders` feature, without a vendored fork or web renderer. Rust and platform libraries are required. Its application is a native starter; backend account UX, packaging, signing and distribution belong to the product. Commit the generated Cargo lockfile after resolving native dependencies.
-
 
 ## Repository acceptance fixture
 
