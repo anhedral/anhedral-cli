@@ -33,3 +33,5 @@ are refused without following them outside the application. Upstream installatio
 Validate web flows in a browser. Validate native interactions in Android/iOS development builds, including accessibility, overlays, keyboard and lifecycle. Typechecking or an Expo web export does not establish device acceptance. The retired exhaustive port is preserved outside the active CLI; `docs/native-ui.md` describes the migration path.
 
 For a generated Anhedral workspace, `anhedral add expo` creates the native application after its core source prerequisites, and `anhedral add native-ui` prepares its NativeWind/RNR integration without replacing product UI. The UI component commands remain independent of backend activation. See [stack additions](capabilities.md).
+
+UI discovery and diagnostics read bounded regular JSON targets. Consumer manifest and components configuration symlinks remain supported when their resolved targets are regular files within the input size limit. CLI-owned metadata writes retain their stricter symlink rejection. FIFO/device/directory and oversized JSON inputs fail before upstream installation.
