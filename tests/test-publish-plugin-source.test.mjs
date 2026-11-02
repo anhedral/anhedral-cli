@@ -1,3 +1,4 @@
+import { pluginFixture } from './support/plugin-fixture.mjs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
@@ -67,13 +68,7 @@ function zip(files) {
 function fixture() {
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-source-publisher-')));
   const version = '1.2.3';
-  const files = Object.entries({
-    'plugin.json': JSON.stringify({ name: 'anhedral', version }),
-    'references/stack-registry.json': JSON.stringify({ cliVersion: version, items: [{ version }] }),
-    'skills/anhedral-init/SKILL.md': 'Initialize the foundation.',
-    'skills/anhedral-design/SKILL.md': 'Use shared tokens.',
-    LICENSE: 'Apache-2.0',
-  }).map(([name, contents]) => ({ name, contents: Buffer.from(contents) }));
+  const files = pluginFixture(version).files;
   const metadataPath = path.join(root, 'metadata.json');
   function save(entries = files) {
     const bytes = zip(entries);
@@ -306,7 +301,7 @@ for (const drift of ['version', 'integrity', 'runtime'])
           calls++;
           throw new Error('unexpected');
         }),
-        /identity|integrity|runtime/,
+        /identity|integrity|runtime|reviewed public distribution/,
       );
       assert.equal(calls, 0);
     } finally {

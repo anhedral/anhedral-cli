@@ -1,16 +1,17 @@
+import { pluginFixture } from './support/plugin-fixture.mjs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, writeFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, realpathSync, writeFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const integrity = (bytes) => `sha512-${createHash('sha512').update(bytes).digest('base64')}`;
 function candidate() {
-  const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-reviewed-artifact-'));
+  const directory = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-reviewed-artifact-')));
   const cli = Buffer.from('CLI bytes whose identity is pinned by the review');
-  const plugin = Buffer.from('Plugin bytes whose identity is independently pinned');
+  const plugin = pluginFixture().contents;
   const metadata = {
     schemaVersion: 1,
     name: 'anhedral',
