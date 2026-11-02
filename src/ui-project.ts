@@ -1,3 +1,4 @@
+import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from './bounded-file.js';
 import {
   existsSync,
   lstatSync,
@@ -9,6 +10,11 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { UI_CATALOG, type UiPlatform } from './ui-catalog.js';
+
+// Consumer JSON links remain supported; the resolved target must be a bounded regular file.
+function readUiJson(file: string) {
+  return JSON.parse(readBoundedFile(realpathSync(file), MAX_PROJECT_JSON_BYTES).toString('utf8'));
+}
 
 type Manifest = { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
 export interface UiTarget {
@@ -22,7 +28,7 @@ export function detectUiTargets(cwd: string, selector?: UiPlatform | 'all'): UiT
   function inspect(directory: string) {
     const file = path.join(directory, 'package.json');
     if (!existsSync(file)) return;
-    const manifest = JSON.parse(readFileSync(file, 'utf8')) as Manifest;
+    const manifest = readUiJson(file) as Manifest;
     const dependencies = { ...manifest.devDependencies, ...manifest.dependencies };
     if (dependencies.next) targets.push({ root: directory, platform: 'web', manifest });
     if (dependencies.expo) targets.push({ root: directory, platform: 'native', manifest });
@@ -57,12 +63,12 @@ export function detectUiTargets(cwd: string, selector?: UiPlatform | 'all'): UiT
 export function inspectUiTarget(target: UiTarget) {
   const issues: string[] = [];
   const file = path.join(target.root, 'components.json');
-  const config = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+  const config = existsSync(file) ? readUiJson(file) : null;
   if (!config) issues.push('Missing components.json. Run anhedral ui init for this application.');
   if (config && (!config.aliases?.ui || !config.aliases?.utils || !config.tailwind?.css))
     issues.push('components.json needs UI/utils aliases and a Tailwind CSS entry.');
   const marker = path.join(target.root, '.anhedral-ui.json');
-  if (existsSync(marker) && JSON.parse(readFileSync(marker, 'utf8')).platform !== target.platform)
+  if (existsSync(marker) && readUiJson(marker).platform !== target.platform)
     issues.push('Existing Anhedral UI configuration targets another platform.');
   if (target.platform === 'native') {
     const dependencies = { ...target.manifest.devDependencies, ...target.manifest.dependencies };
@@ -127,7 +133,7 @@ export function initializeUiMetadata(root: string, platform: UiPlatform) {
   assertUiMetadataPaths(root);
   const file = path.join(root, '.anhedral-ui.json');
   if (existsSync(file)) {
-    const existing = JSON.parse(readFileSync(file, 'utf8'));
+    const existing = readUiJson(file);
     if (existing.platform !== platform)
       throw Error('Existing Anhedral UI configuration targets another platform.');
   } else

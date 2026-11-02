@@ -143,6 +143,7 @@ test('staging and main share one gate with scoped runtime smoke; broad validatio
     /test:unit|test:patch|audit:osv|test-generated-apps|playwright|test:browser|plugin:check/,
   );
   assert.match(commands, /test-cli-validation/);
+  assert.match(commands, /test-runtime-proof-receipt\.test\.mjs/);
   const runtime = gate.steps.find((step) => /next-runtime-smoke/.test(step.run || ''));
   assert.equal(runtime.if, "steps.scope.outputs.nextRuntime == 'true'");
   assert.match(commands, /check:security/);
@@ -202,10 +203,18 @@ test('Next runtime scope covers build and generator changes without native-only 
     'src/dependencies.ts',
     'pnpm-lock.yaml',
     'scripts/next-runtime-smoke.mjs',
+    'scripts/generated-auth-runtime-proof.mjs',
+    'scripts/runtime-proof-receipt.mjs',
     '.github/workflows/ci.yml',
   ])
     assert.equal(needsNextRuntime([file]), true, file);
-  for (const file of ['docs/native-ui.md', 'assets/ui/native/button.tsx', 'README.md'])
+  for (const file of [
+    'docs/native-ui.md',
+    'assets/ui/native/button.tsx',
+    'README.md',
+    'scripts/generated-auth-runtime-proof.mjs.bak',
+    'scripts/runtime-proof-receipt.mjs.example',
+  ])
     assert.equal(needsNextRuntime([file]), false, file);
   assert.equal(needsNextRuntime([]), true);
 });

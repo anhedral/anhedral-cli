@@ -10,7 +10,11 @@ import {
 } from './capability-catalog.js';
 import { CapabilityEditor } from './capability-editor.js';
 import { addCapabilityRecipe, composeCapabilities } from './capability-recipes.js';
-import { PostCommitError, runStagedTransaction } from './transaction.js';
+import {
+  PostCommitError,
+  runStagedTransaction,
+  recoverInterruptedTransaction,
+} from './transaction.js';
 import { put } from './scaffold/files.js';
 import { execFile } from './util.js';
 import { capabilityReferences } from './capability-references.js';
@@ -18,10 +22,14 @@ import { configureDependencyPatches } from './dependency-patches.js';
 import { composeSourceProvenance } from './composition.js';
 import type { StandardRunner } from './registry/types.js';
 
-function projectRoot(cwd: string) {
+function projectRoot(cwd: string, allowRecovery = false) {
   let root = realpathSync(cwd);
   for (;;) {
-    if (existsSync(path.join(root, 'anhedral.json'))) return root;
+    if (
+      existsSync(path.join(root, 'anhedral.json')) ||
+      (allowRecovery && existsSync(path.join(root, '.anhedral-journal.json')))
+    )
+      return root;
     if (existsSync(path.join(root, '.git'))) break;
     const parent = path.dirname(root);
     if (parent === root) break;
@@ -116,7 +124,9 @@ export async function runCapabilityCommand(
         'add',
         'Choose one or more capabilities from anhedral stack list.',
       );
-    const root = projectRoot(process.cwd());
+    const root = projectRoot(process.cwd(), !parsed.has('--dry-run'));
+    if (!parsed.has('--dry-run') && existsSync(path.join(root, '.anhedral-journal.json')))
+      recoverInterruptedTransaction(root);
     const e = new CapabilityEditor(root, {});
     const state = readState(e);
     Object.assign(e.managed, state.managedFiles);

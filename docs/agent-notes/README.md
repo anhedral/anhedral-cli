@@ -1,5 +1,20 @@
 # Development notes
 
+## 2026-11-02 Filesystem recovery and runtime scope follow-up
+
+Based on staging `c4dda0f`, fixes preserve recreated post-crash source and retain
+ambiguous journal/backup evidence. Original backup fingerprints support rollback
+replay; legacy unverifiable states stop for inspection. Real init/add recover
+before source preflight; dry runs remain non-mutating. Abrupt command regressions
+cover orphan staging, journal/install interruption, recreation and restore replay.
+UI JSON reads reject nonregular/oversized targets and retain consumer config links.
+Exact auth/receipt helper changes select the runtime proof; the receipt unit test
+runs in the fast gate. Build, lint/typecheck/hygiene, boundary, plugin, exact
+package/installed smoke and 27 focused checks passed. Full unit validation passed
+214 of 215 tests; one existing optional patch-byte check skipped. Compiled runtime
+helpers/templates are unchanged; no additional generated Next build was needed.
+No provider/database operation, package publication or deployment was performed.
+
 ## 2026-11-01 Comprehensive maintenance implementation
 
 Based on staging `2014a612`, code candidate `850fe692` implements C01–C12,
