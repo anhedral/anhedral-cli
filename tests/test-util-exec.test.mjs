@@ -1,6 +1,6 @@
 import { resolveCommand } from '../dist/command.js';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -107,6 +107,36 @@ try {
     assert.equal(timeout.status, 1);
     assert.match(timeout.stdout, /Command timed out/);
     assert.ok(Date.now() - started < 5000, 'deadline must bound execution');
+  }
+  if (process.platform !== 'win32') {
+    const tree = path.join(temporaryRoot, 'command-tree.mjs');
+    writeFileSync(
+      tree,
+      `import {spawn} from 'node:child_process';import {writeFileSync} from 'node:fs';const child=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'inherit'});writeFileSync(process.argv[2],String(child.pid));if(process.argv[3]==='noisy')setInterval(()=>process.stdout.write('x'.repeat(4096)),1);else setInterval(()=>{},1000);`,
+    );
+    for (const mode of ['noisy', 'timeout']) {
+      const pidFile = path.join(temporaryRoot, mode + '.pid');
+      const result = runExecFile([tree, pidFile, mode], {
+        ANHEDRAL_COMMAND_OUTPUT_BYTES: '1024',
+        ANHEDRAL_COMMAND_TIMEOUT_MS: mode === 'timeout' ? '500' : '3000',
+      });
+      assert.equal(result.status, 1);
+      const pid = Number(readFileSync(pidFile, 'utf8'));
+      let alive = true;
+      for (let attempt = 0; attempt < 100; attempt++) {
+        try {
+          process.kill(pid, 0);
+        } catch (error) {
+          if (error.code === 'ESRCH') {
+            alive = false;
+            break;
+          }
+          throw error;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      assert.equal(alive, false, 'owned descendant must not survive ' + mode);
+    }
   }
   console.log('Command execution buffering and timeout regressions passed');
 } finally {
