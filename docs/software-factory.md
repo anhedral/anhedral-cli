@@ -41,7 +41,7 @@ explicit review failure, not a clean secret scan.
 
 ## Next/OpenNext runtime gate
 
-Relevant generator/build changes compile an isolated foundation and exercise it
+Relevant generator/build changes, including the exact generated-auth proof and runtime-receipt helpers, select the compiled proof. The inexpensive receipt test also runs in the fast contract gate. These changes compile an isolated foundation and exercise it
 in workerd. Run `pnpm test:next-runtime` for SSR/RSC, Server Actions/cookies,
 prerendering and static cache checks. Hono proxy contracts have separate tests.
 The harness owns the module-size budget and short-lived `.artifacts/next-runtime/`
