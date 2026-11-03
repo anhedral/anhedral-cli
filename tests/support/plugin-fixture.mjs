@@ -16,6 +16,10 @@ export function pluginFixture(version = '1.2.3') {
     const manifest = JSON.parse(readFileSync(path.join(distribution, 'plugin.json')));
     manifest.version = version;
     writeFileSync(path.join(distribution, 'plugin.json'), JSON.stringify(manifest));
+    const claudeManifestFile = path.join(distribution, '.claude-plugin/plugin.json');
+    const claudeManifest = JSON.parse(readFileSync(claudeManifestFile));
+    claudeManifest.version = version;
+    writeFileSync(claudeManifestFile, JSON.stringify(claudeManifest));
     const file = path.join(distribution, 'references/stack-registry.json');
     const registry = JSON.parse(readFileSync(file));
     registry.cliVersion = version;

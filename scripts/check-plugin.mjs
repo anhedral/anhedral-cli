@@ -23,4 +23,4 @@ if (
 )
   throw Error('Plugin must describe the single Anhedral Stack and its supported additions.');
 buildPluginArchive(root);
-console.log('Source skills and remote Platform MCP plugin validated.');
+console.log('Source skills and remote Platform MCP plugin validated for Codex and Claude Code.');

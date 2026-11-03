@@ -1,6 +1,10 @@
 import { assertPluginPackageFiles } from './plugin-package-policy.mjs';
 import { readStoredArchive } from './publish-plugin-source.mjs';
-import { validatePluginRemote } from './plugin-remote.mjs';
+import {
+  validateClaudePluginManifest,
+  validateClaudePluginRemote,
+  validatePluginRemote,
+} from './plugin-remote.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -89,6 +93,11 @@ export function buildPluginArchive(root) {
   if ([...names].some((name) => name.startsWith('runtime/')))
     throw new Error('Plugin cannot package an executable managed runtime.');
   validatePluginRemote(JSON.parse(readFileSync(path.join(pluginRoot, 'mcp.json'), 'utf8')));
+  validateClaudePluginRemote(JSON.parse(readFileSync(path.join(pluginRoot, '.mcp.json'), 'utf8')));
+  validateClaudePluginManifest(
+    JSON.parse(readFileSync(path.join(pluginRoot, '.claude-plugin/plugin.json'), 'utf8')),
+    manifest,
+  );
   const interface_ = manifest.extensions?.['com.openai']?.interface;
   for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
     const asset = interface_?.[field];

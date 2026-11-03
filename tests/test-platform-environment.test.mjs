@@ -17,7 +17,7 @@ import { runPlatformCommand } from '../dist/platform-command.js';
 import { readPrivate, writePrivate } from '../dist/platform-state.js';
 import { validateCommand } from '../dist/cli-arguments.js';
 import { commandHelp } from '../dist/registry/usage.js';
-import { validatePluginRemote } from '../scripts/plugin-remote.mjs';
+import { validateClaudePluginRemote, validatePluginRemote } from '../scripts/plugin-remote.mjs';
 const context = {
   origin: 'https://platform.anhedral.com',
   principalId: '11111111-1111-4111-8111-111111111111',
@@ -222,6 +222,24 @@ test('remote plugin configuration admits only the reviewed HTTPS server without 
       validatePluginRemote({
         ...config,
         mcpServers: { anhedral: { ...config.mcpServers.anhedral, ...change } },
+      }),
+    );
+  // Claude Code reads `.mcp.json` from the same distribution and must target the same endpoint.
+  const claude = JSON.parse(
+    await readFile(new URL('../plugins/codex/distribution/.mcp.json', import.meta.url), 'utf8'),
+  );
+  validateClaudePluginRemote(claude);
+  assert.equal(claude.mcpServers.anhedral.url, config.mcpServers.anhedral.url);
+  for (const change of [
+    { url: 'https://evil.invalid/mcp' },
+    { headers: { Authorization: 'Bearer fixture' } },
+    { command: 'node' },
+    { type: 'sse' },
+    { oauth: { clientId: 'fixture' } },
+  ])
+    assert.throws(() =>
+      validateClaudePluginRemote({
+        mcpServers: { anhedral: { ...claude.mcpServers.anhedral, ...change } },
       }),
     );
 });

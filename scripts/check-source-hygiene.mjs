@@ -4,6 +4,7 @@ import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '..');
 const directories = [
   '.agents',
+  '.claude-plugin',
   '.github',
   'assets/patches',
   'assets/security',

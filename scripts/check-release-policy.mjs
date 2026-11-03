@@ -429,6 +429,26 @@ function validatePluginRelease(root, version) {
     entry.category !== 'Developer Tools'
   )
     failures.push('Marketplace must pin the matching self-contained plugin release');
+  const claudeMarketplace = JSON.parse(
+    readFileSync(path.join(root, '.claude-plugin/marketplace.json'), 'utf8'),
+  );
+  const claudeEntry = claudeMarketplace.plugins?.find((plugin) => plugin.name === 'anhedral');
+  const claudeManifest = JSON.parse(
+    readFileSync(path.join(root, 'plugins/codex/distribution/.claude-plugin/plugin.json'), 'utf8'),
+  );
+  if (
+    claudeMarketplace.name !== 'anhedral' ||
+    claudeEntry?.source?.source !== 'git-subdir' ||
+    claudeEntry.source.url !== 'https://github.com/anhedral/anhedral-cli.git' ||
+    // Claude Code installs the same immutable tag tree as the Codex marketplace.
+    claudeEntry.source.path !== 'plugins/anhedral' ||
+    claudeEntry.source.ref !== `plugin-v${version}` ||
+    claudeEntry.version !== version ||
+    claudeEntry.category !== 'Developer Tools' ||
+    claudeManifest.name !== 'anhedral' ||
+    claudeManifest.version !== version
+  )
+    failures.push('Claude marketplace and manifest must pin the matching plugin release');
   if (
     manifest.version !== version ||
     stack.cliVersion !== version ||

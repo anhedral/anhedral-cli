@@ -1,0 +1,21 @@
+{
+  "name": "anhedral",
+  "displayName": "Anhedral",
+  "version": "0.18.0",
+  "description": "Scaffold the Anhedral Stack and connect projects, configuration, deployments and logs through Platform.",
+  "author": {
+    "name": "Anhedral",
+    "email": "support@anhedral.com"
+  },
+  "homepage": "https://github.com/anhedral/anhedral-cli#readme",
+  "repository": "https://github.com/anhedral/anhedral-cli",
+  "license": "Apache-2.0",
+  "keywords": [
+    "anhedral-stack",
+    "scaffold",
+    "tanstack-start",
+    "hono",
+    "cloudflare",
+    "shadcn"
+  ]
+}

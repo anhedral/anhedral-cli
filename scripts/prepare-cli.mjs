@@ -35,6 +35,15 @@ const manifestUrl = new URL('../plugins/codex/distribution/plugin.json', import.
 const manifest = JSON.parse(readFileSync(manifestUrl, 'utf8'));
 manifest.version = GENERATOR_VERSION;
 writeFileSync(manifestUrl, JSON.stringify(manifest, null, 2) + '\n');
+// Claude Code reads its own manifest from the same distribution; keep one release identity.
+const claudeManifestUrl = new URL(
+  '../plugins/codex/distribution/.claude-plugin/plugin.json',
+  import.meta.url,
+);
+const claudeManifest = JSON.parse(readFileSync(claudeManifestUrl, 'utf8'));
+claudeManifest.version = GENERATOR_VERSION;
+claudeManifest.description = manifest.description;
+writeFileSync(claudeManifestUrl, JSON.stringify(claudeManifest, null, 2) + '\n');
 
 // Retired guides remain in repository history/source, outside current discovery.
 for (const name of ['native-ui.md', 'anhedral-stack.md']) {
@@ -61,3 +70,11 @@ const plugin = marketplace.plugins.find((entry) => entry.name === 'anhedral');
 if (!plugin) throw new Error('Anhedral marketplace entry is missing');
 plugin.source.ref = `plugin-v${GENERATOR_VERSION}`;
 writeFileSync(marketplaceUrl, JSON.stringify(marketplace, null, 2) + '\n');
+
+const claudeMarketplaceUrl = new URL('../.claude-plugin/marketplace.json', import.meta.url);
+const claudeMarketplace = JSON.parse(readFileSync(claudeMarketplaceUrl, 'utf8'));
+const claudePlugin = claudeMarketplace.plugins.find((entry) => entry.name === 'anhedral');
+if (!claudePlugin) throw new Error('Anhedral Claude marketplace entry is missing');
+claudePlugin.version = GENERATOR_VERSION;
+claudePlugin.source.ref = `plugin-v${GENERATOR_VERSION}`;
+writeFileSync(claudeMarketplaceUrl, JSON.stringify(claudeMarketplace, null, 2) + '\n');

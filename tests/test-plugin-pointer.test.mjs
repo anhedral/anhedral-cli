@@ -29,7 +29,27 @@ test('candidate build coordinates the marketplace pointer without publishing a t
     );
     write('plugins/codex/distribution/references/native-ui.md', 'retired');
     write('plugins/codex/distribution/references/anhedral-stack.md', 'retired');
-    write('plugins/codex/distribution/plugin.json', JSON.stringify({ version: '0.17.0' }));
+    write(
+      'plugins/codex/distribution/plugin.json',
+      JSON.stringify({ version: '0.17.0', description: 'fixture description' }),
+    );
+    write(
+      'plugins/codex/distribution/.claude-plugin/plugin.json',
+      JSON.stringify({ name: 'anhedral', version: '0.17.0', description: 'stale' }),
+    );
+    write(
+      '.claude-plugin/marketplace.json',
+      JSON.stringify({
+        name: 'anhedral',
+        plugins: [
+          {
+            name: 'anhedral',
+            version: '0.17.0',
+            source: { source: 'git-subdir', ref: 'plugin-v0.17.0', path: 'plugins/anhedral' },
+          },
+        ],
+      }),
+    );
     write(
       '.agents/plugins/marketplace.json',
       JSON.stringify({
@@ -53,6 +73,20 @@ test('candidate build coordinates the marketplace pointer without publishing a t
       JSON.parse(readFileSync(path.join(root, 'plugins/codex/distribution/plugin.json'))).version,
       version,
     );
+    const claudeManifest = JSON.parse(
+      readFileSync(path.join(root, 'plugins/codex/distribution/.claude-plugin/plugin.json')),
+    );
+    assert.equal(claudeManifest.version, version);
+    assert.equal(claudeManifest.description, 'fixture description');
+    const claudeMarketplace = JSON.parse(
+      readFileSync(path.join(root, '.claude-plugin/marketplace.json')),
+    );
+    assert.equal(claudeMarketplace.plugins[0].version, version);
+    assert.deepEqual(claudeMarketplace.plugins[0].source, {
+      source: 'git-subdir',
+      ref: `plugin-v${version}`,
+      path: 'plugins/anhedral',
+    });
     const registry = JSON.parse(
       readFileSync(path.join(root, 'plugins/codex/distribution/references/stack-registry.json')),
     );

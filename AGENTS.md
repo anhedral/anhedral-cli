@@ -1,6 +1,6 @@
 # Developing Anhedral
 
-This repository owns the Anhedral CLI, source generators and a Codex plugin with source skills plus the remote Platform MCP connection. Read [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) and the relevant section of [docs/software-factory.md](docs/software-factory.md) before changing them. Generated application conventions do not describe this repository's package layout.
+This repository owns the Anhedral CLI, source generators and one plugin distribution for Codex and Claude Code with source skills plus the remote Platform MCP connection. Read [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) and the relevant section of [docs/software-factory.md](docs/software-factory.md) before changing them. Generated application conventions do not describe this repository's package layout.
 
 - For maintenance, follow [evidence and review practices](docs/software-factory.md#evidence-driven-maintenance). Inspect current Git state and preserve unrelated work. Static findings identify candidates; verify runtime entrypoints, published exports, generated consumers and operational safeguards before deletion.
 - Edit canonical documents in `docs/`; `pnpm build` refreshes bundled plugin references. Edit launch application guidance in `src/launch.ts` and legacy generated guidance in `src/scaffold/documentation.ts`. Change the shipped skills in `plugins/codex/distribution/skills/anhedral-*/SKILL.md`; a local build does not update an installed plugin.

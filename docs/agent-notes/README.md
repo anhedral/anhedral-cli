@@ -1,5 +1,17 @@
 # Development notes
 
+## 2026-11-03 Claude Code plugin from the shared distribution
+
+`plugins/codex/distribution` now also carries `.claude-plugin/plugin.json` and
+`.mcp.json`; root `.claude-plugin/marketplace.json` pins the same `plugin-v<version>`
+tag path as the Codex marketplace. Skills and references are shared unchanged.
+Packaging, source publication and release policy validate both manifests; build
+syncs both versions. `claude plugin validate --strict` passed for the distribution
+and marketplace. A headless `--plugin-dir` session listed and invoked both skills
+and registered `plugin:anhedral:anhedral`; a temporary local marketplace installed,
+inventoried and uninstalled cleanly. The remote endpoint returned HTTP 404, so no
+OAuth login was exercised. Existing `plugin-v0.18.0` tags predate the Claude files.
+
 ## 2026-11-02 Web launch initializer
 
 `codex/web-launch-init` starts at staging `4749139`. Broader source is retained on
@@ -82,19 +94,6 @@ PR #97 targets staging; hosted validation and retained exact-package acceptance
 are tracked there. No npm/plugin publication, main promotion, provider activation
 or database changes were performed. Presentation-only work does not establish
 live Platform or native-device acceptance.
-
-## 2026-10-31 — Public CLI boundary review candidate
-
-Keep consumer manifests and Platform client messages public. Hosting policy,
-artifact allowlists and isolated-builder enforcement remain server-owned.
-Release and upload checks share credential patterns. Public content hashes track
-only this repository's reviewed contracts; private checkout revisions are omitted.
-Publication remains paused pending review. Node 24 build, type/format/hygiene,
-release/security policies, OSV, full unit suite, dependency patch installs and
-packed installation/packlist checks passed. The optional native-device test is
-not run. Focused checks cover public contract drift, credential rejection and
-local plugin pointer preparation. Exact package/plugin review artifacts remain
-local; no tag, package publication, provider activation or database change occurs.
 
 Keep public CLI notes within 100 lines and the repository within 20 Markdown files.
 Private operational evidence stays outside this repository; history remains in Git.

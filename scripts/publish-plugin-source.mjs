@@ -1,5 +1,9 @@
 import { assertPluginPackageFiles } from './plugin-package-policy.mjs';
-import { validatePluginRemote } from './plugin-remote.mjs';
+import {
+  validateClaudePluginManifest,
+  validateClaudePluginRemote,
+  validatePluginRemote,
+} from './plugin-remote.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
@@ -169,6 +173,8 @@ export function loadPluginRelease(metadataPath) {
   if (files.some((file) => file.name.startsWith('runtime/')))
     throw new Error('Plugin cannot package an executable managed runtime.');
   validatePluginRemote(json('mcp.json'));
+  validateClaudePluginRemote(json('.mcp.json'));
+  validateClaudePluginManifest(json('.claude-plugin/plugin.json'), manifest);
   for (const skill of ['init', 'design'])
     if (!files.some((file) => file.name === `skills/anhedral-${skill}/SKILL.md`))
       throw new Error('Plugin skill is missing.');

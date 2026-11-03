@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "anhedral": {
+      "type": "http",
+      "url": "https://platform.anhedral.com/api/mcp"
+    }
+  }
+}

@@ -24,6 +24,17 @@ test('plugin ownership rejects extra files and linked distribution roots while r
     const good = buildPluginArchive(root);
     const files = readStoredArchive(good.contents);
     assert.ok(files.some((file) => file.name === 'mcp.json'));
+    // One distribution serves Codex and Claude Code; both manifests ship in the archive.
+    for (const name of ['.mcp.json', '.claude-plugin/plugin.json'])
+      assert.ok(
+        files.some((file) => file.name === name),
+        name,
+      );
+    const claudeManifestFile = path.join(folder, '.claude-plugin/plugin.json');
+    const claudeManifest = readFileSync(claudeManifestFile, 'utf8');
+    writeFileSync(claudeManifestFile, claudeManifest.replace('0.18.0', '0.0.1'));
+    assert.throws(() => buildPluginArchive(root), /Claude plugin manifest/);
+    writeFileSync(claudeManifestFile, claudeManifest);
     writeFileSync(path.join(folder, 'unreviewed.mjs'), 'export const privateImplementation = 1;');
     assert.throws(() => buildPluginArchive(root), /reviewed public distribution/);
     rmSync(path.join(folder, 'unreviewed.mjs'));
