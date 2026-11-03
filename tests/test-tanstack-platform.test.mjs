@@ -222,7 +222,8 @@ test('TanStack CLI rejects an incorrect foundation/profile before creating a pla
         },
       },
     ),
-    (error) => error.code === 'INVALID_ARGUMENT' && /progressive-tanstack-v1/.test(error.message),
+    (error) =>
+      error.code === 'INVALID_ARGUMENT' && /anhedral-stack runtime profile/.test(error.message),
   );
   assert.equal(posts, 0);
   assert.equal(await readPrivate(join(root, '.anhedral/platform/deployment.json')), null);

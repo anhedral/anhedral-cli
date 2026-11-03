@@ -611,7 +611,7 @@ async function runPlatformOperation(
       if (!checkedManifest.success)
         throw commandArgumentError(
           command,
-          'The deployment manifest must match its foundation, capabilities, identity and runtime profile. TanStack Start uses progressive-tanstack-v1.',
+          'The deployment manifest must match its foundation, capabilities, identity and runtime profile. TanStack Start uses the anhedral-stack runtime profile.',
         );
       const compared = cliPlanInputSchema.parse({
         protocol: 1,
