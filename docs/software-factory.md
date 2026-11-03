@@ -54,6 +54,12 @@ explicit review failure, not a clean secret scan.
 
 ## Runtime verification
 
+Routine CI compiles the CLI once and runs fast source/security checks and selected
+contract tests. Generated applications are not installed or built in that path.
+Dispatch [CI](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/ci.yml) with `runtime_proof` enabled for the
+Anhedral Stack proof and one-day measurements. Broader compatibility and generated
+application matrices remain in [Full validation](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/validation.yml).
+
 `node scripts/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
 application and exercises local workerd, SSR/server functions, progressive backend,
 private storage and the generated Stripe build/migration path. It uses isolated

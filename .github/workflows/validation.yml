@@ -85,7 +85,7 @@ jobs:
 
       - name: Install dependencies
         if: ${{ needs.scope.outputs.full == 'true' }}
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build initializer
         if: ${{ needs.scope.outputs.full == 'true' }}
@@ -152,7 +152,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --ignore-scripts
         if: ${{ needs.scope.outputs.full == 'true' }}
       - run: pnpm build
         if: ${{ needs.scope.outputs.full == 'true' }}
@@ -241,7 +241,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm build
       - run: node tests/test-generated-apps.mjs ${{ matrix.profile }}
 
