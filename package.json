@@ -61,7 +61,7 @@
   "scripts": {
     "scaffold": "node dist/bin.js init",
     "clean": "node scripts/clean.mjs",
-    "build": "pnpm clean && tsc && node scripts/prepare-cli.mjs",
+    "build": "node scripts/standalone-checkout.mjs && pnpm clean && tsc && node scripts/prepare-cli.mjs",
     "prepare": "pnpm build",
     "typecheck": "tsc --noEmit",
     "check:hygiene": "node scripts/check-source-hygiene.mjs && node scripts/check-environment-contract.mjs && node scripts/check-operations-contract.mjs",
@@ -94,7 +94,8 @@
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
     "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs",
     "check:boundaries": "node scripts/repository-boundaries.mjs",
-    "test:tanstack-runtime": "pnpm build && node scripts/tanstack-runtime-smoke.mjs"
+    "test:tanstack-runtime": "pnpm build && node scripts/tanstack-runtime-smoke.mjs",
+    "check:standalone": "node scripts/standalone-checkout.mjs"
   },
   "keywords": [
     "cli",

@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: .
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -22,8 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           fetch-depth: 0
           persist-credentials: false
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
+
       - name: Check secrets and private files
         env:
           SECRET_SCAN_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}

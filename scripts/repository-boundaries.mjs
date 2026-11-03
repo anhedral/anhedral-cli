@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { readContractSnapshot } from './deployment-contract-snapshot.mjs';
+import { assertStandaloneCheckout } from './standalone-checkout.mjs';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
 export const policy = JSON.parse(
@@ -124,6 +125,7 @@ export function assertPublishedModules(files) {
   );
 }
 export function checkRepositoryBoundary() {
+  assertStandaloneCheckout(root);
   const manifest = JSON.parse(readFileSync(path.join(root, 'package.json')));
   assert.equal(manifest.license, 'Apache-2.0');
   assert.deepEqual(

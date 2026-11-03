@@ -24,12 +24,17 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: .
+
 concurrency:
   group: release-on-main
   cancel-in-progress: false
 
 jobs:
   prepare:
+    if: github.repository == 'anhedral/anhedral-cli'
     name: Require reviewed main commit
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -42,9 +47,13 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           ref: main
           fetch-depth: 0
           persist-credentials: false
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
+
       - name: Require exact reviewed commit
         id: review
         env:

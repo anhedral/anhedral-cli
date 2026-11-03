@@ -31,6 +31,17 @@ licenses and exact-artifact packaging. A build does not publish npm or update an
 installed plugin. See [Contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md)
 for staging, release identity and validation tiers.
 
+This repository also works as a Git submodule. Its own `pnpm-workspace.yaml`,
+lockfile and safe `.npmrc` keep installs independent of a parent workspace;
+the parent must exclude the CLI from its package graph. Run install/build/tests
+inside this checkout with its pinned package manager. Commit public changes here
+separately, then update the parent's Git pointer only after that commit is reviewed
+and available in this repository. Never copy parent configuration, credentials or
+implementation into this checkout. Public CI checks out only this repository,
+without recursive submodules; publishing rejects calls from another repository.
+These checks do not make a submodule a security sandbox: review tracked files,
+package contents, inherited environment and publication authority independently.
+
 The reviewed public module inventory in `scripts/public-package-policy.json` and
 `pnpm check:boundaries` constrain compilation and package preparation; an unexpected
 dist module or private import requires explicit review. Portable contracts are

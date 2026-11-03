@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: .
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -24,8 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
           fetch-depth: 0
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
+
       - id: scope
         env:
           CI_TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
@@ -56,7 +64,11 @@ jobs:
         if: ${{ needs.scope.outputs.full == 'true' }}
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
+      - name: Require standalone public CLI checkout
+        if: ${{ needs.scope.outputs.full == 'true' }}
+        run: node scripts/standalone-checkout.mjs --ci
 
       - name: Setup pnpm
         if: ${{ needs.scope.outputs.full == 'true' }}
@@ -103,7 +115,6 @@ jobs:
         if: ${{ needs.scope.outputs.full == 'true' && (matrix.node == '24.21.0') }}
         run: node tests/test-packlist.js
 
-
   portable:
     needs: [scope, checks]
     if: ${{ needs.scope.outputs.full == 'true' && needs.scope.outputs.release == 'true' }}
@@ -126,7 +137,12 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         if: ${{ needs.scope.outputs.full == 'true' }}
         with:
+          submodules: false
           persist-credentials: false
+      - name: Require standalone public CLI checkout
+        if: ${{ needs.scope.outputs.full == 'true' }}
+        run: node scripts/standalone-checkout.mjs --ci
+
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         if: ${{ needs.scope.outputs.full == 'true' }}
         with:
@@ -161,7 +177,11 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
+
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
           version: 10.34.5
@@ -183,7 +203,11 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
+
       - id: profiles
         run: |
           node --input-type=module -e "import { STACK_PROFILES } from './tests/support/stack-profiles.mjs'; console.log('profiles=' + JSON.stringify(Object.keys(STACK_PROFILES)))" >> "$GITHUB_OUTPUT"
@@ -205,7 +229,11 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
+          submodules: false
           persist-credentials: false
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
+
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
         with:
           version: 10.34.5
