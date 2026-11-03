@@ -60,14 +60,17 @@ function runInstalledScaffold(installRoot) {
   assert.equal(existsSync(path.join(projectRoot, 'apps/mobile')), false);
   assert.ok(existsSync(path.join(projectRoot, 'apps/web/.anhedral-ui.json')));
   const catalog = JSON.parse(run(binPath, ['ui', 'list', '--json'], installRoot).stdout);
-  assert.ok(catalog.components.some((item) => item.name === 'button' && item.web && item.native));
+  assert.ok(catalog.components.some((item) => item.name === 'button' && item.web));
+  assert.ok(catalog.components.every((item) => !Object.hasOwn(item, 'native')));
   for (const name of ['auth', 'billing', 'managed-email'])
     assert.equal(existsSync(path.join(projectRoot, 'packages', name)), false);
   assert.equal(existsSync(path.join(projectRoot, '.anhedral')), false);
   const stack = JSON.parse(
     run(binPath, ['stack', 'list', '--json', '--cwd', projectRoot], installRoot).stdout,
   );
-  assert.equal(stack.capabilities.length, 13);
+  assert.equal(stack.stack.name, 'Anhedral Stack');
+  assert.equal(stack.stack.id, 'anhedral-stack');
+  assert.deepEqual(Object.keys(stack.stack.additions), ['backend', 'r2', 'stripe']);
   const addition = JSON.parse(
     run(
       binPath,
@@ -227,6 +230,8 @@ try {
       '--eval',
       [
         "const packageApi = await import('anhedral');",
+        "if (typeof packageApi.scaffoldAnhedralStack !== 'function') throw new Error('missing Anhedral Stack generator');",
+        "if (Object.hasOwn(packageApi.parseInitOptions(['sdk','--dry-run']), 'products')) throw new Error('legacy SDK selector leaked');",
         "if (typeof packageApi.scaffoldStandardProject !== 'function') throw new Error('missing scaffoldStandardProject export');",
         "if (typeof packageApi.parseStandardOptions !== 'function') throw new Error('missing parseStandardOptions export');",
       ].join('\n'),
