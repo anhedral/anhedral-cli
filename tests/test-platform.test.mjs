@@ -103,10 +103,38 @@ test('private state rejects insecure files and symlinks; source excludes secrets
     await writeFile(join(root, 'apps', 'web', '.tanstack', 'cache.json'), '{}');
     await writeFile(join(root, 'apps', 'web', 'worker-configuration.d.ts'), 'generated');
     await writeFile(join(root, 'apps', 'web', 'src', 'routeTree.gen.ts'), 'export {};');
+    await mkdir(join(root, 'apps', 'web', 'src', 'routes'), { recursive: true });
+    await writeFile(
+      join(root, 'apps', 'web', 'src', 'routes', 'index.tsx'),
+      'export const page = 1;',
+    );
+    await writeFile(join(root, 'apps', 'web', 'src', 'router.tsx'), 'export const router = 1;');
     let source = await packageSource(root),
       files = await unpackSource(source.archive, true);
     assert.ok(files.has('src/kept.ts'));
-    assert.ok(files.has('apps/web/src/routeTree.gen.ts'));
+    assert.equal(files.has('apps/web/src/routeTree.gen.ts'), false);
+    assert.ok(files.has('apps/web/src/routes/index.tsx'));
+    assert.ok(files.has('apps/web/src/router.tsx'));
+    const stableArchive = source.archive;
+    await writeFile(
+      join(root, 'apps', 'web', 'src', 'routeTree.gen.ts'),
+      'export const regenerated = true;',
+    );
+    source = await packageSource(root);
+    assert.deepEqual(
+      source.archive,
+      stableArchive,
+      'route generation must not change the sealed source',
+    );
+    await writeFile(
+      join(root, 'apps', 'web', 'src', 'routes', 'index.tsx'),
+      'export const page = 2;',
+    );
+    assert.notDeepEqual(
+      (await packageSource(root)).archive,
+      stableArchive,
+      'authored routes remain part of source integrity',
+    );
     assert.equal(files.has('apps/web/.tanstack/cache.json'), false);
     assert.equal(files.has('apps/web/worker-configuration.d.ts'), false);
     assert.ok(files.has('src/keep.local'));

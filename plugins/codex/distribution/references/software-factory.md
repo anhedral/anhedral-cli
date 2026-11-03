@@ -75,8 +75,10 @@ responses. `source status` reads its server receipt. Changed source requires an
 explicit `source upload --new`; an expired request also requires a new request.
 The client honors nested `.gitignore`, excludes generated output and secret paths,
 rejects symlinks and recognized credential material, and hashes every bounded
-chunk plus the complete archive and canonical source inventory. Credential scanning
-is deliberately conservative; inspect source before uploading.
+chunk plus the complete archive and canonical source inventory. The generated
+`apps/web/src/routeTree.gen.ts` is excluded because the router regenerates it during
+checks/builds; authored routes, router configuration and server source remain
+included. Credential scanning is deliberately conservative; inspect source before uploading.
 
 Public upload limits and message shapes live in `src/contracts`; protocol code is
 in `src/platform-command.ts`. The server independently authenticates the caller,
