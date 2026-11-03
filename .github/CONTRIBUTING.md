@@ -66,3 +66,7 @@ Main and staging must require `CI gate`, prevent force pushes/deletion, and requ
 The entire repository is limited to 20 tracked Markdown files. Use existing guides
 and the single `docs/agent-notes/README.md` log. Retired records stay in Git history;
 do not add archives or duplicate manuals. CI checks the file budget on every run.
+
+## Secret safety
+
+The required CI gate runs the pinned credential scanner and private-file admission check on every PR and staging push, including documentation changes. Keep keys, populated environment files, database exports and private/generated artifacts outside Git. Scanner failure blocks the gate; findings print no secret values. `.github/secret-safety-baseline.txt` contains exact reviewed historical fixture/metadata fingerprints, never a path-wide exemption. New findings need private review; do not add credentials to the baseline or disable the check. See `.github/secret-safety.py` and the CI workflow for the enforced policy and scanner integrity pin.
