@@ -2,9 +2,10 @@
 
 ## 2026-11-03 Claude Code plugin from the shared distribution
 
-`plugins/codex/distribution` now also carries `.claude-plugin/plugin.json` and
-`.mcp.json`; root `.claude-plugin/marketplace.json` pins the same `plugin-v<version>`
-tag path as the Codex marketplace. Skills and references are shared unchanged.
+The shared distribution moved from `plugins/codex/distribution` to `plugin/`. It
+carries `.claude-plugin/plugin.json` and `.mcp.json` beside the Codex files; root
+`.claude-plugin/marketplace.json` pins the same `plugin-v<version>` tag path as the
+Codex marketplace. Skills and references are shared unchanged.
 Packaging, source publication and release policy validate both manifests; build
 syncs both versions. `claude plugin validate --strict` passed for the distribution
 and marketplace. A headless `--plugin-dir` session listed and invoked both skills

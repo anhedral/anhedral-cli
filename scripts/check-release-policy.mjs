@@ -404,15 +404,10 @@ export function validateWorkflowPolicy(root) {
 }
 
 function validatePluginRelease(root, version) {
-  const manifest = JSON.parse(
-    readFileSync(path.join(root, 'plugins/codex/distribution/plugin.json'), 'utf8'),
-  );
+  const manifest = JSON.parse(readFileSync(path.join(root, 'plugin/plugin.json'), 'utf8'));
   const failures = [];
   const stack = JSON.parse(
-    readFileSync(
-      path.join(root, 'plugins/codex/distribution/references/stack-registry.json'),
-      'utf8',
-    ),
+    readFileSync(path.join(root, 'plugin/references/stack-registry.json'), 'utf8'),
   );
   const marketplace = JSON.parse(
     readFileSync(path.join(root, '.agents/plugins/marketplace.json'), 'utf8'),
@@ -422,7 +417,7 @@ function validatePluginRelease(root, version) {
     entry?.source?.source !== 'git-subdir' ||
     entry.source.url !== 'https://github.com/anhedral/anhedral-cli.git' ||
     // Immutable release tags retain their public installation path. Checkout
-    // source lives in plugins/codex/distribution and is packed into that tag tree.
+    // source lives in plugin/ and is packed into that tag tree.
     entry.source.path !== './plugins/anhedral' ||
     entry.source.ref !== `plugin-v${version}` ||
     entry.policy?.installation !== 'AVAILABLE' ||
@@ -434,7 +429,7 @@ function validatePluginRelease(root, version) {
   );
   const claudeEntry = claudeMarketplace.plugins?.find((plugin) => plugin.name === 'anhedral');
   const claudeManifest = JSON.parse(
-    readFileSync(path.join(root, 'plugins/codex/distribution/.claude-plugin/plugin.json'), 'utf8'),
+    readFileSync(path.join(root, 'plugin/.claude-plugin/plugin.json'), 'utf8'),
   );
   if (
     claudeMarketplace.name !== 'anhedral' ||

@@ -11,7 +11,7 @@ const directories = [
   'assets/stack',
   'assets/launch',
   'docs',
-  'plugins/codex/distribution',
+  'plugin',
   'scripts',
   'src',
   'tests',

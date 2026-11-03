@@ -8,8 +8,8 @@ import path from 'node:path';
 export function pluginFixture(version = '1.2.3') {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-fixture-'));
   try {
-    const source = new URL('../../plugins/codex/distribution/', import.meta.url);
-    const distribution = path.join(root, 'plugins/codex/distribution');
+    const source = new URL('../../plugin/', import.meta.url);
+    const distribution = path.join(root, 'plugin');
     mkdirSync(path.dirname(distribution), { recursive: true });
     cpSync(source, distribution, { recursive: true });
     writeFileSync(path.join(root, 'package.json'), JSON.stringify({ version }));

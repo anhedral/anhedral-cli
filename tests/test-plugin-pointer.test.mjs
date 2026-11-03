@@ -27,14 +27,14 @@ test('candidate build coordinates the marketplace pointer without publishing a t
       'dist/capability-catalog.js',
       `export const ANHEDRAL_STACK = {id:'anhedral-stack',name:'Anhedral Stack',additions:{backend:{},r2:{},stripe:{}}};`,
     );
-    write('plugins/codex/distribution/references/native-ui.md', 'retired');
-    write('plugins/codex/distribution/references/anhedral-stack.md', 'retired');
+    write('plugin/references/native-ui.md', 'retired');
+    write('plugin/references/anhedral-stack.md', 'retired');
     write(
-      'plugins/codex/distribution/plugin.json',
+      'plugin/plugin.json',
       JSON.stringify({ version: '0.17.0', description: 'fixture description' }),
     );
     write(
-      'plugins/codex/distribution/.claude-plugin/plugin.json',
+      'plugin/.claude-plugin/plugin.json',
       JSON.stringify({ name: 'anhedral', version: '0.17.0', description: 'stale' }),
     );
     write(
@@ -69,12 +69,9 @@ test('candidate build coordinates the marketplace pointer without publishing a t
       ref: `plugin-v${version}`,
       path: './plugins/anhedral',
     });
-    assert.equal(
-      JSON.parse(readFileSync(path.join(root, 'plugins/codex/distribution/plugin.json'))).version,
-      version,
-    );
+    assert.equal(JSON.parse(readFileSync(path.join(root, 'plugin/plugin.json'))).version, version);
     const claudeManifest = JSON.parse(
-      readFileSync(path.join(root, 'plugins/codex/distribution/.claude-plugin/plugin.json')),
+      readFileSync(path.join(root, 'plugin/.claude-plugin/plugin.json')),
     );
     assert.equal(claudeManifest.version, version);
     assert.equal(claudeManifest.description, 'fixture description');
@@ -88,17 +85,14 @@ test('candidate build coordinates the marketplace pointer without publishing a t
       path: 'plugins/anhedral',
     });
     const registry = JSON.parse(
-      readFileSync(path.join(root, 'plugins/codex/distribution/references/stack-registry.json')),
+      readFileSync(path.join(root, 'plugin/references/stack-registry.json')),
     );
     assert.equal(registry.id, 'anhedral-stack');
     assert.equal(registry.cliVersion, version);
     assert.deepEqual(Object.keys(registry.additions).sort(), ['backend', 'r2', 'stripe']);
     assert.equal(registry.items, undefined);
     for (const name of ['native-ui.md', 'anhedral-stack.md'])
-      assert.equal(
-        existsSync(path.join(root, 'plugins/codex/distribution/references', name)),
-        false,
-      );
+      assert.equal(existsSync(path.join(root, 'plugin/references', name)), false);
     // No Git repository or remote exists in this fixture; preparation is local only.
   } finally {
     rmSync(root, { recursive: true, force: true });

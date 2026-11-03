@@ -64,12 +64,12 @@ function zipEntry(file, offset) {
 }
 
 export function buildPluginArchive(root) {
-  const distribution = path.join(root, 'plugins/codex/distribution');
+  const distribution = path.join(root, 'plugin');
   if (lstatSync(distribution).isSymbolicLink())
     throw Error('Plugin distribution root cannot be a symbolic link');
-  const findings = scanDirectory(root, 'plugins/codex/distribution');
+  const findings = scanDirectory(root, 'plugin');
   if (findings.length) throw new Error(formatFindings(findings));
-  const pluginRoot = path.join(root, 'plugins/codex/distribution');
+  const pluginRoot = path.join(root, 'plugin');
   const manifest = JSON.parse(readFileSync(path.join(pluginRoot, 'plugin.json'), 'utf8'));
   const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
   if (manifest.version !== packageJson.version)

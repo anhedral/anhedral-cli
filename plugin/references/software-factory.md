@@ -164,7 +164,7 @@ The plugin includes source skills plus one remote MCP connection at
 access; CLI credentials are separate. Secret imports initiated through ChatGPT
 open a secure browser form rather than accepting values as tool arguments.
 The plugin packages no executable server, credential or authorization header. Its root `mcp.json` uses the [official remote OAuth declaration](https://developers.openai.com/plugins/build/plugins#bundled-mcp-servers-and-lifecycle-hooks), DCR and read-only default scopes; write access requires additional consent.
-One distribution directory serves Codex and Claude Code. Codex reads `plugin.json`,
+One distribution directory, `plugin/`, serves Codex and Claude Code. Codex reads `plugin.json`,
 `mcp.json` and `skills/*/agents/openai.yaml`; Claude Code reads
 `.claude-plugin/plugin.json`, `.mcp.json` and the same `skills/*/SKILL.md`. Each
 host ignores the other's manifests. The Claude `.mcp.json` declares only the
@@ -174,7 +174,7 @@ Packaging validates both manifests against one release identity. Root
 `.claude-plugin/marketplace.json` is the Claude marketplace; add it with
 `claude plugin marketplace add anhedral/anhedral-cli`, then install
 `anhedral@anhedral`. For local review use `claude plugin validate --strict` on the
-distribution and `claude --plugin-dir plugins/codex/distribution`.
+distribution and `claude --plugin-dir plugin`.
 Server features remain unavailable until their operator-controlled gates are enabled.
 
 The CLI and plugin share one release version. Build prepares the

@@ -209,9 +209,7 @@ test('replacement is explicit and receipts must advance each exact version', asy
   }
 });
 test('remote plugin configuration admits only the reviewed HTTPS server without executable or credential fields', async () => {
-  const config = JSON.parse(
-    await readFile(new URL('../plugins/codex/distribution/mcp.json', import.meta.url), 'utf8'),
-  );
+  const config = JSON.parse(await readFile(new URL('../plugin/mcp.json', import.meta.url), 'utf8'));
   validatePluginRemote(config);
   for (const change of [
     { url: 'https://evil.invalid/mcp' },
@@ -226,7 +224,7 @@ test('remote plugin configuration admits only the reviewed HTTPS server without 
     );
   // Claude Code reads `.mcp.json` from the same distribution and must target the same endpoint.
   const claude = JSON.parse(
-    await readFile(new URL('../plugins/codex/distribution/.mcp.json', import.meta.url), 'utf8'),
+    await readFile(new URL('../plugin/.mcp.json', import.meta.url), 'utf8'),
   );
   validateClaudePluginRemote(claude);
   assert.equal(claude.mcpServers.anhedral.url, config.mcpServers.anhedral.url);

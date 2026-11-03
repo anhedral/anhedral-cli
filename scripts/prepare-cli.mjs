@@ -13,7 +13,7 @@ if (!readFileSync(entry, 'utf8').startsWith('#!/usr/bin/env node\n')) {
 }
 chmodSync(entry, 0o755);
 // Ship the same registry and standard with the independently installable plugin.
-const references = new URL('../plugins/codex/distribution/references/', import.meta.url);
+const references = new URL('../plugin/references/', import.meta.url);
 mkdirSync(references, { recursive: true });
 writeFileSync(
   new URL('stack-registry.json', references),
@@ -28,18 +28,15 @@ writeFileSync(
   readFileSync(new URL('../docs/stack-standard.md', import.meta.url)),
 );
 writeFileSync(
-  new URL('../plugins/codex/distribution/LICENSE', import.meta.url),
+  new URL('../plugin/LICENSE', import.meta.url),
   readFileSync(new URL('../LICENSE', import.meta.url)),
 );
-const manifestUrl = new URL('../plugins/codex/distribution/plugin.json', import.meta.url);
+const manifestUrl = new URL('../plugin/plugin.json', import.meta.url);
 const manifest = JSON.parse(readFileSync(manifestUrl, 'utf8'));
 manifest.version = GENERATOR_VERSION;
 writeFileSync(manifestUrl, JSON.stringify(manifest, null, 2) + '\n');
 // Claude Code reads its own manifest from the same distribution; keep one release identity.
-const claudeManifestUrl = new URL(
-  '../plugins/codex/distribution/.claude-plugin/plugin.json',
-  import.meta.url,
-);
+const claudeManifestUrl = new URL('../plugin/.claude-plugin/plugin.json', import.meta.url);
 const claudeManifest = JSON.parse(readFileSync(claudeManifestUrl, 'utf8'));
 claudeManifest.version = GENERATOR_VERSION;
 claudeManifest.description = manifest.description;
