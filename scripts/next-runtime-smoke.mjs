@@ -8,6 +8,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { launchPreview } from '../tests/support/preview-process.mjs';
 import { measureWorker } from './measure-worker.mjs';
+import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
+import { runCapabilityCommand } from '../dist/capability-command.js';
 
 const scratch = mkdtempSync(path.join(tmpdir(), 'anhedral-next-smoke-'));
 const root = path.join(scratch, 'app');
@@ -24,13 +26,20 @@ const run = (command, args, cwd = root) =>
   execFileSync(command, args, { cwd, env, stdio: 'inherit', timeout: 600000 });
 let web;
 let passed = false;
+async function legacyAdd(args) {
+  const previous = process.cwd();
+  try {
+    process.chdir(root);
+    await runCapabilityCommand('add', args, {}, run);
+  } finally {
+    process.chdir(previous);
+  }
+}
 rmSync(output, { recursive: true, force: true });
 try {
-  run(
-    process.execPath,
-    [path.resolve('dist/bin.js'), 'init', root, '--skip-install', '--no-git'],
-    scratch,
-  );
+  // Explicit retained SDK proof; the public CLI creates only the Anhedral Stack.
+  await scaffoldStandardProject(parseStandardOptions([root, '--skip-install', '--no-git']), run);
+
   // Exercise request rendering/actions without shipping synthetic features in the starter.
   mkdirSync(path.join(root, 'apps/web/app/runtime-proof'), { recursive: true });
   writeFileSync(
@@ -159,15 +168,7 @@ export default async function Proof() {
   );
   await web.stop();
   web = undefined;
-  run(process.execPath, [
-    path.resolve('dist/bin.js'),
-    'add',
-    'database-auth',
-    '--with-dependencies',
-    '--skip-install',
-    '--cwd',
-    root,
-  ]);
+  await legacyAdd(['database-auth', '--with-dependencies', '--skip-install']);
   run('pnpm', ['install', '--no-frozen-lockfile']);
   const apiOutput = path.join(output, 'api');
   prepareRuntimeProof({
@@ -191,16 +192,7 @@ export default async function Proof() {
   });
   try {
     await generatedAuthRuntimeProof(root, apiOutput, run);
-    run(process.execPath, [
-      path.resolve('dist/bin.js'),
-      'add',
-      'wxt',
-      'gpui',
-      '--with-dependencies',
-      '--skip-install',
-      '--cwd',
-      root,
-    ]);
+    await legacyAdd(['wxt', 'gpui', '--with-dependencies', '--skip-install']);
     const inspectTask = (filter) =>
       JSON.parse(
         execFileSync('pnpm', ['exec', 'turbo', 'run', 'build', '--filter', filter, '--dry=json'], {

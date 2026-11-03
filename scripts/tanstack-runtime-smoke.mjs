@@ -1,17 +1,23 @@
 // Explicit opt-in: installs a disposable generated app and exercises local workerd only.
 // No configured database is migrated, no provider is contacted, and no deployment occurs.
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
+import { measureWorker } from './measure-worker.mjs';
 
 const repository = fileURLToPath(new URL('../', import.meta.url));
+const output = path.join(repository, '.artifacts/anhedral-stack-runtime');
+await mkdir(output, { recursive: true });
+await Promise.all(
+  ['summary.json', 'measurements.json'].map((file) => rm(path.join(output, file), { force: true })),
+);
 const scratch = await mkdtemp(path.join(tmpdir(), 'anhedral-tanstack-smoke-'));
 const app = path.join(scratch, 'application');
 const active = new Set();
@@ -384,24 +390,51 @@ try {
   await run('pnpm', ['lint']);
   await run('pnpm', ['typecheck']);
   await run('pnpm', ['build']);
-  console.log(
-    JSON.stringify({
-      passed: true,
-      runtime: 'compiled TanStack Start/Hono on local workerd',
-      minimalWeb: true,
-      progressiveBackend: true,
-      ssr: true,
-      serverFunction: true,
-      sameOriginApi: true,
-      cookieSession: true,
-      privateR2: true,
-      accountIsolation: true,
-      signOutRevocation: true,
-      stripeCompiled: true,
-      stripeMigrationGenerated: true,
-      providerAcceptance: false,
-    }),
+  const measurements = {
+    schemaVersion: 1,
+    web: measureWorker(path.join(web, 'dist/server'), 4 * 1024 * 1024, 'index.js'),
+    api: measureWorker(path.join(app, 'apps/api/dist'), 4 * 1024 * 1024, 'index.js'),
+  };
+  await writeFile(
+    path.join(output, 'measurements.json'),
+    JSON.stringify(measurements, null, 2) + '\n',
   );
+  assert.ok(
+    measurements.web.passed && measurements.api.passed,
+    'Compiled Worker exceeds the reviewed 4MiB gzip budget.',
+  );
+  const summary = {
+    schemaVersion: 1,
+    stack: 'anhedral-stack',
+    node: process.version,
+    generatorVersion: JSON.parse(await readFile(path.join(repository, 'package.json'), 'utf8'))
+      .version,
+    sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: repository,
+      encoding: 'utf8',
+    }).trim(),
+    sourceDirty: !!execFileSync('git', ['status', '--porcelain'], {
+      cwd: repository,
+      encoding: 'utf8',
+    }).trim(),
+    passed: true,
+    runtime: 'compiled TanStack Start/Hono on local workerd',
+    minimalWeb: true,
+    progressiveBackend: true,
+    ssr: true,
+    serverFunction: true,
+    sameOriginApi: true,
+    cookieSession: true,
+    privateR2: true,
+    accountIsolation: true,
+    signOutRevocation: true,
+    stripeCompiled: true,
+    stripeMigrationGenerated: true,
+    providerAcceptance: false,
+    bundleBudgetPassed: true,
+  };
+  await writeFile(path.join(output, 'summary.json'), JSON.stringify(summary, null, 2) + '\n');
+  console.log(JSON.stringify(summary));
 } catch (error) {
   failure = new Error(
     `TanStack runtime proof failed [${phase}]: ${redact(error instanceof Error ? error.message : error)}${preview ? `\n${redact(preview.output).slice(-12000)}` : ''}`,
