@@ -92,6 +92,15 @@ capabilities, CLI version and existing standalone identity. Runtime-profile admi
 and web candidates; source support does not establish a deployed cohort or provider readiness. Plans bind source/lockfile/migrations,
 routing state, principal epoch and project authority. Artifact provenance and
 runtime configuration remain explicitly unverified; null receipts are not approval.
+TanStack source composition version 2 uses manifest foundation `tanstack-start`
+and runtime profile `progressive-tanstack-v1`. The five launch compositions are
+web-only, backend (`hono` plus `database-auth`), backend/R2, backend/Stripe and
+backend/R2/Stripe. Backend manifests preserve `better-auth-d1-v1`; web-only uses
+`none`. Other open-source capabilities remain source recipes, not hosted support.
+Continue selecting an explicit manifest; the CLI never infers an admitted artifact
+from locally generated source. Native candidate receipts name an immutable registry
+image with `scope: candidate-workspace`; legacy isolated-build receipts remain valid.
+Both describe build admission, not production approval.
 
 `deploy prepare` reserves an immutable candidate. `deploy status` reads
 `awaiting-runtime`, `building`, `built`, `ready` or `failed`. A built candidate grants no

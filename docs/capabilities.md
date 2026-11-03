@@ -59,8 +59,10 @@ Repeated additions leave source unchanged; the normal command still resolves and
 Foundations and progressive additions record nonsecret `composition` provenance in
 `anhedral.json`: generator version, capability source versions and application
 identity contract. The TanStack launch foundation uses source composition version 2;
-legacy Next/OpenNext uses version 1. This distinction is source provenance, not an
-extension of the portable deployment or hosting contract. Legacy source versions remain unknown (`null`);
+legacy Next/OpenNext uses version 1. The portable deployment contract accepts both
+foundations; TanStack manifests select `progressive-tanstack-v1` with only the web
+launch capabilities. Source provenance alone never grants hosted admission.
+Legacy source versions remain unknown (`null`);
 adding a capability does not relabel older source. Source-only dry runs and failed
 transactions preserve the existing manifest. Retained programmatic registry
 compositions keep their original metadata and require separate hosting review.

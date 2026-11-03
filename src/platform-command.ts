@@ -27,6 +27,7 @@ import {
   sourceUploadReceiptSchema,
 } from './contracts/cli-transport.js';
 import { readSourceBounded } from './contracts/source-bundle.js';
+import { deploymentManifestSchema } from './contracts/deployment.js';
 import { packageSource } from './platform-source.js';
 import {
   platformFailure as createPlatformFailure,
@@ -606,11 +607,17 @@ async function runPlatformOperation(
       } finally {
         await handle.close();
       }
+      const checkedManifest = deploymentManifestSchema.safeParse(manifest);
+      if (!checkedManifest.success)
+        throw commandArgumentError(
+          command,
+          'The deployment manifest must match its foundation, capabilities, identity and runtime profile. TanStack Start uses progressive-tanstack-v1.',
+        );
       const compared = cliPlanInputSchema.parse({
         protocol: 1,
         requestId: state && !options.has('--new') ? state.planInput.requestId : randomUUID(),
         uploadId: upload.uploadId,
-        manifest,
+        manifest: checkedManifest.data,
       });
       if (
         state &&

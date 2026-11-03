@@ -3,12 +3,12 @@ import { z } from 'zod';
 import { GENERATOR_VERSION } from './version.js';
 import type { Capability } from './capability-catalog.js';
 
-// Version 2 describes launch source only. It does not expand the portable hosting contract.
-export const launchCompositionSchema = sourceCompositionSchema.extend({
+// Narrow the shared source contract for the launch generator; runtime admission remains server-owned.
+export const launchCompositionSchema = sourceCompositionSchema.safeExtend({
   contractVersion: z.literal(2),
   foundation: z.literal('tanstack-start'),
 });
-const compositionSchema = z.union([sourceCompositionSchema, launchCompositionSchema]);
+const compositionSchema = sourceCompositionSchema;
 
 /** Local source provenance is never a hosting receipt or a provider activation claim. */
 export function composeSourceProvenance(
