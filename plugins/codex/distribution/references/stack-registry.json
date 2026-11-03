@@ -1,227 +1,66 @@
 {
   "schemaVersion": 1,
-  "name": "anhedral",
-  "cliVersion": "0.18.0",
-  "items": [
-    {
-      "name": "workspace",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [],
-      "environment": [],
-      "installer": "bootstrap",
-      "type": "foundation",
-      "description": "pnpm workspace with one root lockfile, pinned Turborepo and shared checks",
+  "id": "anhedral-stack",
+  "name": "Anhedral Stack",
+  "foundation": {
+    "id": "tanstack-start",
+    "name": "TanStack Start + Anhedral UI",
+    "targets": [
+      "apps/web/package.json",
+      "apps/web/src/router.tsx",
+      "apps/web/src/server.ts",
+      "apps/web/src/routes/__root.tsx",
+      "apps/web/src/routes/index.tsx"
+    ]
+  },
+  "additions": {
+    "backend": {
+      "name": "Backend",
+      "description": "API, database and authentication together.",
+      "requires": [],
       "targets": [
-        "package.json",
-        "pnpm-workspace.yaml",
-        "turbo.json"
+        "apps/api/package.json",
+        "apps/api/wrangler.jsonc",
+        "apps/api/src/index.ts",
+        "apps/api/src/environment.ts",
+        "apps/api/src/capabilities.ts",
+        "apps/api/src/custom-environment.ts",
+        "packages/db/package.json",
+        "packages/db/src/index.ts",
+        "packages/db/src/schema.ts",
+        "apps/api/src/auth.ts",
+        "apps/api/src/auth-features.ts",
+        "apps/api/src/security.ts",
+        "apps/api/src/auth-platform.ts",
+        "apps/api/src/features/auth.ts",
+        "apps/web/src/lib/auth-client.ts"
       ]
     },
-    {
-      "name": "typescript",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace"
+    "r2": {
+      "name": "Private storage",
+      "description": "Authenticated, owner-scoped object storage.",
+      "requires": [
+        "backend"
       ],
-      "environment": [],
-      "installer": "bootstrap",
-      "type": "foundation",
-      "description": "Shared TypeScript configuration",
       "targets": [
-        "packages/typescript-config"
+        "apps/api/src/features/storage.ts"
       ]
     },
-    {
-      "name": "eslint",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace"
+    "stripe": {
+      "name": "Payments and subscriptions",
+      "description": "Stripe subscription and entitlement source.",
+      "requires": [
+        "backend"
       ],
-      "environment": [],
-      "installer": "bootstrap",
-      "type": "foundation",
-      "description": "Shared ESLint configuration",
       "targets": [
-        "packages/eslint-config"
+        "apps/api/src/features/stripe.ts",
+        "apps/api/src/features/entitlements.ts",
+        "apps/api/src/entitlement-guard.ts",
+        "apps/api/src/billing-mode.ts",
+        "apps/api/src/billing-providers.ts",
+        "packages/db/src/billing-schema.ts"
       ]
-    },
-    {
-      "name": "next",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "styling"
-      ],
-      "environment": [
-        "ANHEDRAL_PREVIEW_ORIGIN"
-      ],
-      "installer": "recipe",
-      "type": "application",
-      "description": "Full Next.js App Router web application on Cloudflare OpenNext",
-      "targets": [
-        "apps/web"
-      ],
-      "setup": {
-        "purpose": "Server-rendered web application",
-        "tools": [
-          "Browser control",
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Workers deployment access"
-        ],
-        "credentials": [],
-        "resources": [
-          "Next.js Worker and assets; no backend or database provisioned"
-        ],
-        "verify": [
-          "Request-rendered HTML, RSC and editable Anhedral UI source"
-        ]
-      }
-    },
-    {
-      "name": "hono",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "application",
-      "description": "Shared Hono OpenAPI Worker",
-      "targets": [
-        "apps/api"
-      ],
-      "setup": {
-        "purpose": "Shared OpenAPI backend",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare Workers deployment access"
-        ],
-        "credentials": [],
-        "resources": [
-          "API Worker; application routes and authorization"
-        ],
-        "verify": [
-          "Health contract and application-owned authorization"
-        ]
-      }
-    },
-    {
-      "name": "d1",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "hono"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "package",
-      "description": "Reusable Drizzle D1 database package and explicit migration tooling",
-      "targets": [
-        "packages/db",
-        "apps/api"
-      ],
-      "setup": {
-        "purpose": "SQLite-compatible hosted persistence",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare D1 access"
-        ],
-        "credentials": [],
-        "resources": [
-          "D1 database, DB binding and reviewed migrations"
-        ],
-        "verify": [
-          "Migration, constraints, transactional behavior and runtime queries"
-        ]
-      },
-      "runtime": "worker"
-    },
-    {
-      "name": "r2",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint",
-        "hono"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "integration",
-      "description": "Server-only private R2 storage foundation",
-      "targets": [
-        "apps/api/src/private-storage.ts"
-      ],
-      "setup": {
-        "purpose": "Private remote files",
-        "tools": [
-          "Wrangler"
-        ],
-        "access": [
-          "Cloudflare R2 bucket/binding access"
-        ],
-        "credentials": [],
-        "resources": [
-          "Private R2 bucket and FILES binding; no public object routes"
-        ],
-        "verify": [
-          "Keep public access disabled; implement application authorization before adding object routes"
-        ]
-      },
-      "runtime": "worker"
-    },
-    {
-      "name": "styling",
-      "version": "0.18.0",
-      "selection": {},
-      "registryDependencies": [
-        "workspace",
-        "typescript",
-        "eslint"
-      ],
-      "environment": [],
-      "installer": "recipe",
-      "type": "package",
-      "description": "Shared platform-independent styling tokens",
-      "targets": [
-        "packages/styling"
-      ],
-      "setup": {
-        "purpose": "Shared styling definitions",
-        "tools": [],
-        "access": [],
-        "credentials": [],
-        "resources": [
-          "Shared light/dark tokens, web CSS and optional RNR/NativeWind source"
-        ],
-        "verify": [
-          "Consistency across selected interfaces; preserve platform-specific components"
-        ]
-      },
-      "package": {
-        "name": "styling",
-        "source": "import { light, dark, spacing } from './tokens.cjs';\n\nexport const styling = {\n  colors: {\n    foreground: 'hsl(' + light['--foreground'] + ')',\n    background: 'hsl(' + light['--background'] + ')',\n  },\n  spacing,\n  themes: { light, dark },\n};\n",
-        "dependencies": {}
-      }
     }
-  ]
+  },
+  "cliVersion": "0.18.0"
 }

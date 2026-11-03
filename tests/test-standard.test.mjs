@@ -157,13 +157,15 @@ test('init preserves an existing application and refuses a second generation', a
   }
 });
 
-test('the public package exports only scaffolding APIs', async () => {
+test('the public package exports canonical scaffolding and deprecated compatibility APIs without operational APIs', async () => {
   const api = await import('../dist/index.js');
   assert.deepEqual(Object.keys(api).sort(), [
     'GENERATOR_VERSION',
     'STANDARD_PRODUCTS',
     'STANDARD_USAGE',
+    'parseInitOptions',
     'parseStandardOptions',
+    'scaffoldAnhedralStack',
     'scaffoldStandardProject',
   ]);
 });

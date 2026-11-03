@@ -103,7 +103,10 @@ export function inspectUiTarget(target: UiTarget) {
     guide:
       target.platform === 'native'
         ? 'https://reactnativereusables.com/docs/installation/manual'
-        : 'https://ui.shadcn.com/docs/installation/next',
+        : target.manifest.dependencies?.['@tanstack/react-start'] ||
+            target.manifest.devDependencies?.['@tanstack/react-start']
+          ? 'https://ui.shadcn.com/docs/installation/tanstack'
+          : 'https://ui.shadcn.com/docs/installation/next',
   };
 }
 

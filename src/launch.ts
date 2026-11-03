@@ -18,8 +18,17 @@ import { PACKAGE_MANAGER, STACK_DEPENDENCIES, WORKSPACE_NODE_ENGINE } from './de
 import { execFile, appendGitignore } from './util.js';
 import { printProgress, printResult, type OutputOptions } from './cli-output.js';
 import type { StandardOptions, StandardRunner } from './registry/types.js';
+import { parseStandardOptions } from './registry/options.js';
 
-export type LaunchOptions = StandardOptions;
+export type LaunchOptions = Pick<
+  StandardOptions,
+  'root' | 'name' | 'skipInstall' | 'dryRun' | 'json' | 'initializeGit'
+>;
+/** One stack, with directory/install options only; no legacy product selections. */
+export function parseAnhedralStackOptions(args: readonly string[]): LaunchOptions {
+  const { root, name, skipInstall, dryRun, json, initializeGit } = parseStandardOptions(args);
+  return { root, name, skipInstall, dryRun, json, initializeGit };
+}
 const launchCapabilities: Capability[] = [];
 
 function rootFiles(root: string, name: string) {
@@ -63,12 +72,12 @@ function rootFiles(root: string, name: string) {
     setup: {
       schemaVersion: 1,
       cliVersion: GENERATOR_VERSION,
-      stack: 'anhedral-web-launch',
+      stack: 'anhedral-stack',
       resourcesProvisioned: false,
     },
     standard: {
       schemaVersion: 1,
-      standard: 'anhedral-web-launch',
+      standard: 'anhedral-stack',
       hosting: 'cloudflare',
       resourcesProvisioned: false,
     },
@@ -95,7 +104,8 @@ function documentation(root: string, name: string) {
     'README.md',
     `# ${name}
 
-TanStack Start with server rendering, server functions and source-owned Anhedral UI.
+Anhedral Stack: web UI powered by TanStack Start server rendering/server functions
+and source-owned shadcn Anhedral UI.
 Only the web application is created initially. No backend or provider is provisioned.
 
 ## Develop
@@ -110,7 +120,7 @@ Use anhedral ui add card --web for more shadcn components; preserve local edits.
 Run anhedral add backend to add Hono, Drizzle/D1 and Better Auth together.
 Then run anhedral add r2 for private storage, or anhedral add stripe for payments.
 Missing prerequisites stop before writes; --with-dependencies opts into them.
-Mobile and other source recipes remain open-source options outside launch support.
+The public additions are backend, r2 and stripe; this application is web-only.
 
 After adding backend, copy apps/api/.dev.vars.example to apps/api/.dev.vars.
 Set PUBLIC_APP_URL=http://localhost:3000 and generate BETTER_AUTH_SECRET with
@@ -136,15 +146,15 @@ Composition adapters are fingerprinted and customized files are never overwritte
 Builds/startup never migrate databases. Provision D1/R2 only when selected and
 configure environment-specific resources/secrets separately. pnpm build emits web
 and selected API Worker artifacts under apps/web/dist. Anhedral Platform admission
-requires its separately reviewed TanStack runtime/artifact; generation is not activation.
+requires its separately reviewed Anhedral Stack runtime/artifact; generation is not activation.
 `,
   );
   put(
     root,
     'AGENTS.md',
-    `# Progressive Anhedral web application
+    `# Anhedral Stack application
 
-Start with TanStack Start and source-owned shadcn Anhedral UI. Add backend for Hono,
+Use the single Anhedral Stack, starting with TanStack Start and source-owned shadcn UI. Add backend for Hono,
 Drizzle/D1 and Better Auth together. Add r2 and stripe only when required. Mobile,
 extensions and desktop are outside launch scope.
 
@@ -166,7 +176,7 @@ export function launchPlan(options: LaunchOptions) {
     root: options.root,
     name: options.name,
     products: ['tanstack-start', ...launchCapabilities],
-    stack: 'anhedral-web-launch',
+    stack: 'anhedral-stack',
     foundation: 'tanstack-start',
     capabilities: [...launchCapabilities],
     targets: ['apps/web'],
@@ -213,7 +223,7 @@ export async function scaffoldLaunchProject(
       seedPaths: existsSync(path.join(root, '.gitignore')) ? ['.gitignore'] : [],
       prepare: () => assertEmpty(true),
       build: async (stage) => {
-        printProgress('Creating the Anhedral web launch stack…', display);
+        printProgress('Creating the Anhedral Stack…', display);
         bootstrapWorkspace(stage, options.name, run);
         rootFiles(stage, options.name);
         sharedPackage(
@@ -222,7 +232,7 @@ export async function scaffoldLaunchProject(
           "export { light, dark, spacing } from './tokens.cjs';\n",
           {},
         );
-        scaffoldStyling({ root: stage, options, bindings: {}, has: () => false });
+        scaffoldStyling({ root: stage });
         scaffoldTanstack(stage, options.name);
         const editor = new CapabilityEditor(stage, {});
         const installed: Capability[] = [];
@@ -237,7 +247,7 @@ export async function scaffoldLaunchProject(
         for (const [file, source] of editor.writes) put(stage, file, source);
         documentation(stage, options.name);
         if (!options.skipInstall) {
-          printProgress('Resolving launch dependencies…', display);
+          printProgress('Resolving Anhedral Stack dependencies…', display);
           run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stage);
           if (configureDependencyPatches(stage))
             run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stage);

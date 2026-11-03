@@ -1,4 +1,6 @@
-# Scaffold workflow
+# Anhedral Stack workflow
+
+The Anhedral Stack has one current web foundation and progressive backend/storage/payment additions. There is no public stack selection or independent stack-registry repository.
 
 1. Preview an empty destination with `anhedral init my-app --dry-run --json`, then
    run `anhedral init my-app` and `pnpm dev` inside it.
@@ -23,7 +25,7 @@ with revision, checks, failures and remaining gaps. Keep raw reports in ignored
 `.artifacts/`. Historical notes are not current instructions.
 
 Canonical docs live in `docs/`; `pnpm build` refreshes bundled plugin references.
-Generated app guidance lives in `src/scaffold/documentation.ts`. Preserve shipped
+Current generated app guidance lives in `src/launch.ts`; retained compatibility generators have their own source guidance. Preserve shipped
 reference paths, source-generation safety, dependency patch gates, UI provenance,
 licenses and exact-artifact packaging. A build does not publish npm or update an
 installed plugin. See [Contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md)
@@ -39,15 +41,15 @@ MCP-inclusive file set, refuses linked distribution roots and verifies the bound
 publisher archive format before npm publication. Oversized unscanned text is an
 explicit review failure, not a clean secret scan.
 
-## Next/OpenNext runtime gate
+## Runtime verification
 
-Relevant generator/build changes, including the exact generated-auth proof and runtime-receipt helpers, select the compiled proof. The inexpensive receipt test also runs in the fast contract gate. These changes compile an isolated foundation and exercise it
-in workerd. Run `pnpm test:next-runtime` for SSR/RSC, Server Actions/cookies,
-prerendering and static cache checks. Hono proxy contracts have separate tests.
-The harness owns the module-size budget and short-lived `.artifacts/next-runtime/`
-receipts, including the resolved generated lock and source/tool identity. Prepared,
-passed and failed results remain distinct. Review measurement changes before adjusting limits. The smoke never
-deploys or migrates a configured database; it is not production acceptance.
+`node scripts/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
+application and exercises local workerd, SSR/server functions, progressive backend,
+private storage and the generated Stripe build/migration path. It uses isolated
+local data, never a configured database or live payment provider. Retained
+Next/OpenNext proof commands cover compatibility code only; they are not another
+public stack. Preserve source/tool/lock identities and distinguish prepared,
+passed and failed evidence. Tests are not provider deployment acceptance.
 
 ## Platform CLI access and source upload
 
@@ -94,11 +96,12 @@ capabilities, CLI version and existing standalone identity. Runtime-profile admi
 and web candidates; source support does not establish a deployed cohort or provider readiness. Plans bind source/lockfile/migrations,
 routing state, principal epoch and project authority. Artifact provenance and
 runtime configuration remain explicitly unverified; null receipts are not approval.
-TanStack source composition version 2 uses manifest foundation `tanstack-start`
-and runtime profile `progressive-tanstack-v1`. The five launch compositions are
+Anhedral Stack source composition version 2 records framework foundation
+`tanstack-start`; the public runtime profile is `anhedral-stack`. Its five compositions are
 web-only, backend (`hono` plus `database-auth`), backend/R2, backend/Stripe and
 backend/R2/Stripe. Backend manifests preserve `better-auth-d1-v1`; web-only uses
-`none`. Other open-source capabilities remain source recipes, not hosted support.
+`none`. Broader retained capability/protocol values are compatibility implementation,
+not current public selections or hosted support.
 Continue selecting an explicit manifest; the CLI never infers an admitted artifact
 from locally generated source. Native candidate receipts name an immutable registry
 image with `scope: candidate-workspace`; legacy isolated-build receipts remain valid.

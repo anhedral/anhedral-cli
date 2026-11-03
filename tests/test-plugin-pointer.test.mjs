@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -23,6 +23,12 @@ test('candidate build coordinates the marketplace pointer without publishing a t
       'dist/stack-registry.js',
       `export const STACK_REGISTRY = {cliVersion:'${version}',items:[]}; export function validateStackCatalog() {}`,
     );
+    write(
+      'dist/capability-catalog.js',
+      `export const ANHEDRAL_STACK = {id:'anhedral-stack',name:'Anhedral Stack',additions:{backend:{},r2:{},stripe:{}}};`,
+    );
+    write('plugins/codex/distribution/references/native-ui.md', 'retired');
+    write('plugins/codex/distribution/references/anhedral-stack.md', 'retired');
     write('plugins/codex/distribution/plugin.json', JSON.stringify({ version: '0.17.0' }));
     write(
       '.agents/plugins/marketplace.json',
@@ -33,14 +39,7 @@ test('candidate build coordinates the marketplace pointer without publishing a t
       }),
     );
     write('LICENSE', 'fixture license');
-    for (const name of [
-      'software-factory',
-      'anhedral-stack',
-      'stack-standard',
-      'native-ui',
-      'ui',
-      'capabilities',
-    ])
+    for (const name of ['software-factory', 'stack-standard', 'ui', 'capabilities'])
       write(`docs/${name}.md`, 'fixture guide\n');
     execFileSync(process.execPath, [path.join(root, 'scripts/prepare-cli.mjs')], { cwd: root });
     const marketplace = JSON.parse(
@@ -54,6 +53,18 @@ test('candidate build coordinates the marketplace pointer without publishing a t
       JSON.parse(readFileSync(path.join(root, 'plugins/codex/distribution/plugin.json'))).version,
       version,
     );
+    const registry = JSON.parse(
+      readFileSync(path.join(root, 'plugins/codex/distribution/references/stack-registry.json')),
+    );
+    assert.equal(registry.id, 'anhedral-stack');
+    assert.equal(registry.cliVersion, version);
+    assert.deepEqual(Object.keys(registry.additions).sort(), ['backend', 'r2', 'stripe']);
+    assert.equal(registry.items, undefined);
+    for (const name of ['native-ui.md', 'anhedral-stack.md'])
+      assert.equal(
+        existsSync(path.join(root, 'plugins/codex/distribution/references', name)),
+        false,
+      );
     // No Git repository or remote exists in this fixture; preparation is local only.
   } finally {
     rmSync(root, { recursive: true, force: true });

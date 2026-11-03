@@ -14,7 +14,9 @@ import { parseStandardOptions } from '../dist/registry/options.js';
 test('root help is compact and detailed topics render existing examples', () => {
   assert.ok(STANDARD_USAGE.trimEnd().split('\n').length <= 45);
   assert.match(STANDARD_USAGE, /anhedral init my-app/);
-  assert.match(STANDARD_USAGE, /web launch stack/);
+  assert.match(STANDARD_USAGE, /Anhedral Stack/);
+  assert.match(STANDARD_USAGE, /anhedral add backend --dry-run/);
+  assert.doesNotMatch(STANDARD_USAGE, /add hono|add expo|--native|--all/);
   assert.match(commandHelp('init'), /Examples:\n  anhedral init my-app/);
   assert.doesNotMatch(commandHelp('whoami'), /undefined/);
   const upload = commandHelp(['source', 'upload']);
@@ -85,7 +87,9 @@ test('nested grammar validates before command handlers and preserves family opti
   assert.throws(() => validateCommand('source', ['status', 'extra']), /no extra arguments/);
   assert.throws(() => validateCommand('stack', []), /Choose stack/);
   assert.throws(() => validateCommand('login', ['--start', '--resume']), /Choose one/);
-  assert.throws(() => validateCommand('ui', ['list', '--web', '--native']), /Choose one/);
+  for (const flag of ['--native', '--all'])
+    assert.throws(() => validateCommand('ui', ['list', '--web', flag]), /Unknown ui option/);
+  assert.doesNotThrow(() => validateCommand('ui', ['list', '--web']));
   assert.throws(() => validateCommand('completion', ['fish']), /Choose bash, zsh/);
   assert.doesNotThrow(() => validateCommand('source', ['--dry-run', 'upload']));
   // Accepted no-op family flags remain accepted for older scripts.

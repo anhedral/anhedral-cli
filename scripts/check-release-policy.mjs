@@ -423,7 +423,12 @@ function validatePluginRelease(root, version) {
   if (
     manifest.version !== version ||
     stack.cliVersion !== version ||
-    stack.items.some((item) => item.version !== version)
+    stack.id !== 'anhedral-stack' ||
+    stack.name !== 'Anhedral Stack' ||
+    stack.items !== undefined ||
+    Object.keys(stack.additions ?? {})
+      .sort()
+      .join(',') !== 'backend,r2,stripe'
   )
     failures.push('Plugin, registry and CLI versions must match');
   if (manifest.extensions['com.openai'].interface.shortDescription.length > 30)

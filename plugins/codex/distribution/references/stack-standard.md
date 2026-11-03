@@ -1,25 +1,11 @@
-# Stack standard
+# Anhedral Stack
 
-The executable `anhedral init` creates only TanStack Start SSR/server functions
-and source-owned Anhedral UI. `add backend` composes Hono, Drizzle/D1 and Better Auth
-together. Add private R2 or Stripe subscriptions later when required;
-`--with-dependencies` includes missing backend prerequisites. The legacy programmatic
-generator and existing Next.js/OpenNext projects retain their progressive recipes; mobile and other
-clients remain open-source options outside launch support. See [capabilities](capabilities.md).
+**Anhedral Stack** is the single current stack. The CLI generates its editable source; Platform independently owns managed builds, resource admission, deployment and operations. There is no public multi-stack registry or framework selector.
 
-When selected, Hono owns privileged data and application authorization. TanStack
-server functions (or Next server actions in legacy applications) call the API. Share framework-independent contracts and tokens
-without cross-importing application source. Keep R2 private and enforce identity,
-ownership and limits before exposing files. Apply reviewed database migrations
-explicitly, separately from builds and startup.
+The web foundation uses TanStack Start SSR/server functions and source-owned shadcn Anhedral UI. `anhedral init` creates only that foundation. `add backend` composes Hono, Drizzle/D1 and Better Auth together. Add private R2 or Stripe subscriptions later when needed. See [additions](capabilities.md).
 
-UI source belongs to the consumer: official shadcn for web, React Native Reusables
-for Expo and a small reviewed native extension layer. Preserve licenses, semantic
-tokens and local edits. See [UI commands](ui.md).
+When selected, Hono owns privileged business/auth/data/storage operations. Web server functions call its scoped service binding; application source is never imported across application boundaries. Keep resources private, enforce identity/ownership/limits and configure secrets per environment.
 
-The CLI writes editable source/configuration; consumers configure services,
-credentials and deployment. Platform separately owns its managed operations.
-Source composition version 2 does not establish live Platform hosting readiness;
-matching source/runtime integration requires separate adoption and verification.
-Existing applications, legacy native work and runtime artifacts retain their
-reviewed pins until deliberately adopted and validated.
+Auth methods and payment providers require explicit activation. Apply reviewed migrations separately from builds/startup. Source-owned UI preserves semantic tokens, consumer edits and upstream licensing; see [UI ownership](ui.md).
+
+Recorded source provenance is not a hosting receipt. Runtime profile `anhedral-stack` identifies the current deployment contract; exact artifact/runtime policy, current authority and production approval still apply. Retained historical wire values and programmatic generators exist only for compatibility, not additional public stacks. Existing applications and runtime pins are not silently migrated.

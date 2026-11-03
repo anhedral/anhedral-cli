@@ -75,11 +75,14 @@ export const deploymentManifestSchema = z
   .superRefine((value, ctx) => {
     const selected = new Set(value.capabilities);
     const tanstack = value.foundation === "tanstack-start";
-    if (tanstack !== (value.intent.runtimeProfile === "progressive-tanstack-v1"))
+    if (
+      tanstack !==
+      ["anhedral-stack", "progressive-tanstack-v1"].includes(value.intent.runtimeProfile)
+    )
       ctx.addIssue({
         code: "custom",
         path: ["intent", "runtimeProfile"],
-        message: "TanStack source requires the progressive-tanstack-v1 runtime profile.",
+        message: "Anhedral Stack source requires the anhedral-stack runtime profile.",
       });
     if (tanstack) {
       for (const id of value.capabilities)
@@ -87,19 +90,19 @@ export const deploymentManifestSchema = z
           ctx.addIssue({
             code: "custom",
             path: ["capabilities"],
-            message: `${id} is outside the TanStack launch hosting contract.`,
+            message: `${id} is outside the Anhedral Stack hosting contract.`,
           });
       if (selected.has("hono") !== selected.has("database-auth"))
         ctx.addIssue({
           code: "custom",
           path: ["capabilities"],
-          message: "TanStack hosting requires Hono and database-auth together.",
+          message: "Anhedral Stack hosting requires Hono and database-auth together.",
         });
       if (value.identity !== (selected.has("database-auth") ? "better-auth-d1-v1" : "none"))
         ctx.addIssue({
           code: "custom",
           path: ["identity"],
-          message: "TanStack hosting preserves standalone Better Auth/D1 identity.",
+          message: "Anhedral Stack hosting preserves standalone Better Auth/D1 identity.",
         });
     }
     const prerequisites: Record<string, string[]> = {

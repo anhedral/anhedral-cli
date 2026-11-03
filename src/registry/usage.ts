@@ -34,11 +34,11 @@ export const STANDARD_USAGE = `Anhedral CLI — source generation and optional P
 Usage: anhedral <command> [options]
 
 Start a project:
-  init          Create the complete web launch stack.
-  add           Add Stripe or other open-source capabilities.
+  init          Create the Anhedral Stack with web UI.
+  add           Add backend, private storage or payments.
 
 Inspect source and UI:
-  stack         List capabilities, inspect source or run doctor.
+  stack         Inspect the Anhedral Stack or run doctor.
   ui            Initialize, add, list, diff or check UI components.
 
 Optional Platform access:
@@ -56,7 +56,7 @@ Shell setup:
 
 Examples:
   anhedral init my-app
-  anhedral add hono --dry-run
+  anhedral add backend --dry-run
   anhedral stack list
 
 Global options:

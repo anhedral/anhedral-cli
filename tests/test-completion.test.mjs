@@ -71,8 +71,9 @@ test(
   'Bash completes capabilities and components and avoids consumed names',
   { skip: !hasBash },
   () => {
-    assert.deepEqual(run('bash', ['anhedral', 'add', 'database']), ['database-auth']);
-    assert.deepEqual(run('bash', ['anhedral', 'add', 'hono', 'h']), []);
+    assert.deepEqual(run('bash', ['anhedral', 'add', 'back']), ['backend']);
+    assert.deepEqual(run('bash', ['anhedral', 'add', '']), ['backend', 'r2', 'stripe']);
+    assert.deepEqual(run('bash', ['anhedral', 'add', 'backend', 'back']), []);
     assert.ok(run('bash', ['anhedral', 'ui', 'add', 'but']).includes('button'));
     assert.deepEqual(run('bash', ['anhedral', 'completion', 'z']), ['zsh']);
   },
@@ -124,7 +125,7 @@ test(
 );
 test('zsh completes nested verbs, values and contextual flags', { skip: !hasZsh }, () => {
   assert.deepEqual(run('zsh', ['anhedral', '--quiet', 'source', 'u']), ['upload']);
-  assert.deepEqual(run('zsh', ['anhedral', 'add', 'data']), ['database-auth']);
+  assert.deepEqual(run('zsh', ['anhedral', 'add', 'back']), ['backend']);
   assert.ok(run('zsh', ['anhedral', 'ui', 'add', 'but']).includes('button'));
   const prepare = run('zsh', ['anhedral', 'deploy', 'prepare', '--']);
   assert.ok(prepare.includes('--api-url'));

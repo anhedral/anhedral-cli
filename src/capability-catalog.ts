@@ -168,3 +168,50 @@ export function capabilityOrder(
   for (const id of requested) visit(id);
   return [...selected];
 }
+
+/** The sole active public source composition. Legacy recipes above remain library compatibility. */
+export const ANHEDRAL_STACK = {
+  schemaVersion: 1,
+  id: 'anhedral-stack',
+  name: 'Anhedral Stack',
+  foundation: {
+    id: 'tanstack-start',
+    name: 'TanStack Start + Anhedral UI',
+    targets: [
+      'apps/web/package.json',
+      'apps/web/src/router.tsx',
+      'apps/web/src/server.ts',
+      'apps/web/src/routes/__root.tsx',
+      'apps/web/src/routes/index.tsx',
+    ],
+  },
+  additions: {
+    backend: {
+      name: 'Backend',
+      description: 'API, database and authentication together.',
+      requires: [] as string[],
+      targets: [
+        ...CAPABILITIES.hono.targets,
+        ...CAPABILITIES['database-auth'].targets.map((target) =>
+          target === 'apps/web/lib/auth-client.ts' ? 'apps/web/src/lib/auth-client.ts' : target,
+        ),
+      ],
+    },
+    r2: {
+      name: 'Private storage',
+      description: 'Authenticated, owner-scoped object storage.',
+      requires: ['backend'],
+      targets: [...CAPABILITIES.r2.targets],
+    },
+    stripe: {
+      name: 'Payments and subscriptions',
+      description: 'Stripe subscription and entitlement source.',
+      requires: ['backend'],
+      targets: [...CAPABILITIES.stripe.targets],
+    },
+  },
+} as const;
+export type PublicStackAddition = keyof typeof ANHEDRAL_STACK.additions;
+export const PUBLIC_STACK_ADDITIONS = Object.keys(
+  ANHEDRAL_STACK.additions,
+) as PublicStackAddition[];

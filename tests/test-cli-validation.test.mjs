@@ -59,7 +59,7 @@ try {
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout).products, ['tanstack-start']);
   assert.equal(existsSync(target), false);
-  assert.match(run('--help').stdout, /web launch stack/);
+  assert.match(run('--help').stdout, /Anhedral Stack/);
   assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify|anhedral cloud/);
   assert.match(run('--version').stdout, /^\d+\.\d+\.\d+\n$/);
 } finally {

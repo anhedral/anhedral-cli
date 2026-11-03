@@ -19,7 +19,6 @@ export function pluginFixture(version = '1.2.3') {
     const file = path.join(distribution, 'references/stack-registry.json');
     const registry = JSON.parse(readFileSync(file));
     registry.cliVersion = version;
-    for (const item of registry.items) item.version = version;
     writeFileSync(file, JSON.stringify(registry));
     const { contents } = buildPluginArchive(root);
     return { contents, files: readStoredArchive(contents) };

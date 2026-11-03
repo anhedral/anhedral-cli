@@ -158,8 +158,12 @@ export function loadPluginRelease(metadataPath) {
     manifest.name !== 'anhedral' ||
     manifest.version !== release.version ||
     stack.cliVersion !== release.version ||
-    !Array.isArray(stack.items) ||
-    stack.items.some((item) => item.version !== release.version)
+    stack.id !== 'anhedral-stack' ||
+    stack.name !== 'Anhedral Stack' ||
+    stack.items !== undefined ||
+    Object.keys(stack.additions ?? {})
+      .sort()
+      .join(',') !== 'backend,r2,stripe'
   )
     throw new Error('Plugin archive release identity mismatch.');
   if (files.some((file) => file.name.startsWith('runtime/')))

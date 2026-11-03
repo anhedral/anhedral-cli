@@ -1,18 +1,14 @@
 ---
 name: anhedral-design
-description: "Use Anhedral UI as a thin source-owned layer over official shadcn web and React Native Reusables native."
+description: "Extend the Anhedral Stack's source-owned web UI through official shadcn components and semantic tokens."
 ---
 
 # Anhedral Design
 
-Read consumer instructions and source. Anhedral UI is a catalog and CLI over official shadcn on web and React Native Reusables on native, plus a small reviewed Anhedral native extension registry. Do not create another runtime component library, browser emulation layer or exhaustive shadcn native fork.
+Read consumer instructions and source. Anhedral UI is the Anhedral Stack's source-owned web UI layer over official shadcn. Do not introduce another runtime UI library or advertise native/alternate-framework paths.
 
-Read ../../references/ui.md. Use `anhedral ui list`, `init`, `add`, `diff` and `doctor`. Select --web/--native/--all when multiple apps exist. Preview with --dry-run --json. Native prefers declared Anhedral extensions, then RNR, then reports unavailable; the initial extension registry is empty. Availability does not establish API parity or device acceptance.
+Read ../../references/ui.md. Use `anhedral ui list`, `init`, `add`, `diff` and `doctor`; select the current web application with `--cwd` or optional `--web`. Preview with `--dry-run --json`. Current public UI commands operate on Anhedral Stack web projects only. Initialization already includes configuration and three reviewed starter components.
 
-The launch starter uses TanStack Start and already includes Anhedral UI with three reviewed web components. Keep the Platform launch web-only. Native recipes remain open-source options outside launch support; for a compatible legacy Anhedral workspace, use add expo then add native-ui to prepare an optional native interface. For other existing Expo projects, complete upstream RNR NativeWind 4 setup first; native UI init does not create a mobile app or rewrite native configuration. UI installation has no Hono/database/auth prerequisite. The minimal launch starter includes only TanStack Start and Anhedral UI; `add backend` composes the optional Hono/Better Auth/D1 services later. Do not add a second styling engine.
+Preserve consumer edits, semantic tokens and MIT attribution. The CLI never requests overwrite. Inspect diffs before updates, use existing components before custom primitives, and keep visible keyboard focus and browser interactions intact. Read version-matched framework guidance and validate actual browser behavior; source/type checks alone are not acceptance.
 
-Components are consumer-owned source. Preserve edits and MIT attribution; inspect diffs before updates. CLI commands never request overwrite. Share semantic tokens and contracts, while keeping DOM/native implementations separate. Use existing components and conventions before custom primitives. Read installed version-matched framework guides and validate the user flow.
-
-Use Expo APIs directly for device features and keep permission, upload, background and notification policy in application services. Install only required packages with Expo's compatibility-aware installer. Test native keyboard, accessibility, overlays and lifecycle in Android/iOS development builds; browser rendering and typechecking are not native acceptance. Do not revive the legacy port's whole-catalog gate.
-
-See ../../references/capabilities.md for progressive clients and services. Adding a client does not justify adding every UI component. Keep existing App/source edits and shared tokens; composition adapters are fingerprinted and must be reconciled when customized.
+UI does not require backend services. Add the backend, storage or Stripe only for a demonstrated application need through the current Anhedral Stack additions. Keep business/auth/resource work in Hono, communicate through scoped API bindings and never cross-import application source. See ../../references/capabilities.md.
