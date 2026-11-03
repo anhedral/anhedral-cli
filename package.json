@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
   "version": "0.18.0",
-  "description": "Start with Next.js and Anhedral UI, then progressively add APIs, data, clients, payments, realtime and AI as editable source.",
+  "description": "Generate the Anhedral Stack as editable source: start with web UI, then add backend, storage and payments.",
   "type": "module",
   "exports": {
     ".": {
@@ -30,10 +30,6 @@
     "docs/stack-standard.md",
     "docs/software-factory.md",
     "docs/verification.md",
-    "docs/anhedral-stack.md",
-    "docs/assets/anhedral-stack.png",
-    "docs/assets/anhedral-stack-light.png",
-    "docs/native-ui.md",
     "docs/ui.md",
     "assets/stack",
     "docs/capabilities.md",
@@ -44,7 +40,8 @@
     "assets/ui/LICENSE.react-native-reusables",
     "assets/ui/UPSTREAM.json",
     "assets/contracts",
-    "assets/security"
+    "assets/security",
+    "assets/launch"
   ],
   "homepage": "https://github.com/anhedral/anhedral-cli#readme",
   "repository": {
@@ -96,21 +93,22 @@
     "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
     "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs",
-    "check:boundaries": "node scripts/repository-boundaries.mjs"
+    "check:boundaries": "node scripts/repository-boundaries.mjs",
+    "test:tanstack-runtime": "pnpm build && node scripts/tanstack-runtime-smoke.mjs"
   },
   "keywords": [
     "cli",
     "scaffold",
     "typescript",
-    "expo",
+    "anhedral-stack",
+    "tanstack-start",
     "hono",
+    "better-auth",
     "cloudflare",
     "d1",
     "r2",
     "drizzle",
-    "turborepo",
-    "nextjs",
-    "opennext"
+    "stripe"
   ],
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.34.5",

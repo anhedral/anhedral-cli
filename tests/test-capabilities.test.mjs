@@ -14,7 +14,6 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { CAPABILITY_IDS } from '../dist/capability-catalog.js';
 import { runCapabilityCommand } from '../dist/capability-command.js';
 import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
@@ -149,28 +148,33 @@ test('a late source collision rejects the whole batch; no earlier API capability
   }
 });
 
-test('CLI dry-run is network-free, includes all files and does not create transaction metadata', async () => {
+test('compatibility recipe dry-run is network-free, includes all files and does not create transaction metadata', async () => {
   const { root, app } = await fixture();
   try {
     const before = snapshot(app);
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.resolve('dist/bin.js'),
+    let stdout = '';
+    await inside(app, () =>
+      runCapabilityCommand(
         'add',
-        'revenuecat',
-        'side-panel',
-        'native-ui',
-        '--with-dependencies',
-        '--dry-run',
-        '--json',
-        '--cwd',
-        app,
-      ],
-      { encoding: 'utf8' },
+        ['revenuecat', 'side-panel', 'native-ui', '--with-dependencies', '--dry-run'],
+        {
+          json: true,
+          io: {
+            out: {
+              write: (text) => {
+                stdout += text;
+              },
+            },
+            err: { write: () => {} },
+            stdinTTY: false,
+            stdoutTTY: false,
+            stderrTTY: false,
+          },
+        },
+        offline,
+      ),
     );
-    assert.equal(result.status, 0, result.stderr);
-    const plan = JSON.parse(result.stdout);
+    const plan = JSON.parse(stdout);
     assert.equal(plan.sourceInstalled, false);
     assert.ok(plan.added.includes('hono'));
     assert.ok(plan.files.includes('apps/mobile/components.json'));

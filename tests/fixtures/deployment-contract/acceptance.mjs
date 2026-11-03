@@ -87,4 +87,70 @@ export function deploymentAcceptance(contract, fixture) {
       assert.equal(contract.deploymentPlanSchema.safeParse(plan).success, false);
     }
   });
+  test("TanStack source versions and the five launch manifests preserve the hosting boundary", () => {
+    assert.equal(fixture.tanstackCompositions.length, 5);
+    for (const { composition, manifest } of fixture.tanstackCompositions) {
+      assert.deepEqual(contract.sourceCompositionSchema.parse(composition), composition);
+      assert.deepEqual(contract.deploymentManifestSchema.parse(manifest), manifest);
+      assert.equal(
+        contract.sourceCompositionSchema.safeParse({ ...composition, contractVersion: 1 }).success,
+        false,
+      );
+      assert.equal(
+        contract.sourceCompositionSchema.safeParse({ ...composition, foundation: "next-opennext" })
+          .success,
+        false,
+      );
+      assert.equal(
+        contract.deploymentManifestSchema.safeParse({ ...manifest, foundation: "next-opennext" })
+          .success,
+        false,
+      );
+      assert.equal(
+        contract.deploymentManifestSchema.safeParse({
+          ...manifest,
+          intent: { ...manifest.intent, runtimeProfile: "progressive-next-hono-d1-v1" },
+        }).success,
+        false,
+      );
+      assert.equal(
+        contract.deploymentManifestSchema.safeParse({ ...manifest, hostedAdmission: true }).success,
+        false,
+      );
+    }
+    const backend = fixture.tanstackCompositions[1].manifest;
+    for (const capabilities of [
+      ["hono"],
+      ["database-auth"],
+      ["r2"],
+      ["stripe"],
+      ["hono", "database-auth", "expo"],
+      ["hono", "database-auth", "realtime"],
+    ])
+      assert.equal(
+        contract.deploymentManifestSchema.safeParse({ ...backend, capabilities }).success,
+        false,
+      );
+    assert.equal(
+      contract.deploymentManifestSchema.safeParse({
+        ...backend,
+        identity: "platform-application-services-v1",
+      }).success,
+      false,
+    );
+    const legacy = {
+      contractVersion: 1,
+      foundation: "next-opennext",
+      generatorVersion: null,
+      identity: "none",
+      capabilities: {},
+    };
+    assert.deepEqual(contract.sourceCompositionSchema.parse(legacy), legacy);
+    // Open-source capability provenance is broader than managed launch hosting.
+    const openSource = {
+      ...fixture.tanstackCompositions[1].composition,
+      capabilities: { hono: "0.18.0", "database-auth": "0.18.0", expo: "0.18.0" },
+    };
+    assert.deepEqual(contract.sourceCompositionSchema.parse(openSource), openSource);
+  });
 }

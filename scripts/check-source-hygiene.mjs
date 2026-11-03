@@ -8,6 +8,7 @@ const directories = [
   'assets/patches',
   'assets/security',
   'assets/stack',
+  'assets/launch',
   'docs',
   'plugins/codex/distribution',
   'scripts',

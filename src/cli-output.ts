@@ -55,9 +55,19 @@ export function createReporter(
 }
 
 export function formatResult(_command: string, value: unknown): string {
-  const data = value as { generated?: boolean; root: string; products: string[] };
+  const data = value as {
+    generated?: boolean;
+    root: string;
+    products: string[];
+    stack?: string;
+    dependenciesInstalled?: boolean;
+  };
+  if (data.stack === 'anhedral-stack' && !data.generated)
+    return `Foundation preview for ${data.root}.\nStack: Anhedral Stack.\nNo files were written or resources provisioned.`;
+  if (data.stack === 'anhedral-stack' && data.generated)
+    return `Created ${data.root}.\nStack: Anhedral Stack.\n${data.dependenciesInstalled ? 'Run pnpm dev' : 'Run pnpm install, then pnpm dev'} in the project directory.\nAdd services when needed: anhedral add backend, then anhedral add r2 or anhedral add stripe.\nReview README.md for configuration and deployment.`;
   return (
-    `${data.generated ? 'Created' : 'Foundation preview for'} ${data.root}.\nStack: ${data.products.join(', ')}.\n` +
+    `${data.generated ? 'Created' : 'Foundation preview for'} ${data.root}.\nComponents: ${data.products.join(', ')}.\n` +
     (data.generated
       ? 'Review README.md, then run pnpm dev in the project directory. You own development, integrations and hosting.'
       : 'No files were written or resources provisioned.')

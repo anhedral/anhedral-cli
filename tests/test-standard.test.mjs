@@ -107,7 +107,7 @@ test('explicit API/data composition retains server boundaries without the retire
     rmSync(temporary, { recursive: true, force: true });
   }
 });
-test('payment selectors are rejected and dry-run creates no destination', async () => {
+test('unsupported selectors are rejected and legacy dry-run creates no destination', async () => {
   for (const flag of ['--stripe', '--revenuecat', '--next', '--expo', '--hosting'])
     assert.throws(() => parseStandardOptions(['/tmp/no-write', flag]), /Unknown init option/);
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-plan-'));
@@ -157,13 +157,15 @@ test('init preserves an existing application and refuses a second generation', a
   }
 });
 
-test('the public package exports only scaffolding APIs', async () => {
+test('the public package exports canonical scaffolding and deprecated compatibility APIs without operational APIs', async () => {
   const api = await import('../dist/index.js');
   assert.deepEqual(Object.keys(api).sort(), [
     'GENERATOR_VERSION',
     'STANDARD_PRODUCTS',
     'STANDARD_USAGE',
+    'parseInitOptions',
     'parseStandardOptions',
+    'scaffoldAnhedralStack',
     'scaffoldStandardProject',
   ]);
 });

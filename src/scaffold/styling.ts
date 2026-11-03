@@ -4,7 +4,7 @@ import type { RecipeContext } from '../registry/types.js';
 import { json, patchPackage, put, readJson } from './files.js';
 
 /** One shared token source for native components and DOM CSS. */
-export function scaffoldStyling({ root }: RecipeContext): void {
+export function scaffoldStyling({ root }: Pick<RecipeContext, 'root'>): void {
   put(
     root,
     'packages/styling/src/tokens.cjs',

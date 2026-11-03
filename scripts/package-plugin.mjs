@@ -76,9 +76,13 @@ export function buildPluginArchive(root) {
   for (const name of [
     'LICENSE',
     ...['init', 'design'].map((name) => `skills/anhedral-${name}/SKILL.md`),
-    ...['stack-standard.md', 'software-factory.md', 'native-ui.md'].map(
-      (name) => `references/${name}`,
-    ),
+    ...[
+      'stack-standard.md',
+      'software-factory.md',
+      'capabilities.md',
+      'ui.md',
+      'stack-registry.json',
+    ].map((name) => `references/${name}`),
   ]) {
     if (!names.has(name)) throw new Error(`Plugin distribution is missing required file: ${name}`);
   }

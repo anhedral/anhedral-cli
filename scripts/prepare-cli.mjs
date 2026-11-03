@@ -1,7 +1,8 @@
 import { checkRepositoryBoundary } from './repository-boundaries.mjs';
-import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { STACK_REGISTRY, validateStackCatalog } from '../dist/stack-registry.js';
+import { validateStackCatalog } from '../dist/stack-registry.js';
+import { ANHEDRAL_STACK } from '../dist/capability-catalog.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
 
 checkRepositoryBoundary();
@@ -16,15 +17,11 @@ const references = new URL('../plugins/codex/distribution/references/', import.m
 mkdirSync(references, { recursive: true });
 writeFileSync(
   new URL('stack-registry.json', references),
-  JSON.stringify(STACK_REGISTRY, null, 2) + '\n',
+  JSON.stringify({ ...ANHEDRAL_STACK, cliVersion: GENERATOR_VERSION }, null, 2) + '\n',
 );
 writeFileSync(
   new URL('software-factory.md', references),
   readFileSync(new URL('../docs/software-factory.md', import.meta.url)),
-);
-writeFileSync(
-  new URL('anhedral-stack.md', references),
-  readFileSync(new URL('../docs/anhedral-stack.md', import.meta.url)),
 );
 writeFileSync(
   new URL('stack-standard.md', references),
@@ -39,10 +36,14 @@ const manifest = JSON.parse(readFileSync(manifestUrl, 'utf8'));
 manifest.version = GENERATOR_VERSION;
 writeFileSync(manifestUrl, JSON.stringify(manifest, null, 2) + '\n');
 
-writeFileSync(
-  new URL('native-ui.md', references),
-  readFileSync(new URL('../docs/native-ui.md', import.meta.url)),
-);
+// Retired guides remain in repository history/source, outside current discovery.
+for (const name of ['native-ui.md', 'anhedral-stack.md']) {
+  try {
+    unlinkSync(new URL(name, references));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+}
 
 writeFileSync(
   new URL('ui.md', references),

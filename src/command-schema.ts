@@ -380,7 +380,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   },
 
   add: {
-    description: 'Add selected stack capabilities to an existing Anhedral project.',
+    description: 'Add backend, private storage or payments to the Anhedral Stack.',
     usage: 'add <capabilities...> [options]',
     options: [
       { flag: '--with-dependencies', description: 'Explicitly include missing prerequisites.' },
@@ -391,26 +391,22 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       },
     ],
     positional: { name: 'capabilities', min: 1, max: 50, kind: 'capability' },
-    examples: [
-      'add hono',
-      'add database-auth',
-      'add expo native-ui stripe revenuecat --with-dependencies --dry-run --json',
-    ],
+    examples: ['add backend', 'add r2', 'add r2 stripe --with-dependencies --dry-run --json'],
     note: 'Adds source and local configuration only. Existing edits are preserved. No provisioning, credential installation, migration or deployment.',
   },
   stack: {
-    description: 'List capabilities and inspect declared source state.',
+    description: 'Inspect the Anhedral Stack and its three optional additions.',
     usage: 'stack <list|status|doctor>',
     options: [],
     children: {
       list: {
-        description: 'List available source capabilities.',
+        description: 'Show the Anhedral Stack foundation and optional additions.',
         usage: 'stack list',
         options: [],
         examples: ['stack list', 'stack list --json'],
       },
       status: {
-        description: 'Inspect installed source capabilities.',
+        description: 'Inspect installed Anhedral Stack additions.',
         usage: 'stack status',
         options: [],
         examples: ['stack status --json'],
@@ -426,15 +422,12 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Installed source is not proof of live provider activation.',
   },
   ui: {
-    description: 'Anhedral UI: one source-owned catalog for web and native.',
+    description: 'Source-owned web UI for the Anhedral Stack.',
     usage: 'ui <init|add|list|diff|doctor> [components...] [options]',
     options: [
-      { flag: '--web', description: 'Select the Next.js application.' },
-      { flag: '--native', description: 'Select the Expo/NativeWind 4 application.' },
-      { flag: '--all', description: 'Explicitly select every web/native application.' },
+      { flag: '--web', description: 'Select the Anhedral Stack web application.' },
       { flag: '--dry-run', description: 'Show the installer plan without writes or network.' },
     ],
-    conflicts: [['--web', '--native', '--all']],
     children: Object.fromEntries(
       ['init', 'add', 'list', 'diff', 'doctor'].map((action) => [
         action,
@@ -442,15 +435,13 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
           description: {
             init: 'Initialize Anhedral UI configuration.',
             add: 'Install selected UI components.',
-            list: 'List available web and Expo/native components.',
+            list: 'List available Anhedral Stack web components.',
             diff: 'Inspect differences for selected UI components.',
             doctor: 'Check UI configuration.',
           }[action]!,
           usage: `ui ${action}${['add', 'diff'].includes(action) ? ' <components...>' : ''} [options]`,
           options: [
-            { flag: '--web', description: 'Select the Next.js application.' },
-            { flag: '--native', description: 'Select the Expo/NativeWind 4 application.' },
-            { flag: '--all', description: 'Select every web/native application.' },
+            { flag: '--web', description: 'Select the Anhedral Stack web application.' },
             { flag: '--dry-run', description: 'Preview without writes or network.' },
           ],
           positional: {
@@ -461,23 +452,16 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
           },
           examples: [
             `ui ${action}${['add', 'diff'].includes(action) ? ' button --web' : ''}`,
-            `ui ${action}${['add', 'diff'].includes(action) ? ' button --native' : ''} --json`,
+            `ui ${action}${['add', 'diff'].includes(action) ? ' button --web' : ''} --json`,
           ],
         },
       ]),
     ),
-    examples: [
-      'ui list',
-      'ui add button --web',
-      'ui add button --native',
-      'ui diff button',
-      'ui doctor',
-    ],
-    note: 'Component installation uses the pinned official shadcn CLI. Native falls back to React Native Reusables. No automatic overwrite, provider operations or full-parity promise.',
+    examples: ['ui list', 'ui add button --web', 'ui diff button', 'ui doctor'],
+    note: 'Web component installation uses the pinned official shadcn CLI. No automatic overwrite or provider operations.',
   },
   init: {
-    description:
-      'Scaffold Next.js/OpenNext with source-owned Anhedral UI; add capabilities only when needed.',
+    description: 'Create the Anhedral Stack: web UI first, then add backend, storage and payments.',
     usage: 'init [directory] [options]',
     options: [
       { flag: '--skip-install', description: 'Write source without installing dependencies.' },

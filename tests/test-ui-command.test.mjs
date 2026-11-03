@@ -111,8 +111,8 @@ test('dry-run does not invoke upstream tooling or change consumer source', async
       [path.resolve('dist/bin.js'), '--cwd', root, 'ui', 'add', 'button', '--dry-run', '--json'],
       { encoding: 'utf8' },
     );
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(JSON.parse(result.stdout).targets[0].items[0].source, 'shadcn');
+    assert.equal(result.status, 1, result.stdout);
+    assert.match(result.stderr, /Anhedral Stack web foundation/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

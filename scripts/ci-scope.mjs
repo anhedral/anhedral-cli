@@ -19,15 +19,52 @@ export function needsFullCI(files) {
   );
 }
 
-export function needsNextRuntime(files) {
+// Compile the current public stack whenever its generator, shared source recipes,
+// contracts, UI or the proof itself changes. Retired Next/native-only templates
+// keep their source checks and manual proofs without another required build.
+export function needsStackRuntime(files) {
+  const exact = new Set([
+    'src/launch.ts',
+    'src/platforms/tanstack.ts',
+    'src/platforms/web.ts',
+    'src/platforms/lint.ts',
+    'src/index.ts',
+    'src/render.ts',
+    'src/version.ts',
+    'src/registry/options.ts',
+    'src/bin.ts',
+    'src/command.ts',
+    'src/cli-commands.ts',
+    'src/cli-arguments.ts',
+    'src/command-schema.ts',
+    'src/composition.ts',
+    'src/dependencies.ts',
+    'src/dependency-patches.ts',
+    'src/dependency-order.ts',
+    'src/pnpm-policy.ts',
+    'src/util.ts',
+    'src/bounded-file.ts',
+    'src/ui-command.ts',
+    'src/ui-project.ts',
+    'src/ui-catalog.ts',
+    'scripts/generated-auth-runtime-proof.mjs',
+    'scripts/runtime-proof-receipt.mjs',
+    'scripts/tanstack-runtime-smoke.mjs',
+    'scripts/measure-worker.mjs',
+    'scripts/ci-scope.mjs',
+    'scripts/prepare-cli.mjs',
+    'scripts/public-package-policy.json',
+    'package.json',
+    'pnpm-lock.yaml',
+    'pnpm-workspace.yaml',
+    '.github/workflows/ci.yml',
+  ]);
   return (
     files.length === 0 ||
     files.some(
       (file) =>
-        ['scripts/generated-auth-runtime-proof.mjs', 'scripts/runtime-proof-receipt.mjs'].includes(
-          file,
-        ) ||
-        /^(?:src\/(?:platforms\/web\.ts|capability-recipes\.ts|scaffold\/|dependencies\.ts|dependency-patches\.ts)|assets\/(?:patches\/|stack\/(?:api-|auth|web-|security|storage|stripe|billing-|entitlement|events|rtc|ai|revenuecat)|ui\/web\/)|tests\/(?:support\/|test-next-|test-worker-measurement|test-generated-apps)|scripts\/(?:next-runtime|measure-worker|ci-scope)|package\.json$|pnpm-(?:lock\.yaml|workspace\.yaml)$|\.github\/workflows\/ci\.yml$)/.test(
+        exact.has(file) ||
+        /^(?:src\/(?:capability-[^/]+\.ts$|transaction(?:-lock)?\.ts$|scaffold\/|contracts\/)|assets\/(?:launch\/|contracts\/|patches\/|security\/|stack\/(?:api-|auth|web-|security|storage|stripe|billing-|entitlement)|ui\/(?:web\/|extensions\/|catalog\.json$|UPSTREAM\.json$))|tests\/(?:support\/|test-(?:launch-init|public-stack|ui-stack|tanstack-platform|deployment-contract|worker-measurement|runtime-proof-receipt|ci-scope)\.test\.mjs$))/.test(
           file,
         ),
     )
@@ -44,7 +81,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const base = process.env.CI_BASE_SHA;
   const comparable = /^[a-f0-9]{40}$/.test(base ?? '') && !/^0+$/.test(base);
   let full = true;
-  let nextRuntime = true;
+  let stackRuntime = true;
   if (['push', 'pull_request'].includes(process.env.GITHUB_EVENT_NAME) && comparable) {
     // Disable rename detection so moving executable source into docs cannot
     // hide the deleted source path. NUL delimiters preserve unusual filenames.
@@ -54,12 +91,12 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       .split('\0')
       .filter(Boolean);
     full = needsFullCI(files);
-    nextRuntime = needsNextRuntime(files);
+    stackRuntime = needsStackRuntime(files);
     if (!full) execFileSync('git', ['diff', '--check', base, 'HEAD'], { stdio: 'inherit' });
   }
   appendFileSync(
     process.env.GITHUB_OUTPUT,
-    `full=${full}\nrelease=${release}\nnextRuntime=${nextRuntime}\n`,
+    `full=${full}\nrelease=${release}\nstackRuntime=${stackRuntime}\n`,
   );
   console.log(
     full

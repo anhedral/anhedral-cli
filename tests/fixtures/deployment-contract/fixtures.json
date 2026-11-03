@@ -92,5 +92,169 @@
     "recovery": "Create a fresh plan.",
     "stateChanged": false,
     "operationId": null
-  }
+  },
+  "tanstackCompositions": [
+    {
+      "composition": {
+        "contractVersion": 2,
+        "foundation": "tanstack-start",
+        "generatorVersion": "0.18.0",
+        "identity": "none",
+        "capabilities": {}
+      },
+      "manifest": {
+        "contractVersion": 1,
+        "foundation": "tanstack-start",
+        "capabilities": [],
+        "identity": "none",
+        "cliArtifact": {
+          "version": "0.17.0",
+          "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        },
+        "intent": {
+          "contractVersion": 1,
+          "runtimeProfile": "progressive-tanstack-v1",
+          "environment": "preview",
+          "visibility": "protected"
+        }
+      }
+    },
+    {
+      "composition": {
+        "contractVersion": 2,
+        "foundation": "tanstack-start",
+        "generatorVersion": "0.18.0",
+        "identity": "better-auth-d1-v1",
+        "capabilities": {
+          "hono": "0.18.0",
+          "database-auth": "0.18.0"
+        }
+      },
+      "manifest": {
+        "contractVersion": 1,
+        "foundation": "tanstack-start",
+        "capabilities": [
+          "hono",
+          "database-auth"
+        ],
+        "identity": "better-auth-d1-v1",
+        "cliArtifact": {
+          "version": "0.17.0",
+          "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        },
+        "intent": {
+          "contractVersion": 1,
+          "runtimeProfile": "progressive-tanstack-v1",
+          "environment": "preview",
+          "visibility": "protected"
+        }
+      }
+    },
+    {
+      "composition": {
+        "contractVersion": 2,
+        "foundation": "tanstack-start",
+        "generatorVersion": "0.18.0",
+        "identity": "better-auth-d1-v1",
+        "capabilities": {
+          "hono": "0.18.0",
+          "database-auth": "0.18.0",
+          "r2": "0.18.0"
+        }
+      },
+      "manifest": {
+        "contractVersion": 1,
+        "foundation": "tanstack-start",
+        "capabilities": [
+          "hono",
+          "database-auth",
+          "r2"
+        ],
+        "identity": "better-auth-d1-v1",
+        "cliArtifact": {
+          "version": "0.17.0",
+          "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        },
+        "intent": {
+          "contractVersion": 1,
+          "runtimeProfile": "progressive-tanstack-v1",
+          "environment": "preview",
+          "visibility": "protected"
+        }
+      }
+    },
+    {
+      "composition": {
+        "contractVersion": 2,
+        "foundation": "tanstack-start",
+        "generatorVersion": "0.18.0",
+        "identity": "better-auth-d1-v1",
+        "capabilities": {
+          "hono": "0.18.0",
+          "database-auth": "0.18.0",
+          "stripe": "0.18.0"
+        }
+      },
+      "manifest": {
+        "contractVersion": 1,
+        "foundation": "tanstack-start",
+        "capabilities": [
+          "hono",
+          "database-auth",
+          "stripe"
+        ],
+        "identity": "better-auth-d1-v1",
+        "cliArtifact": {
+          "version": "0.17.0",
+          "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        },
+        "intent": {
+          "contractVersion": 1,
+          "runtimeProfile": "progressive-tanstack-v1",
+          "environment": "preview",
+          "visibility": "protected"
+        }
+      }
+    },
+    {
+      "composition": {
+        "contractVersion": 2,
+        "foundation": "tanstack-start",
+        "generatorVersion": "0.18.0",
+        "identity": "better-auth-d1-v1",
+        "capabilities": {
+          "hono": "0.18.0",
+          "database-auth": "0.18.0",
+          "r2": "0.18.0",
+          "stripe": "0.18.0"
+        }
+      },
+      "manifest": {
+        "contractVersion": 1,
+        "foundation": "tanstack-start",
+        "capabilities": [
+          "hono",
+          "database-auth",
+          "r2",
+          "stripe"
+        ],
+        "identity": "better-auth-d1-v1",
+        "cliArtifact": {
+          "version": "0.17.0",
+          "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        },
+        "intent": {
+          "contractVersion": 1,
+          "runtimeProfile": "progressive-tanstack-v1",
+          "environment": "preview",
+          "visibility": "protected"
+        }
+      }
+    }
+  ]
 }

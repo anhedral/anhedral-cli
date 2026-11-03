@@ -138,12 +138,24 @@ export const cliPreparationSchema = z
     buildDigest: sourceHashSchema.nullable().optional(),
     error: z.string().max(300).nullable().optional(),
     admission: z
-      .object({
-        policyDigest: sourceHashSchema,
-        image: z.string().regex(/^sha256:[a-f0-9]{64}$/),
-        scope: z.literal("isolated-build"),
-      })
-      .strict()
+      .discriminatedUnion("scope", [
+        z
+          .object({
+            policyDigest: sourceHashSchema,
+            image: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+            scope: z.literal("isolated-build"),
+          })
+          .strict(),
+        z
+          .object({
+            policyDigest: sourceHashSchema,
+            image: z
+              .string()
+              .regex(/^registry\.[a-z0-9.-]+\/[a-zA-Z0-9/_.-]+@sha256:[a-f0-9]{64}$/),
+            scope: z.literal("candidate-workspace"),
+          })
+          .strict(),
+      ])
       .nullable()
       .optional(),
     hostedAdmission: z.boolean(),

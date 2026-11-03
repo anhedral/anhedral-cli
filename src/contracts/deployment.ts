@@ -47,17 +47,25 @@ export const deploymentIntentSchema = z
 /** Source provenance only. Null versions preserve unknown legacy origins honestly. */
 export const sourceCompositionSchema = z
   .object({
-    contractVersion: z.literal(1),
-    foundation: z.literal("next-opennext"),
+    contractVersion: z.union([z.literal(1), z.literal(2)]),
+    foundation: z.enum(["next-opennext", "tanstack-start"]),
     generatorVersion: versionSchema.nullable(),
     identity: applicationIdentitySchema,
     capabilities: z.partialRecord(deploymentCapabilitySchema, versionSchema.nullable()),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if ((value.contractVersion === 1) !== (value.foundation === "next-opennext"))
+      ctx.addIssue({
+        code: "custom",
+        path: ["foundation"],
+        message: "Source composition version must match its foundation.",
+      });
+  });
 export const deploymentManifestSchema = z
   .object({
     contractVersion: z.literal(1),
-    foundation: z.literal("next-opennext"),
+    foundation: z.enum(["next-opennext", "tanstack-start"]),
     capabilities: capabilitiesSchema,
     identity: applicationIdentitySchema,
     cliArtifact: cliArtifactSchema,
@@ -66,6 +74,37 @@ export const deploymentManifestSchema = z
   .strict()
   .superRefine((value, ctx) => {
     const selected = new Set(value.capabilities);
+    const tanstack = value.foundation === "tanstack-start";
+    if (
+      tanstack !==
+      ["anhedral-stack", "progressive-tanstack-v1"].includes(value.intent.runtimeProfile)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["intent", "runtimeProfile"],
+        message: "Anhedral Stack source requires the anhedral-stack runtime profile.",
+      });
+    if (tanstack) {
+      for (const id of value.capabilities)
+        if (!["hono", "database-auth", "r2", "stripe"].includes(id))
+          ctx.addIssue({
+            code: "custom",
+            path: ["capabilities"],
+            message: `${id} is outside the Anhedral Stack hosting contract.`,
+          });
+      if (selected.has("hono") !== selected.has("database-auth"))
+        ctx.addIssue({
+          code: "custom",
+          path: ["capabilities"],
+          message: "Anhedral Stack hosting requires Hono and database-auth together.",
+        });
+      if (value.identity !== (selected.has("database-auth") ? "better-auth-d1-v1" : "none"))
+        ctx.addIssue({
+          code: "custom",
+          path: ["identity"],
+          message: "Anhedral Stack hosting preserves standalone Better Auth/D1 identity.",
+        });
+    }
     const prerequisites: Record<string, string[]> = {
       "database-auth": ["hono"],
       r2: ["database-auth"],

@@ -8,5 +8,19 @@ const manifest = JSON.parse(
   readFileSync(new URL('../plugins/codex/distribution/plugin.json', import.meta.url)),
 );
 if (!manifest.description.includes('Scaffold')) throw Error('Plugin source scope differs.');
+const stack = JSON.parse(
+  readFileSync(
+    new URL('../plugins/codex/distribution/references/stack-registry.json', import.meta.url),
+  ),
+);
+if (
+  stack.id !== 'anhedral-stack' ||
+  stack.name !== 'Anhedral Stack' ||
+  stack.items ||
+  Object.keys(stack.additions ?? {})
+    .sort()
+    .join(',') !== 'backend,r2,stripe'
+)
+  throw Error('Plugin must describe the single Anhedral Stack and its supported additions.');
 buildPluginArchive(root);
 console.log('Source skills and remote Platform MCP plugin validated.');

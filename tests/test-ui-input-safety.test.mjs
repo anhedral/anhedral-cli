@@ -7,8 +7,21 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 const bin = fileURLToPath(new URL('../dist/bin.js', import.meta.url));
 function fixture() {
-  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-ui-input-'));
-  writeFileSync(root + '/package.json', JSON.stringify({ dependencies: { next: '16.4.2' } }));
+  const workspace = mkdtempSync(path.join(tmpdir(), 'anhedral-ui-input-'));
+  const root = path.join(workspace, 'apps/web');
+  mkdirSync(root, { recursive: true });
+  writeFileSync(
+    path.join(workspace, 'anhedral.json'),
+    JSON.stringify({
+      schemaVersion: 1,
+      setup: { stack: 'anhedral-stack' },
+      composition: { contractVersion: 2, foundation: 'tanstack-start' },
+    }),
+  );
+  writeFileSync(
+    root + '/package.json',
+    JSON.stringify({ dependencies: { '@tanstack/react-start': '1.169.4' } }),
+  );
   writeFileSync(
     root + '/components.json',
     JSON.stringify({
@@ -42,7 +55,7 @@ for (const file of ['package.json', 'components.json', '.anhedral-ui.json'])
           assert.equal(result.status, 1, result.stderr);
           assert.match(result.stderr, type === 'oversized' ? /size limit/ : /regular file/);
         } finally {
-          rmSync(root, { recursive: true, force: true });
+          rmSync(path.resolve(root, '../..'), { recursive: true, force: true });
         }
       },
     );
@@ -67,7 +80,7 @@ test(
       assert.equal(result.status, 0, result.stderr);
       assert.equal(JSON.parse(result.stdout).configurationReady, true);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      rmSync(path.resolve(root, '../..'), { recursive: true, force: true });
     }
   },
 );
