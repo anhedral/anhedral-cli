@@ -19,8 +19,11 @@ yarn-error.log*
 /.anhedral/
 
 /plugin/runtime/
+/plugins/codex/distribution/runtime/
 
 /plugin/inspector/.fallow/
+# Private local inspector checkouts may still exist at their former path.
+/plugins/codex/inspector/.fallow/
 
 # Private companion application; not part of the public CLI repository.
 /examples/cloudflare-chat/

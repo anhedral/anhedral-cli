@@ -38,8 +38,10 @@ writeFileSync(manifestUrl, JSON.stringify(manifest, null, 2) + '\n');
 // Claude Code reads its own manifest from the same distribution; keep one release identity.
 const claudeManifestUrl = new URL('../plugin/.claude-plugin/plugin.json', import.meta.url);
 const claudeManifest = JSON.parse(readFileSync(claudeManifestUrl, 'utf8'));
+for (const field of ['description', 'author', 'repository', 'license'])
+  claudeManifest[field] = manifest[field];
+claudeManifest.homepage = `${manifest.repository}#readme`;
 claudeManifest.version = GENERATOR_VERSION;
-claudeManifest.description = manifest.description;
 writeFileSync(claudeManifestUrl, JSON.stringify(claudeManifest, null, 2) + '\n');
 
 // Retired guides remain in repository history/source, outside current discovery.

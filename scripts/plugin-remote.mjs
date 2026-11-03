@@ -39,7 +39,7 @@ export function validateClaudePluginRemote(config) {
     config,
     {
       mcpServers: {
-        anhedral: { type: 'http', url: 'https://platform.anhedral.com/api/mcp' },
+        platform: { type: 'http', url: 'https://platform.anhedral.com/api/mcp' },
       },
     },
     'Claude plugin MCP must use the same reviewed remote Platform endpoint without credentials or executable configuration.',
@@ -57,7 +57,7 @@ export function validateClaudePluginManifest(manifest, codexManifest) {
       version: codexManifest.version,
       description: codexManifest.description,
       author: codexManifest.author,
-      homepage: 'https://github.com/anhedral/anhedral-cli#readme',
+      homepage: `${codexManifest.repository}#readme`,
       repository: codexManifest.repository,
       license: codexManifest.license,
     },

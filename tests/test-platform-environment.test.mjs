@@ -227,7 +227,7 @@ test('remote plugin configuration admits only the reviewed HTTPS server without 
     await readFile(new URL('../plugin/.mcp.json', import.meta.url), 'utf8'),
   );
   validateClaudePluginRemote(claude);
-  assert.equal(claude.mcpServers.anhedral.url, config.mcpServers.anhedral.url);
+  assert.equal(claude.mcpServers.platform.url, config.mcpServers.anhedral.url);
   for (const change of [
     { url: 'https://evil.invalid/mcp' },
     { headers: { Authorization: 'Bearer fixture' } },
@@ -237,7 +237,7 @@ test('remote plugin configuration admits only the reviewed HTTPS server without 
   ])
     assert.throws(() =>
       validateClaudePluginRemote({
-        mcpServers: { anhedral: { ...claude.mcpServers.anhedral, ...change } },
+        mcpServers: { platform: { ...claude.mcpServers.platform, ...change } },
       }),
     );
 });

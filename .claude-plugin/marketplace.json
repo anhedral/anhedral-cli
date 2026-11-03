@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "description": "Anhedral Stack source skills and the remote Platform MCP connection.",
+  "description": "Anhedral Stack source skills and the remote Platform MCP connection. Installable from the first release tag that carries the Claude plugin files.",
   "owner": {
     "name": "Anhedral",
     "email": "support@anhedral.com"

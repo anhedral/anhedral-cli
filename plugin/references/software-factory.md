@@ -173,7 +173,9 @@ registers its client itself, so scopes come from the server's consent prompt.
 Packaging validates both manifests against one release identity. Root
 `.claude-plugin/marketplace.json` is the Claude marketplace; add it with
 `claude plugin marketplace add anhedral/anhedral-cli`, then install
-`anhedral@anhedral`. For local review use `claude plugin validate --strict` on the
+`anhedral@anhedral`. The pinned `plugin-v0.18.0` tag predates the Claude files, so
+the first installable Claude release is the next coordinated version; until then use
+`--plugin-dir`. For local review use `claude plugin validate --strict` on the
 distribution and `claude --plugin-dir plugin`.
 Server features remain unavailable until their operator-controlled gates are enabled.
 

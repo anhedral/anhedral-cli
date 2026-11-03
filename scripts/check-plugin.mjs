@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { buildPluginArchive } from './package-plugin.mjs';
@@ -19,4 +20,21 @@ if (
 )
   throw Error('Plugin must describe the single Anhedral Stack and its supported additions.');
 buildPluginArchive(root);
+// Claude Code's own validator is authoritative for its manifests and skill frontmatter.
+// It is optional locally; an unavailable CLI is reported, never treated as a pass.
+for (const target of ['plugin', '.']) {
+  const result = spawnSync('claude', ['plugin', 'validate', '--strict', target], {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (result.error?.code === 'ENOENT') {
+    console.warn('Claude Code CLI not found: strict Claude plugin validation was skipped.');
+    break;
+  }
+  if (result.status !== 0)
+    throw Error(
+      `claude plugin validate --strict ${target} failed:\n${result.stdout}${result.stderr}`,
+    );
+}
 console.log('Source skills and remote Platform MCP plugin validated for Codex and Claude Code.');

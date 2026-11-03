@@ -32,7 +32,9 @@ test('plugin ownership rejects extra files and linked distribution roots while r
       );
     const claudeManifestFile = path.join(folder, '.claude-plugin/plugin.json');
     const claudeManifest = readFileSync(claudeManifestFile, 'utf8');
-    writeFileSync(claudeManifestFile, claudeManifest.replace('0.18.0', '0.0.1'));
+    const drifted = JSON.parse(claudeManifest);
+    drifted.version = `${drifted.version}-drift`;
+    writeFileSync(claudeManifestFile, JSON.stringify(drifted));
     assert.throws(() => buildPluginArchive(root), /Claude plugin manifest/);
     writeFileSync(claudeManifestFile, claudeManifest);
     writeFileSync(path.join(folder, 'unreviewed.mjs'), 'export const privateImplementation = 1;');
