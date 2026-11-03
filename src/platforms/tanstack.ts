@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { WEB_DEPENDENCIES } from '../dependencies.js';
+import { ANHEDRAL_STACK_DEPENDENCIES, WEB_DEPENDENCIES } from '../dependencies.js';
 import { CapabilityEditor } from '../capability-editor.js';
 import type { Capability } from '../capability-catalog.js';
 import { resourceName } from '../render.js';
@@ -28,8 +28,8 @@ export function scaffoldTanstack(root: string, name: string): void {
       lint: 'eslint . --max-warnings 0',
     },
     dependencies: {
-      '@tanstack/react-start': '1.169.4',
-      '@tanstack/react-router': '1.170.46',
+      '@tanstack/react-start': ANHEDRAL_STACK_DEPENDENCIES['@tanstack/react-start'],
+      '@tanstack/react-router': ANHEDRAL_STACK_DEPENDENCIES['@tanstack/react-router'],
       react: web.react,
       'react-dom': web['react-dom'],
       '@base-ui/react': web['@base-ui/react'],
@@ -39,11 +39,11 @@ export function scaffoldTanstack(root: string, name: string): void {
       '@workspace/styling': 'workspace:*',
     },
     devDependencies: {
-      '@cloudflare/vite-plugin': '1.67.0',
-      '@tanstack/router-cli': '1.167.46',
-      '@vitejs/plugin-react': '6.2.1',
-      vite: '8.3.5',
-      wrangler: '4.156.1',
+      '@cloudflare/vite-plugin': ANHEDRAL_STACK_DEPENDENCIES['@cloudflare/vite-plugin'],
+      '@tanstack/router-cli': ANHEDRAL_STACK_DEPENDENCIES['@tanstack/router-cli'],
+      '@vitejs/plugin-react': ANHEDRAL_STACK_DEPENDENCIES['@vitejs/plugin-react'],
+      vite: ANHEDRAL_STACK_DEPENDENCIES.vite,
+      wrangler: ANHEDRAL_STACK_DEPENDENCIES.wrangler,
       typescript: dev.typescript,
       '@types/node': dev['@types/node'],
       '@types/react': dev['@types/react'],

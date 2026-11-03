@@ -310,8 +310,8 @@ try {
     await response.body?.cancel();
     return cookie;
   }
-  const first = await signUp('first@example.test');
-  const second = await signUp('second@example.test');
+  const first = await signUp('first@example.com');
+  const second = await signUp('second@example.com');
   const session = await request('/api/session', { headers: { cookie: first } });
   assert.equal(session.status, 200, 'Session cookie must authenticate an API request.');
   const sessionBody = await session.json();
