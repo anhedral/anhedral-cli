@@ -1,19 +1,10 @@
-import {
-  chmodSync,
-  closeSync,
-  existsSync,
-  fstatSync,
-  mkdirSync,
-  mkdtempSync,
-  openSync,
-  readFileSync,
-  readSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readBoundedFile } from './bounded-file.js';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import { resolveCommand } from './command.js';
 import { spawnSync } from 'node:child_process';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const FAILURE_TAIL_BYTES = 128 * 1024;
@@ -62,79 +53,68 @@ export function appendGitignore(root: string, lines: string[]): void {
   writeFile(filePath, `${existing}${separator}${additions.join(newline)}${newline}`);
 }
 
-function readTail(filePath: string): string {
-  const file = openSync(filePath, 'r');
-  try {
-    const size = fstatSync(file).size;
-    const length = Math.min(size, FAILURE_TAIL_BYTES);
-    if (length === 0) return '';
-    const buffer = Buffer.allocUnsafe(length);
-    readSync(file, buffer, 0, length, size - length);
-    return buffer.toString();
-  } finally {
-    closeSync(file);
-  }
-}
-
-function dumpFailure(
-  cmd: string,
-  status: number | null,
-  stdoutPath: string,
-  stderrPath: string,
-  spawnError?: Error,
-): never {
-  const stdoutText = readTail(stdoutPath);
-  const stderrText = readTail(stderrPath);
-  if (process.env.ANHEDRAL_QUIET !== '1') {
-    if (stdoutText) process.stderr.write(stdoutText);
-    if (stderrText) process.stderr.write(stderrText);
-  }
-  throw commandFailure(cmd, status, spawnError);
-}
-
 export function execFile(executable: string, args: readonly string[], cwd: string): void {
   const invocation = resolveCommand(executable, args);
   const quiet = process.env.ANHEDRAL_QUIET === '1';
   const display = [executable, ...args].join(' ');
-  const deadline = { timeout: commandTimeout(), killSignal: 'SIGKILL' as const };
-  if (process.env.ANHEDRAL_VERBOSE === '1' && !quiet) {
-    console.log(`  $ ${display}`);
-    const result = spawnSync(invocation.command, invocation.args, {
-      cwd,
-      stdio: 'inherit',
-      shell: false,
-      ...deadline,
-    });
-    if (result.error || result.status !== 0) {
-      throw commandFailure(display, result.status, result.error);
-    }
-    return;
-  }
-
-  const captureRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-exec-'));
-  const stdoutPath = path.join(captureRoot, 'stdout.log');
-  const stderrPath = path.join(captureRoot, 'stderr.log');
-  const stdout = openSync(stdoutPath, 'w');
-  const stderr = openSync(stderrPath, 'w');
+  const verbose = process.env.ANHEDRAL_VERBOSE === '1' && !quiet;
+  const requested = Number(process.env.ANHEDRAL_COMMAND_OUTPUT_BYTES);
+  const maximum =
+    Number.isSafeInteger(requested) && requested >= 1024 && requested <= 16 * 1024 * 1024
+      ? requested
+      : 16 * 1024 * 1024;
+  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-command-'));
+  const configuration = path.join(root, 'input.json'),
+    resultFile = path.join(root, 'result.json');
   try {
-    const result = spawnSync(invocation.command, invocation.args, {
+    const bytes = JSON.stringify({
+      ...invocation,
       cwd,
-      shell: false,
-      stdio: ['ignore', stdout, stderr],
-      ...deadline,
+      timeout: commandTimeout(),
+      maximum,
+      verbose,
     });
-    closeSync(stdout);
-    closeSync(stderr);
+    if (Buffer.byteLength(bytes) > 1024 * 1024)
+      throw Error('Command configuration exceeds its bound.');
+    writeFileSync(configuration, bytes, { flag: 'wx', mode: 0o600 });
+    const wrapper = spawnSync(
+      process.execPath,
+      [fileURLToPath(new URL('./command-runner.js', import.meta.url)), configuration, resultFile],
+      {
+        cwd,
+        shell: false,
+        stdio: verbose ? 'inherit' : 'ignore',
+        timeout: commandTimeout() + 10000,
+        killSignal: 'SIGKILL',
+      },
+    );
+    if (wrapper.error || wrapper.status !== 0 || !existsSync(resultFile))
+      throw commandFailure(display, wrapper.status, wrapper.error);
+    const result = JSON.parse(readBoundedFile(resultFile, 1024 * 1024).toString('utf8')) as {
+      status: number | null;
+      error?: string;
+      stdout: string;
+      stderr: string;
+    };
     if (result.error || result.status !== 0) {
-      dumpFailure(display, result.status, stdoutPath, stderrPath, result.error);
+      if (!quiet && !verbose)
+        for (const value of [result.stdout, result.stderr]) {
+          const tail = Buffer.from(value, 'base64');
+          if (tail.length) process.stderr.write(tail.subarray(-FAILURE_TAIL_BYTES));
+        }
+      if (result.error === 'ENOBUFS')
+        throw Error(
+          `Command output exceeded its capture limit: ${display}. Inspect the tool before retrying.`,
+        );
+      throw commandFailure(
+        display,
+        result.status,
+        result.error
+          ? Object.assign(new Error('Command execution failed'), { code: result.error })
+          : undefined,
+      );
     }
   } finally {
-    try {
-      closeSync(stdout);
-    } catch {}
-    try {
-      closeSync(stderr);
-    } catch {}
-    rmSync(captureRoot, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true });
   }
 }

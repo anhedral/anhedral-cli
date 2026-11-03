@@ -47,6 +47,24 @@ export const WEB_DEPENDENCIES: DependencyGroup = {
   },
 };
 
+// Current Anhedral Stack framework/build tooling; legacy generators retain their own pins.
+export const ANHEDRAL_STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=@tanstack/react-start
+  '@tanstack/react-start': '1.169.4',
+  // renovate: datasource=npm depName=@tanstack/react-router
+  '@tanstack/react-router': '1.170.46',
+  // renovate: datasource=npm depName=@cloudflare/vite-plugin
+  '@cloudflare/vite-plugin': '1.67.0',
+  // renovate: datasource=npm depName=@tanstack/router-cli
+  '@tanstack/router-cli': '1.167.46',
+  // renovate: datasource=npm depName=@vitejs/plugin-react
+  '@vitejs/plugin-react': '6.2.1',
+  // renovate: datasource=npm depName=vite
+  vite: '8.3.5',
+  // renovate: datasource=npm depName=wrangler
+  wrangler: '4.156.1',
+} as const;
+
 // renovate: datasource=npm depName=glob
 export const OPENNEXT_GLOB_VERSION = '14.0.2';
 

@@ -1,3 +1,4 @@
+import { pluginFixture } from './support/plugin-fixture.mjs';
 import { test } from 'node:test';
 import { releaseDirectory } from '../scripts/release-directory.mjs';
 import assert from 'node:assert/strict';
@@ -7,6 +8,7 @@ import {
   chmodSync,
   mkdirSync,
   mkdtempSync,
+  realpathSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -28,7 +30,7 @@ import { resolveSpawnCommand } from '../scripts/spawn-command.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
-const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'anhedral-release-tooling-'));
+const temporaryRoot = realpathSync(mkdtempSync(path.join(tmpdir(), 'anhedral-release-tooling-')));
 
 function runScript(script, args = [], env = {}) {
   // Synthetic artifacts must not inherit the production release's pins.
@@ -294,7 +296,7 @@ try {
 
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
-    releaseWorkflow.replace('              --draft \\\n', ''),
+    releaseWorkflow.replace('              --draft "${LATEST_ARGS[@]}" \\\n', ''),
   );
   assert.match(
     validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
@@ -461,7 +463,7 @@ try {
   const metadata = artifactMetadata(contents);
   const metadataPath = writeMetadata(artifactRoot, metadata);
   writeFileSync(path.join(artifactRoot, metadata.filename), contents);
-  const pluginContents = Buffer.from('deterministic plugin artifact');
+  const pluginContents = pluginFixture(metadata.version).contents;
   metadata.plugin = {
     schemaVersion: 1,
     version: metadata.version,

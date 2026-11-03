@@ -7,6 +7,11 @@ on:
         description: Exact commit containing the prepared release version
         required: true
         type: string
+      finalize_only:
+        description: Finalization requires an already matching published registry artifact
+        required: false
+        default: false
+        type: boolean
       cli_integrity:
         description: Reviewed CLI artifact SHA-512 integrity
         required: true
@@ -19,6 +24,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: .
+
 env:
   RELEASE_NODE_VERSION: '24.21.0'
 
@@ -28,6 +37,7 @@ concurrency:
 
 jobs:
   verify:
+    if: github.repository == 'anhedral/anhedral-cli'
     name: Verify existing CI candidate
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -44,18 +54,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           fetch-depth: 0
           persist-credentials: false
           ref: main
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         env:
           RELEASE_SHA: ${{ inputs.release_sha }}
+          FINALIZE_ONLY: ${{ inputs.finalize_only }}
         run: |
-          if [ "$(git rev-parse HEAD)" != "$RELEASE_SHA" ]; then
+          if ! [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]; then exit 1; fi
+          if [ "$FINALIZE_ONLY" = "true" ]; then
+            git merge-base --is-ancestor "$RELEASE_SHA" HEAD || exit 1
+          elif [ "$(git rev-parse HEAD)" != "$RELEASE_SHA" ]; then
             echo "Release commit $RELEASE_SHA is no longer the current main commit"
             exit 1
           fi
+
+      - name: Checkout admitted candidate source for finalization
+        if: inputs.finalize_only == true
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: git checkout --detach "$RELEASE_SHA"
 
       - name: Setup Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -89,6 +112,10 @@ jobs:
           ANHEDRAL_EXPECTED_INTEGRITY: ${{ inputs.cli_integrity }}
           ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ inputs.plugin_integrity }}
         run: node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json
+
+      - name: Require existing exact publication before finalization
+        if: inputs.finalize_only == true
+        run: node scripts/check-release-registry.mjs verify .artifacts/release/metadata.json
 
       - name: Setup pnpm for installed CLI initialization
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
@@ -141,6 +168,7 @@ jobs:
         run: echo "Artifact digest ${{ steps.artifact.outputs.artifact-digest }}" >> "$GITHUB_STEP_SUMMARY"
 
   portability:
+    if: inputs.finalize_only != true
     name: Exact artifact smoke
     needs: verify
     runs-on: ubuntu-latest
@@ -151,8 +179,11 @@ jobs:
       - name: Checkout artifact verification code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
           ref: main
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         shell: bash
@@ -190,6 +221,7 @@ jobs:
           node tests/test-packed-cli.js .artifacts/release/metadata.json
 
   publish:
+    if: inputs.finalize_only != true
     name: Publish verified artifact
     needs:
       - verify
@@ -204,8 +236,11 @@ jobs:
       - name: Checkout release scripts
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
           ref: main
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         env:
@@ -262,6 +297,7 @@ jobs:
           echo "integrity: ${{ needs.verify.outputs.integrity }}" >> "$GITHUB_STEP_SUMMARY"
 
   tag:
+    if: ${{ always() && needs.verify.result == 'success' && (needs.publish.result == 'success' || (inputs.finalize_only == true && needs.publish.result == 'skipped')) }}
     name: Tag and create GitHub release
     needs:
       - verify
@@ -274,10 +310,21 @@ jobs:
       - name: Checkout published commit
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           fetch-depth: 0
-          ref: main
+          ref: ${{ inputs.release_sha }}
+      - name: Require standalone public CLI checkout
+        # Historical finalization checks out an older public commit, which may
+        # predate the standalone helper. Do not require new files in that tree.
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, realpathSync } from 'node:fs';
+          const metadata = JSON.parse(readFileSync('package.json', 'utf8'));
+          if (metadata.name !== 'anhedral' || realpathSync('.') !== realpathSync(process.env.GITHUB_WORKSPACE))
+            throw Error('Release finalization must run only in the public CLI checkout.');
+          NODE
 
-      - name: Require the prepared main commit
+      - name: Require the published candidate commit
         env:
           RELEASE_SHA: ${{ inputs.release_sha }}
         run: test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
@@ -302,6 +349,9 @@ jobs:
           ANHEDRAL_EXPECTED_NAME: anhedral
           ANHEDRAL_EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
         run: node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json
+
+      - name: Verify the exact artifact is already published
+        run: node scripts/check-release-registry.mjs verify .artifacts/release/metadata.json
 
       - name: Verify declared version
         env:
@@ -344,7 +394,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TARBALL: ${{ needs.verify.outputs.tarball }}
           VERSION: ${{ needs.verify.outputs.version }}
+          FINALIZE_ONLY: ${{ inputs.finalize_only }}
         run: |
+          # Historical completion must never replace the current latest release.
+          LATEST_ARGS=()
+          if [ "$FINALIZE_ONLY" = "true" ]; then LATEST_ARGS=(--latest=false); fi
           TAG="v$VERSION"
           ASSET=".artifacts/release/$TARBALL"
           METADATA=".artifacts/release/metadata.json"
@@ -359,11 +413,11 @@ jobs:
                 "$PLUGIN#Anhedral plugin" \
                 "$PLUGIN_METADATA#plugin integrity metadata" \
                 --clobber
-              gh release edit "$TAG" --draft=false
+              gh release edit "$TAG" --draft=false "${LATEST_ARGS[@]}"
             fi
           else
             gh release create "$TAG" \
-              --draft \
+              --draft "${LATEST_ARGS[@]}" \
               --verify-tag \
               --generate-notes \
               --title "$TAG"
@@ -372,7 +426,7 @@ jobs:
               "$METADATA#release integrity metadata" \
               "$PLUGIN#Anhedral plugin" \
               "$PLUGIN_METADATA#plugin integrity metadata"
-            gh release edit "$TAG" --draft=false
+            gh release edit "$TAG" --draft=false "${LATEST_ARGS[@]}"
           fi
 
           DOWNLOAD_DIR=$(mktemp -d "$RUNNER_TEMP/anhedral-release.XXXXXX")

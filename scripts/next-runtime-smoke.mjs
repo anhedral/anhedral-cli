@@ -1,3 +1,5 @@
+import { generatedAuthRuntimeProof } from './generated-auth-runtime-proof.mjs';
+import { prepareRuntimeProof, finishRuntimeProof } from './runtime-proof-receipt.mjs';
 // Isolated generated foundation, compiled OpenNext and local workerd; no provider calls.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -6,6 +8,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { launchPreview } from '../tests/support/preview-process.mjs';
 import { measureWorker } from './measure-worker.mjs';
+import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
+import { runCapabilityCommand } from '../dist/capability-command.js';
 
 const scratch = mkdtempSync(path.join(tmpdir(), 'anhedral-next-smoke-'));
 const root = path.join(scratch, 'app');
@@ -21,13 +25,21 @@ const env = {
 const run = (command, args, cwd = root) =>
   execFileSync(command, args, { cwd, env, stdio: 'inherit', timeout: 600000 });
 let web;
+let passed = false;
+async function legacyAdd(args) {
+  const previous = process.cwd();
+  try {
+    process.chdir(root);
+    await runCapabilityCommand('add', args, {}, run);
+  } finally {
+    process.chdir(previous);
+  }
+}
 rmSync(output, { recursive: true, force: true });
 try {
-  run(
-    process.execPath,
-    [path.resolve('dist/bin.js'), 'init', root, '--skip-install', '--no-git'],
-    scratch,
-  );
+  // Explicit retained SDK proof; the public CLI creates only the Anhedral Stack.
+  await scaffoldStandardProject(parseStandardOptions([root, '--skip-install', '--no-git']), run);
+
   // Exercise request rendering/actions without shipping synthetic features in the starter.
   mkdirSync(path.join(root, 'apps/web/app/runtime-proof'), { recursive: true });
   writeFileSync(
@@ -41,6 +53,26 @@ export default async function Proof() {
 }\n`,
   );
   run('pnpm', ['install', '--no-frozen-lockfile']);
+  prepareRuntimeProof({
+    root,
+    output,
+    source: {
+      revision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+      dirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
+    },
+    generator: {
+      name: 'anhedral',
+      version: JSON.parse(readFileSync('package.json', 'utf8')).version,
+    },
+    tools: {
+      node: process.version,
+      pnpm: execFileSync('pnpm', ['--version'], { encoding: 'utf8' }).trim(),
+    },
+    limits: [
+      'Isolated generated foundation only; no provider or native acceptance',
+      'Registry resolution is retained for explicit reproduction; consumer defaults unchanged',
+    ],
+  });
   run('pnpm', ['--filter', './apps/web...', 'build']);
   mkdirSync(output, { recursive: true });
   const report = measureWorker(path.join(root, 'apps/web/dist'), 4 * 1024 * 1024);
@@ -134,8 +166,81 @@ export default async function Proof() {
       2,
     ) + '\n',
   );
-  console.log('PASS compiled Next/OpenNext foundation runtime and bundle budget');
+  await web.stop();
+  web = undefined;
+  await legacyAdd(['database-auth', '--with-dependencies', '--skip-install']);
+  run('pnpm', ['install', '--no-frozen-lockfile']);
+  const apiOutput = path.join(output, 'api');
+  prepareRuntimeProof({
+    root,
+    output: apiOutput,
+    source: {
+      revision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+      dirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
+    },
+    generator: {
+      name: 'anhedral',
+      version: JSON.parse(readFileSync('package.json', 'utf8')).version,
+    },
+    tools: {
+      node: process.version,
+      pnpm: execFileSync('pnpm', ['--version'], { encoding: 'utf8' }).trim(),
+    },
+    limits: [
+      'Disposable generated local Wrangler/D1 proof; no provider credentials or remote auth methods',
+    ],
+  });
+  try {
+    await generatedAuthRuntimeProof(root, apiOutput, run);
+    await legacyAdd(['wxt', 'gpui', '--with-dependencies', '--skip-install']);
+    const inspectTask = (filter) =>
+      JSON.parse(
+        execFileSync('pnpm', ['exec', 'turbo', 'run', 'build', '--filter', filter, '--dry=json'], {
+          cwd: root,
+          env: { ...env, WXT_API_ORIGIN: 'https://sentinel.example' },
+          encoding: 'utf8',
+          timeout: 30000,
+          maxBuffer: 8 * 1024 * 1024,
+        }),
+      );
+    const extension = inspectTask('@workspace/extension').tasks.find(
+      (task) => task.package === '@workspace/extension',
+    );
+    const native = inspectTask('@workspace/desktop').tasks.find(
+      (task) => task.package === '@workspace/desktop',
+    );
+    assert.ok(extension.resolvedTaskDefinition.outputs.includes('.output/**'));
+    assert.ok(extension.resolvedTaskDefinition.env.includes('WXT_API_ORIGIN'));
+    assert.equal(native.resolvedTaskDefinition.cache, false);
+    writeFileSync(
+      path.join(apiOutput, 'turbo-task-proof.json'),
+      JSON.stringify(
+        {
+          passed: true,
+          extension: {
+            task: extension.taskId,
+            outputs: extension.resolvedTaskDefinition.outputs,
+            env: extension.resolvedTaskDefinition.env,
+          },
+          native: { task: native.taskId, cache: native.resolvedTaskDefinition.cache },
+          limits: [
+            'Actual Turbo planning only; new optional workspaces intentionally not installed; no browser/native compilation or device acceptance',
+          ],
+        },
+        null,
+        2,
+      ) + '\n',
+    );
+
+    finishRuntimeProof(apiOutput, 'passed');
+  } catch (error) {
+    finishRuntimeProof(apiOutput, 'failed');
+    throw error;
+  }
+  passed = true;
+  console.log('PASS compiled Next/OpenNext and API/auth runtime, task planning and bundle budget');
 } finally {
+  finishRuntimeProof(output, passed ? 'passed' : 'failed');
   await web?.stop();
   rmSync(scratch, { recursive: true, force: true });
 }

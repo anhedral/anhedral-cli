@@ -4,7 +4,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Measure emitted runtime modules, not Next's build cache or browser assets.
-export function measureWorker(directory, maxGzipBytes) {
+export function measureWorker(directory, maxGzipBytes, entrypoint = 'worker.js') {
+  if (path.basename(entrypoint) !== entrypoint || !/^[A-Za-z0-9_-]+\.m?js$/.test(entrypoint))
+    throw Error('Worker entrypoint must be a JavaScript basename');
   const modules = [];
   function walk(folder) {
     for (const entry of readdirSync(folder, { withFileTypes: true })) {
@@ -20,7 +22,7 @@ export function measureWorker(directory, maxGzipBytes) {
       }
     }
   }
-  if (!statSync(path.join(directory, 'worker.js')).isFile())
+  if (!statSync(path.join(directory, entrypoint)).isFile())
     throw Error('Missing compiled Worker entrypoint');
   walk(directory);
   const report = {

@@ -1,3 +1,4 @@
+import { assertPublishedModules } from '../scripts/repository-boundaries.mjs';
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -26,6 +27,7 @@ const stackFiles = [
   'assets/stack/entitlement-guard.ts.txt',
   'assets/stack/entitlements.ts.txt',
   'assets/stack/events-schema.ts.txt',
+  'assets/stack/event-retention.sql.txt',
   'assets/stack/events.ts.txt',
   'assets/stack/mobile-auth.ts.txt',
   'assets/stack/mobile-billing.tsx.txt',
@@ -46,13 +48,36 @@ const stackFiles = [
   'assets/stack/stripe.ts.txt',
   'assets/stack/web-sign-in.tsx.txt',
 ];
-const requiredFiles = new Set([
+const publicContractAssets = [
   'assets/contracts/deployment-provenance.json',
+  'assets/contracts/LICENSE',
+  'assets/contracts/environment-provenance.json',
+  'assets/contracts/operations-provenance.json',
+  'assets/contracts/LICENSE.environment',
+  'assets/contracts/LICENSE.operations',
+];
+const requiredFiles = new Set([
+  ...publicContractAssets,
   'assets/security/credential-patterns.mjs',
   'assets/security/credential-patterns.d.mts',
   'dist/contracts/deployment.js',
   'dist/contracts/deployment.d.ts',
   ...stackFiles,
+  ...[
+    'minimal-server.ts.txt',
+    'minimal-application.server.ts.txt',
+    'request-context.ts.txt',
+    'router.tsx.txt',
+    'root.tsx.txt',
+    'home.tsx.txt',
+    'server.ts.txt',
+    'auth-client.ts.txt',
+    'sign-in.tsx.txt',
+    'application.server.ts.txt',
+    'styles.css.txt',
+  ].map((name) => `assets/launch/${name}`),
+  'dist/launch.js',
+  'dist/platforms/tanstack.js',
   'docs/capabilities.md',
   'dist/capability-command.js',
   'dist/capability-recipes.js',
@@ -65,7 +90,6 @@ const requiredFiles = new Set([
   'assets/patches/node-forge@1.4.0.patch',
   'assets/patches/LICENSE.node-forge',
   'assets/patches/audit-deps.mjs',
-  'docs/native-ui.md',
   'assets/ui/web/button.tsx',
   'assets/ui/web/input.tsx',
   'assets/ui/web/label.tsx',
@@ -82,9 +106,6 @@ const requiredFiles = new Set([
   'dist/index.d.ts',
   'dist/index.js',
   'package.json',
-  'docs/anhedral-stack.md',
-  'docs/assets/anhedral-stack.png',
-  'docs/assets/anhedral-stack-light.png',
   'docs/stack-standard.md',
   'docs/software-factory.md',
   'docs/verification.md',
@@ -95,10 +116,6 @@ const webProvenance = JSON.parse(
 );
 assert.equal(webProvenance.native, undefined, 'Web provenance must not reference the retired port');
 assert.deepEqual(Object.keys(webProvenance.files).sort(), ['button', 'input', 'label']);
-const allowedArtwork = new Set([
-  'docs/assets/anhedral-stack.png',
-  'docs/assets/anhedral-stack-light.png',
-]);
 
 function assertPackedMarkdownLinks(sourcePath, markdown, packedFiles) {
   const references = [
@@ -180,20 +197,24 @@ try {
     `unpacked artifact should remain below 3 MB; received ${packed.unpackedSize}`,
   );
 
+  assertPublishedModules(files);
   for (const requiredFile of requiredFiles) {
     assert.ok(files.includes(requiredFile), `packlist should contain ${requiredFile}`);
   }
+
+  for (const retired of [
+    'docs/native-ui.md',
+    'docs/anhedral-stack.md',
+    'docs/assets/anhedral-stack.png',
+    'docs/assets/anhedral-stack-light.png',
+  ])
+    assert.ok(!files.includes(retired), `retired discovery must not be packaged: ${retired}`);
 
   const readme = readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
   assert.match(readme, /Apache-2\.0/);
   assert.match(readme, /Generated applications are editable source/);
   assert.doesNotMatch(readme, /does not grant permission to install|separate written agreement/i);
   assertPackedMarkdownLinks('README.md', readme, files);
-  assertPackedMarkdownLinks(
-    'docs/anhedral-stack.md',
-    readFileSync(path.join(repoRoot, 'docs/anhedral-stack.md'), 'utf8'),
-    files,
-  );
   assertPackedMarkdownLinks(
     'docs/stack-standard.md',
     readFileSync(path.join(repoRoot, 'docs/stack-standard.md'), 'utf8'),
@@ -222,11 +243,8 @@ try {
       );
     const allowedDist = file.path.startsWith('dist/') && /\.(?:d\.ts|js)$/.test(file.path);
     const allowedDocumentation =
-      file.path === 'docs/anhedral-stack.md' ||
-      file.path === 'docs/native-ui.md' ||
       file.path === 'docs/ui.md' ||
       file.path === 'docs/capabilities.md' ||
-      file.path === 'docs/native-registry.md' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
       file.path === 'docs/verification.md';
@@ -239,16 +257,16 @@ try {
     ].includes(file.path);
     const allowed =
       allowedRootFiles.has(file.path) ||
-      file.path === 'assets/contracts/deployment-provenance.json' ||
+      publicContractAssets.includes(file.path) ||
       [
         'assets/security/credential-patterns.mjs',
         'assets/security/credential-patterns.d.mts',
       ].includes(file.path) ||
       allowedNativeUI ||
       stackFiles.includes(file.path) ||
+      (file.path.startsWith('assets/launch/') && requiredFiles.has(file.path)) ||
       allowedDist ||
       allowedDocumentation ||
-      allowedArtwork.has(file.path) ||
       allowedPatch;
     assert.ok(allowed, `unexpected published path: ${file.path}`);
     if (!allowedDocumentation)
@@ -275,7 +293,15 @@ try {
   const provenance = JSON.parse(
     readFileSync(path.join(repoRoot, 'assets/contracts/deployment-provenance.json')),
   );
-  assert.deepEqual(Object.keys(provenance).sort(), ['contractVersion', 'files']);
+  assert.deepEqual(Object.keys(provenance).sort(), [
+    'contractVersion',
+    'files',
+    'license',
+    'owner',
+    'sourceRevision',
+  ]);
+  assert.equal(provenance.owner, 'anhedral/platform-contracts/deployment');
+  assert.equal(provenance.license, 'Apache-2.0');
   for (const file of files.filter((name) => name.endsWith('.md'))) {
     assert.doesNotMatch(
       readFileSync(path.join(repoRoot, file), 'utf8'),

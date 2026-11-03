@@ -23,3 +23,18 @@ test('bundle budget counts nested runtime JS/Wasm, excludes maps and fails growt
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('Vite Worker entrypoints share the same budget and cannot escape the measured directory', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'vite-worker-budget-'));
+  try {
+    writeFileSync(path.join(root, 'index.js'), 'export default {};');
+    const report = measureWorker(root, 1000, 'index.js');
+    assert.equal(report.modules.length, 1);
+    assert.equal(report.passed, true);
+    assert.equal(measureWorker(root, report.gzipBytes - 1, 'index.js').passed, false);
+    assert.throws(() => measureWorker(root, 1000, '../index.js'), /basename/);
+    assert.throws(() => measureWorker(root, 1000, 'missing.js'));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

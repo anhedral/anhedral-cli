@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /** Portable transport contract. No database, framework or provider imports. */
 export const deploymentContractVersion = 1;
@@ -6,29 +6,29 @@ export const deploymentDigestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const revisionSchema = z.string().regex(/^[a-f0-9]{40}$/);
 const versionSchema = z.string().regex(/^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/);
 export const applicationIdentitySchema = z.enum([
-  'none',
-  'better-auth-d1-v1',
-  'platform-application-services-v1',
+  "none",
+  "better-auth-d1-v1",
+  "platform-application-services-v1",
 ]);
 export const deploymentCapabilitySchema = z.enum([
-  'hono',
-  'database-auth',
-  'r2',
-  'stripe',
-  'realtime',
-  'rtc',
-  'ai',
-  'expo',
-  'native-ui',
-  'revenuecat',
-  'wxt',
-  'side-panel',
-  'gpui',
+  "hono",
+  "database-auth",
+  "r2",
+  "stripe",
+  "realtime",
+  "rtc",
+  "ai",
+  "expo",
+  "native-ui",
+  "revenuecat",
+  "wxt",
+  "side-panel",
+  "gpui",
 ]);
 const capabilitiesSchema = z
   .array(deploymentCapabilitySchema)
   .max(13)
-  .refine((items) => new Set(items).size === items.length, 'Duplicate capabilities.');
+  .refine((items) => new Set(items).size === items.length, "Duplicate capabilities.");
 export const cliArtifactSchema = z
   .object({
     version: versionSchema,
@@ -40,24 +40,32 @@ export const deploymentIntentSchema = z
   .object({
     contractVersion: z.literal(1),
     runtimeProfile: z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),
-    environment: z.enum(['preview', 'production']),
-    visibility: z.enum(['protected', 'public']),
+    environment: z.enum(["preview", "production"]),
+    visibility: z.enum(["protected", "public"]),
   })
   .strict();
 /** Source provenance only. Null versions preserve unknown legacy origins honestly. */
 export const sourceCompositionSchema = z
   .object({
-    contractVersion: z.literal(1),
-    foundation: z.literal('next-opennext'),
+    contractVersion: z.union([z.literal(1), z.literal(2)]),
+    foundation: z.enum(["next-opennext", "tanstack-start"]),
     generatorVersion: versionSchema.nullable(),
     identity: applicationIdentitySchema,
     capabilities: z.partialRecord(deploymentCapabilitySchema, versionSchema.nullable()),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if ((value.contractVersion === 1) !== (value.foundation === "next-opennext"))
+      ctx.addIssue({
+        code: "custom",
+        path: ["foundation"],
+        message: "Source composition version must match its foundation.",
+      });
+  });
 export const deploymentManifestSchema = z
   .object({
     contractVersion: z.literal(1),
-    foundation: z.literal('next-opennext'),
+    foundation: z.enum(["next-opennext", "tanstack-start"]),
     capabilities: capabilitiesSchema,
     identity: applicationIdentitySchema,
     cliArtifact: cliArtifactSchema,
@@ -66,33 +74,64 @@ export const deploymentManifestSchema = z
   .strict()
   .superRefine((value, ctx) => {
     const selected = new Set(value.capabilities);
+    const tanstack = value.foundation === "tanstack-start";
+    if (
+      tanstack !==
+      ["anhedral-stack", "progressive-tanstack-v1"].includes(value.intent.runtimeProfile)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["intent", "runtimeProfile"],
+        message: "Anhedral Stack source requires the anhedral-stack runtime profile.",
+      });
+    if (tanstack) {
+      for (const id of value.capabilities)
+        if (!["hono", "database-auth", "r2", "stripe"].includes(id))
+          ctx.addIssue({
+            code: "custom",
+            path: ["capabilities"],
+            message: `${id} is outside the Anhedral Stack hosting contract.`,
+          });
+      if (selected.has("hono") !== selected.has("database-auth"))
+        ctx.addIssue({
+          code: "custom",
+          path: ["capabilities"],
+          message: "Anhedral Stack hosting requires Hono and database-auth together.",
+        });
+      if (value.identity !== (selected.has("database-auth") ? "better-auth-d1-v1" : "none"))
+        ctx.addIssue({
+          code: "custom",
+          path: ["identity"],
+          message: "Anhedral Stack hosting preserves standalone Better Auth/D1 identity.",
+        });
+    }
     const prerequisites: Record<string, string[]> = {
-      'database-auth': ['hono'],
-      r2: ['database-auth'],
-      stripe: ['database-auth'],
-      realtime: ['database-auth'],
-      rtc: ['database-auth'],
-      ai: ['database-auth'],
-      expo: ['database-auth'],
-      'native-ui': ['expo'],
-      revenuecat: ['expo', 'stripe'],
-      wxt: ['database-auth'],
-      'side-panel': ['wxt'],
-      gpui: ['database-auth'],
+      "database-auth": ["hono"],
+      r2: ["database-auth"],
+      stripe: ["database-auth"],
+      realtime: ["database-auth"],
+      rtc: ["database-auth"],
+      ai: ["database-auth"],
+      expo: ["database-auth"],
+      "native-ui": ["expo"],
+      revenuecat: ["expo", "stripe"],
+      wxt: ["database-auth"],
+      "side-panel": ["wxt"],
+      gpui: ["database-auth"],
     };
     for (const id of value.capabilities)
       for (const parent of prerequisites[id] ?? [])
         if (!selected.has(parent as z.infer<typeof deploymentCapabilitySchema>))
           ctx.addIssue({
-            code: 'custom',
-            path: ['capabilities'],
+            code: "custom",
+            path: ["capabilities"],
             message: `${id} requires ${parent}.`,
           });
-    if (selected.has('database-auth') !== (value.identity !== 'none'))
+    if (selected.has("database-auth") !== (value.identity !== "none"))
       ctx.addIssue({
-        code: 'custom',
-        path: ['identity'],
-        message: 'Identity must match database-auth source.',
+        code: "custom",
+        path: ["identity"],
+        message: "Identity must match database-auth source.",
       });
   });
 export const deploymentSourceSchema = z
@@ -119,44 +158,44 @@ export const deploymentPlanSchema = z
     configurationRevision: deploymentDigestSchema,
     expectedGeneration: z.number().int().nonnegative(),
     migrationDigests: z.array(deploymentDigestSchema).max(100),
-    requiredAuthority: z.enum(['preview', 'production-approval']),
+    requiredAuthority: z.enum(["preview", "production-approval"]),
   })
   .strict()
   .refine(
     (plan) =>
       plan.requiredAuthority ===
-      (plan.manifest.intent.environment === 'production' ? 'production-approval' : 'preview'),
-    'Production requires exact-candidate approval.',
+      (plan.manifest.intent.environment === "production" ? "production-approval" : "preview"),
+    "Production requires exact-candidate approval.",
   );
 export const deploymentErrorSchema = z
   .object({
     code: z.enum([
-      'INVALID_MANIFEST',
-      'UNSUPPORTED_PROFILE',
-      'UNREVIEWED_ARTIFACT',
-      'IDENTITY_ADAPTER_REQUIRED',
-      'UNSUPPORTED_CAPABILITY',
-      'STALE_PLAN',
-      'AUTHORITY_REQUIRED',
-      'OPERATION_PENDING',
-      'DEPLOYMENT_FAILED',
+      "INVALID_MANIFEST",
+      "UNSUPPORTED_PROFILE",
+      "UNREVIEWED_ARTIFACT",
+      "IDENTITY_ADAPTER_REQUIRED",
+      "UNSUPPORTED_CAPABILITY",
+      "STALE_PLAN",
+      "AUTHORITY_REQUIRED",
+      "OPERATION_PENDING",
+      "DEPLOYMENT_FAILED",
     ]),
     message: z.string().min(1).max(2000),
     recovery: z.string().min(1).max(2000),
-    stateChanged: z.union([z.boolean(), z.literal('unknown')]),
+    stateChanged: z.union([z.boolean(), z.literal("unknown")]),
     operationId: z.uuid().nullable(),
   })
   .strict();
 const operationStateSchema = z.enum([
-  'queued',
-  'uploading',
-  'building',
-  'preparing',
-  'verifying',
-  'awaiting-approval',
-  'ready',
-  'failed',
-  'cancelled',
+  "queued",
+  "uploading",
+  "building",
+  "preparing",
+  "verifying",
+  "awaiting-approval",
+  "ready",
+  "failed",
+  "cancelled",
 ]);
 const operationFields = {
   contractVersion: z.literal(1),
@@ -171,33 +210,33 @@ export const deploymentEventSchema = z
     occurredAt: z.iso.datetime(),
   })
   .strict();
-export const deploymentResultSchema = z.discriminatedUnion('status', [
+export const deploymentResultSchema = z.discriminatedUnion("status", [
   z
     .object({
       ...operationFields,
-      status: z.literal('pending'),
-      state: operationStateSchema.exclude(['ready', 'failed', 'cancelled']),
+      status: z.literal("pending"),
+      state: operationStateSchema.exclude(["ready", "failed", "cancelled"]),
     })
     .strict(),
   z
     .object({
       ...operationFields,
-      status: z.literal('ready'),
+      status: z.literal("ready"),
       candidateId: z.uuid(),
       sourceDigest: deploymentDigestSchema,
       artifactDigest: deploymentDigestSchema,
       configurationRevision: deploymentDigestSchema,
       url: z.url().refine((value) => {
         const url = new URL(value);
-        return url.protocol === 'https:' && url.origin === value && !url.username && !url.password;
+        return url.protocol === "https:" && url.origin === value && !url.username && !url.password;
       }),
     })
     .strict(),
   z
-    .object({ ...operationFields, status: z.literal('failed'), error: deploymentErrorSchema })
+    .object({ ...operationFields, status: z.literal("failed"), error: deploymentErrorSchema })
     .strict(),
   z
-    .object({ ...operationFields, status: z.literal('cancelled'), resourcesRetained: z.boolean() })
+    .object({ ...operationFields, status: z.literal("cancelled"), resourcesRetained: z.boolean() })
     .strict(),
 ]);
 export type DeploymentManifest = z.infer<typeof deploymentManifestSchema>;

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
 import { parseNpmPackJson } from './support/npm-pack.js';
 
@@ -47,31 +47,39 @@ function runInstalledScaffold(installRoot) {
   const plan = JSON.parse(
     run(binPath, ['init', projectRoot, '--dry-run', '--json'], installRoot).stdout,
   );
-  assert.deepEqual(plan.products, ['next', 'styling']);
+  assert.deepEqual(plan.products, ['tanstack-start']);
   assert.equal(existsSync(projectRoot), false);
   const created = JSON.parse(
     run(binPath, ['init', projectRoot, '--no-git', '--json'], installRoot).stdout,
   );
   assert.equal(created.generated, true);
   assert.ok(existsSync(path.join(projectRoot, 'pnpm-lock.yaml')));
-  assert.ok(existsSync(path.join(projectRoot, 'apps/web/node_modules/next/package.json')));
+  assert.ok(
+    existsSync(path.join(projectRoot, 'apps/web/node_modules/@tanstack/react-start/package.json')),
+  );
   assert.equal(existsSync(path.join(projectRoot, 'apps/mobile')), false);
   assert.ok(existsSync(path.join(projectRoot, 'apps/web/.anhedral-ui.json')));
   const catalog = JSON.parse(run(binPath, ['ui', 'list', '--json'], installRoot).stdout);
-  assert.ok(catalog.components.some((item) => item.name === 'button' && item.web && item.native));
+  assert.ok(catalog.components.some((item) => item.name === 'button' && item.web));
+  assert.ok(catalog.components.every((item) => !Object.hasOwn(item, 'native')));
   for (const name of ['auth', 'billing', 'managed-email'])
     assert.equal(existsSync(path.join(projectRoot, 'packages', name)), false);
   assert.equal(existsSync(path.join(projectRoot, '.anhedral')), false);
   const stack = JSON.parse(
     run(binPath, ['stack', 'list', '--json', '--cwd', projectRoot], installRoot).stdout,
   );
-  assert.equal(stack.capabilities.length, 13);
+  assert.equal(stack.stack.name, 'Anhedral Stack');
+  assert.equal(stack.stack.id, 'anhedral-stack');
+  assert.deepEqual(Object.keys(stack.stack.additions), ['backend', 'r2', 'stripe']);
   const addition = JSON.parse(
-    run(binPath, ['add', 'hono', '--skip-install', '--json', '--cwd', projectRoot], installRoot)
-      .stdout,
+    run(
+      binPath,
+      ['add', 'stripe', '--with-dependencies', '--skip-install', '--json', '--cwd', projectRoot],
+      installRoot,
+    ).stdout,
   );
   assert.equal(addition.sourceInstalled, true);
-  assert.ok(existsSync(path.join(projectRoot, 'apps/api/src/index.ts')));
+  assert.ok(existsSync(path.join(projectRoot, 'apps/api/src/features/stripe.ts')));
   assert.ok(existsSync(path.join(projectRoot, 'docs/anhedral/capabilities.md')));
   for (const command of ['inspect', 'ship', 'auth', 'services']) {
     const result = spawnSyncPortable(
@@ -147,7 +155,46 @@ try {
     '1 true',
   );
   assert.match(runInstalledCli(installRoot).stdout, /anhedral init/);
-  runInstalledScaffold(installRoot);
+  const { supportsWorkspaceRuntime } = await import(
+    pathToFileURL(path.join(installRoot, 'node_modules/anhedral/dist/runtime-policy.js'))
+  );
+  if (supportsWorkspaceRuntime(process.versions.node)) runInstalledScaffold(installRoot);
+  else {
+    const destination = path.join(installRoot, 'unsupported-workspace');
+    const result = spawnSyncPortable(
+      process.execPath,
+      [
+        path.join(installRoot, 'node_modules/anhedral/dist/bin.js'),
+        'init',
+        destination,
+        '--skip-install',
+        '--no-git',
+        '--json',
+      ],
+      { cwd: installRoot, encoding: 'utf8' },
+    );
+    assert.equal(result.status, 1);
+    assert.match(JSON.parse(result.stderr).error, /Generated workspaces require Node.js/);
+    assert.equal(
+      existsSync(destination),
+      false,
+      'unsupported workspace initialization writes no files',
+    );
+    const preview = JSON.parse(
+      run(
+        process.execPath,
+        [
+          path.join(installRoot, 'node_modules/anhedral/dist/bin.js'),
+          'init',
+          destination,
+          '--dry-run',
+          '--json',
+        ],
+        installRoot,
+      ).stdout,
+    );
+    assert.equal(preview.dryRun, true);
+  }
   assert.equal(existsSync(path.join(npmCache, 'plugin-data')), false);
   run(
     process.execPath,
@@ -183,6 +230,8 @@ try {
       '--eval',
       [
         "const packageApi = await import('anhedral');",
+        "if (typeof packageApi.scaffoldAnhedralStack !== 'function') throw new Error('missing Anhedral Stack generator');",
+        "if (Object.hasOwn(packageApi.parseInitOptions(['sdk','--dry-run']), 'products')) throw new Error('legacy SDK selector leaked');",
         "if (typeof packageApi.scaffoldStandardProject !== 'function') throw new Error('missing scaffoldStandardProject export');",
         "if (typeof packageApi.parseStandardOptions !== 'function') throw new Error('missing parseStandardOptions export');",
       ].join('\n'),

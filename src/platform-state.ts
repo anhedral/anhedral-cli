@@ -3,11 +3,25 @@ import { createHash, randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { lstat, mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { CliArgumentError } from './cli-arguments.js';
+import { CliFailure } from './cli-errors.js';
 
-export const platformFailure = (message: string, nextAction = 'Run anhedral login --help.') =>
-  new CliArgumentError(message, nextAction, 'PLATFORM_ACCESS_FAILED');
+export type PlatformFailureCategory = ConstructorParameters<typeof CliFailure>[3];
+export const platformFailure = (
+  message: string,
+  nextAction = 'Run anhedral login --help.',
+  category: PlatformFailureCategory = 'context',
+  retryable = false,
+) => new CliFailure(message, 'PLATFORM_ACCESS_FAILED', nextAction, category, retryable);
 export function platformOrigin(value = 'https://platform.anhedral.com') {
-  const url = new URL(value);
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new CliArgumentError(
+      'Choose a valid HTTPS API origin with --api-url.',
+      'Run anhedral login --help.',
+    );
+  }
   if (
     url.username ||
     url.password ||
@@ -17,8 +31,9 @@ export function platformOrigin(value = 'https://platform.anhedral.com') {
     (url.protocol !== 'https:' &&
       !(url.protocol === 'http:' && ['127.0.0.1', '[::1]'].includes(url.hostname)))
   )
-    throw platformFailure(
+    throw new CliArgumentError(
       'Choose an HTTPS API origin (literal loopback is allowed for local testing).',
+      'Run anhedral login --help.',
     );
   return url.origin;
 }
@@ -63,7 +78,15 @@ export async function readPrivate(path: string): Promise<unknown | null> {
     (process.platform !== 'win32' && ((info.mode & 0o077) !== 0 || info.uid !== process.getuid?.()))
   )
     throw platformFailure('State file must be owned by you with mode 0600.');
-  return JSON.parse(await readFile(path, 'utf8'));
+  const text = await readFile(path, 'utf8');
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw platformFailure(
+      'Saved Platform state is not valid JSON. Preserve the file and reconcile the selected context.',
+      'Run anhedral whoami --context --help.',
+    );
+  }
 }
 export async function writePrivate(path: string, data: unknown) {
   await safeDirectory(dirname(path));
@@ -81,32 +104,54 @@ export interface SecretStore {
   write(data: unknown): Promise<void>;
   clear(): Promise<void>;
 }
-function processInput(binary: string, args: string[], input = ''): Promise<string> {
+export function runCredentialProcess(
+  binary: string,
+  args: string[],
+  input = '',
+  timeoutMs = 30000,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(binary, args, { stdio: ['pipe', 'pipe', 'pipe'] });
     let result = '';
+    let failure: Error | undefined;
+    const timer = setTimeout(() => {
+      failure = platformFailure(
+        'System credential storage timed out. Check the credential service before retrying.',
+      );
+      child.kill('SIGKILL');
+    }, timeoutMs);
     child.stdout.on('data', (data) => {
       result += data;
-      if (result.length > 65536) child.kill();
+      if (result.length > 65536) {
+        failure = platformFailure('System credential storage returned too much data.');
+        child.kill('SIGKILL');
+      }
     });
-    child.on('error', () =>
+    child.on('error', () => {
+      clearTimeout(timer);
       reject(
         platformFailure(
           'System credential storage is unavailable. Choose an explicit --credential-file if needed.',
         ),
-      ),
-    );
-    child.on('close', (code) =>
-      code === 0
-        ? resolve(result.trim())
-        : reject(platformFailure('System credential storage could not be accessed.')),
-    );
+      );
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      if (failure) reject(failure);
+      else if (code === 0) resolve(result.trim());
+      else reject(platformFailure('System credential storage could not be accessed.'));
+    });
     child.stdin.on('error', () => {});
     child.stdin.end(input);
   });
 }
-export function secretStore(origin: string, file?: string): SecretStore {
-  if (file && process.platform === 'win32')
+export function secretStore(
+  origin: string,
+  file?: string,
+  runProcess = runCredentialProcess,
+  platform = process.platform,
+): SecretStore {
+  if (file && platform === 'win32')
     throw platformFailure(
       'Secure Windows credential storage is not implemented. Use macOS Keychain or Linux Secret Service for this preview.',
     );
@@ -122,15 +167,15 @@ export function secretStore(origin: string, file?: string): SecretStore {
       },
     };
   const account = createHash('sha256').update(origin).digest('hex');
-  if (process.platform === 'darwin') {
+  if (platform === 'darwin') {
     // -i reads commands on stdin, keeping secret values out of process argv.
-    const run = (command: string) => processInput('/usr/bin/security', ['-i'], command + '\n');
+    const run = (command: string) => runProcess('/usr/bin/security', ['-i'], command + '\n');
     const quote = (v: string) => '"' + v.replaceAll('\\', '\\\\').replaceAll('"', '\\"') + '"';
     return {
       read: async () => {
         try {
           return JSON.parse(
-            await processInput('/usr/bin/security', [
+            await runProcess('/usr/bin/security', [
               'find-generic-password',
               '-s',
               'dev.anhedral.cli.v1',
@@ -147,7 +192,7 @@ export function secretStore(origin: string, file?: string): SecretStore {
         await run(
           `add-generic-password -U -s dev.anhedral.cli.v1 -a ${account} -w ${quote(JSON.stringify(data))}`,
         );
-        const stored = await processInput('/usr/bin/security', [
+        const stored = await runProcess('/usr/bin/security', [
           'find-generic-password',
           '-s',
           'dev.anhedral.cli.v1',
@@ -159,20 +204,20 @@ export function secretStore(origin: string, file?: string): SecretStore {
           throw platformFailure('Credential storage could not be verified.');
       },
       clear: async () => {
-        await processInput('/usr/bin/security', [
+        await runProcess('/usr/bin/security', [
           'delete-generic-password',
           '-s',
           'dev.anhedral.cli.v1',
           '-a',
           account,
-        ]).catch(() => {});
+        ]);
       },
     };
   }
-  if (process.platform === 'linux')
+  if (platform === 'linux')
     return {
       read: async () => {
-        const value = await processInput('secret-tool', [
+        const value = await runProcess('secret-tool', [
           'lookup',
           'service',
           'dev.anhedral.cli.v1',
@@ -182,20 +227,20 @@ export function secretStore(origin: string, file?: string): SecretStore {
         return value ? JSON.parse(value) : null;
       },
       write: async (data) => {
-        await processInput(
+        await runProcess(
           'secret-tool',
           ['store', '--label=Anhedral CLI', 'service', 'dev.anhedral.cli.v1', 'origin', account],
           JSON.stringify(data),
         );
       },
       clear: async () => {
-        await processInput('secret-tool', [
+        await runProcess('secret-tool', [
           'clear',
           'service',
           'dev.anhedral.cli.v1',
           'origin',
           account,
-        ]).catch(() => {});
+        ]);
       },
     };
   throw platformFailure('Secure credential storage is unsupported on this platform.');

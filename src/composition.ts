@@ -1,6 +1,14 @@
 import { sourceCompositionSchema } from './contracts/deployment.js';
+import { z } from 'zod';
 import { GENERATOR_VERSION } from './version.js';
 import type { Capability } from './capability-catalog.js';
+
+// Narrow the shared source contract for the launch generator; runtime admission remains server-owned.
+export const launchCompositionSchema = sourceCompositionSchema.safeExtend({
+  contractVersion: z.literal(2),
+  foundation: z.literal('tanstack-start'),
+});
+const compositionSchema = sourceCompositionSchema;
 
 /** Local source provenance is never a hosting receipt or a provider activation claim. */
 export function composeSourceProvenance(
@@ -8,15 +16,15 @@ export function composeSourceProvenance(
   installed: readonly Capability[],
   additions: readonly Capability[],
 ) {
-  const old = previous === undefined ? undefined : sourceCompositionSchema.parse(previous);
+  const old = previous === undefined ? undefined : compositionSchema.parse(previous);
   if (old && Object.keys(old.capabilities).some((id) => !installed.includes(id as Capability)))
     throw Error('Composition provenance disagrees with installed source; reconcile anhedral.json.');
   const identity = installed.includes('database-auth') ? 'better-auth-d1-v1' : 'none';
   if (old && old.identity !== 'none' && old.identity !== identity)
     throw Error('Preserve existing application identity; an explicit adapter is required.');
-  return sourceCompositionSchema.parse({
-    contractVersion: 1,
-    foundation: 'next-opennext',
+  return compositionSchema.parse({
+    contractVersion: old?.contractVersion ?? 1,
+    foundation: old?.foundation ?? 'next-opennext',
     generatorVersion: old?.generatorVersion ?? null,
     identity,
     capabilities: Object.fromEntries(

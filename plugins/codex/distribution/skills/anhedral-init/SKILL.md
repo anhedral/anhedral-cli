@@ -1,18 +1,18 @@
 ---
 name: anhedral-init
-description: "Start with Next.js and Anhedral UI, then progressively add selected stack capabilities."
+description: "Generate the Anhedral Stack: start with web UI, then add backend, private storage and Stripe when needed."
 ---
 
 # Anhedral Init
 
-Inspect and preserve the destination. Use the explicitly selected reviewed CLI version. Preview `anhedral init <directory> --dry-run --json`, then apply the same options. `--skip-install --no-git` generates offline. New init creates only Next.js/OpenNext for Workers with Anhedral UI, shared tokens and tooling. It does not create Expo, Hono, a database, authentication or provider resources.
+Use the single current Anhedral Stack. Inspect/preserve the destination and use the explicitly reviewed CLI version. Preview `anhedral init <directory> --dry-run --json`, then apply the same options. `--skip-install --no-git` generates offline. Init creates only the web foundation: TanStack Start SSR/server functions and source-owned shadcn Anhedral UI.
 
-Read emitted README.md and AGENTS.md, install if skipped, start pnpm dev and observe its actual URL before opening it in the browser. Reuse an appropriate existing server. Do not call a page working without checking it. See ../../references/stack-standard.md and ../anhedral-design/SKILL.md.
+Read emitted README/AGENTS and run `pnpm dev`. Observe its actual URL and validate browser behavior before reporting it working. Use `anhedral ui` for web UI and `anhedral stack list/status/doctor` for source inspection. There is no stack selector, mobile option or separate public stack registry.
 
-Use `anhedral ui` for source-owned UI. Use `anhedral stack list/status/doctor` and `anhedral add` for capability source. Do not invoke retired operational auth, inspect, ship or provider-management commands. Existing Platform artifacts retain their reviewed generator pins; do not substitute an unreleased checkout into managed runtime images.
+When required, preview/apply `anhedral add backend` to compose Hono, Better Auth and Drizzle/D1 together. Add `r2` for private storage or `stripe` for subscriptions; `--with-dependencies` includes missing backend prerequisites. Preserve customized composition files. Configure private API environment values, deliberately review/apply local SQL with `pnpm db:migrate --local`, and explicitly enable selected auth methods after email/credential/policy setup. Vite then runs web and API Workers with local resources.
 
-Add Hono, Drizzle/D1/Better Auth, private R2, Expo, WXT/Side Panel, GPUI, Stripe, RevenueCat, realtime or AI strategically when a feature needs them. The exact “if needed” conditions remain open. Preview `anhedral add <capabilities> --dry-run --json`, then apply the same selection. Missing prerequisites require explicit inclusion or `--with-dependencies`. See ../../references/capabilities.md for all supported recipes, protected source, configuration and validation. UI installation itself has no backend prerequisite.
+Hono owns privileged business/auth/database/storage work. Web server functions call scoped API bindings; never import another application's source or expose provider secrets in public variables. After adding Stripe, run `pnpm db:generate`, review SQL and deliberately migrate before webhook tests. Configure allowed prices, test credentials and canonical entitlement checks. Source generation never provisions, migrates, activates payments or deploys.
 
-The CLI requires no Platform account. Hosting and provider operations belong to consumers or the separate managed Platform. Discover separate provider plugins when requested; do not invent availability or install them without a request. Follow their own authorization and verification workflows.
+Keep historical generators, native/client recipes and protocol values as compatibility details. Do not advertise them as current options or restore retired auth/ship/provider-management commands. See ../../references/capabilities.md, ../../references/stack-standard.md and ../anhedral-design/SKILL.md.
 
-An add command writes source/configuration and installs dependencies. It does not provision, migrate, deploy or establish an active service. Auth methods remain disabled until deliberately configured. Configure matching billing environments/provider scope, and derive access from server-verified identity and canonical provider state. Preserve explicit manual choices about native clients, UI, subscriptions, RTC and AI. Validate only the requested consumers and report device/store/provider gaps honestly.
+Generation needs no Platform account. Optional remote tools use separate OAuth consent and project roles. Read metadata for projects, variable names, deployment receipts and logs. Initiate secure browser imports for secrets; never ask for values in chat or pass them in MCP arguments. CLI imports use owner-only files or stdin, with offline names/types-only dry runs. Platform runtime admission and production approval remain authoritative; local source compatibility is not live hosted readiness.

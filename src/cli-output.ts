@@ -1,20 +1,81 @@
+export interface CliIO {
+  out: { write(text: string): unknown };
+  err: { write(text: string): unknown };
+  stdinTTY: boolean;
+  stdoutTTY: boolean;
+  stderrTTY: boolean;
+  ci?: boolean;
+}
 export interface OutputOptions {
   json?: boolean;
   quiet?: boolean;
+  human?: boolean;
+  nonInteractive?: boolean;
+  io?: CliIO;
 }
+
+/** One output policy for terminal, redirected, and machine consumers. */
+export function createReporter(
+  options: OutputOptions = {},
+  humanFormatter: (value: unknown) => string = (value) => String(value),
+  defaultJson = false,
+) {
+  const json = options.json || (defaultJson && !options.human);
+  const ci =
+    options.io?.ci ?? !!(process.env.CI && process.env.CI !== '0' && process.env.CI !== 'false');
+  const line = (stream: 'out' | 'err', value: string) => {
+    if (options.io) options.io[stream].write(value + '\n');
+    else if (stream === 'out') console.log(value);
+    else console.error(value);
+  };
+  return {
+    canPrompt:
+      !options.json &&
+      !options.quiet &&
+      !options.nonInteractive &&
+      !ci &&
+      (options.io?.stdinTTY ?? !!process.stdin.isTTY) &&
+      (options.io?.stdoutTTY ?? !!process.stdout.isTTY),
+    result(value: unknown): void {
+      // Quiet suppresses implicit output, while explicitly requested JSON survives.
+      if (options.quiet && !options.json) return;
+      line(
+        'out',
+        json ? JSON.stringify(value, null, defaultJson ? undefined : 2) : humanFormatter(value),
+      );
+    },
+    diagnostic(message: string): void {
+      if (!options.json && !options.quiet) line('err', message);
+    },
+    progress(message: string): void {
+      if (!json && !options.quiet && (options.io?.stderrTTY ?? !!process.stderr.isTTY))
+        line('err', message);
+    },
+  };
+}
+
 export function formatResult(_command: string, value: unknown): string {
-  const data = value as { generated?: boolean; root: string; products: string[] };
+  const data = value as {
+    generated?: boolean;
+    root: string;
+    products: string[];
+    stack?: string;
+    dependenciesInstalled?: boolean;
+  };
+  if (data.stack === 'anhedral-stack' && !data.generated)
+    return `Foundation preview for ${data.root}.\nStack: Anhedral Stack.\nNo files were written or resources provisioned.`;
+  if (data.stack === 'anhedral-stack' && data.generated)
+    return `Created ${data.root}.\nStack: Anhedral Stack.\n${data.dependenciesInstalled ? 'Run pnpm dev' : 'Run pnpm install, then pnpm dev'} in the project directory.\nAdd services when needed: anhedral add backend, then anhedral add r2 or anhedral add stripe.\nReview README.md for configuration and deployment.`;
   return (
-    `${data.generated ? 'Created' : 'Foundation preview for'} ${data.root}.\nStack: ${data.products.join(', ')}.\n` +
+    `${data.generated ? 'Created' : 'Foundation preview for'} ${data.root}.\nComponents: ${data.products.join(', ')}.\n` +
     (data.generated
       ? 'Review README.md, then run pnpm dev in the project directory. You own development, integrations and hosting.'
       : 'No files were written or resources provisioned.')
   );
 }
 export function printResult(command: string, value: unknown, options: OutputOptions = {}): void {
-  if (options.json) console.log(JSON.stringify(value, null, 2));
-  else if (!options.quiet) console.log(formatResult(command, value));
+  createReporter(options, (data) => formatResult(command, data)).result(value);
 }
 export function printProgress(message: string, options: OutputOptions = {}): void {
-  if (process.stderr.isTTY && !options.json && !options.quiet) console.error(message);
+  createReporter(options).progress(message);
 }

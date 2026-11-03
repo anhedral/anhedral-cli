@@ -19,17 +19,6 @@ export function needsFullCI(files) {
   );
 }
 
-export function needsNextRuntime(files) {
-  return (
-    files.length === 0 ||
-    files.some((file) =>
-      /^(?:src\/(?:platforms\/web\.ts|scaffold\/|dependencies\.ts|dependency-patches\.ts)|assets\/(?:patches\/|ui\/web\/)|tests\/(?:support\/|test-next-|test-worker-measurement|test-generated-apps)|scripts\/(?:next-runtime|measure-worker|ci-scope)|package\.json$|pnpm-(?:lock\.yaml|workspace\.yaml)$|\.github\/workflows\/ci\.yml$)/.test(
-        file,
-      ),
-    )
-  );
-}
-
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const event = process.env.GITHUB_EVENT_NAME;
   const target = process.env.CI_TARGET_BRANCH;
@@ -40,7 +29,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const base = process.env.CI_BASE_SHA;
   const comparable = /^[a-f0-9]{40}$/.test(base ?? '') && !/^0+$/.test(base);
   let full = true;
-  let nextRuntime = true;
   if (['push', 'pull_request'].includes(process.env.GITHUB_EVENT_NAME) && comparable) {
     // Disable rename detection so moving executable source into docs cannot
     // hide the deleted source path. NUL delimiters preserve unusual filenames.
@@ -50,13 +38,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       .split('\0')
       .filter(Boolean);
     full = needsFullCI(files);
-    nextRuntime = needsNextRuntime(files);
     if (!full) execFileSync('git', ['diff', '--check', base, 'HEAD'], { stdio: 'inherit' });
   }
-  appendFileSync(
-    process.env.GITHUB_OUTPUT,
-    `full=${full}\nrelease=${release}\nnextRuntime=${nextRuntime}\n`,
-  );
+  appendFileSync(process.env.GITHUB_OUTPUT, `full=${full}\nrelease=${release}\n`);
   console.log(
     full
       ? 'Code change: run lightweight checks.'

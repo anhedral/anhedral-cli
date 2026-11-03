@@ -1,4 +1,6 @@
-# Scaffold workflow
+# Anhedral Stack workflow
+
+The Anhedral Stack has one current web foundation and progressive backend/storage/payment additions. There is no public stack selection or independent stack-registry repository.
 
 1. Preview an empty destination with `anhedral init my-app --dry-run --json`, then
    run `anhedral init my-app` and `pnpm dev` inside it.
@@ -23,20 +25,48 @@ with revision, checks, failures and remaining gaps. Keep raw reports in ignored
 `.artifacts/`. Historical notes are not current instructions.
 
 Canonical docs live in `docs/`; `pnpm build` refreshes bundled plugin references.
-Generated app guidance lives in `src/scaffold/documentation.ts`. Preserve shipped
+Current generated app guidance lives in `src/launch.ts`; retained compatibility generators have their own source guidance. Preserve shipped
 reference paths, source-generation safety, dependency patch gates, UI provenance,
 licenses and exact-artifact packaging. A build does not publish npm or update an
 installed plugin. See [Contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md)
 for staging, release identity and validation tiers.
 
-## Next/OpenNext runtime gate
+This repository also works as a Git submodule. Its own `pnpm-workspace.yaml`,
+lockfile and safe `.npmrc` keep installs independent of a parent workspace;
+the parent must exclude the CLI from its package graph. Run install/build/tests
+inside this checkout with its pinned package manager. Commit public changes here
+separately, then update the parent's Git pointer only after that commit is reviewed
+and available in this repository. Never copy parent configuration, credentials or
+implementation into this checkout. Public CI checks out only this repository,
+without recursive submodules; publishing rejects calls from another repository.
+These checks do not make a submodule a security sandbox: review tracked files,
+package contents, inherited environment and publication authority independently.
 
-Relevant generator/build changes compile an isolated foundation and exercise it
-in workerd. Run `pnpm test:next-runtime` for SSR/RSC, Server Actions/cookies,
-prerendering and static cache checks. Hono proxy contracts have separate tests.
-The harness owns the module-size budget and short-lived `.artifacts/next-runtime/`
-receipts. Review measurement changes before adjusting limits. The smoke never
-deploys or migrates a configured database; it is not production acceptance.
+The reviewed public module inventory in `scripts/public-package-policy.json` and
+`pnpm check:boundaries` constrain compilation and package preparation; an unexpected
+dist module or private import requires explicit review. Portable contracts are
+synced only from a reviewed, licensed Platform projection with exact provenance,
+never as a build side effect. Local credential scanning additionally retains the
+CLI's stricter source-upload policy. Plugin packaging accepts its explicit reviewed
+MCP-inclusive file set, refuses linked distribution roots and verifies the bounded
+publisher archive format before npm publication. Oversized unscanned text is an
+explicit review failure, not a clean secret scan.
+
+## Runtime verification
+
+Routine CI compiles the CLI once and runs fast source/security checks and selected
+contract tests. Generated applications are not installed or built in that path.
+Dispatch [CI](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/ci.yml) with `runtime_proof` enabled for the
+Anhedral Stack proof and one-day measurements. Broader compatibility and generated
+application matrices remain in [Full validation](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/validation.yml).
+
+`node scripts/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
+application and exercises local workerd, SSR/server functions, progressive backend,
+private storage and the generated Stripe build/migration path. It uses isolated
+local data, never a configured database or live payment provider. Retained
+Next/OpenNext proof commands cover compatibility code only; they are not another
+public stack. Preserve source/tool/lock identities and distinguish prepared,
+passed and failed evidence. Tests are not provider deployment acceptance.
 
 ## Platform CLI access and source upload
 
@@ -48,7 +78,13 @@ storage is currently unsupported on Windows. Credentials are
 bound to the explicit `--api-url` origin (HTTPS, with literal loopback for fixtures).
 Do not use repository configuration to select the credential destination. `logout`
 revokes server access before removing the saved credential; `whoami` checks live
-identity. API access must be separately enabled by Platform operators.
+identity. Add `whoami --context --human` (or `--context --json`) to inspect the
+selected origin, credential-store kind and saved local team/project link. Identity
+is checked live; the saved project link is explicitly not proof of current project
+access. A link for a different origin or principal fails closed. Normal `whoami`
+JSON is unchanged and context inspection never creates a project or starts login.
+Explicit `--api-url` and `--credential-file` select the origin/store; saved state
+cannot override either. API access must be separately enabled by Platform operators.
 
 `link --project <uuid> --team <uuid>` checks current build authority and saves an
 origin/principal-bound link under ignored `.anhedral/platform/`. `unlink` removes
@@ -58,8 +94,10 @@ responses. `source status` reads its server receipt. Changed source requires an
 explicit `source upload --new`; an expired request also requires a new request.
 The client honors nested `.gitignore`, excludes generated output and secret paths,
 rejects symlinks and recognized credential material, and hashes every bounded
-chunk plus the complete archive and canonical source inventory. Credential scanning
-is deliberately conservative; inspect source before uploading.
+chunk plus the complete archive and canonical source inventory. The generated
+`apps/web/src/routeTree.gen.ts` is excluded because the router regenerates it during
+checks/builds; authored routes, router configuration and server source remain
+included. Credential scanning is deliberately conservative; inspect source before uploading.
 
 Public upload limits and message shapes live in `src/contracts`; protocol code is
 in `src/platform-command.ts`. The server independently authenticates the caller,
@@ -71,22 +109,91 @@ Run `tests/test-platform.test.mjs` after building for isolated client fixtures.
 `deploy plan --manifest <file>` plans from the saved sealed upload, independently
 of subsequent local edits. The manifest follows Platform's `deploymentManifestSchema`
 in `src/contracts/deployment.ts`; it must match the archive's recorded composition,
-capabilities, CLI version and existing standalone identity. Only the protected
-preview Hono/D1 profile is currently planned. Plans bind source/lockfile/migrations,
+capabilities, CLI version and existing standalone identity. Runtime-profile admission is server-owned. Staged server sources include Hono/D1
+and web candidates; source support does not establish a deployed cohort or provider readiness. Plans bind source/lockfile/migrations,
 routing state, principal epoch and project authority. Artifact provenance and
 runtime configuration remain explicitly unverified; null receipts are not approval.
+Anhedral Stack source composition version 2 records framework foundation
+`tanstack-start`; the public runtime profile is `anhedral-stack`. Its five compositions are
+web-only, backend (`hono` plus `database-auth`), backend/R2, backend/Stripe and
+backend/R2/Stripe. Backend manifests preserve `better-auth-d1-v1`; web-only uses
+`none`. Broader retained capability/protocol values are compatibility implementation,
+not current public selections or hosted support.
+Continue selecting an explicit manifest; the CLI never infers an admitted artifact
+from locally generated source. Native candidate receipts name an immutable registry
+image with `scope: candidate-workspace`; legacy isolated-build receipts remain valid.
+Both describe build admission, not production approval.
 
 `deploy prepare` reserves an immutable candidate. `deploy status` reads
-`awaiting-runtime`, `building`, `built` or `failed`. A built candidate grants no
-preview or publishing capability. Runtime admission and build enforcement are
-server-owned. These commands never provision, migrate, activate a preview or
+`awaiting-runtime`, `building`, `built`, `ready` or `failed`. A built candidate grants no
+preview or publishing capability. A `ready` receipt reports Platform-admitted hosted
+readiness; it does not approve production publication. Runtime admission and build
+enforcement remain server-owned. These commands never provision, migrate, activate a preview or
 deploy. Lost responses resume the same saved request. Changed manifest inputs or
 routing require `deploy plan --manifest <file> --new`. Plan/source expiry and
 revocation fail closed. State under `.anhedral/platform/deployment.json` contains
 no credentials and cannot select a network origin or change the signed-in identity.
 
-The CLI and skills-only plugin share one release version. Build prepares the
+`env list` returns names, types, environments and versions. `env import --environment
+staging|production --file <path>` reads a private dotenv file; `--stdin` accepts a
+pipe. `env set <NAME>` reads one literal value from a file or pipe. Values are
+never arguments, output or retry-state contents. Non-public names default to
+secrets; `--type config` is explicit readable configuration. Public-prefixed
+secrets, reserved names, duplicate names and oversized input fail before upload.
+Files require owner-only permissions and a regular non-symlink final file;
+ancestor checks reject observed symlinks but are not an atomic directory lock.
+Use `--dry-run` without authentication for names/types only. Actual imports bind
+API origin, principal, team, project and environment, require `--replace` for
+existing variables, and resume one request after a lost response. Use `--new` for
+a different import. Receipts are checked against names, types and expected versions.
+Production changes remain subject to Platform approval and deployment policy.
+
+`staging status` reads persistent staging history. `staging deploy --candidate
+<uuid>` selects a ready candidate, freezes the current staging configuration and
+retains one generation-bound request across retries. `--new` starts another
+deployment after reviewing the current state. Saved receipts must match their
+project, candidate, request and generation before replay. CLI runtime admission remains a
+separate server gate; a built source upload alone is not a ready candidate.
+`logs` reads bounded, redacted runtime events, defaulting to staging. Select
+production explicitly with `--environment production`; filter by deployment,
+level, source or range, and pass `--cursor` for the next page. Coverage, dropped
+events and seven-day retention are part of the response.
+
+The plugin includes source skills plus one remote MCP connection at
+`https://platform.anhedral.com/api/mcp`. OAuth consent grants scoped project
+access; CLI credentials are separate. Secret imports initiated through ChatGPT
+open a secure browser form rather than accepting values as tool arguments.
+The plugin packages no executable server, credential or authorization header. Its root `mcp.json` uses the [official remote OAuth declaration](https://developers.openai.com/plugins/build/plugins#bundled-mcp-servers-and-lifecycle-hooks), DCR and read-only default scopes; write access requires additional consent.
+Server features remain unavailable until their operator-controlled gates are enabled.
+
+The CLI and plugin share one release version. Build prepares the
 marketplace pointer to that version's immutable `plugin-v<version>` tag; it does
 not create the tag or publish either artifact. During review that pointer may be
 unavailable. Install an already published version until the coordinated release
 has completed and its tag and artifact integrities have been verified.
+
+## CLI presentation compatibility
+
+The command schema owns options, nested help and offline shell completion. Root
+help is an index; leaf help includes examples. Keep executable and exported parser
+contracts covered by `test-cli-discovery`, `test-cli-experience`, `test-cli-output`,
+`test-completion` and `test-platform-ux`. The CI gate runs these alongside existing
+contracts; the executable suite accepts `ANHEDRAL_CLI_BIN` to validate an installed
+exact candidate without contacting Platform.
+
+Results belong on stdout; errors and permitted diagnostics belong on stderr.
+Platform retains implicit compact JSON for compatibility, with opt-in `--human`.
+Other families retain human defaults and explicit `--json`. Quiet suppresses
+ordinary results unless JSON was explicitly requested. Explicit JSON, quiet,
+headless input/output, CI and `--non-interactive` cannot initiate interactive
+approval polling; `login --resume` explicitly redeems an existing approval.
+
+Numeric failure status remains 1. Existing error fields/code families remain;
+usage errors classify invalid origins and selectors before credential/network
+access, including environment, staging and log selectors. Credential-store helpers
+have bounded execution. Logout revokes server access first; a failed local deletion
+reports cleanup still pending instead of successful logout. Categories and retryability are additive diagnostics, not authorization
+to repeat a mutation. In particular, post-commit failures retain source, expose
+committed paths and require repairing only the failed follow-up. Upload/deployment
+retries keep the existing immutable request identity. None of these presentation
+changes alters server admission or activates hosted execution.

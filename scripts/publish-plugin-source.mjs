@@ -1,3 +1,5 @@
+import { assertPluginPackageFiles } from './plugin-package-policy.mjs';
+import { validatePluginRemote } from './plugin-remote.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
@@ -143,6 +145,7 @@ export function loadPluginRelease(metadataPath) {
   )
     throw new Error('Plugin release integrity mismatch.');
   const files = readStoredArchive(bytes);
+  assertPluginPackageFiles(files.map((file) => file.name));
   const json = (name) => {
     const file = files.find((file) => file.name === name);
     if (!file || file.contents.length > 1024 * 1024)
@@ -155,12 +158,17 @@ export function loadPluginRelease(metadataPath) {
     manifest.name !== 'anhedral' ||
     manifest.version !== release.version ||
     stack.cliVersion !== release.version ||
-    !Array.isArray(stack.items) ||
-    stack.items.some((item) => item.version !== release.version)
+    stack.id !== 'anhedral-stack' ||
+    stack.name !== 'Anhedral Stack' ||
+    stack.items !== undefined ||
+    Object.keys(stack.additions ?? {})
+      .sort()
+      .join(',') !== 'backend,r2,stripe'
   )
     throw new Error('Plugin archive release identity mismatch.');
-  if (files.some((file) => file.name === 'mcp.json' || file.name.startsWith('runtime/')))
-    throw new Error('Scaffold plugin cannot ship a managed runtime.');
+  if (files.some((file) => file.name.startsWith('runtime/')))
+    throw new Error('Plugin cannot package an executable managed runtime.');
+  validatePluginRemote(json('mcp.json'));
   for (const skill of ['init', 'design'])
     if (!files.some((file) => file.name === `skills/anhedral-${skill}/SKILL.md`))
       throw new Error('Plugin skill is missing.');

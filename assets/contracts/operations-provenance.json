@@ -1,0 +1,11 @@
+{
+  "contractVersion": 1,
+  "owner": "anhedral/platform-contracts/operations",
+  "license": "Apache-2.0",
+  "sourceRevision": "7ad79c1dfeb2675c98515507f609d95bee9133dd",
+  "files": {
+    "staging-transport.ts": "b5197c607492d7df912589e2707594210b92f06bf2db6b79931d620af4f49004",
+    "runtime-logs-transport.ts": "29f2da5209d2daa1e4edf5c478a0414e89497063503345d805e463e11da1bb78",
+    "LICENSE": "6d89bce3e7760469015287d1b6a45d31ef7924475c9b54eabe974bcce373980b"
+  }
+}

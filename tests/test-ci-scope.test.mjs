@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { parse } from 'yaml';
-import { needsFullCI, needsNextRuntime } from '../scripts/ci-scope.mjs';
+import { needsFullCI } from '../scripts/ci-scope.mjs';
 
 test('only ordinary documentation takes the lightweight path', () => {
   assert.equal(
@@ -49,9 +49,7 @@ test('manual runs and missing history conservatively require code checks', () =>
       });
       assert.equal(
         readFileSync(output, 'utf8'),
-        'full=true\nrelease=' +
-          (env.GITHUB_EVENT_NAME === 'workflow_dispatch') +
-          '\nnextRuntime=true\n',
+        'full=true\nrelease=' + (env.GITHUB_EVENT_NAME === 'workflow_dispatch') + '\n',
       );
     }
   } finally {
@@ -95,18 +93,24 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
     base = git('rev-parse', 'HEAD').trim();
     writeFileSync(path.join(directory, 'README.md'), '🚧 Under construction\n');
     git('commit', '--quiet', '-am', 'Docs');
-    assert.equal(run(), 'full=false\nrelease=false\nnextRuntime=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\n');
     writeFileSync(path.join(directory, 'README.md'), 'Trailing space \n');
     git('commit', '--quiet', '-am', 'Whitespace defect');
     assert.throws(run, 'documentation whitespace defects must fail');
     assert.throws(() => readFileSync(output));
     writeFileSync(path.join(directory, 'README.md'), 'Clean documentation\n');
     git('commit', '--quiet', '-am', 'Fix whitespace');
-    assert.equal(run(), 'full=false\nrelease=false\nnextRuntime=false\n');
+    assert.equal(run(), 'full=false\nrelease=false\n');
     mkdirSync(path.join(directory, 'docs'));
     git('mv', 'source.ts', 'docs/source.md');
     git('commit', '--quiet', '-m', 'Move source');
-    assert.equal(run(), 'full=true\nrelease=false\nnextRuntime=false\n');
+    assert.equal(run(), 'full=true\nrelease=false\n');
+    base = git('rev-parse', 'HEAD').trim();
+    mkdirSync(path.join(directory, 'assets/launch'), { recursive: true });
+    writeFileSync(path.join(directory, 'assets/launch/server.ts.txt'), 'export {};\n');
+    git('add', '.');
+    git('commit', '--quiet', '-m', 'Change canonical runtime template');
+    assert.equal(run(), 'full=true\nrelease=false\n');
     base = 'a'.repeat(40);
     assert.throws(run);
     assert.throws(() => readFileSync(output));
@@ -115,7 +119,7 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
   }
 });
 
-test('staging and main share one gate with scoped runtime smoke; broad validation stays manual', () => {
+test('staging and main share one fast gate; generated runtime and broad validation stay manual', () => {
   const workflow = parse(
     readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8'),
   );
@@ -137,21 +141,53 @@ test('staging and main share one gate with scoped runtime smoke; broad validatio
   assert.equal(gate['runs-on'], 'ubuntu-latest');
   assert.ok(gate['timeout-minutes'] <= 20);
   assert.equal(gate.strategy, undefined);
+  assert.deepEqual(workflow.permissions, { contents: 'read' });
+  const routine = gate.steps.filter((step) => !/workflow_dispatch/.test(step.if ?? ''));
+  assert.equal(routine.filter((step) => step.run === 'pnpm build').length, 1);
+  const install = routine.find((step) => /pnpm install/.test(step.run ?? ''));
+  assert.match(install.run, /--frozen-lockfile --ignore-scripts/);
+  assert.ok(routine.every((step) => !/runtime-smoke|test-generated-apps/.test(step.run ?? '')));
   const commands = gate.steps.map((step) => step.run || '').join('\n');
   assert.doesNotMatch(
     commands,
     /test:unit|test:patch|audit:osv|test-generated-apps|playwright|test:browser|plugin:check/,
   );
   assert.match(commands, /test-cli-validation/);
-  const runtime = gate.steps.find((step) => /next-runtime-smoke/.test(step.run || ''));
-  assert.equal(runtime.if, "steps.scope.outputs.nextRuntime == 'true'");
+  for (const file of [
+    'test-standalone-checkout.test.mjs',
+    'test-runtime-proof-receipt.test.mjs',
+    'test-launch-init.test.mjs',
+    'test-public-stack.test.mjs',
+    'test-standard.test.mjs',
+    'test-ui-stack.test.mjs',
+    'test-deployment-contract.test.mjs',
+    'test-tanstack-platform.test.mjs',
+  ])
+    assert.ok(commands.includes(`tests/${file}`), file);
+  assert.doesNotMatch(commands, /next-runtime-smoke/);
+  const runtime = gate.steps.find((step) => /tanstack-runtime-smoke/.test(step.run || ''));
+  assert.equal(workflow.on.workflow_dispatch.inputs.runtime_proof.type, 'boolean');
+  assert.equal(workflow.on.workflow_dispatch.inputs.runtime_proof.default, false);
+  assert.equal(runtime.if, "github.event_name == 'workflow_dispatch' && inputs.runtime_proof");
   assert.match(commands, /check:security/);
+  const measurements = gate.steps.find(
+    (step) => step.name === 'Retain Anhedral Stack runtime measurements',
+  );
+  assert.equal(
+    measurements.if,
+    "always() && github.event_name == 'workflow_dispatch' && inputs.runtime_proof",
+  );
+  assert.equal(measurements.with['retention-days'], 1);
+  assert.deepEqual(measurements.with.path.trim().split('\n'), [
+    '.artifacts/anhedral-stack-runtime/summary.json',
+    '.artifacts/anhedral-stack-runtime/measurements.json',
+  ]);
   for (const step of gate.steps.filter((step) =>
     /plugin:build|create-release-artifact|upload-artifact/.test(
       (step.run || '') + (step.uses || ''),
     ),
   )) {
-    if (step.name === 'Retain Next runtime measurements') continue;
+    if (step.name === 'Retain Anhedral Stack runtime measurements') continue;
     assert.match(step.if, /github.event_name == 'workflow_dispatch'/);
     assert.match(step.if, /github.ref == 'refs\/heads\/main'/);
   }
@@ -161,6 +197,9 @@ test('staging and main share one gate with scoped runtime smoke; broad validatio
   assert.deepEqual(Object.keys(deep.on), ['workflow_dispatch']);
   assert.ok(deep.jobs.generated);
   assert.notEqual(deep.jobs.gate.name, 'CI gate');
+  for (const job of Object.values(deep.jobs))
+    for (const step of job.steps ?? [])
+      if (/pnpm install/.test(step.run ?? '')) assert.match(step.run, /--ignore-scripts/);
   const release = parse(
     readFileSync(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8'),
   );
@@ -190,22 +229,8 @@ test('main rejects topic PRs and identifies promotions without expanding hosted 
       });
     assert.throws(() => run('codex/topic'));
     run('staging');
-    assert.equal(readFileSync(output, 'utf8'), 'full=true\nrelease=true\nnextRuntime=true\n');
+    assert.equal(readFileSync(output, 'utf8'), 'full=true\nrelease=true\n');
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-});
-
-test('Next runtime scope covers build and generator changes without native-only runs', () => {
-  for (const file of [
-    'src/platforms/web.ts',
-    'src/dependencies.ts',
-    'pnpm-lock.yaml',
-    'scripts/next-runtime-smoke.mjs',
-    '.github/workflows/ci.yml',
-  ])
-    assert.equal(needsNextRuntime([file]), true, file);
-  for (const file of ['docs/native-ui.md', 'assets/ui/native/button.tsx', 'README.md'])
-    assert.equal(needsNextRuntime([file]), false, file);
-  assert.equal(needsNextRuntime([]), true);
 });

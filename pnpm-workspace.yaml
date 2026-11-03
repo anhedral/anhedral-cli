@@ -1,0 +1,7 @@
+# This repository is a standalone workspace even when checked out as a submodule.
+packages: []
+linkWorkspacePackages: false
+preferWorkspacePackages: false
+sharedWorkspaceLockfile: false
+nodeLinker: isolated
+hoist: false

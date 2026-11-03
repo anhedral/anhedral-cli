@@ -1,0 +1,21 @@
+import { createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+import type { ApplicationContext } from './lib/request-context';
+
+export function getRouter() {
+  return createRouter({ routeTree, scrollRestoration: true });
+}
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: ReturnType<typeof getRouter>;
+    server: { requestContext: ApplicationContext };
+  }
+}
+
+// Start's server-function context and Router's server-entry context share this contract.
+declare module '@tanstack/react-start' {
+  interface Register {
+    server: { requestContext: ApplicationContext };
+  }
+}

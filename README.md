@@ -1,18 +1,11 @@
 # Anhedral CLI
 
 > [!WARNING]
-> **Under construction.** Anhedral CLI is under active development. Commands, generated source and integrations are evolving, and breaking changes are expected. Commands and source-generation details are documented below.
+> Under construction. Commands, generated source and managed integration are evolving.
 
-Anhedral CLI scaffolds applications progressively: Next.js on Cloudflare Workers, a Hono API, Drizzle/D1 and Better Auth, then mobile, browser extension and desktop clients, storage, payments, realtime and AI. Each addition writes editable source into your project.
+Generate the **Anhedral Stack** as editable source. Start with web UI, then add the backend, private storage and payments when needed. There is one current stack and one CLI generator; no stack selector or separate public stack registry is required.
 
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/anhedral-stack-light.png">
-  <img alt="Progressive scaffold: Next.js, then Hono, then Drizzle/D1 and Better Auth, with optional storage, services, clients and payments." src="docs/assets/anhedral-stack.png" width="1600">
-</picture>
-
-## Start a project
-
-Start with a Next.js application configured for OpenNext on Cloudflare Workers, with Anhedral UI included as editable source:
+## Start
 
 ```sh
 anhedral init my-app
@@ -20,74 +13,24 @@ cd my-app
 pnpm dev
 ```
 
-Preview initialization with `anhedral init my-app --dry-run --json`, or use `--skip-install --no-git` to handle dependency installation and Git setup yourself.
+Init creates `apps/web` and shared tooling with TanStack Start server rendering/server functions and source-owned Anhedral UI built on shadcn. It does not add an API, database, authentication, storage or payments. Preview with `anhedral init my-app --dry-run --json`; use `--skip-install --no-git` for offline source generation.
 
-Init creates `apps/web` plus shared tooling and tokens. It includes three reviewed web starter components (Button, Input and Label), official shadcn configuration and Anhedral UI metadata.
-
-## Link and upload source
-
-Local staging includes browser-approved `login`, `link --project <uuid> --team <uuid>`,
-`source upload`, `source status`, and `deploy plan|prepare|status`. Deployment
-preparation runs an isolated build only after exact runtime admission; otherwise it awaits runtime. Platform access is disabled until separately
-configured; upload never deploys or enables hosted admission. Run
-`source upload --dry-run` offline to inspect the source archive. See
-[Platform access and secure resumable upload](docs/software-factory.md#platform-cli-access-and-source-upload)
-for credential storage, API origin selection and interruption recovery.
-
-## Build the stack progressively
-
-Scaffold the API, database, authentication and Expo app as your product grows:
+## Add services
 
 ```sh
-anhedral add hono
-anhedral add database-auth
-anhedral add expo native-ui
+anhedral add backend --dry-run --json
+anhedral add backend
+anhedral add r2
+anhedral add stripe
 ```
 
-Or add that complete foundation to a newly initialized project in one step:
+`backend` adds Hono, Better Auth and Drizzle/D1 together in one source transaction. `r2` adds private storage; `stripe` adds subscriptions. Both require the backend. Include missing prerequisites explicitly with `anhedral add r2 stripe --with-dependencies`.
 
-```sh
-anhedral add expo native-ui --with-dependencies
-```
+After adding backend, configure `apps/api/.dev.vars` from its example, review the initial SQL and apply it deliberately with `pnpm db:migrate --local`. The same Vite process then runs the web and auxiliary API Workers with local resources. Authentication methods start disabled and need explicit configuration. After adding Stripe, run `pnpm db:generate`, review the billing SQL and migrate before testing webhooks. Builds/startup never migrate databases or activate providers.
 
-Explore additional capabilities and preview their generated source:
+Use `anhedral stack list`, `status` and `doctor` to inspect the Anhedral Stack and its additions. These checks describe source completeness, not live provider readiness. Current public generation is web-only. Historical generators and protocol values remain compatibility implementation details; preserved development branches retain the broader earlier work.
 
-```sh
-anhedral stack list
-anhedral add side-panel --with-dependencies --dry-run --json
-```
-
-The core progression is **Next.js → Hono → Drizzle/D1 + Better Auth**. After that, choose the capabilities your application needs:
-
-| Add | Scaffolded source and configuration | Requires |
-| --- | --- | --- |
-| `hono` | Hono API Worker, health route and web/API connection | Next.js foundation |
-| `database-auth` | Drizzle schema and migrations, D1 binding, Better Auth and sign-in starter | `hono` |
-| `r2` | Private R2 binding and authenticated, owner-scoped file routes | `database-auth` |
-| `stripe` | Stripe subscription Checkout, signed webhooks and server-side access checks | `database-auth` |
-| `realtime` | Durable events and resumable server-sent event streams | `database-auth` |
-| `rtc` | Cloudflare Realtime SFU session and track API adapter | `database-auth` |
-| `ai` | Workers AI text-generation route, authentication and daily quota | `database-auth` |
-| `expo` | Expo iOS/Android app with Better Auth and SecureStore session integration | `database-auth` |
-| `native-ui` | NativeWind 4, shared theme styling and RNR Button/Text starter for Expo | `expo` |
-| `revenuecat` | Mobile subscription SDK/UI, webhooks and server-side entitlement reconciliation | `expo`, `stripe` |
-| `wxt`, with optional `side-panel` | WXT browser extension; `side-panel` adds Chrome Side Panel API support to render the extension in the browser side panel | `wxt` requires `database-auth`; `side-panel` requires `wxt` |
-| `gpui` | Rust/GPUI native desktop application and build scripts | `database-auth` |
-
-Include prerequisites explicitly or use `--with-dependencies` to add them in order. These dependencies define the Anhedral scaffold's composition rules. Additions preserve edited application source.
-
-```sh
-anhedral add r2 stripe realtime rtc ai
-anhedral add revenuecat --with-dependencies
-anhedral add wxt side-panel --with-dependencies
-anhedral add gpui --with-dependencies
-anhedral stack status
-anhedral stack doctor
-```
-
-The CLI generates application source, bindings, configuration examples and migration tooling. Complete service activation with resource provisioning, credentials, reviewed migrations and runtime validation, then deploy the server applications and build/distribute the selected clients. Better Auth methods become usable after you explicitly enable and configure them. The [capability guide](docs/capabilities.md) covers setup and acceptance for each addition. `stack status` and `stack doctor` report the installed source and its completeness.
-
-## Anhedral UI
+## Source-owned UI
 
 ```sh
 anhedral ui list
@@ -96,18 +39,30 @@ anhedral ui diff card --web
 anhedral ui doctor --web
 ```
 
-Anhedral UI is a small catalog and CLI over official shadcn on web and React Native Reusables on native. Components are copied into your application. Native resolution prefers a reviewed Anhedral extension when one exists, then RNR; unsupported components are reported. You own and customize the installed source.
+UI commands operate on Anhedral Stack web applications. Components are editable source copied through the pinned official shadcn installer. Preserve local edits, semantic theme tokens and MIT attribution. See [UI ownership](docs/ui.md).
 
-For an existing Expo app, complete the upstream React Native Reusables NativeWind 4 setup first, then use `anhedral ui init --native`. Ambiguous workspaces require `--web`, `--native`, `--all` or an application-specific `--cwd`.
+## Optional Platform access
 
-Install additional components as needed with `anhedral ui add`. Use `ui list` to explore availability, `ui diff` to review changes and `ui doctor` to check setup. Shared theme tokens connect the web and native design language while each platform receives its own component source.
+Local generation requires no account. For an existing Platform project, use browser-approved `login`, then `link --project <uuid> --team <uuid>`. `source upload --dry-run` inspects packaging without uploading; `source upload` sends a resumable immutable checkpoint.
 
-## Documentation
+`deploy plan --manifest <file>`, `deploy prepare` and `deploy status` submit intent and read candidate receipts. Platform independently checks current authority, exact artifacts and runtime admission. Upload/build success is not production approval. The current manifest runtime profile is `anhedral-stack`; an application cannot approve itself for hosting.
 
-See [stack standard](docs/stack-standard.md), [workflow](docs/software-factory.md), [UI commands](docs/ui.md) and [stack additions](docs/capabilities.md).
+`env list/import/set` manages variable metadata and private imports. Send values through an owner-only file or stdin, never command arguments or chat. `staging status/deploy` operates on ready candidates; `logs` reads redacted runtime events. The optional plugin uses separate OAuth consent for Platform tools. See [the operating workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
 
-## Develop the CLI
+## Help and automation
 
-For source development, run `pnpm install --frozen-lockfile && pnpm build`, then `node dist/bin.js init my-app`.
+Run `anhedral --help` or `anhedral help <command>` for contextual examples. Use `--json` for machine-readable stdout, `--quiet` to suppress ordinary output, and `--non-interactive` to avoid approval polling. Platform retains compact JSON by default; `--human` selects readable summaries. Errors remain on stderr with a numeric failure status and recovery guidance.
 
-Apache-2.0. Generated applications are editable source that consumers may customize and license for their own products. Retain the applicable MIT notices for copied upstream UI source.
+```sh
+anhedral completion bash > ~/.anhedral-completion.bash
+# Or print zsh completion without changing your shell profile:
+anhedral completion zsh
+```
+
+## Development and ownership
+
+Use `pnpm install --frozen-lockfile`, `pnpm build` and focused tests when developing this repository. Generated applications use the versions recorded in their manifests. Run their `pnpm check` and `pnpm audit:deps` before deployment. Existing applications are never reinitialized or silently migrated.
+
+See [stack conventions](docs/stack-standard.md), [additions](docs/capabilities.md), [UI](docs/ui.md) and [workflow](docs/software-factory.md).
+
+Apache-2.0. Generated applications are editable source that consumers may customize and license for their products. Retain applicable MIT notices for copied upstream UI source.

@@ -1,12 +1,20 @@
 import { existsSync, writeFileSync } from 'node:fs';
+import { MAX_PROJECT_JSON_BYTES, readBoundedFile } from './bounded-file.js';
 import path from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { spawn, spawnSync } from 'node:child_process';
 import { commandArguments, commandArgumentError } from './cli-arguments.js';
 import { resolveCommand } from './command.js';
-import type { OutputOptions } from './cli-output.js';
+import { ANHEDRAL_STACK } from './capability-catalog.js';
+import { createReporter, type OutputOptions } from './cli-output.js';
 import { UI_CATALOG, resolveUiItems, type UiPlatform } from './ui-catalog.js';
-import { detectUiTargets, initializeUiMetadata, inspectUiTarget } from './ui-project.js';
+import {
+  assertUiMetadataPaths,
+  detectUiTargets,
+  initializeUiMetadata,
+  inspectUiTarget,
+  type UiTarget,
+} from './ui-project.js';
 
 export type UiRunner = (args: string[], cwd: string) => string | Promise<string>;
 function runUpstream(args: string[], cwd: string): Promise<string> {
@@ -93,32 +101,95 @@ function runUpstream(args: string[], cwd: string): Promise<string> {
   });
 }
 
-export async function runUiCommand(
+function assertAnhedralStackTarget(target: UiTarget): void {
+  const dependencies = { ...target.manifest.devDependencies, ...target.manifest.dependencies };
+  if (target.platform !== 'web' || !dependencies['@tanstack/react-start'])
+    throw commandArgumentError(
+      'ui',
+      'Anhedral UI requires the Anhedral Stack web foundation. Run anhedral init <directory>.',
+    );
+  let root = target.root;
+  for (;;) {
+    const metadata = path.join(root, 'anhedral.json');
+    if (existsSync(metadata)) {
+      const project = JSON.parse(
+        readBoundedFile(metadata, MAX_PROJECT_JSON_BYTES).toString('utf8'),
+      );
+      if (
+        project?.schemaVersion !== 1 ||
+        ![ANHEDRAL_STACK.id, 'anhedral-web-launch'].includes(project.setup?.stack) ||
+        project.composition?.contractVersion !== 2 ||
+        project.composition?.foundation !== ANHEDRAL_STACK.foundation.id ||
+        path.join(root, 'apps', 'web') !== target.root
+      )
+        throw commandArgumentError(
+          'ui',
+          'Select apps/web in an Anhedral Stack project. Run anhedral ui --help.',
+        );
+      return;
+    }
+    if (existsSync(path.join(root, '.git')) || path.dirname(root) === root) break;
+    root = path.dirname(root);
+  }
+  throw commandArgumentError(
+    'ui',
+    'No Anhedral Stack project found. Run anhedral init <directory>.',
+  );
+}
+
+/** Public UI surface: one Anhedral Stack web target, with no native install fallback. */
+export async function runAnhedralUiCommand(
   args: string[],
   output: OutputOptions,
   run: UiRunner = runUpstream,
 ) {
-  const parsed = commandArguments('ui', args);
+  return runUiCommand(args, output, run, 'public');
+}
+
+export async function runUiCommand(
+  args: string[],
+  output: OutputOptions,
+  run: UiRunner = runUpstream,
+  mode: 'compatibility' | 'public' = 'compatibility',
+) {
+  if (mode === 'public' && args.some((arg) => /^--(?:native|all)(?:=|$)/.test(arg)))
+    throw commandArgumentError(
+      'ui',
+      'Anhedral UI supports the Anhedral Stack web application only. Use --web or select apps/web with --cwd.',
+    );
+  // Retained direct library callers can inspect legacy source; the executable uses public mode.
+  const legacySelectors =
+    mode === 'compatibility' ? args.filter((arg) => ['--native', '--all'].includes(arg)) : [];
+  if (new Set(legacySelectors).size !== legacySelectors.length)
+    throw commandArgumentError('ui', 'Specify each UI selector only once.');
+  const parsed = commandArguments(
+    'ui',
+    args.filter((arg) => !legacySelectors.includes(arg)),
+  );
   const [action, ...names] = parsed.positional;
   if (!['init', 'add', 'list', 'diff', 'doctor'].includes(action))
     throw commandArgumentError('ui', 'Choose ui init, add, list, diff or doctor.');
   if (['add', 'diff'].includes(action) ? !names.length || names.length > 50 : names.length > 0)
     throw commandArgumentError('ui', 'Supply component names only for add/diff (at most 50).');
-  const selectors = ['--web', '--native', '--all'].filter((flag) => parsed.has(flag));
+  const selectors = ['--web', '--native', '--all'].filter(
+    (flag) => parsed.has(flag) || legacySelectors.includes(flag),
+  );
   if (selectors.length > 1)
     throw commandArgumentError('ui', 'Choose one of --web, --native or --all.');
-  const selector = selectors[0]?.slice(2) as UiPlatform | 'all' | undefined;
+  const selector =
+    mode === 'public' ? 'web' : (selectors[0]?.slice(2) as UiPlatform | 'all' | undefined);
   let result: unknown;
   if (action === 'list') {
     result = {
       catalogRevision: UI_CATALOG.revision,
-      nativeStyling: UI_CATALOG.nativeStyling,
-      components: UI_CATALOG.components.filter(
-        (item) => !selector || selector === 'all' || item[selector],
-      ),
+      ...(mode === 'public' ? { platform: 'web' } : { nativeStyling: UI_CATALOG.nativeStyling }),
+      components: UI_CATALOG.components
+        .filter((item) => !selector || selector === 'all' || item[selector])
+        .map((item) => (mode === 'public' ? { name: item.name, web: item.web } : item)),
     };
   } else {
     const targets = detectUiTargets(process.cwd(), selector);
+    if (mode === 'public') for (const target of targets) assertAnhedralStackTarget(target);
     if (action === 'doctor') {
       const reports = targets.map(inspectUiTarget);
       result = {
@@ -129,6 +200,7 @@ export async function runUiCommand(
     } else {
       // Preflight every target before invoking any installer, including explicit --all.
       const plans = targets.map((target) => {
+        assertUiMetadataPaths(target.root);
         const report = inspectUiTarget(target);
         const configExists = existsSync(path.join(target.root, 'components.json'));
         const nativeInit = action === 'init' && target.platform === 'native';
@@ -208,47 +280,46 @@ export async function runUiCommand(
       };
     }
   }
-  if (output.json) console.log(JSON.stringify(result, null, 2));
-  else if (!output.quiet)
-    console.log(
-      action === 'list'
-        ? UI_CATALOG.components
-            .filter((item) => !selector || selector === 'all' || item[selector])
-            .map(
-              (item) =>
-                `${item.name}\tweb: ${item.web ? 'shadcn' : 'unavailable'}\tnative: ${item.native ? 'RNR (validation required)' : 'unavailable'}`,
+  createReporter(output, () =>
+    action === 'list'
+      ? UI_CATALOG.components
+          .filter((item) => !selector || selector === 'all' || item[selector])
+          .map((item) =>
+            mode === 'public'
+              ? `${item.name}\tshadcn`
+              : `${item.name}\tweb: ${item.web ? 'shadcn' : 'unavailable'}\tnative: ${item.native ? 'RNR (validation required)' : 'unavailable'}`,
+          )
+          .join('\n')
+      : action === 'doctor'
+        ? (result as { targets: ReturnType<typeof inspectUiTarget>[] }).targets
+            .map((report) =>
+              [
+                `${report.platform}: ${report.configurationReady ? 'configuration ready' : 'setup needed'} (${report.root})`,
+                ...report.issues,
+                'Runtime acceptance: not evaluated.',
+              ].join('\n'),
             )
-            .join('\n')
-        : action === 'doctor'
-          ? (result as { targets: ReturnType<typeof inspectUiTarget>[] }).targets
-              .map((report) =>
-                [
-                  `${report.platform}: ${report.configurationReady ? 'configuration ready' : 'setup needed'} (${report.root})`,
-                  ...report.issues,
-                  'Runtime acceptance: not evaluated.',
-                ].join('\n'),
-              )
-              .join('\n\n')
-          : (
-              result as {
-                targets: { root: string; platform: string; command: string[]; output?: string }[];
-              }
-            ).targets
-              .map((target) =>
-                [
-                  `${action}${parsed.has('--dry-run') ? ' (dry run)' : ''}: ${target.platform} (${target.root})`,
-                  ...(parsed.has('--dry-run')
-                    ? [
-                        target.command.length
-                          ? `shadcn@${UI_CATALOG.shadcnCliVersion} ${target.command.join(' ')}`
-                          : 'Validate existing configuration; initialize metadata and attribution if absent.',
-                      ]
-                    : []),
-                  target.output?.trim() ?? '',
-                ]
-                  .filter(Boolean)
-                  .join('\n'),
-              )
-              .join('\n\n'),
-    );
+            .join('\n\n')
+        : (
+            result as {
+              targets: { root: string; platform: string; command: string[]; output?: string }[];
+            }
+          ).targets
+            .map((target) =>
+              [
+                `${action}${parsed.has('--dry-run') ? ' (dry run)' : ''}: ${target.platform} (${target.root})`,
+                ...(parsed.has('--dry-run')
+                  ? [
+                      target.command.length
+                        ? `shadcn@${UI_CATALOG.shadcnCliVersion} ${target.command.join(' ')}`
+                        : 'Validate existing configuration; initialize metadata and attribution if absent.',
+                    ]
+                  : []),
+                target.output?.trim() ?? '',
+              ]
+                .filter(Boolean)
+                .join('\n'),
+            )
+            .join('\n\n'),
+  ).result(result);
 }

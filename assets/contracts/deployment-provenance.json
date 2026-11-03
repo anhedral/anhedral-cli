@@ -1,11 +1,15 @@
 {
   "contractVersion": 1,
+  "owner": "anhedral/platform-contracts/deployment",
+  "license": "Apache-2.0",
+  "sourceRevision": "754509cd760762e0c2e3fb00a644069dc1e2ecaf",
   "files": {
-    "cli-transport.ts": "7cec9ca0195f7b36a48891b4b50881d90f8a47ee0d908cc774c65f98a01378ec",
-    "source-profile.ts": "e4eae29b08b592a6840d72c3a62ec6af05234aaf4a4664193009273929777332",
-    "source-bundle.ts": "0105315d6933be1ff0ae54e27f0bf3eafd190d680c3f73972bda2af642ca7d2e",
-    "deployment.ts": "7971ee620fbc0292b72bb916344b713c399e24c82c23d6c6eacb8f3ccf999daf",
-    "fixtures.json": "cdcca5235c830f6173183885cda90b0bf4f2faf15ef881c0cbf8428e5e3f7de2",
-    "acceptance.mjs": "a2a34f7bb4e37883eab60860dc56f743de641264e564f6742e55adc4d87385f6"
+    "cli-transport.ts": "30d184604c8d78ce3b8c88d71b525234d716d40ead278f6aed44a0250aa0d9a4",
+    "source-profile.ts": "faf34ae54eb23881c4ec008f9fc59dbf6905fa04a912b66fe4f527a49d4b8490",
+    "source-bundle.ts": "99df4874f9337a604da544093215de24f19f136182017be15629f78b5180a52b",
+    "deployment.ts": "eb10b9eb771ef8a3f7a014ac473652d33fed6cb82969b3bc8a694dc48e267c0a",
+    "fixtures.json": "41803dffca899a95afc9b00fb6a71a317448b6344452d0b0440a8550b5b1f2f7",
+    "acceptance.mjs": "8e9d09d924ca7a7843d1578964243266641b09b339ea621b0981a7ccd28d4c5e",
+    "LICENSE": "6d89bce3e7760469015287d1b6a45d31ef7924475c9b54eabe974bcce373980b"
   }
 }

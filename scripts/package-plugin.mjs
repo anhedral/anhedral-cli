@@ -1,3 +1,6 @@
+import { assertPluginPackageFiles } from './plugin-package-policy.mjs';
+import { readStoredArchive } from './publish-plugin-source.mjs';
+import { validatePluginRemote } from './plugin-remote.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -14,6 +17,8 @@ function crc32(contents) {
 }
 
 function pluginFiles(directory, prefix = '') {
+  if (lstatSync(directory).isSymbolicLink())
+    throw Error('Plugin distribution root cannot be a symbolic link');
   return readdirSync(directory)
     .sort()
     .flatMap((name) => {
@@ -55,6 +60,9 @@ function zipEntry(file, offset) {
 }
 
 export function buildPluginArchive(root) {
+  const distribution = path.join(root, 'plugins/codex/distribution');
+  if (lstatSync(distribution).isSymbolicLink())
+    throw Error('Plugin distribution root cannot be a symbolic link');
   const findings = scanDirectory(root, 'plugins/codex/distribution');
   if (findings.length) throw new Error(formatFindings(findings));
   const pluginRoot = path.join(root, 'plugins/codex/distribution');
@@ -64,17 +72,23 @@ export function buildPluginArchive(root) {
     throw new Error('Plugin and CLI versions must match.');
   const files = pluginFiles(pluginRoot);
   const names = new Set(files.map((file) => file.name));
+  assertPluginPackageFiles(names);
   for (const name of [
     'LICENSE',
     ...['init', 'design'].map((name) => `skills/anhedral-${name}/SKILL.md`),
-    ...['stack-standard.md', 'software-factory.md', 'native-ui.md'].map(
-      (name) => `references/${name}`,
-    ),
+    ...[
+      'stack-standard.md',
+      'software-factory.md',
+      'capabilities.md',
+      'ui.md',
+      'stack-registry.json',
+    ].map((name) => `references/${name}`),
   ]) {
     if (!names.has(name)) throw new Error(`Plugin distribution is missing required file: ${name}`);
   }
-  if ([...names].some((name) => name === 'mcp.json' || name.startsWith('runtime/')))
-    throw new Error('Scaffold plugin must contain skills and references only.');
+  if ([...names].some((name) => name.startsWith('runtime/')))
+    throw new Error('Plugin cannot package an executable managed runtime.');
+  validatePluginRemote(JSON.parse(readFileSync(path.join(pluginRoot, 'mcp.json'), 'utf8')));
   const interface_ = manifest.extensions?.['com.openai']?.interface;
   for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
     const asset = interface_?.[field];
@@ -101,7 +115,9 @@ export function buildPluginArchive(root) {
   end.writeUInt16LE(local.length, 10);
   end.writeUInt32LE(directory.length, 12);
   end.writeUInt32LE(offset, 16);
-  return { contents: Buffer.concat([...local, directory, end]), version: manifest.version };
+  const contents = Buffer.concat([...local, directory, end]);
+  readStoredArchive(contents); // Candidate bytes must satisfy the publisher's bounds and format.
+  return { contents, version: manifest.version };
 }
 
 export function packagePlugin(root, outputDirectory) {

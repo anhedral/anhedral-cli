@@ -2,14 +2,25 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { buildPluginArchive } from './package-plugin.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
-if (
-  existsSync(new URL('../plugins/codex/distribution/mcp.json', import.meta.url)) ||
-  existsSync(new URL('../plugins/codex/distribution/runtime', import.meta.url))
-)
-  throw Error('Scaffold plugin must not ship a managed runtime.');
+if (existsSync(new URL('../plugins/codex/distribution/runtime', import.meta.url)))
+  throw Error('Plugin must not ship an executable managed runtime.');
 const manifest = JSON.parse(
   readFileSync(new URL('../plugins/codex/distribution/plugin.json', import.meta.url)),
 );
-if (!manifest.description.includes('Scaffold')) throw Error('Plugin scope differs.');
+if (!manifest.description.includes('Scaffold')) throw Error('Plugin source scope differs.');
+const stack = JSON.parse(
+  readFileSync(
+    new URL('../plugins/codex/distribution/references/stack-registry.json', import.meta.url),
+  ),
+);
+if (
+  stack.id !== 'anhedral-stack' ||
+  stack.name !== 'Anhedral Stack' ||
+  stack.items ||
+  Object.keys(stack.additions ?? {})
+    .sort()
+    .join(',') !== 'backend,r2,stripe'
+)
+  throw Error('Plugin must describe the single Anhedral Stack and its supported additions.');
 buildPluginArchive(root);
-console.log('Skills-only plugin package validated.');
+console.log('Source skills and remote Platform MCP plugin validated.');

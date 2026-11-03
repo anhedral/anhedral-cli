@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
+import { readContractSnapshot } from '../scripts/deployment-contract-snapshot.mjs';
 import * as contract from '../dist/contracts/deployment.js';
+import * as transport from '../dist/contracts/cli-transport.js';
 import { composeSourceProvenance } from '../dist/composition.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
 import { CAPABILITY_IDS, CAPABILITIES } from '../dist/capability-catalog.js';
@@ -18,37 +19,13 @@ const fixture = JSON.parse(
 );
 deploymentAcceptance(contract, fixture);
 
-test('public contract manifest checks drift and rejects private export imports', () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-contract-manifest-'));
-  const script = path.resolve('scripts/sync-deployment-contract.mjs');
-  const run = (cwd, ...args) =>
-    spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8' });
-  try {
-    assert.equal(run(process.cwd(), '--check').status, 0);
-    assert.notEqual(run(process.cwd(), root).status, 0);
-    assert.deepEqual(readdirSync(root), []);
-    const manifest = JSON.parse(readFileSync('assets/contracts/deployment-provenance.json'));
-    assert.deepEqual(Object.keys(manifest).sort(), ['contractVersion', 'files']);
-    assert.equal(contract.hostingPolicySchema, undefined);
-    assert.equal(contract.hostingCompatibility, undefined);
-    const sources = {
-      'cli-transport.ts': 'src/contracts/cli-transport.ts',
-      'source-profile.ts': 'src/contracts/source-profile.ts',
-      'source-bundle.ts': 'src/contracts/source-bundle.ts',
-      'deployment.ts': 'src/contracts/deployment.ts',
-      'fixtures.json': 'tests/fixtures/deployment-contract/fixtures.json',
-      'acceptance.mjs': 'tests/fixtures/deployment-contract/acceptance.mjs',
-    };
-    for (const file of [...Object.values(sources), 'assets/contracts/deployment-provenance.json']) {
-      mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
-      writeFileSync(path.join(root, file), readFileSync(file));
-    }
-    assert.equal(run(root, '--check').status, 0);
-    writeFileSync(path.join(root, sources['deployment.ts']), 'changed contract');
-    assert.notEqual(run(root, '--check').status, 0);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
+test('reviewed public snapshot verifies provenance without importing raw private source', () => {
+  const snapshot = readContractSnapshot(process.cwd(), true);
+  assert.equal(snapshot.manifest.owner, 'anhedral/platform-contracts/deployment');
+  assert.equal(snapshot.manifest.license, 'Apache-2.0');
+  assert.equal(snapshot.files.length, 7);
+  assert.equal(contract.hostingPolicySchema, undefined);
+  assert.equal(contract.hostingCompatibility, undefined);
 });
 
 test('portable contract snapshot matches its exact provenance and the CLI capability catalog', () => {
@@ -155,4 +132,30 @@ test('generated source records composition transactionally without changing iden
     process.chdir(beforeCwd);
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('reviewed public candidate receipt accepts ready web admission without exporting private policies', () => {
+  const receipt = {
+    protocol: 1,
+    planId: crypto.randomUUID(),
+    planDigest: 'a'.repeat(64),
+    candidateId: crypto.randomUUID(),
+    sourceRevision: 'b'.repeat(64),
+    state: 'ready',
+    hostedAdmission: true,
+    identityAction: 'preserve',
+  };
+  assert.deepEqual(transport.cliPreparationSchema.parse(receipt), receipt);
+  assert.ok(
+    transport.cliPreparationSchema.safeParse({ ...receipt, state: 'built', hostedAdmission: false })
+      .success,
+  );
+  assert.equal(
+    transport.cliPreparationSchema.safeParse({ ...receipt, state: 'published' }).success,
+    false,
+  );
+  assert.equal(transport.cliBuildPolicySchema, undefined);
+  assert.equal(transport.cliBuildEvidenceSchema, undefined);
+  assert.equal(contract.hostingPolicySchema, undefined);
+  assert.equal(contract.hostingCompatibility, undefined);
 });
