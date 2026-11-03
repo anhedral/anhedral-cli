@@ -26,9 +26,9 @@ test('CLI login stores device and access secrets without output and rejects redi
   const device = {
     device_code: ['private', 'device', 'code', '123456789'].join('-'),
     user_code: 'ABCD-EFGH',
-    verification_uri: 'https://platform-staging.anhedral.com/desktop/connect?client=cli',
+    verification_uri: 'https://platform.example.test/desktop/connect?client=cli',
     verification_uri_complete:
-      'https://platform-staging.anhedral.com/desktop/connect?client=cli&user_code=ABCD-EFGH',
+      'https://platform.example.test/desktop/connect?client=cli&user_code=ABCD-EFGH',
     expires_in: 300,
     interval: 1,
   };
@@ -46,7 +46,7 @@ test('CLI login stores device and access secrets without output and rejects redi
   const run = (args) =>
     runPlatformCommand(
       'login',
-      [...args, '--api-url', 'https://platform-staging.anhedral.com'],
+      [...args, '--api-url', 'https://platform.example.test'],
       { json: true },
       { store, fetch, sleep: async () => {} },
     );

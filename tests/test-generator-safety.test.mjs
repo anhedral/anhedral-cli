@@ -15,7 +15,7 @@ import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.
 import { runCapabilityCommand } from '../dist/capability-command.js';
 import { CapabilityEditor } from '../dist/capability-editor.js';
 import { initializeUiMetadata } from '../dist/ui-project.js';
-import { needsStackRuntime } from '../scripts/ci-scope.mjs';
+import { needsFullCI } from '../scripts/ci-scope.mjs';
 const offline = () => {
   throw Error('External commands forbidden');
 };
@@ -170,13 +170,13 @@ test('init dry-run rejects occupied and symlinked destinations without creating 
     rmSync(root, { recursive: true, force: true });
   }
 });
-test('shared recipe and generated API/auth changes select Anhedral Stack runtime acceptance', () => {
+test('shared recipe and generated API/auth changes always retain fast CI checks', () => {
   for (const file of [
     'src/capability-recipes.ts',
     'assets/stack/api-index.ts.txt',
     'assets/stack/auth.ts.txt',
   ])
-    assert.equal(needsStackRuntime([file]), true, file);
-  assert.equal(needsStackRuntime(['docs/capabilities.md']), false);
-  assert.equal(needsStackRuntime(['assets/stack/native-button.tsx.txt']), false);
+    assert.equal(needsFullCI([file]), true, file);
+  assert.equal(needsFullCI(['docs/capabilities.md']), false);
+  assert.equal(needsFullCI(['assets/stack/native-button.tsx.txt']), true);
 });

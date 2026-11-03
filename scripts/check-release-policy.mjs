@@ -198,6 +198,15 @@ function validateGitHubReleaseAssets(releaseWorkflow) {
 
 function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
   const failures = [];
+  if (
+    !/^  verify:\n    if: github\.repository == 'anhedral\/anhedral-cli'$/m.test(releaseWorkflow) ||
+    !/^  prepare:\n    if: github\.repository == 'anhedral\/anhedral-cli'$/m.test(
+      releaseOnMainWorkflow,
+    )
+  )
+    failures.push(
+      'Release preparation and reusable verification must reject other repository contexts before checkout.',
+    );
   const trigger =
     releaseOnMainWorkflow.match(/^on:\s*$[\s\S]*?(?=^[a-zA-Z0-9_-]+:\s*(?:$|\S))/m)?.[0] ?? '';
   if (

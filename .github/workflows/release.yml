@@ -24,6 +24,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: .
+
 env:
   RELEASE_NODE_VERSION: '24.21.0'
 
@@ -33,6 +37,7 @@ concurrency:
 
 jobs:
   verify:
+    if: github.repository == 'anhedral/anhedral-cli'
     name: Verify existing CI candidate
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -49,9 +54,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           fetch-depth: 0
           persist-credentials: false
           ref: main
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         env:
@@ -171,8 +179,11 @@ jobs:
       - name: Checkout artifact verification code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
           ref: main
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         shell: bash
@@ -225,8 +236,11 @@ jobs:
       - name: Checkout release scripts
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           persist-credentials: false
           ref: main
+      - name: Require standalone public CLI checkout
+        run: node scripts/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         env:
@@ -296,8 +310,19 @@ jobs:
       - name: Checkout published commit
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
+          submodules: false
           fetch-depth: 0
           ref: ${{ inputs.release_sha }}
+      - name: Require standalone public CLI checkout
+        # Historical finalization checks out an older public commit, which may
+        # predate the standalone helper. Do not require new files in that tree.
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, realpathSync } from 'node:fs';
+          const metadata = JSON.parse(readFileSync('package.json', 'utf8'));
+          if (metadata.name !== 'anhedral' || realpathSync('.') !== realpathSync(process.env.GITHUB_WORKSPACE))
+            throw Error('Release finalization must run only in the public CLI checkout.');
+          NODE
 
       - name: Require the published candidate commit
         env:
