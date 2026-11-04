@@ -76,3 +76,12 @@ promotion or package publication is part of this change.
 
 Keep public CLI notes within 100 lines and the repository within 20 Markdown files.
 Private operational evidence stays outside this repository; history remains in Git.
+
+## 2026-11-03 — OJ single-stack cutover
+
+Generated Anhedral Stack apps now use pinned OJ for dev/build and TanStack Start
+with shadcn. Backend adds Hono, Better Auth and D1; R2 and Stripe extend it.
+Removed legacy generators, SDK aliases, native UI paths and unused recipe assets.
+CLI build/lint and packlist passed; generated pinned-binary/tamper checks passed.
+The shared deployment-contract projection and combined release remain pending.
+No package/plugin publication or provider deployment occurred from this checkout.

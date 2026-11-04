@@ -178,13 +178,13 @@ try {
   preview = start(
     process.execPath,
     [
-      path.join(web, 'node_modules/vite/bin/vite.js'),
+      path.join(app, 'scripts/oj.mjs'),
       'dev',
+      '.',
       '--host',
       'localhost',
       '--port',
       String(localPort),
-      '--strictPort',
     ],
     web,
     120000,
@@ -252,13 +252,12 @@ try {
   preview = start(
     process.execPath,
     [
-      path.join(web, 'node_modules/vite/bin/vite.js'),
-      'preview',
-      '--host',
-      'localhost',
+      path.join(web, 'node_modules/wrangler/bin/wrangler.js'),
+      'dev',
+      '--config',
+      'dist/ssr/wrangler.json',
       '--port',
       String(localPort),
-      '--strictPort',
     ],
     web,
     180000,

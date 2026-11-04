@@ -17,17 +17,36 @@ import { GENERATOR_VERSION } from './version.js';
 import { PACKAGE_MANAGER, STACK_DEPENDENCIES, WORKSPACE_NODE_ENGINE } from './dependencies.js';
 import { execFile, appendGitignore } from './util.js';
 import { printProgress, printResult, type OutputOptions } from './cli-output.js';
-import type { StandardOptions, StandardRunner } from './registry/types.js';
-import { parseStandardOptions } from './registry/options.js';
+import { CliArgumentError, commandArguments } from './cli-arguments.js';
+import { packageNameFromText } from './render.js';
+import type { CommandRunner } from './command-types.js';
 
-export type LaunchOptions = Pick<
-  StandardOptions,
-  'root' | 'name' | 'skipInstall' | 'dryRun' | 'json' | 'initializeGit'
->;
-/** One stack, with directory/install options only; no legacy product selections. */
+export interface LaunchOptions {
+  root: string;
+  name: string;
+  skipInstall: boolean;
+  dryRun: boolean;
+  json: boolean;
+  initializeGit: boolean;
+}
 export function parseAnhedralStackOptions(args: readonly string[]): LaunchOptions {
-  const { root, name, skipInstall, dryRun, json, initializeGit } = parseStandardOptions(args);
-  return { root, name, skipInstall, dryRun, json, initializeGit };
+  const parsed = commandArguments('init', args);
+  const hasDirectory = parsed.positional.length > 0;
+  const directory = hasDirectory ? parsed.positional[0] : process.cwd();
+  if (!directory)
+    throw new CliArgumentError(
+      'Specify a valid initialization directory.',
+      'Run anhedral init --help.',
+    );
+  const root = path.resolve(directory);
+  return {
+    root,
+    name: packageNameFromText(path.basename(root)),
+    skipInstall: parsed.has('--skip-install'),
+    dryRun: parsed.has('--dry-run'),
+    json: parsed.has('--json'),
+    initializeGit: parsed.has('--git') || (!parsed.has('--no-git') && hasDirectory),
+  };
 }
 const launchCapabilities: Capability[] = [];
 
@@ -91,7 +110,7 @@ function rootFiles(root: string, name: string) {
   });
   appendGitignore(
     root,
-    'node_modules/\ndist/\n.turbo/\n.wrangler/\n.tanstack/\n*.tsbuildinfo\nworker-configuration.d.ts\n.dev.vars\n.dev.vars.*\n!.dev.vars.example\n.env\n.env.*\n!.env.example\n.anhedral/\n'
+    'node_modules/\ndist/\n.turbo/\n.wrangler/\n.tanstack/\n.oj-cache/\n*.tsbuildinfo\nworker-configuration.d.ts\n.dev.vars\n.dev.vars.*\n!.dev.vars.example\n.env\n.env.*\n!.env.example\n.anhedral/\n'
       .trim()
       .split('\n'),
   );
@@ -104,7 +123,7 @@ function documentation(root: string, name: string) {
     'README.md',
     `# ${name}
 
-Anhedral Stack: web UI powered by TanStack Start server rendering/server functions
+Anhedral Stack: web UI powered by OJ and TanStack Start server rendering/server functions
 and source-owned shadcn Anhedral UI.
 Only the web application is created initially. No backend or provider is provisioned.
 
@@ -128,7 +147,7 @@ Set PUBLIC_APP_URL=http://localhost:3000 and generate BETTER_AUTH_SECRET with
 Auth methods start disabled. Deliberately enable chosen methods in
 apps/api/src/auth-features.ts after configuring email/credentials and policies.
 Run pnpm db:migrate --local explicitly to initialize the isolated local D1 database,
-then pnpm dev. Vite runs the web and auxiliary API Workers with shared local
+then pnpm dev. OJ runs the web and auxiliary API Workers with shared local
 persistence. Remote bindings are disabled for local development.
 
 R2 routes enforce authenticated owner access. Stripe adds schema and source only:
@@ -145,7 +164,7 @@ Composition adapters are fingerprinted and customized files are never overwritte
 
 Builds/startup never migrate databases. Provision D1/R2 only when selected and
 configure environment-specific resources/secrets separately. pnpm build emits web
-and selected API Worker artifacts under apps/web/dist. Anhedral Platform admission
+Worker artifacts under apps/web/dist and selected API artifacts under apps/api/dist. Anhedral Platform admission
 requires its separately reviewed Anhedral Stack runtime/artifact; generation is not activation.
 `,
   );
@@ -189,7 +208,7 @@ export function launchPlan(options: LaunchOptions) {
 /** Fresh directories only; source commit and installation retain the existing recovery contract. */
 export async function scaffoldLaunchProject(
   options: LaunchOptions,
-  run: StandardRunner = execFile,
+  run: CommandRunner = execFile,
   output: OutputOptions = {},
 ): Promise<void> {
   const root = options.root;

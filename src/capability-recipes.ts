@@ -1,11 +1,10 @@
 import { readFileSync } from 'node:fs';
-import { parseDocument } from 'yaml';
-import { CapabilityEditor, fingerprint } from './capability-editor.js';
+import { CapabilityEditor } from './capability-editor.js';
 import { CAPABILITY_DEPENDENCIES as P } from './dependencies.js';
 import { STACK_DEPENDENCIES as D } from './dependencies.js';
 import { resourceName } from './render.js';
 import { composeTanstack, addTanstackAuth } from './platforms/tanstack.js';
-import { WEB_API_PROXY } from './platforms/web.js';
+import { WEB_API_PROXY } from './api-proxy.js';
 import type { Capability } from './capability-catalog.js';
 
 const template = (name: string) =>
@@ -127,15 +126,13 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         });
       else
         e.set(web, ['services'], [{ binding: 'ANHEDRAL_API', service: resourceName(name, 'api') }]);
-      const tanstack = !!e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'];
-      if (tanstack)
-        e.set(
-          'apps/api/package.json',
-          ['devDependencies', 'wrangler'],
-          e.json('apps/web/package.json').devDependencies.wrangler,
-        );
+      e.set(
+        'apps/api/package.json',
+        ['devDependencies', 'wrangler'],
+        e.json('apps/web/package.json').devDependencies.wrangler,
+      );
       e.create(
-        tanstack ? 'apps/web/src/lib/api-proxy.ts' : 'apps/web/lib/api-proxy.ts',
+        'apps/web/src/lib/api-proxy.ts',
         WEB_API_PROXY.replace(
           "'idempotency-key'",
           "'idempotency-key', 'stripe-signature', 'last-event-id'",
@@ -144,33 +141,6 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           "AbortSignal.timeout(request.headers.get('accept')?.includes('text/event-stream') ? 35000 : 15000)",
         ),
       );
-      if (!tanstack) {
-        e.create(
-          'apps/web/lib/server-api.ts',
-          `import 'server-only';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { proxyApi,type ApiBinding } from './api-proxy';
-function apiBinding(candidate:unknown):ApiBinding|undefined {
- if(typeof candidate !== 'object' || candidate===null)return undefined;
- if(typeof Reflect.get(candidate,'fetch') !== 'function')return undefined;
- return candidate as ApiBinding;
-}
-export async function apiRequest(request:Request):Promise<Response>{
- if(process.env.NODE_ENV==='development')return proxyApi(request,{development:true,devOrigin:process.env.API_INTERNAL_URL});
- const {env}=await getCloudflareContext({async:true});
- return proxyApi(request,{development:false,binding:apiBinding(Reflect.get(env,'ANHEDRAL_API'))});
-}
-`,
-        );
-        e.create(
-          'apps/web/app/api/[[...path]]/route.ts',
-          "import { apiRequest } from '@/lib/server-api';\nexport const dynamic = 'force-dynamic';\nexport const GET = apiRequest;\nexport const POST = apiRequest;\nexport const PUT = apiRequest;\nexport const PATCH = apiRequest;\nexport const DELETE = apiRequest;\nexport const HEAD = apiRequest;\nexport const OPTIONS = apiRequest;\n",
-        );
-        e.create(
-          'apps/web/README.hono.md',
-          '# Hono development\n\nSet this in apps/web/.env.local for local development:\n\n```dotenv\nAPI_INTERNAL_URL=http://127.0.0.1:8787\n```\n\nProduction uses the ANHEDRAL_API service binding.\n',
-        );
-      }
       break;
     }
     case 'database-auth': {
@@ -250,15 +220,7 @@ export async function apiRequest(request:Request):Promise<Response>{
       e.create('apps/api/src/auth-features.ts', template('auth-features.ts.txt'));
       e.create('apps/api/src/security.ts', template('security.ts.txt'));
       e.create('apps/api/src/features/auth.ts', template('auth-routes.ts.txt'));
-      if (e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'])
-        addTanstackAuth(e);
-      else {
-        e.create('apps/web/app/sign-in/page.tsx', template('web-sign-in.tsx.txt'));
-        e.create(
-          'apps/web/lib/auth-client.ts',
-          "'use client';\nimport { createAuthClient } from 'better-auth/react';\nexport const authClient = createAuthClient();\n",
-        );
-      }
+      addTanstackAuth(e);
       e.merge('package.json', 'scripts', {
         'db:generate': 'pnpm --dir packages/db db:generate',
         'db:migrate': 'pnpm --dir packages/db db:migrate',
@@ -282,363 +244,17 @@ export async function apiRequest(request:Request):Promise<Response>{
       e.create('packages/db/src/billing-schema.ts', template('billing-schema.ts.txt'));
       schemaExport(e, 'billing-schema');
       break;
-    case 'revenuecat':
-      dependency(e, 'apps/mobile', { 'react-native-purchases': P['react-native-purchases'] });
-      e.create('apps/api/src/features/revenuecat.ts', template('revenuecat.ts.txt'));
-      e.create('apps/mobile/lib/purchases.ts', template('purchases.ts.txt'));
-      appendExample(e, 'apps/mobile/.env.example', [
-        'EXPO_PUBLIC_REVENUECAT_IOS_KEY',
-        'EXPO_PUBLIC_REVENUECAT_ANDROID_KEY',
-      ]);
-      e.create('apps/mobile/components/billing-controls.tsx', template('mobile-billing.tsx.txt'));
-      break;
-    case 'realtime':
-      e.create('packages/db/src/events-schema.ts', template('events-schema.ts.txt'));
-      schemaExport(e, 'events-schema');
-      e.create('apps/api/src/features/events.ts', template('events.ts.txt'));
-      e.create(
-        'packages/db/operations/event-retention.sql.example',
-        template('event-retention.sql.txt'),
-      );
-      break;
-    case 'rtc':
-      e.create('apps/api/src/features/rtc.ts', template('rtc.ts.txt'));
-      e.create('packages/db/src/rtc-schema.ts', template('rtc-schema.ts.txt'));
-      schemaExport(e, 'rtc-schema');
-      break;
-    case 'ai':
-      apiConfig(e, 'ai', { binding: 'AI', remote: true });
-      e.create('apps/api/src/features/ai.ts', template('ai.ts.txt'));
-      e.create('packages/db/src/ai-schema.ts', template('ai-schema.ts.txt'));
-      schemaExport(e, 'ai-schema');
-      break;
-    case 'expo':
-      addExpo(e, name);
-      break;
-    case 'native-ui':
-      addNativeUi(e);
-      break;
-    case 'wxt':
-      addExtension(e);
-      break;
-    case 'side-panel':
-      e.create(
-        'apps/extension/entrypoints/sidepanel/index.html',
-        '<!doctype html><html><head><meta charset="UTF-8"><title>Side panel</title></head><body><div id="root"></div><script type="module" src="./main.tsx"></script></body></html>\n',
-      );
-      e.create(
-        'apps/extension/entrypoints/sidepanel/main.tsx',
-        "import { createRoot } from 'react-dom/client';\nimport { App } from '../../components/App';\ncreateRoot(document.getElementById('root')!).render(<App />);\n",
-      );
-
-      break;
-    case 'gpui':
-      addDesktop(e);
-      break;
   }
-}
-
-function addExpo(e: CapabilityEditor, name: string) {
-  project(
-    e,
-    'apps/mobile',
-    '@workspace/mobile',
-    {
-      dev: 'expo start',
-      start: 'expo start',
-      android: 'expo run:android',
-      ios: 'expo run:ios',
-      typecheck: 'tsc --noEmit',
-      lint: 'tsc --noEmit',
-      build: 'expo export --platform ios --platform android',
-    },
-    {
-      expo: P.expo,
-      react: P.react,
-      'react-native': P['react-native'],
-      'expo-secure-store': P['expo-secure-store'],
-      'expo-linking': P['expo-linking'],
-      'better-auth': P['better-auth'],
-      '@better-auth/expo': P['@better-auth/expo'],
-    },
-    { '@types/react': P['@types/react'], 'babel-preset-expo': P['babel-preset-expo'] },
-  );
-  e.set('apps/mobile/package.json', ['type'], 'commonjs');
-  e.set('apps/mobile/package.json', ['main'], 'index.ts');
-  const workspaceSource = e.read('pnpm-workspace.yaml');
-  if (workspaceSource === null) throw Error('Missing pnpm workspace');
-  const workspace = parseDocument(workspaceSource);
-  if (workspace.errors.length) throw Error('Invalid pnpm workspace configuration');
-  const existing = workspace.getIn(['overrides', '@expo/cli>zod']);
-  if (existing !== undefined && existing !== D.zod)
-    throw Error('Preserve the custom Expo Zod override; reconcile it first.');
-  workspace.setIn(['overrides', '@expo/cli>zod'], D.zod);
-  e.writes.set('pnpm-workspace.yaml', workspace.toString());
-  e.create(
-    'apps/mobile/app.json',
-    json({
-      expo: {
-        name,
-        slug: resourceName(name, 'mobile'),
-        scheme: resourceName(name, 'mobile'),
-        version: '1.0.0',
-        userInterfaceStyle: 'automatic',
-        plugins: ['expo-secure-store'],
-      },
-    }),
-  );
-  e.create(
-    'apps/mobile/tsconfig.json',
-    json({
-      extends: 'expo/tsconfig.base',
-      compilerOptions: { strict: true, baseUrl: '.', paths: { '@/*': ['./*'] } },
-    }),
-  );
-  e.create(
-    'apps/mobile/babel.config.js',
-    "module.exports = function(api) {api.cache(true);return {presets:['babel-preset-expo']};};\n",
-  );
-  e.create('apps/mobile/index.ts', "import './anhedral-entry';\n");
-  e.create(
-    'apps/mobile/App.tsx',
-    "import { View, Text } from 'react-native';\nexport default function App() { return <View style={{flex:1,alignItems:'center',justifyContent:'center'}}><Text>Your Expo application</Text></View>; }\n",
-  );
-  e.create('apps/mobile/components/session-controls.tsx', template('mobile-session.tsx.txt'));
-  e.create(
-    'apps/mobile/lib/auth-client.ts',
-    template('mobile-auth.ts.txt').replaceAll(
-      '__SCHEME__',
-      JSON.stringify(resourceName(name, 'mobile')),
-    ),
-  );
-  e.create(
-    'apps/mobile/.env.example',
-    '# Public application URL only, never a server secret. Use a device-reachable development origin.\nEXPO_PUBLIC_API_URL=https://your-app.example\n',
-  );
-  dependency(e, 'apps/api', { '@better-auth/expo': P['@better-auth/expo'] });
-}
-function addNativeUi(e: CapabilityEditor) {
-  dependency(e, 'apps/mobile', {
-    nativewind: P.nativewind,
-    'react-native-css-interop': P['react-native-css-interop'],
-    'react-native-reanimated': P['react-native-reanimated'],
-    'react-native-worklets': P['react-native-worklets'],
-    'react-native-safe-area-context': P['react-native-safe-area-context'],
-    'class-variance-authority': P['class-variance-authority'],
-    clsx: P.clsx,
-    'tailwind-merge': P['tailwind-merge'],
-    'tailwindcss-animate': P['tailwindcss-animate'],
-    '@rn-primitives/portal': P['@rn-primitives/portal'],
-    '@rn-primitives/slot': P['@rn-primitives/slot'],
-  });
-  e.merge('apps/mobile/package.json', 'devDependencies', { tailwindcss: P.tailwindcss });
-  e.create(
-    'apps/mobile/components.json',
-    json({
-      $schema: 'https://ui.shadcn.com/schema.json',
-      style: 'new-york',
-      rsc: false,
-      tsx: true,
-      tailwind: {
-        config: 'tailwind.config.js',
-        css: 'global.css',
-        baseColor: 'neutral',
-        cssVariables: true,
-      },
-      aliases: {
-        components: '@/components',
-        ui: '@/components/ui',
-        utils: '@/lib/utils',
-        lib: '@/lib',
-        hooks: '@/hooks',
-      },
-    }),
-  );
-  for (const file of [
-    'global.css',
-    'tailwind.config.js',
-    'metro.config.js',
-    'nativewind-env.d.ts',
-    'lib/utils.ts',
-  ])
-    e.create(`apps/mobile/${file}`, template('native-' + file.replaceAll('/', '-') + '.txt'));
-  // Dedicated entry: NativeWind/PortalHost integration never replaces the user's App.
-  if (e.json('apps/mobile/package.json').main !== 'index.ts')
-    throw Error('Preserve the custom Expo entry; reconcile NativeWind/PortalHost setup first.');
-  e.set('apps/mobile/package.json', ['main'], 'anhedral-entry.tsx');
-  for (const name of ['button', 'text'])
-    e.create(`apps/mobile/components/ui/${name}.tsx`, template(`native-${name}.tsx.txt`));
-  if (e.read('apps/mobile/App.tsx') === null)
-    throw Error('Preserve the custom Expo layout; reconcile the NativeWind root entry first.');
-  const babel = 'apps/mobile/babel.config.js';
-  const expected =
-    "module.exports = function(api) {api.cache(true);return {presets:['babel-preset-expo']};};\n";
-  if (e.read(babel) !== expected)
-    throw Error('Preserve edited Expo Babel configuration; reconcile NativeWind first.');
-  e.writes.set(
-    babel,
-    "module.exports = function(api) {api.cache(true);return {presets:[['babel-preset-expo',{jsxImportSource:'nativewind'}],'nativewind/babel']};};\n",
-  );
-  e.create(
-    'apps/mobile/.anhedral-ui.json',
-    json({
-      schemaVersion: 1,
-      platform: 'native',
-      catalogRevision: '2026-10-26.1',
-      nativeStyling: 'nativewind4',
-      sourceOwned: true,
-      automaticUpdates: false,
-    }),
-  );
-  e.create(
-    'apps/mobile/UPSTREAM.json',
-    json({
-      catalogRevision: '2026-10-26.1',
-      source:
-        'https://github.com/founded-labs/react-native-reusables/tree/385834c2196f8a303cbc9057d1ac768f3bde0a3b',
-      automaticUpdates: false,
-      files: Object.fromEntries(
-        ['button', 'text'].map((name) => [
-          `components/ui/${name}.tsx`,
-          { sha256: fingerprint(template(`native-${name}.tsx.txt`)) },
-        ]),
-      ),
-    }),
-  );
-  for (const name of ['LICENSE.react-native-reusables', 'LICENSE.shadcn'])
-    e.create(
-      `apps/mobile/ANHEDRAL_UI_LICENSES/${name}`,
-      readFileSync(new URL(`../assets/ui/${name}`, import.meta.url), 'utf8'),
-    );
-}
-function addExtension(e: CapabilityEditor) {
-  project(
-    e,
-    'apps/extension',
-    '@workspace/extension',
-    {
-      dev: 'wxt',
-      build: 'wxt build',
-      zip: 'wxt zip',
-      typecheck: 'wxt prepare && tsc --noEmit',
-      lint: 'wxt prepare && tsc --noEmit',
-      postinstall: 'wxt prepare',
-    },
-    { react: P.react, 'react-dom': P.react },
-    {
-      wxt: P.wxt,
-      '@wxt-dev/module-react': P['@wxt-dev/module-react'],
-      '@types/react': P['@types/react'],
-      '@types/react-dom': P['@types/react-dom'],
-    },
-  );
-  e.create(
-    'apps/extension/entrypoints/background.ts',
-    "import {configureCapabilities} from '../anhedral-background';\nexport default defineBackground(()=>{configureCapabilities();});\n",
-  );
-  e.create(
-    'apps/extension/wxt.config.ts',
-    "import {defineConfig} from 'wxt';\nconst origin=process.env.WXT_API_ORIGIN || 'https://your-app.example';\nconst url=new URL(origin);\nif(url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost','127.0.0.1'].includes(url.hostname)))throw Error('Choose a secure API origin');\nexport default defineConfig({modules:['@wxt-dev/module-react'], manifest:{name:'Anhedral application extension',permissions:['storage'],host_permissions:[url.origin+'/*']}});\n",
-  );
-  e.create(
-    'apps/extension/tsconfig.json',
-    json({ extends: './.wxt/tsconfig.json', compilerOptions: { strict: true, jsx: 'react-jsx' } }),
-  );
-  e.create(
-    'apps/extension/entrypoints/popup/index.html',
-    '<!doctype html><html><head><meta charset="UTF-8"><title>Application</title></head><body><div id="root"></div><script type="module" src="./main.tsx"></script></body></html>\n',
-  );
-  e.create(
-    'apps/extension/entrypoints/popup/main.tsx',
-    "import {createRoot} from 'react-dom/client';\nimport {App} from '../../components/App';\ncreateRoot(document.getElementById('root')!).render(<App />);\n",
-  );
-  e.create(
-    'apps/extension/components/App.tsx',
-    'export function App(){return <main><h1>Your application</h1><p>Configure the API origin and an explicit sign-in flow before accessing private data.</p></main>;}\n',
-  );
-  e.create('apps/extension/.env.example', 'WXT_API_ORIGIN=https://your-app.example\n');
-}
-function addDesktop(e: CapabilityEditor) {
-  project(
-    e,
-    'apps/desktop',
-    '@workspace/desktop',
-    {
-      dev: 'cargo run',
-      build: 'cargo build',
-      typecheck: 'cargo check',
-      lint: 'cargo fmt --check',
-      test: 'cargo test',
-    },
-    {},
-  );
-  e.create(
-    'apps/desktop/Cargo.toml',
-    '[package]\nname = "anhedral-desktop"\nversion = "0.1.0"\nedition = "2024"\n\n[dependencies]\ngpui = { version = "=0.2.2", features = ["runtime_shaders"] }\n',
-  );
-  e.create('apps/desktop/src/main.rs', template('desktop.rs.txt'));
-  e.create('apps/desktop/.gitignore', '/target/\n');
-  e.create(
-    'apps/desktop/.env.example',
-    '# Desktop binaries run natively, not on Workers.\nANHEDRAL_API_ORIGIN=https://your-app.example\n',
-  );
-}
-
-function taskContract(e: CapabilityEditor, name: string, patch: Record<string, unknown>) {
-  const previous = e.json('turbo.json').tasks?.[name] ?? {};
-  if (!previous || typeof previous !== 'object' || Array.isArray(previous))
-    throw Error(`Preserve invalid task ${name}; reconcile turbo.json first.`);
-  const next = { ...previous };
-  for (const [key, value] of Object.entries(patch)) {
-    if (Array.isArray(value)) {
-      const old = previous[key] ?? [];
-      if (!Array.isArray(old) || old.some((item) => typeof item !== 'string'))
-        throw Error(`Preserve ${name}.${key}; reconcile turbo.json first.`);
-      next[key] = [...new Set([...old, ...value])];
-    } else {
-      if (previous[key] !== undefined && previous[key] !== value)
-        throw Error(`Preserve ${name}.${key}; reconcile turbo.json first.`);
-      next[key] = value;
-    }
-  }
-  e.set('turbo.json', ['tasks', name], next);
 }
 
 export function composeCapabilities(e: CapabilityEditor, installed: Capability[]) {
-  if (e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'])
-    composeTanstack(e, installed);
-  if (installed.includes('wxt')) {
-    taskContract(e, '@workspace/extension#build', {
-      outputs: ['.output/**'],
-      env: ['WXT_API_ORIGIN'],
-    });
-    taskContract(e, '@workspace/extension#dev', {
-      cache: false,
-      persistent: true,
-      env: ['WXT_API_ORIGIN'],
-    });
-    taskContract(e, '@workspace/extension#typecheck', { outputs: ['.wxt/**'] });
-    taskContract(e, '@workspace/extension#lint', { outputs: ['.wxt/**'] });
-  }
-  if (installed.includes('gpui')) taskContract(e, '@workspace/desktop#build', { cache: false });
+  composeTanstack(e, installed);
   if (!installed.includes('hono')) return;
-  if (installed.includes('expo')) composeMobile(e, installed);
-  if (installed.includes('wxt'))
-    e.owned(
-      'apps/extension/anhedral-background.ts',
-      installed.includes('side-panel')
-        ? "import {browser} from 'wxt/browser';\nexport function configureCapabilities(){if(browser.sidePanel)void browser.sidePanel.setPanelBehavior({openPanelOnActionClick:true}).catch(()=>console.error('Side Panel setup failed'));}\n"
-        : 'export function configureCapabilities(){}\n',
-    );
   const features: [Capability, string, string][] = [
     ['database-auth', 'authRoutes', 'auth'],
     ['r2', 'storageRoutes', 'storage'],
     ['stripe', 'stripeRoutes', 'stripe'],
     ['stripe', 'entitlementRoutes', 'entitlements'],
-    ['revenuecat', 'revenuecatRoutes', 'revenuecat'],
-    ['realtime', 'eventRoutes', 'events'],
-    ['rtc', 'rtcRoutes', 'rtc'],
-    ['ai', 'aiRoutes', 'ai'],
   ];
   const chosen = features.filter(([id]) => installed.includes(id));
   e.owned(
@@ -651,23 +267,13 @@ export function composeCapabilities(e: CapabilityEditor, installed: Capability[]
       chosen.map(([, symbol]) => `capabilities.route('/', ${symbol});\n`).join(''),
   );
   if (installed.includes('database-auth'))
-    e.owned(
-      'apps/api/src/auth-platform.ts',
-      installed.includes('expo')
-        ? "import { expo } from '@better-auth/expo';\nexport const platformAuthPlugins = () => [expo()];\n"
-        : 'export const platformAuthPlugins = () => [];\n',
-    );
+    e.owned('apps/api/src/auth-platform.ts', 'export const platformAuthPlugins = () => [];\n');
   if (installed.includes('stripe'))
     e.owned(
       'apps/api/src/billing-providers.ts',
-      "import type {AppEnv} from './environment';\nimport {stripeEntitled} from './features/stripe';\n" +
-        (installed.includes('revenuecat')
-          ? "import {revenuecatEntitled} from './features/revenuecat';\n"
-          : '') +
-        "export const billingProviders:Record<string,(env:AppEnv['Bindings'],userId:string)=>Promise<boolean>>={stripe:stripeEntitled" +
-        (installed.includes('revenuecat') ? ',revenuecat:revenuecatEntitled' : '') +
-        '};\n',
+      "import type {AppEnv} from './environment';\nimport {stripeEntitled} from './features/stripe';\nexport const billingProviders:Record<string,(env:AppEnv['Bindings'],userId:string)=>Promise<boolean>>={stripe:stripeEntitled};\n",
     );
+
   const bindings = [
     'PUBLIC_APP_URL?: string',
     'BETTER_AUTH_SECRET?: string',
@@ -683,16 +289,6 @@ export function composeCapabilities(e: CapabilityEditor, installed: Capability[]
       'BILLING_ENVIRONMENT?: string',
       'BILLING_PROVIDER?: string',
     );
-  if (installed.includes('revenuecat'))
-    bindings.push(
-      'REVENUECAT_SECRET_KEY?: string',
-      'REVENUECAT_WEBHOOK_AUTH?: string',
-      'REVENUECAT_APP_ID?: string',
-      'REVENUECAT_ENTITLEMENT?: string',
-    );
-  if (installed.includes('rtc')) bindings.push('RTC_APP_ID?: string', 'RTC_APP_SECRET?: string');
-  if (installed.includes('ai'))
-    bindings.push('AI: Ai', 'AI_MODEL?: string', 'AI_DAILY_LIMIT?: string');
   e.owned(
     'apps/api/src/environment.ts',
     `import type { CustomBindings, CustomVariables } from './custom-environment';\nexport type AppEnv = { Bindings: CustomBindings & {${bindings.join(';\n')}}; Variables: CustomVariables & {userId:string;fileKey:string} };\n`,
@@ -704,56 +300,6 @@ export function composeCapabilities(e: CapabilityEditor, installed: Capability[]
       .filter((binding) => binding.includes('string'))
       .map((binding) => binding.split('?')[0]),
   );
-}
-
-function composeMobile(e: CapabilityEditor, installed: Capability[]) {
-  const ui = installed.includes('native-ui');
-  const billing = installed.includes('revenuecat');
-  e.owned(
-    'apps/mobile/anhedral-entry.tsx',
-    (ui
-      ? "import './global.css';\nimport {PortalHost} from '@rn-primitives/portal';\nimport {SafeAreaProvider} from 'react-native-safe-area-context';\n"
-      : '') +
-      "import {registerRootComponent} from 'expo';\nimport {View} from 'react-native';\nimport App from './App';\nimport {SessionControls} from './components/session-controls';\n" +
-      (billing
-        ? "import {BillingControls} from './components/billing-controls';\nimport {disconnectPurchases} from './lib/purchases';\n"
-        : '') +
-      'function Root(){return ' +
-      (ui ? '<SafeAreaProvider>' : '') +
-      '<View style={{flex:1}}><App /><SessionControls' +
-      (billing ? ' onSignOut={disconnectPurchases}' : '') +
-      '>' +
-      (billing ? '<BillingControls/>' : '') +
-      '</SessionControls></View>' +
-      (ui ? '<PortalHost/></SafeAreaProvider>' : '') +
-      ';}\nregisterRootComponent(Root);\n',
-  );
-  e.owned(
-    'apps/mobile/components/action-button.tsx',
-    ui
-      ? "import {Button} from './ui/button';\nimport {Text} from './ui/text';\nexport function ActionButton({label,...props}:{label:string;onPress:()=>void;disabled?:boolean}) {return <Button {...props}><Text>{label}</Text></Button>;}\n"
-      : "import {Button} from 'react-native';\nexport function ActionButton({label,...props}:{label:string;onPress:()=>void;disabled?:boolean}) {return <Button title={label} {...props}/>;}\n",
-  );
-  const file = '.fallowrc.json';
-  const current = e.json(file).ignoreDependencies ?? [];
-  const peers = ui
-    ? [
-        'babel-preset-expo',
-        'react-native-css-interop',
-        'react-native-reanimated',
-        'react-native-worklets',
-      ]
-    : ['babel-preset-expo'];
-  e.set(file, ['ignoreDependencies'], [...new Set([...current, ...peers])]);
-  if (ui) {
-    const rules = e.json(file).ignoreExports ?? [];
-    const rule = {
-      file: 'apps/mobile/components/ui/button.tsx',
-      exports: ['buttonVariants', 'buttonTextVariants'],
-    };
-    if (!rules.some((value: unknown) => JSON.stringify(value) === JSON.stringify(rule)))
-      e.set(file, ['ignoreExports'], [...rules, rule]);
-  }
 }
 
 function appendExample(e: CapabilityEditor, file: string, keys: string[]) {

@@ -156,13 +156,13 @@ jobs:
         if: ${{ needs.scope.outputs.full == 'true' }}
       - run: pnpm build
         if: ${{ needs.scope.outputs.full == 'true' }}
-      - run: node --test tests/test-cli-validation.test.mjs tests/test-standard.test.mjs tests/test-util-exec.test.mjs tests/test-platform-ux.test.mjs
+      - run: node --test tests/test-cli-validation.test.mjs tests/test-launch-init.test.mjs tests/test-util-exec.test.mjs tests/test-platform-ux.test.mjs
         if: ${{ needs.scope.outputs.full == 'true' }}
       - run: node tests/test-packed-cli.js
         if: ${{ needs.scope.outputs.full == 'true' }}
-      - name: Verify native Windows bootstrap guard
+      - name: Verify Windows source generation
         if: ${{ needs.scope.outputs.full == 'true' && (runner.os == 'Windows') }}
-        run: node tests/test-generated-apps.mjs core
+        run: node --test tests/test-launch-init.test.mjs
 
   plugin-ui:
     needs: scope

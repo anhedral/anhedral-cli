@@ -20,10 +20,6 @@ test('candidate build coordinates the marketplace pointer without publishing a t
     write('dist/bin.js', '#!/usr/bin/env node\n');
     write('dist/version.js', `export const GENERATOR_VERSION = '${version}';`);
     write(
-      'dist/stack-registry.js',
-      `export const STACK_REGISTRY = {cliVersion:'${version}',items:[]}; export function validateStackCatalog() {}`,
-    );
-    write(
       'dist/capability-catalog.js',
       `export const ANHEDRAL_STACK = {id:'anhedral-stack',name:'Anhedral Stack',additions:{backend:{},r2:{},stripe:{}}};`,
     );

@@ -25,7 +25,7 @@ Additions never reinitialize an application. They plan all selected changes befo
 
 Journaled transactions preserve recovery evidence and refuse ambiguous recreated files. Dependency installation follows source commit; a post-commit install failure keeps source for repair/retry. Reviewed dependency patches precede the frozen install. `--skip-install` writes source only. `--dry-run` performs no writes or network requests. Repeating an addition preserves source; normal installation may still retry dependencies.
 
-There is no implicit capability removal or resource/data deletion. Existing applications retain their source and identity. Legacy generators and broader recipe implementations are retained for compatibility and recovery, not exposed as current stack options.
+There is no implicit capability removal or resource/data deletion. Existing applications retain their source and identity. Only the OJ/TanStack Start foundation and these three additions are supported.
 
 ## Local setup and validation
 

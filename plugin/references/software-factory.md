@@ -25,7 +25,7 @@ with revision, checks, failures and remaining gaps. Keep raw reports in ignored
 `.artifacts/`. Historical notes are not current instructions.
 
 Canonical docs live in `docs/`; `pnpm build` refreshes bundled plugin references.
-Current generated app guidance lives in `src/launch.ts`; retained compatibility generators have their own source guidance. Preserve shipped
+Current generated app guidance lives in `src/launch.ts`. OJ runs development and builds for the single TanStack Start foundation. Preserve shipped
 reference paths, source-generation safety, dependency patch gates, UI provenance,
 licenses and exact-artifact packaging. A build does not publish npm or update an
 installed plugin. See [Contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md)
@@ -63,9 +63,7 @@ application matrices remain in [Full validation](https://github.com/anhedral/anh
 `node scripts/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
 application and exercises local workerd, SSR/server functions, progressive backend,
 private storage and the generated Stripe build/migration path. It uses isolated
-local data, never a configured database or live payment provider. Retained
-Next/OpenNext proof commands cover compatibility code only; they are not another
-public stack. Preserve source/tool/lock identities and distinguish prepared,
+local data, never a configured database or live payment provider. Preserve source/tool/lock identities and distinguish prepared,
 passed and failed evidence. Tests are not provider deployment acceptance.
 
 ## Platform CLI access and source upload

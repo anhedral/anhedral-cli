@@ -14,14 +14,12 @@ export function verifyTypecheckCache(root) {
       name: JSON.parse(readFileSync(path.join(root, 'apps', app, 'package.json'), 'utf8')).name,
     }));
   const web = applications.find((app) => app.directory.endsWith(path.join('apps', 'web')));
-  assert.ok(web, 'Next application must exist');
+  assert.ok(web, 'Anhedral Stack web application must exist');
   const api = applications.find((app) => app.directory.endsWith(path.join('apps', 'api')));
   const files = () => [
     ...(api ? [path.join(api.directory, 'worker-configuration.d.ts')] : []),
-    path.join(web.directory, 'next-env.d.ts'),
-    ...readdirSync(path.join(web.directory, '.next/types'), { recursive: true })
-      .filter((file) => /\.[cm]?ts$/.test(file))
-      .map((file) => path.join(web.directory, '.next/types', file)),
+    path.join(web.directory, 'worker-configuration.d.ts'),
+    path.join(web.directory, 'src/routeTree.gen.ts'),
   ];
   const args = [
     'exec',
@@ -37,7 +35,7 @@ export function verifyTypecheckCache(root) {
   try {
     execFile('pnpm', args, root);
     const expected = new Map(files().map((file) => [file, readFileSync(file)]));
-    assert.ok(expected.size > 2, 'Next typegen must emit route types');
+    assert.ok(expected.size >= 2, 'TanStack router and Worker typegen must emit types');
     for (const file of expected.keys()) rmSync(file);
     const summaries = path.join(root, '.turbo/runs');
     const before = new Set(readdirSync(summaries));

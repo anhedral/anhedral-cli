@@ -9,7 +9,7 @@ import {
 } from '../dist/cli-arguments.js';
 import { commandDefinition, commandTopic } from '../dist/command-schema.js';
 import { commandHelp, STANDARD_USAGE } from '../dist/registry/usage.js';
-import { parseStandardOptions } from '../dist/registry/options.js';
+import { parseInitOptions as parseStandardOptions } from '../dist/index.js';
 
 test('root help is compact and detailed topics render existing examples', () => {
   assert.ok(STANDARD_USAGE.trimEnd().split('\n').length <= 45);
@@ -47,8 +47,11 @@ test('init uses the shared positional grammar and preserves its exported option 
   assert.equal(after.root, path.resolve('my-app'));
   assert.equal(after.initializeGit, true);
   assert.throws(() => parseStandardOptions(['', '--dry-run']), /valid initialization directory/);
-  assert.equal(parseStandardOptions(['my-app', '--dry-run', '--dry-run']).dryRun, true);
-  assert.equal(parseStandardOptions(['my-app', '--git', '--git']).initializeGit, true);
+  assert.throws(
+    () => parseStandardOptions(['my-app', '--dry-run', '--dry-run']),
+    /once|duplicate/i,
+  );
+  assert.throws(() => parseStandardOptions(['my-app', '--git', '--git']), /once|duplicate/i);
   assert.equal(parseStandardOptions(['--dry-run']).initializeGit, false);
   assert.equal(parseStandardOptions(['my-app', '--no-git']).initializeGit, false);
   assert.equal(parseStandardOptions(['--git']).initializeGit, true);

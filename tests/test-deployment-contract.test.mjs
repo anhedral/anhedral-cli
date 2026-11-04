@@ -10,7 +10,10 @@ import * as transport from '../dist/contracts/cli-transport.js';
 import { composeSourceProvenance } from '../dist/composition.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
 import { CAPABILITY_IDS, CAPABILITIES } from '../dist/capability-catalog.js';
-import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
+import {
+  parseInitOptions as parseStandardOptions,
+  scaffoldAnhedralStack as scaffoldStandardProject,
+} from '../dist/index.js';
 import { runCapabilityCommand } from '../dist/capability-command.js';
 import { deploymentAcceptance } from './fixtures/deployment-contract/acceptance.mjs';
 
@@ -56,25 +59,36 @@ test('portable contract snapshot matches its exact provenance and the CLI capabi
   }
 });
 
-test('source provenance preserves legacy unknowns and refuses implicit identity replacement', () => {
-  const legacy = composeSourceProvenance(undefined, ['hono', 'database-auth', 'r2'], ['r2']);
-  assert.equal(legacy.generatorVersion, null);
-  assert.deepEqual(legacy.capabilities, {
-    hono: null,
-    'database-auth': null,
-    r2: GENERATOR_VERSION,
-  });
-  assert.equal(legacy.identity, 'better-auth-d1-v1');
-  assert.throws(
-    () =>
-      composeSourceProvenance(
-        { ...legacy, identity: 'platform-application-services-v1' },
-        ['hono', 'database-auth', 'r2', 'stripe'],
-        ['stripe'],
-      ),
-    /Preserve existing application identity/,
+test('source provenance requires canonical source and refuses implicit identity replacement', () => {
+  assert.throws(() =>
+    composeSourceProvenance(undefined, ['hono', 'database-auth'], ['hono', 'database-auth']),
   );
-  assert.throws(() => composeSourceProvenance(legacy, ['hono'], []), /disagrees/);
+  const initial = {
+    contractVersion: 2,
+    foundation: 'tanstack-start',
+    generatorVersion: GENERATOR_VERSION,
+    identity: 'none',
+    capabilities: {},
+  };
+  const composed = composeSourceProvenance(
+    initial,
+    ['hono', 'database-auth'],
+    ['hono', 'database-auth'],
+  );
+  assert.equal(composed.identity, 'better-auth-d1-v1');
+  assert.equal(composed.generatorVersion, GENERATOR_VERSION);
+  assert.deepEqual(composed.capabilities, {
+    hono: GENERATOR_VERSION,
+    'database-auth': GENERATOR_VERSION,
+  });
+  assert.throws(() =>
+    composeSourceProvenance(
+      { ...composed, foundation: 'next-opennext' },
+      ['hono', 'database-auth'],
+      [],
+    ),
+  );
+  assert.throws(() => composeSourceProvenance(composed, ['hono'], []), /disagrees/);
 });
 
 test('generated source records composition transactionally without changing identity configuration', async () => {
@@ -93,8 +107,8 @@ test('generated source records composition transactionally without changing iden
     const file = path.join(app, 'anhedral.json');
     const initial = JSON.parse(readFileSync(file));
     assert.deepEqual(initial.composition, {
-      contractVersion: 1,
-      foundation: 'next-opennext',
+      contractVersion: 2,
+      foundation: 'tanstack-start',
       generatorVersion: GENERATOR_VERSION,
       identity: 'none',
       capabilities: {},
@@ -105,9 +119,9 @@ test('generated source records composition transactionally without changing iden
     const invoke = (args) =>
       runCapabilityCommand('add', [...args, '--skip-install'], { quiet: true }, offline);
     const before = readFileSync(file, 'utf8');
-    await invoke(['database-auth', '--with-dependencies', '--dry-run']);
+    await invoke(['backend', '--with-dependencies', '--dry-run']);
     assert.equal(readFileSync(file, 'utf8'), before);
-    await invoke(['database-auth', '--with-dependencies']);
+    await invoke(['backend', '--with-dependencies']);
     const composed = JSON.parse(readFileSync(file));
     assert.deepEqual(composed.customerSetting, { preserve: true });
     assert.deepEqual(composed.composition.capabilities, {

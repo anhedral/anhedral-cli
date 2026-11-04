@@ -12,6 +12,12 @@ const template = (name: string) =>
 
 /** The launch foundation is a web service; Hono owns application services and data. */
 export function scaffoldTanstack(root: string, name: string): void {
+  for (const [destination, asset] of Object.entries({
+    'scripts/oj.mjs': 'oj/run.mjs',
+    'scripts/oj-runtime.json': 'oj/runtime.json',
+    'scripts/OJ.LICENSE': 'oj/OJ.LICENSE',
+  }))
+    put(root, destination, template(asset));
   const app = 'apps/web';
   const web = WEB_DEPENDENCIES.dependencies!;
   const dev = WEB_DEPENDENCIES.devDependencies!;
@@ -21,9 +27,9 @@ export function scaffoldTanstack(root: string, name: string): void {
     version: '0.1.0',
     type: 'module',
     scripts: {
-      dev: 'vite dev --host 0.0.0.0 --port 3000',
-      build: 'vite build',
-      preview: 'vite preview --host 0.0.0.0 --port 3000',
+      dev: 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000',
+      build: 'node ../../scripts/oj.mjs build .',
+      preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
       typecheck: 'wrangler types && tsr generate && tsc --noEmit',
       lint: 'eslint . --max-warnings 0',
     },
@@ -153,13 +159,14 @@ export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
   );
 }
 
-function isTanstack(e: CapabilityEditor) {
-  return Boolean(e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']);
+function assertTanstack(e: CapabilityEditor) {
+  if (!e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'])
+    throw Error('Only the Anhedral Stack TanStack Start foundation is supported.');
 }
 
 /** Fingerprinted composition adapters; application routes stay source-owned. */
 export function composeTanstack(e: CapabilityEditor, installed: readonly Capability[]): void {
-  if (!isTanstack(e)) return;
+  assertTanstack(e);
   const backend = installed.includes('hono');
   const auth = installed.includes('database-auth');
   e.owned('apps/web/src/server.ts', template(backend ? 'server.ts.txt' : 'minimal-server.ts.txt'));
@@ -176,21 +183,21 @@ import { defineConfig } from 'vite';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import react from '@vitejs/plugin-react';
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
-    cloudflare({ viteEnvironment: { name: 'ssr' }, ${backend ? "auxiliaryWorkers: [{ configPath: '../api/wrangler.jsonc' }], persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) }, " : ''}remoteBindings: false }),
+    cloudflare({ viteEnvironment: { name: 'ssr' }, ${backend ? "auxiliaryWorkers: command === 'serve' ? [{ configPath: '../api/wrangler.jsonc' }] : [], persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) }, " : ''}remoteBindings: false }),
     tanstackStart({ server: { entry: './server.ts' } }),
     react(),
   ],
-});
+}));
 `,
   );
 }
 
 /** Install account source only when the backend authentication capability is added. */
 export function addTanstackAuth(e: CapabilityEditor): void {
-  if (!isTanstack(e)) return;
+  assertTanstack(e);
   e.create('apps/web/src/lib/auth-client.ts', template('auth-client.ts.txt'));
   e.create('apps/web/src/routes/sign-in.tsx', template('sign-in.tsx.txt'));
 }
