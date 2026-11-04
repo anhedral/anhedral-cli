@@ -84,6 +84,24 @@ JSON is unchanged and context inspection never creates a project or starts login
 Explicit `--api-url` and `--credential-file` select the origin/store; saved state
 cannot override either. API access must be separately enabled by Platform operators.
 
+After generating source, run `projects list --human` to discover the selected
+team's projects and accessible team IDs. Use `--team <uuid>` to select another
+team and `--cursor <uuid>` for the next page. `projects create --name <name>
+--link --human` registers a new Platform project and links the current directory;
+omit `--link` to register it without changing local context. `--summary <text>`
+is optional. Creation registers existing source for upload; it does not generate
+another application or start a deployment. `projects create --dry-run` validates
+the proposed input locally without authentication or network access.
+
+Creation saves its request identity under `.anhedral/platform/` before sending
+it. Repeat the same command after interruption to recover the same project;
+changed input, identity or team requires review and an explicit `--new` request.
+`--link` refuses a different existing local link. Init's source identity remains
+unchanged. Platform checks current team membership and project permissions.
+Project creation, linking and unlinking share a workspace lock. After a process
+crash, inspect `.anhedral/platform/project-operation.lock` and remove only that
+lock after confirming no project operation is running; preserve the request journal.
+
 `link --project <uuid> --team <uuid>` checks current build authority and saves an
 origin/principal-bound link under ignored `.anhedral/platform/`. `unlink` removes
 that local link. `source upload --dry-run` inspects packaging; `source upload`

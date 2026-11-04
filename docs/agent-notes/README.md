@@ -1,5 +1,12 @@
 # Development notes
 
+## 2026-11-03 Project discovery and registration
+
+Issue #111 adds native CLI project listing and metadata-only creation, paired with
+Platform issue #509 and its reviewed public transport projection. Creation uses a
+durable retry identity; optional linking checks live build authority and preserves
+generated source identity. No provider activation or package publication is implied.
+
 ## 2026-11-03 CLI-only plugin guidance
 
 User direction removes the direct plugin-to-Platform MCP/OAuth pathway. Both host

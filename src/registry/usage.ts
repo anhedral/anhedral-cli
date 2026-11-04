@@ -44,6 +44,7 @@ Inspect source and UI:
 Optional Platform access:
   login/logout  Approve or revoke a CLI session.
   whoami        Inspect the current identity and optional local context.
+  projects      List or create Platform projects.
   link/unlink   Select an existing project or remove its local link.
   source        Upload source or inspect its receipt.
   deploy        Plan, prepare or inspect a candidate; never activates it.

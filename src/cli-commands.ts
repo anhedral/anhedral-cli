@@ -24,6 +24,7 @@ export async function runCommand(
       'login',
       'logout',
       'whoami',
+      'projects',
       'link',
       'unlink',
       'source',

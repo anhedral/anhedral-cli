@@ -15,12 +15,16 @@ import {
   scaffoldAnhedralStack as scaffoldStandardProject,
 } from '../dist/index.js';
 import { runCapabilityCommand } from '../dist/capability-command.js';
-import { deploymentAcceptance } from './fixtures/deployment-contract/acceptance.mjs';
+import {
+  deploymentAcceptance,
+  cliProjectsAcceptance,
+} from './fixtures/deployment-contract/acceptance.mjs';
 
 const fixture = JSON.parse(
   readFileSync(new URL('./fixtures/deployment-contract/fixtures.json', import.meta.url)),
 );
 deploymentAcceptance(contract, fixture);
+cliProjectsAcceptance(transport, fixture);
 
 test('reviewed public snapshot verifies provenance without importing raw private source', () => {
   const snapshot = readContractSnapshot(process.cwd(), true);
