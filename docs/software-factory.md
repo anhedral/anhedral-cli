@@ -48,7 +48,7 @@ dist module or private import requires explicit review. Portable contracts are
 synced only from a reviewed, licensed Platform projection with exact provenance,
 never as a build side effect. Local credential scanning additionally retains the
 CLI's stricter source-upload policy. Plugin packaging accepts its explicit reviewed
-MCP-inclusive file set, refuses linked distribution roots and verifies the bounded
+skills-only file set, refuses linked distribution roots and verifies the bounded
 publisher archive format before npm publication. Oversized unscanned text is an
 explicit review failure, not a clean secret scan.
 
@@ -85,6 +85,24 @@ access. A link for a different origin or principal fails closed. Normal `whoami`
 JSON is unchanged and context inspection never creates a project or starts login.
 Explicit `--api-url` and `--credential-file` select the origin/store; saved state
 cannot override either. API access must be separately enabled by Platform operators.
+
+After generating source, run `projects list --human` to discover the selected
+team's projects and accessible team IDs. Use `--team <uuid>` to select another
+team and `--cursor <uuid>` for the next page. `projects create --name <name>
+--link --human` registers a new Platform project and links the current directory;
+omit `--link` to register it without changing local context. `--summary <text>`
+is optional. Creation registers existing source for upload; it does not generate
+another application or start a deployment. `projects create --dry-run` validates
+the proposed input locally without authentication or network access.
+
+Creation saves its request identity under `.anhedral/platform/` before sending
+it. Repeat the same command after interruption to recover the same project;
+changed input, identity or team requires review and an explicit `--new` request.
+`--link` refuses a different existing local link. Init's source identity remains
+unchanged. Platform checks current team membership and project permissions.
+Project creation, linking and unlinking share a workspace lock. After a process
+crash, inspect `.anhedral/platform/project-operation.lock` and remove only that
+lock after confirming no project operation is running; preserve the request journal.
 
 `link --project <uuid> --team <uuid>` checks current build authority and saves an
 origin/principal-bound link under ignored `.anhedral/platform/`. `unlink` removes
@@ -159,12 +177,25 @@ production explicitly with `--environment production`; filter by deployment,
 level, source or range, and pass `--cursor` for the next page. Coverage, dropped
 events and seven-day retention are part of the response.
 
-The plugin includes source skills plus one remote MCP connection at
-`https://platform.anhedral.com/api/mcp`. OAuth consent grants scoped project
-access; CLI credentials are separate. Secret imports initiated through ChatGPT
-open a secure browser form rather than accepting values as tool arguments.
-The plugin packages no executable server, credential or authorization header. Its root `mcp.json` uses the [official remote OAuth declaration](https://developers.openai.com/plugins/build/plugins#bundled-mcp-servers-and-lifecycle-hooks), DCR and read-only default scopes; write access requires additional consent.
-Server features remain unavailable until their operator-controlled gates are enabled.
+The plugin contains CLI usage instructions only. It registers no MCP server, remote
+app, OAuth connection or executable hook, and it does not bundle a CLI runtime.
+Users run the reviewed CLI version in a host terminal; managed project operations
+use the separately configured CLI client described above. Packaging admits only
+reviewed skills, references, assets and host manifests, and rejects connection files
+or executable declarations. `tests/test-plugin-codex.test.mjs` installs the exact
+archive in an isolated Codex home and verifies both skills with no MCP, app or hook
+registration when Codex is available (`ANHEDRAL_CODEX_BIN` overrides the binary).
+
+One distribution directory, `plugin/`, serves Codex and Claude Code. Codex reads
+`plugin.json` and `skills/*/agents/openai.yaml`; Claude Code reads
+`.claude-plugin/plugin.json` and the same `skills/*/SKILL.md`. Packaging validates
+both manifests against one release identity. Root `.claude-plugin/marketplace.json`
+is the Claude marketplace; add it with `claude plugin marketplace add
+anhedral/anhedral-cli`, then install `anhedral@anhedral`. The existing pinned tag
+predates the Claude files and this cleanup; a coordinated versioned release is
+required before those changes are installable from the public marketplace. Local
+review uses `claude plugin validate --strict plugin`, `claude --plugin-dir plugin`
+and a temporary Codex marketplace, without account connection.
 
 The CLI and plugin share one release version. Build prepares the
 marketplace pointer to that version's immutable `plugin-v<version>` tag; it does

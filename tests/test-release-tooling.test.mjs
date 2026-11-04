@@ -578,28 +578,24 @@ test('secret scanning distinguishes dynamic URI builders from literal credential
     '${encodeURIComponent(config.password)}' +
     '@' +
     '${encodeURIComponent(config.host)}';
-  assert.deepEqual(
-    scanText('plugins/codex/distribution/runtime/server.mjs', Buffer.from(dynamic)),
-    [],
-  );
+  assert.deepEqual(scanText('plugin/runtime/server.mjs', Buffer.from(dynamic)), []);
   const mixed = 'postgresql://' + '${user}' + ':' + 'privatePassword12345' + '@' + '${host}';
   assert.ok(
-    scanText('plugins/codex/distribution/runtime/server.mjs', Buffer.from(mixed)).some(
+    scanText('plugin/runtime/server.mjs', Buffer.from(mixed)).some(
       (finding) => finding.pattern === 'credentialed-database-uri',
     ),
   );
   const author = ['brian.m.carlson', 'gmail.com'].join('@');
   assert.ok(
     scanText(
-      'plugins/codex/distribution/runtime/server.mjs',
+      'plugin/runtime/server.mjs',
       Buffer.from('author: "Brian Carlson <' + author + '>"'),
     ).some((finding) => finding.pattern === 'email-address'),
   );
   assert.ok(
-    scanText(
-      'plugins/codex/distribution/runtime/server.mjs',
-      Buffer.from('customer: "' + author + '"'),
-    ).some((finding) => finding.pattern === 'email-address'),
+    scanText('plugin/runtime/server.mjs', Buffer.from('customer: "' + author + '"')).some(
+      (finding) => finding.pattern === 'email-address',
+    ),
   );
   assert.ok(
     scanText('other.mjs', Buffer.from('author: "Brian Carlson <' + author + '>"')).some(

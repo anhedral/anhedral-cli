@@ -1,6 +1,6 @@
 import { assertPluginPackageFiles } from './plugin-package-policy.mjs';
 import { readStoredArchive } from './publish-plugin-source.mjs';
-import { validatePluginRemote } from './plugin-remote.mjs';
+import { validateClaudePluginManifest, validateCliPluginManifest } from './plugin-manifest.mjs';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -60,12 +60,12 @@ function zipEntry(file, offset) {
 }
 
 export function buildPluginArchive(root) {
-  const distribution = path.join(root, 'plugins/codex/distribution');
+  const distribution = path.join(root, 'plugin');
   if (lstatSync(distribution).isSymbolicLink())
     throw Error('Plugin distribution root cannot be a symbolic link');
-  const findings = scanDirectory(root, 'plugins/codex/distribution');
+  const findings = scanDirectory(root, 'plugin');
   if (findings.length) throw new Error(formatFindings(findings));
-  const pluginRoot = path.join(root, 'plugins/codex/distribution');
+  const pluginRoot = path.join(root, 'plugin');
   const manifest = JSON.parse(readFileSync(path.join(pluginRoot, 'plugin.json'), 'utf8'));
   const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
   if (manifest.version !== packageJson.version)
@@ -88,7 +88,11 @@ export function buildPluginArchive(root) {
   }
   if ([...names].some((name) => name.startsWith('runtime/')))
     throw new Error('Plugin cannot package an executable managed runtime.');
-  validatePluginRemote(JSON.parse(readFileSync(path.join(pluginRoot, 'mcp.json'), 'utf8')));
+  validateCliPluginManifest(manifest);
+  validateClaudePluginManifest(
+    JSON.parse(readFileSync(path.join(pluginRoot, '.claude-plugin/plugin.json'), 'utf8')),
+    manifest,
+  );
   const interface_ = manifest.extensions?.['com.openai']?.interface;
   for (const field of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
     const asset = interface_?.[field];

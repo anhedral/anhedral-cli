@@ -154,3 +154,68 @@ export function deploymentAcceptance(contract, fixture) {
     assert.deepEqual(contract.sourceCompositionSchema.parse(openSource), openSource);
   });
 }
+
+/** Shared project wire acceptance for source-owned Platform and CLI projections. */
+export function cliProjectsAcceptance(contract, fixture) {
+  test("CLI project transport is bounded, strict and preserves source-upload identity", () => {
+    for (const [schema, value] of [
+      [contract.cliProjectCreateInputSchema, fixture.cliProjects.input],
+      [contract.cliProjectListSchema, fixture.cliProjects.list],
+      [contract.cliProjectCreateReceiptSchema, fixture.cliProjects.receipt],
+    ]) {
+      assert.deepEqual(schema.parse(value), value);
+      assert.equal(schema.safeParse({ ...value, protocol: 2 }).success, false);
+      assert.equal(schema.safeParse({ ...value, secret: "must-not-travel" }).success, false);
+    }
+    assert.deepEqual(contract.cliProjectListQuerySchema.parse({}), { limit: 50 });
+    for (const limit of [0, 101, 1.5, "nope"])
+      assert.equal(contract.cliProjectListQuerySchema.safeParse({ limit }).success, false);
+    for (const cursor of ["", "mutable-name", "../../../other"])
+      assert.equal(contract.cliProjectListQuerySchema.safeParse({ cursor }).success, false);
+    for (const name of ["", " ", "x".repeat(161)])
+      assert.equal(
+        contract.cliProjectCreateInputSchema.safeParse({ ...fixture.cliProjects.input, name })
+          .success,
+        false,
+      );
+    for (const change of [
+      { summary: "x".repeat(2001) },
+      { teamId: fixture.cliProjects.list.team.id },
+      { starter: "anhedral-stack" },
+    ])
+      assert.equal(
+        contract.cliProjectCreateInputSchema.safeParse({ ...fixture.cliProjects.input, ...change })
+          .success,
+        false,
+      );
+    assert.equal(
+      contract.cliProjectCreateReceiptSchema.safeParse({
+        ...fixture.cliProjects.receipt,
+        projectId: fixture.cliProjects.list.team.id,
+      }).success,
+      false,
+    );
+    assert.equal(
+      contract.cliProjectCreateReceiptSchema.safeParse({
+        ...fixture.cliProjects.receipt,
+        initialization: "cloud-scaffold",
+      }).success,
+      false,
+    );
+    assert.equal(
+      contract.cliProjectListSchema.safeParse({
+        ...fixture.cliProjects.list,
+        team: null,
+        projects: [],
+      }).success,
+      true,
+    );
+    assert.equal(
+      contract.cliProjectListSchema.safeParse({
+        ...fixture.cliProjects.list,
+        projects: Array(101).fill(fixture.cliProjects.list.projects[0]),
+      }).success,
+      false,
+    );
+  });
+}

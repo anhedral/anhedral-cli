@@ -122,6 +122,45 @@ const STAGING_OPTIONS: readonly CommandOption[] = [
   },
   { flag: '--new', description: 'Start a new staging deployment using the current generation.' },
 ];
+const PROJECT_OPTIONS: readonly CommandOption[] = [
+  ...PLATFORM_OPTIONS,
+  {
+    flag: '--team',
+    value: 'uuid',
+    arity: 'required',
+    description: 'Team ID; defaults to your selected team.',
+  },
+  {
+    flag: '--limit',
+    value: 'count',
+    arity: 'required',
+    description: 'List 1–100 projects (default 50).',
+  },
+  {
+    flag: '--cursor',
+    value: 'uuid',
+    arity: 'required',
+    description: 'Resume listing after this project ID.',
+  },
+  {
+    flag: '--name',
+    value: 'text',
+    arity: 'required',
+    description: 'New project name (1–160 characters).',
+  },
+  {
+    flag: '--summary',
+    value: 'text',
+    arity: 'required',
+    description: 'Optional project summary (up to 2000 characters).',
+  },
+  { flag: '--link', description: 'Verify build access and save a local link after creation.' },
+  { flag: '--dry-run', description: 'Validate creation locally without authentication or writes.' },
+  {
+    flag: '--new',
+    description: 'Start a new creation request instead of retrying the saved request.',
+  },
+];
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   completion: {
     description: 'Print an offline shell completion script.',
@@ -161,6 +200,33 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       },
     ],
     examples: ['whoami --json', 'whoami --context --human'],
+  },
+  projects: {
+    description: 'List or create Platform projects.',
+    usage: 'projects <list|create> [options]',
+    options: PROJECT_OPTIONS,
+    children: {
+      list: {
+        description: 'List accessible projects and available teams.',
+        usage: 'projects list [--team <uuid>] [--limit <count>] [--cursor <uuid>]',
+        options: PROJECT_OPTIONS.filter((option) =>
+          ['--api-url', '--credential-file', '--team', '--limit', '--cursor'].includes(option.flag),
+        ),
+        examples: ['projects list --human'],
+      },
+      create: {
+        description: 'Create a source-upload project with a durable retry identity.',
+        usage:
+          'projects create --name <text> [--summary <text>] [--team <uuid>] [--link] [--dry-run] [--new]',
+        options: PROJECT_OPTIONS.filter((option) => !['--limit', '--cursor'].includes(option.flag)),
+        examples: [
+          'projects create --name "My app" --dry-run',
+          'projects create --name "My app" --link',
+        ],
+        note: 'Retries reuse the saved request. Changed input or context requires --new. Creation does not generate source or deploy.',
+      },
+    },
+    examples: ['projects list', 'projects create --name "My app"'],
   },
   link: {
     description: 'Link this workspace to an existing project.',

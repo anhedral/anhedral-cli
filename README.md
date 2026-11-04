@@ -43,11 +43,11 @@ UI commands operate on Anhedral Stack web applications. Components are editable 
 
 ## Optional Platform access
 
-Local generation requires no account. For an existing Platform project, use browser-approved `login`, then `link --project <uuid> --team <uuid>`. `source upload --dry-run` inspects packaging without uploading; `source upload` sends a resumable immutable checkpoint.
+Local generation requires no account. After browser-approved `login`, use `projects list --human` to discover projects and team IDs. Register your generated application with `projects create --name <name> --link --human`, or connect an existing project with `link --project <uuid> --team <uuid>`. `source upload --dry-run` inspects packaging without uploading; `source upload` sends a resumable immutable checkpoint.
 
 `deploy plan --manifest <file>`, `deploy prepare` and `deploy status` submit intent and read candidate receipts. Platform independently checks current authority, exact artifacts and runtime admission. Upload/build success is not production approval. The current manifest runtime profile is `anhedral-stack`; an application cannot approve itself for hosting.
 
-`env list/import/set` manages variable metadata and private imports. Send values through an owner-only file or stdin, never command arguments or chat. `staging status/deploy` operates on ready candidates; `logs` reads redacted runtime events. The optional plugin uses separate OAuth consent for Platform tools. See [the operating workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
+`env list/import/set` manages variable metadata and private imports. Send values through an owner-only file or stdin, never command arguments or chat. `staging status/deploy` operates on ready candidates; `logs` reads redacted runtime events. The Codex and Claude Code plugin provides CLI usage guidance; authentication and managed project operations run through the CLI. See [the operating workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
 
 ## Help and automation
 
