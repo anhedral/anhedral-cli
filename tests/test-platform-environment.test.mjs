@@ -215,6 +215,7 @@ test('remote plugin configuration admits only the reviewed HTTPS server without 
     { url: 'https://evil.invalid/mcp' },
     { headers: { Authorization: 'Bearer fixture' } },
     { command: 'node' },
+    { extensions: { 'com.openai': { auth: { type: 'oauth' } } } },
   ])
     assert.throws(() =>
       validatePluginRemote({

@@ -10,22 +10,6 @@ export function validatePluginRemote(config) {
         anhedral: {
           type: 'streamable-http',
           url: 'https://platform.anhedral.com/api/mcp',
-          extensions: {
-            'com.openai': {
-              auth: {
-                type: 'oauth',
-                client: { mode: 'dcr' },
-                resource: 'https://platform.anhedral.com/api/mcp',
-                baseScopes: ['anhedral:projects:read'],
-                defaultScopes: [
-                  'anhedral:environment:read',
-                  'anhedral:deployments:read',
-                  'anhedral:logs:read',
-                  'offline_access',
-                ],
-              },
-            },
-          },
         },
       },
     },

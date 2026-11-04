@@ -1,5 +1,13 @@
 # Development notes
 
+## 2026-11-03 Codex MCP loader compatibility
+
+PR #107 follow-up removes unsupported per-server OAuth extensions from the
+portable MCP transport. Current Codex registers the server with discovery-based
+OAuth; Platform remains responsible for consent, scopes and project authority.
+An exact-archive host smoke covers MCP and skill discovery. Production MCP remains
+operator-gated; staging OAuth client compatibility is tracked separately.
+
 ## 2026-11-03 Claude Code plugin from the shared distribution
 
 The shared distribution moved from `plugins/codex/distribution` to `plugin/`. It
