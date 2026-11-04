@@ -256,5 +256,50 @@
         }
       }
     }
-  ]
+  ],
+  "cliProjects": {
+    "input": {
+      "protocol": 1,
+      "requestId": "00000000-0000-4000-8000-000000000010",
+      "name": "Existing source",
+      "summary": "Local source stays intact"
+    },
+    "list": {
+      "protocol": 1,
+      "principalId": "00000000-0000-4000-8000-000000000012",
+      "team": {
+        "id": "00000000-0000-4000-8000-000000000011",
+        "name": "Synthetic team"
+      },
+      "availableTeams": [
+        {
+          "id": "00000000-0000-4000-8000-000000000011",
+          "name": "Synthetic team"
+        }
+      ],
+      "teamsTruncated": false,
+      "projects": [
+        {
+          "projectId": "00000000-0000-4000-8000-000000000010",
+          "teamId": "00000000-0000-4000-8000-000000000011",
+          "name": "Existing source",
+          "slug": "existing-source",
+          "canLink": true
+        }
+      ],
+      "nextCursor": null
+    },
+    "receipt": {
+      "protocol": 1,
+      "requestId": "00000000-0000-4000-8000-000000000010",
+      "projectId": "00000000-0000-4000-8000-000000000010",
+      "principalId": "00000000-0000-4000-8000-000000000012",
+      "teamId": "00000000-0000-4000-8000-000000000011",
+      "name": "Existing source",
+      "slug": "existing-source",
+      "summary": "Local source stays intact",
+      "canLink": true,
+      "initialization": "source-upload"
+    }
+  }
 }

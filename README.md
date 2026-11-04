@@ -43,7 +43,7 @@ UI commands operate on Anhedral Stack web applications. Components are editable 
 
 ## Optional Platform access
 
-Local generation requires no account. For an existing Platform project, use browser-approved `login`, then `link --project <uuid> --team <uuid>`. `source upload --dry-run` inspects packaging without uploading; `source upload` sends a resumable immutable checkpoint.
+Local generation requires no account. After browser-approved `login`, use `projects list --human` to discover projects and team IDs. Register your generated application with `projects create --name <name> --link --human`, or connect an existing project with `link --project <uuid> --team <uuid>`. `source upload --dry-run` inspects packaging without uploading; `source upload` sends a resumable immutable checkpoint.
 
 `deploy plan --manifest <file>`, `deploy prepare` and `deploy status` submit intent and read candidate receipts. Platform independently checks current authority, exact artifacts and runtime admission. Upload/build success is not production approval. The current manifest runtime profile is `anhedral-stack`; an application cannot approve itself for hosting.
 
