@@ -34,56 +34,65 @@ export const cliLinkSchema = z
     name: z.string().min(1).max(200),
   })
   .strict();
-/** Metadata-only project management; creation never initializes or provisions source. */
-export const cliProjectListQuerySchema = z
-  .object({
-    limit: z.coerce.number().int().min(1).max(100).default(50),
-    cursor: z.uuid().optional(),
-  })
-  .strict();
-export const cliProjectCreateInputSchema = z
-  .object({
-    protocol: z.literal(1),
-    requestId: z.uuid(),
-    name: z.string().trim().min(1).max(160),
-    summary: z.string().trim().max(2000).default(""),
-  })
-  .strict();
-export const cliProjectSchema = z
-  .object({
-    projectId: z.uuid(),
-    teamId: z.uuid(),
-    name: z.string().min(1).max(200),
-    slug: z.string().min(1).max(200),
-    canLink: z.boolean(),
-  })
-  .strict();
-export const cliProjectListSchema = z
-  .object({
-    protocol: z.literal(1),
-    principalId: z.uuid(),
-    team: z
-      .object({ id: z.uuid(), name: z.string().min(1).max(200) })
-      .strict()
-      .nullable(),
-    availableTeams: z
-      .array(z.object({ id: z.uuid(), name: z.string().min(1).max(200) }).strict())
-      .max(100),
-    teamsTruncated: z.boolean(),
-    projects: z.array(cliProjectSchema).max(100),
-    nextCursor: z.uuid().nullable(),
-  })
-  .strict();
-export const cliProjectCreateReceiptSchema = cliProjectSchema
-  .extend({
-    protocol: z.literal(1),
-    requestId: z.uuid(),
-    principalId: z.uuid(),
-    summary: z.string().max(2000),
-    initialization: z.literal("source-upload"),
-  })
-  .strict()
-  .refine((value) => value.projectId === value.requestId, "Project identity differs from request.");
+/** Metadata-only project management; creation never initializes or provisions source.
+ * Pure factories keep unused wire schemas outside the immutable build-tool artifact. */
+export const cliProjectListQuerySchema = /* @__PURE__ */ (() =>
+  z
+    .object({
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+      cursor: z.uuid().optional(),
+    })
+    .strict())();
+export const cliProjectCreateInputSchema = /* @__PURE__ */ (() =>
+  z
+    .object({
+      protocol: z.literal(1),
+      requestId: z.uuid(),
+      name: z.string().trim().min(1).max(160),
+      summary: z.string().trim().max(2000).default(""),
+    })
+    .strict())();
+export const cliProjectSchema = /* @__PURE__ */ (() =>
+  z
+    .object({
+      projectId: z.uuid(),
+      teamId: z.uuid(),
+      name: z.string().min(1).max(200),
+      slug: z.string().min(1).max(200),
+      canLink: z.boolean(),
+    })
+    .strict())();
+export const cliProjectListSchema = /* @__PURE__ */ (() =>
+  z
+    .object({
+      protocol: z.literal(1),
+      principalId: z.uuid(),
+      team: z
+        .object({ id: z.uuid(), name: z.string().min(1).max(200) })
+        .strict()
+        .nullable(),
+      availableTeams: z
+        .array(z.object({ id: z.uuid(), name: z.string().min(1).max(200) }).strict())
+        .max(100),
+      teamsTruncated: z.boolean(),
+      projects: z.array(cliProjectSchema).max(100),
+      nextCursor: z.uuid().nullable(),
+    })
+    .strict())();
+export const cliProjectCreateReceiptSchema = /* @__PURE__ */ (() =>
+  cliProjectSchema
+    .extend({
+      protocol: z.literal(1),
+      requestId: z.uuid(),
+      principalId: z.uuid(),
+      summary: z.string().max(2000),
+      initialization: z.literal("source-upload"),
+    })
+    .strict()
+    .refine(
+      (value) => value.projectId === value.requestId,
+      "Project identity differs from request.",
+    ))();
 export const sourceUploadInputSchema = z
   .object({
     protocol: z.literal(1),
