@@ -8,4 +8,4 @@ When selected, Hono owns privileged business/auth/data/storage operations. Web s
 
 Auth methods and payment providers require explicit activation. Apply reviewed migrations separately from builds/startup. Source-owned UI preserves semantic tokens, consumer edits and upstream licensing; see [UI ownership](ui.md).
 
-Recorded source provenance is not a hosting receipt. Runtime profile `anhedral-stack` identifies the current deployment contract; exact artifact/runtime policy, current authority and production approval still apply. Retained historical wire values and programmatic generators exist only for compatibility, not additional public stacks. Existing applications and runtime pins are not silently migrated.
+Recorded source provenance is not a hosting receipt. Runtime profile `anhedral-stack` identifies the current deployment contract; exact artifact/runtime policy, current authority and production approval still apply. Legacy generators, framework aliases and compatibility stack selection are removed. OJ is pinned by the generated runtime manifest.

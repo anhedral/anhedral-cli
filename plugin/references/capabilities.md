@@ -11,21 +11,21 @@ anhedral add r2 stripe
 anhedral stack status --json
 ```
 
-| Selection | Source added | Requires |
-| --- | --- | --- |
-| `backend` | Hono API, Drizzle/D1, Better Auth and web sign-in starter | Anhedral Stack web foundation |
-| `r2` | Private storage binding and authenticated owner-scoped file routes | `backend` |
-| `stripe` | Subscription Checkout, signed webhooks and canonical entitlement checks | `backend` |
+| Selection | Source added                                                            | Requires                      |
+| --------- | ----------------------------------------------------------------------- | ----------------------------- |
+| `backend` | Hono API, Drizzle/D1, Better Auth and web sign-in starter               | Anhedral Stack web foundation |
+| `r2`      | Private storage binding and authenticated owner-scoped file routes      | `backend`                     |
+| `stripe`  | Subscription Checkout, signed webhooks and canonical entitlement checks | `backend`                     |
 
 `backend` is one public selection; its provenance records the concrete Hono and database/auth capabilities. Use `--with-dependencies` to include missing prerequisites in the same planned source transaction. `stack list` describes this stack's additions. `status`/`doctor` check source completeness, not live service activation.
 
 ## Source protection
 
-Additions never reinitialize an application. They plan all selected changes before writing, reject collisions and preserve unrelated JSON/JSONC settings. Composition adapters are fingerprinted in `anhedral.json`; modified adapters require reconciliation instead of silent replacement. Add product routes in `apps/api/src/index.ts`, custom types in `custom-environment.ts`, and auth method configuration in `auth-features.ts`/`auth.ts`.
+Adding a capability also upgrades a canonical earlier TanStack Start foundation to the pinned OJ launchers and runtime helpers in the same source transaction, including when that capability is already installed. The exact earlier canonical document also receives the OJ-compatible side-effect CSS import; safe customized documents stay untouched, while edited documents retaining the earlier stylesheet URL import require reconciliation. Customized launchers or generated configuration require reconciliation before any writes. Additions never reinitialize an application. They plan all selected changes before writing, reject collisions and preserve unrelated JSON/JSONC settings. Composition adapters are fingerprinted in `anhedral.json`; modified adapters require reconciliation instead of silent replacement. Add product routes in `apps/api/src/index.ts`, custom types in `custom-environment.ts`, and auth method configuration in `auth-features.ts`/`auth.ts`.
 
 Journaled transactions preserve recovery evidence and refuse ambiguous recreated files. Dependency installation follows source commit; a post-commit install failure keeps source for repair/retry. Reviewed dependency patches precede the frozen install. `--skip-install` writes source only. `--dry-run` performs no writes or network requests. Repeating an addition preserves source; normal installation may still retry dependencies.
 
-There is no implicit capability removal or resource/data deletion. Existing applications retain their source and identity. Legacy generators and broader recipe implementations are retained for compatibility and recovery, not exposed as current stack options.
+There is no implicit capability removal or resource/data deletion. Existing applications retain their source and identity. Only the OJ/TanStack Start foundation and these three additions are supported.
 
 ## Local setup and validation
 

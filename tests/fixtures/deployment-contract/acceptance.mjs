@@ -145,13 +145,13 @@ export function deploymentAcceptance(contract, fixture) {
       identity: "none",
       capabilities: {},
     };
-    assert.deepEqual(contract.sourceCompositionSchema.parse(legacy), legacy);
-    // Open-source capability provenance is broader than managed launch hosting.
+    assert.equal(contract.sourceCompositionSchema.safeParse(legacy).success, false);
+    // Retired capabilities cannot be reintroduced through source provenance.
     const openSource = {
       ...fixture.tanstackCompositions[1].composition,
       capabilities: { hono: "0.18.0", "database-auth": "0.18.0", expo: "0.18.0" },
     };
-    assert.deepEqual(contract.sourceCompositionSchema.parse(openSource), openSource);
+    assert.equal(contract.sourceCompositionSchema.safeParse(openSource).success, false);
   });
 }
 

@@ -9,13 +9,13 @@
     {
       "name": "anhedral",
       "description": "Scaffold and extend the Anhedral Stack using the Anhedral CLI.",
-      "version": "0.18.0",
+      "version": "0.19.0",
       "category": "Developer Tools",
       "source": {
         "source": "git-subdir",
         "url": "https://github.com/anhedral/anhedral-cli.git",
         "path": "plugins/anhedral",
-        "ref": "plugin-v0.18.0"
+        "ref": "plugin-v0.19.0"
       }
     }
   ]

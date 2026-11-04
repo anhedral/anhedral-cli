@@ -1,24 +1,29 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
-import ts from 'typescript';
-import { scaffoldDatabase } from '../dist/scaffold/database.js';
-test('D1 migrations default to local, use API binding, and propagate failures', () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-migrations-'));
+import { scaffoldAnhedralStack, parseInitOptions } from '../dist/index.js';
+import { runCapabilityCommand } from '../dist/capability-command.js';
+test('D1 migrations default to local, use API binding, and propagate failures', async () => {
+  const base = mkdtempSync(path.join(tmpdir(), 'anhedral-migrations-'));
+  const root = path.join(base, 'product');
+  const cwd = process.cwd();
   try {
-    mkdirSync(path.join(root, 'apps/api/src'), { recursive: true });
-    writeFileSync(path.join(root, 'apps/api/package.json'), '{"name":"@workspace/api"}');
-    writeFileSync(path.join(root, 'apps/api/src/index.ts'), 'export {};');
-    scaffoldDatabase({ root });
-    const source = readFileSync(path.join(root, 'packages/db/src/migrate.ts'), 'utf8');
-    const file = path.join(root, 'packages/db/src/migrate.mjs');
-    writeFileSync(
-      file,
-      ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText,
+    await scaffoldAnhedralStack(
+      parseInitOptions([root, '--skip-install', '--no-git']),
+      () => {
+        throw Error('Network forbidden');
+      },
+      { quiet: true },
     );
+    process.chdir(root);
+    await runCapabilityCommand('add', ['backend', '--skip-install'], { quiet: true }, () => {
+      throw Error('Network forbidden');
+    });
+    process.chdir(cwd);
+    const file = path.join(root, 'packages/db/src/migrate.mjs');
     const runner = path.join(root, 'pnpm.mjs');
     writeFileSync(
       runner,
@@ -51,6 +56,7 @@ test('D1 migrations default to local, use API binding, and propagate failures', 
       /migrate|process.env/,
     );
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    process.chdir(cwd);
+    rmSync(base, { recursive: true, force: true });
   }
 });

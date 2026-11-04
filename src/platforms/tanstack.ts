@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ANHEDRAL_STACK_DEPENDENCIES, WEB_DEPENDENCIES } from '../dependencies.js';
-import { CapabilityEditor } from '../capability-editor.js';
+import { CapabilityEditor, fingerprint } from '../capability-editor.js';
 import type { Capability } from '../capability-catalog.js';
 import { resourceName } from '../render.js';
 import { json, put, workerConfig } from '../scaffold/files.js';
@@ -21,9 +21,10 @@ export function scaffoldTanstack(root: string, name: string): void {
     version: '0.1.0',
     type: 'module',
     scripts: {
-      dev: 'vite dev --host 0.0.0.0 --port 3000',
-      build: 'vite build',
-      preview: 'vite preview --host 0.0.0.0 --port 3000',
+      dev: 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000',
+      build: 'node ../../scripts/oj.mjs build .',
+      preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
+      deploy: 'wrangler deploy --config dist/ssr/wrangler.json',
       typecheck: 'wrangler types && tsr generate && tsc --noEmit',
       lint: 'eslint . --max-warnings 0',
     },
@@ -153,13 +154,123 @@ export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
   );
 }
 
-function isTanstack(e: CapabilityEditor) {
-  return Boolean(e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']);
+function assertTanstack(e: CapabilityEditor) {
+  if (!e.json('apps/web/package.json').dependencies?.['@tanstack/react-start'])
+    throw Error('Only the Anhedral Stack TanStack Start foundation is supported.');
+}
+
+const ojScripts = {
+  dev: 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000',
+  build: 'node ../../scripts/oj.mjs build .',
+  preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
+  deploy: 'wrangler deploy --config dist/ssr/wrangler.json',
+} as const;
+const previousScripts = {
+  dev: 'vite dev --host 0.0.0.0 --port 3000',
+  build: 'vite build',
+  preview: 'vite preview --host 0.0.0.0 --port 3000',
+} as const;
+const ojFiles = {
+  'scripts/oj.mjs': 'oj/run.mjs',
+  'scripts/oj-runtime.json': 'oj/runtime.json',
+  'scripts/OJ.LICENSE': 'oj/OJ.LICENSE',
+} as const;
+function tanstackViteConfiguration(installed: readonly Capability[]) {
+  const backend = installed.includes('hono');
+  return `import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'vite';
+import { cloudflare } from '@cloudflare/vite-plugin';
+import { tanstackStart } from '@tanstack/react-start/plugin/vite';
+import react from '@vitejs/plugin-react';
+export default defineConfig(${backend ? '({ command }) => (' : ''}{
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  plugins: [
+    cloudflare({ viteEnvironment: { name: 'ssr' }, ${backend ? "auxiliaryWorkers: command === 'serve' ? [{ configPath: '../api/wrangler.jsonc' }] : [], persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) }, " : ''}remoteBindings: false }),
+    tanstackStart({ server: { entry: './server.ts' } }),
+    react(),
+  ],
+}${backend ? ')' : ''});
+`;
+}
+
+/** One-time source upgrade, planned in the same bounded overlay as each addition. */
+export function normalizeOjFoundation(
+  e: CapabilityEditor,
+  installed: readonly Capability[],
+  refreshConfiguration = false,
+) {
+  assertTanstack(e);
+  const file = 'apps/web/package.json';
+  const scripts = e.json(file).scripts;
+  if (!scripts || typeof scripts !== 'object' || Array.isArray(scripts))
+    throw Error('Preserve invalid web scripts; reconcile the Anhedral Stack launcher first.');
+  // Never overwrite a customer launcher while claiming the runtime was upgraded.
+  for (const [name, desired] of Object.entries(ojScripts)) {
+    const current = scripts[name];
+    const previous = Reflect.get(previousScripts, name);
+    if (current !== undefined && current !== desired && current !== previous)
+      throw Error(
+        `Preserve customized web launcher scripts.${name}. Reconcile it with the pinned OJ runtime before adding capabilities. No files were changed.`,
+      );
+  }
+  let changed = false;
+  const rootRoute = 'apps/web/src/routes/__root.tsx';
+  const rootSource = e.read(rootRoute);
+  // A one-way repair of the exact shipped document, without owning customer routes.
+  if (
+    rootSource !== null &&
+    fingerprint(rootSource) === '21af7892e39130c9ec3d7ffb583b3f5d24bee771440ca253d8d7b8ce41be9801'
+  ) {
+    e.writes.set(rootRoute, template('root.tsx.txt'));
+    changed = true;
+  } else if (rootSource !== null && /\bfrom\s*(['"])\.\.\/styles\.css\?url\1/.test(rootSource))
+    throw Error(
+      'Preserve customized root route CSS. Reconcile its stylesheet URL import with the OJ side-effect CSS pattern before adding capabilities. No files were changed.',
+    );
+  for (const [name, desired] of Object.entries(ojScripts)) {
+    if (scripts[name] !== desired) {
+      e.set(file, ['scripts', name], desired);
+      changed = true;
+    }
+  }
+  for (const [destination, asset] of Object.entries(ojFiles)) {
+    const desired = template(asset);
+    if (e.read(destination) !== desired) {
+      e.owned(destination, desired);
+      changed = true;
+    } else if (e.managed[destination] !== fingerprint(desired)) {
+      e.managed[destination] = fingerprint(desired);
+      changed = true;
+    }
+  }
+  const ignore = e.read('.gitignore') ?? '';
+  if (!ignore.split(/\r?\n/).includes('.oj-cache/')) {
+    e.writes.set(
+      '.gitignore',
+      ignore + (ignore && !ignore.endsWith('\n') ? '\n' : '') + '.oj-cache/\n',
+    );
+    changed = true;
+  }
+  const configuration = 'apps/web/vite.config.ts';
+  const currentConfiguration = e.read(configuration);
+  const desiredConfiguration = tanstackViteConfiguration(installed);
+  if (
+    currentConfiguration !== desiredConfiguration &&
+    (changed ||
+      refreshConfiguration ||
+      (currentConfiguration !== null &&
+        e.managed[configuration] === fingerprint(currentConfiguration)))
+  ) {
+    e.owned(configuration, desiredConfiguration);
+    changed = true;
+  }
+  return changed;
 }
 
 /** Fingerprinted composition adapters; application routes stay source-owned. */
 export function composeTanstack(e: CapabilityEditor, installed: readonly Capability[]): void {
-  if (!isTanstack(e)) return;
+  assertTanstack(e);
+  normalizeOjFoundation(e, installed);
   const backend = installed.includes('hono');
   const auth = installed.includes('database-auth');
   e.owned('apps/web/src/server.ts', template(backend ? 'server.ts.txt' : 'minimal-server.ts.txt'));
@@ -169,28 +280,12 @@ export function composeTanstack(e: CapabilityEditor, installed: readonly Capabil
       backend ? 'application.server.ts.txt' : 'minimal-application.server.ts.txt',
     ).replaceAll('__AUTHENTICATION__', String(auth)),
   );
-  e.owned(
-    'apps/web/vite.config.ts',
-    `import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
-import { cloudflare } from '@cloudflare/vite-plugin';
-import { tanstackStart } from '@tanstack/react-start/plugin/vite';
-import react from '@vitejs/plugin-react';
-export default defineConfig({
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  plugins: [
-    cloudflare({ viteEnvironment: { name: 'ssr' }, ${backend ? "auxiliaryWorkers: [{ configPath: '../api/wrangler.jsonc' }], persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) }, " : ''}remoteBindings: false }),
-    tanstackStart({ server: { entry: './server.ts' } }),
-    react(),
-  ],
-});
-`,
-  );
+  e.owned('apps/web/vite.config.ts', tanstackViteConfiguration(installed));
 }
 
 /** Install account source only when the backend authentication capability is added. */
 export function addTanstackAuth(e: CapabilityEditor): void {
-  if (!isTanstack(e)) return;
+  assertTanstack(e);
   e.create('apps/web/src/lib/auth-client.ts', template('auth-client.ts.txt'));
   e.create('apps/web/src/routes/sign-in.tsx', template('sign-in.tsx.txt'));
 }

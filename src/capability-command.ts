@@ -13,6 +13,8 @@ import {
 } from './capability-catalog.js';
 import { CapabilityEditor } from './capability-editor.js';
 import { addCapabilityRecipe, composeCapabilities } from './capability-recipes.js';
+import { normalizeOjFoundation } from './platforms/tanstack.js';
+import { GENERATOR_VERSION } from './version.js';
 import {
   PostCommitError,
   runStagedTransaction,
@@ -23,8 +25,7 @@ import { execFile } from './util.js';
 import { capabilityReferences } from './capability-references.js';
 import { configureDependencyPatches } from './dependency-patches.js';
 import { composeSourceProvenance } from './composition.js';
-import type { StandardRunner } from './registry/types.js';
-
+import type { CommandRunner } from './command-types.js';
 function projectRoot(cwd: string, allowRecovery = false) {
   let root = realpathSync(cwd);
   for (;;) {
@@ -61,7 +62,6 @@ function readState(e: CapabilityEditor) {
         throw Error(`Invalid capability state: ${id} requires ${parent}.`);
   return { installed, managedFiles: state.managedFiles as Record<string, string> };
 }
-const archivedStack = 'codex/preserved-progressive-stack-20261102';
 const publicGroups: Record<PublicStackAddition, readonly Capability[]> = {
   backend: ['hono', 'database-auth'],
   r2: ['r2'],
@@ -70,7 +70,7 @@ const publicGroups: Record<PublicStackAddition, readonly Capability[]> = {
 function publicScopeError(command: 'add' | 'stack' = 'add') {
   return commandArgumentError(
     command,
-    `The active CLI edits only the Anhedral Stack. Preserved broader source workflows are on ${archivedStack}.`,
+    'The CLI edits only the Anhedral Stack: TanStack Start with OJ and shadcn.',
   );
 }
 /** Identify the source before any recovery or source mutation. One missing manifest can be an interrupted add. */
@@ -99,7 +99,11 @@ function assertPublicWorkspace(
       )
     )
       throw publicScopeError(command);
-    if (composition?.contractVersion !== 2 || composition?.foundation !== 'tanstack-start')
+    if (
+      configuration.setup?.stack !== 'anhedral-stack' ||
+      composition?.contractVersion !== 2 ||
+      composition?.foundation !== 'tanstack-start'
+    )
       throw publicScopeError(command);
   } else if (!recovering) throw publicScopeError(command);
 }
@@ -153,96 +157,32 @@ function publicStackState(root: string, state: ReturnType<typeof readState>) {
     resourcesProvisionedByCli: false,
   };
 }
-
 export async function runCapabilityCommand(
   command: 'add' | 'stack',
   args: string[],
   output: OutputOptions,
-  run: StandardRunner = execFile,
-  scope: 'compatibility' | 'public' = 'compatibility',
+  run: CommandRunner = execFile,
 ) {
   const parsed = commandArguments(command, args);
-  if (scope === 'public' && command === 'add') {
+  if (command === 'add') {
     const unsupported = parsed.positional.filter(
       (id) => !PUBLIC_STACK_ADDITIONS.includes(id as PublicStackAddition),
     );
     if (unsupported.length)
-      throw commandArgumentError(
-        'add',
-        `Choose backend, r2 or stripe for the Anhedral Stack. Broader source recipes are preserved on ${archivedStack}.`,
-      );
+      throw commandArgumentError('add', 'Choose backend, r2 or stripe for the Anhedral Stack.');
   }
   let result: Record<string, unknown>;
   if (command === 'stack') {
     const [action, ...extra] = parsed.positional;
     if (extra.length || !['list', 'status', 'doctor'].includes(action))
       throw commandArgumentError('stack', 'Use stack list, status or doctor.');
-    if (action === 'list')
-      result =
-        scope === 'public'
-          ? { stack: ANHEDRAL_STACK, resourcesProvisionedByCli: false }
-          : {
-              launchAdditions: {
-                backend: ['hono', 'database-auth'],
-                r2: ['r2'],
-                stripe: ['stripe'],
-              },
-              capabilities: CAPABILITY_IDS.map((id) => ({ id, ...CAPABILITIES[id] })),
-              provisioning: 'Separate from source installation',
-            };
+    if (action === 'list') result = { stack: ANHEDRAL_STACK, resourcesProvisionedByCli: false };
     else {
       const root = projectRoot(process.cwd());
-      if (scope === 'public') assertPublicWorkspace(root, false, 'stack');
+      assertPublicWorkspace(root, false, 'stack');
       const e = new CapabilityEditor(root, {});
       const state = readState(e);
-      const capabilities = CAPABILITY_IDS.map((id) => {
-        const missing = CAPABILITIES[id].requires.filter(
-          (parent) => !state.installed.includes(parent),
-        );
-        const installed = state.installed.includes(id);
-        const missingFiles = installed
-          ? CAPABILITIES[id].targets
-              .map((target) =>
-                target === 'apps/web/lib/auth-client.ts' &&
-                e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-                  ? 'apps/web/src/lib/auth-client.ts'
-                  : target,
-              )
-              .filter((target) => !existsSync(path.join(root, target)))
-          : [];
-        return {
-          id,
-          name: CAPABILITIES[id].name,
-          sourceState: installed
-            ? missingFiles.length
-              ? 'incomplete'
-              : 'installed'
-            : missing.length
-              ? 'locked'
-              : 'available',
-          missingPrerequisites: missing,
-          missingFiles,
-          configuration: installed ? CAPABILITIES[id].configuration : [],
-          activation: 'not verified',
-        };
-      });
-      const foundationReady =
-        existsSync(path.join(root, 'apps/web/package.json')) &&
-        !!(
-          e.json('apps/web/package.json').dependencies?.next ||
-          e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-        );
-      const sourceReady =
-        foundationReady && capabilities.every((c) => c.sourceState !== 'incomplete');
-      result = {
-        root,
-        foundationReady,
-        sourceReady,
-        capabilities,
-        runtimeAcceptance: 'not evaluated',
-        resourcesProvisionedByCli: false,
-      };
-      if (scope === 'public') result = publicStackState(root, state);
+      result = publicStackState(root, state);
       if (action === 'doctor' && !result.sourceReady) process.exitCode = 1;
     }
   } else {
@@ -252,12 +192,12 @@ export async function runCapabilityCommand(
         'Choose one or more capabilities from anhedral stack list.',
       );
     const root = projectRoot(process.cwd(), !parsed.has('--dry-run'));
-    if (scope === 'public') assertPublicWorkspace(root, !parsed.has('--dry-run'));
+    assertPublicWorkspace(root, !parsed.has('--dry-run'));
     if (!parsed.has('--dry-run') && existsSync(path.join(root, '.anhedral-journal.json')))
       recoverInterruptedTransaction(root);
     const e = new CapabilityEditor(root, {});
     const state = readState(e);
-    if (scope === 'public') {
+    {
       assertPublicWorkspace(root);
       if (state.installed.some((id) => !['hono', 'database-auth', 'r2', 'stripe'].includes(id)))
         throw publicScopeError();
@@ -266,25 +206,13 @@ export async function runCapabilityCommand(
     const manifest = e.json('package.json');
     if (typeof manifest.name !== 'string' || !manifest.name)
       throw Error('The workspace needs a package name.');
-    if (!(
-      e.json('apps/web/package.json').dependencies?.next ||
-      e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-    ))
-      throw Error('An Anhedral Next.js or TanStack Start foundation is required.');
     for (const id of state.installed)
-      for (const original of CAPABILITIES[id].targets) {
-        const target =
-          original === 'apps/web/lib/auth-client.ts' &&
-          e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-            ? 'apps/web/src/lib/auth-client.ts'
-            : original;
+      for (const target of CAPABILITIES[id].targets)
         if (!existsSync(path.join(root, target)))
           throw Error(
             `Installed capability is incomplete: ${id} (${target}). Reconcile its source first.`,
           );
-      }
     if (
-      scope === 'public' &&
       !parsed.has('--with-dependencies') &&
       !parsed.positional.includes('backend') &&
       !(state.installed.includes('hono') && state.installed.includes('database-auth')) &&
@@ -305,6 +233,11 @@ export async function runCapabilityCommand(
       parsed.has('--with-dependencies'),
     );
     const installed = [...state.installed, ...additions];
+    const beforeConfiguration = e.json('anhedral.json');
+    const metadataChanged =
+      beforeConfiguration.setup?.cliVersion !== GENERATOR_VERSION ||
+      beforeConfiguration.composition?.generatorVersion !== GENERATOR_VERSION;
+    const foundationChanged = normalizeOjFoundation(e, state.installed, metadataChanged);
     const composition = composeSourceProvenance(
       e.json('anhedral.json').composition,
       installed,
@@ -315,6 +248,9 @@ export async function runCapabilityCommand(
       for (const [file, source] of Object.entries(capabilityReferences()))
         if (e.read(file) === null) e.create(file, source);
       composeCapabilities(e, installed);
+    }
+    if (additions.length || foundationChanged || metadataChanged) {
+      e.set('anhedral.json', ['setup', 'cliVersion'], GENERATOR_VERSION);
       e.set('anhedral.json', ['composition'], composition);
       e.set('anhedral.json', ['capabilities'], {
         schemaVersion: 1,
@@ -326,39 +262,28 @@ export async function runCapabilityCommand(
     const files = [...e.writes.keys()];
     const plan = {
       root,
-      added:
-        scope === 'public'
-          ? PUBLIC_STACK_ADDITIONS.filter((id) =>
-              publicGroups[id].some((capability) => additions.includes(capability)),
-            )
-          : additions,
+      added: PUBLIC_STACK_ADDITIONS.filter((id) =>
+        publicGroups[id].some((capability) => additions.includes(capability)),
+      ),
       alreadyInstalled: parsed.positional.filter((id) =>
         id === 'backend'
           ? state.installed.includes('hono') && state.installed.includes('database-auth')
           : state.installed.includes(id as Capability),
       ),
-      installed:
-        scope === 'public'
-          ? PUBLIC_STACK_ADDITIONS.filter((id) =>
-              publicGroups[id].every((capability) => installed.includes(capability)),
-            )
-          : installed,
+      installed: PUBLIC_STACK_ADDITIONS.filter((id) =>
+        publicGroups[id].every((capability) => installed.includes(capability)),
+      ),
       files,
-      configuration:
-        scope === 'public'
-          ? PUBLIC_STACK_ADDITIONS.filter((id) =>
-              publicGroups[id].some((capability) => additions.includes(capability)),
-            ).map((id) => ({
-              id,
-              requirements: [
-                ...new Set(
-                  publicGroups[id].flatMap((capability) => [
-                    ...CAPABILITIES[capability].configuration,
-                  ]),
-                ),
-              ],
-            }))
-          : additions.map((id) => ({ id, requirements: CAPABILITIES[id].configuration })),
+      configuration: PUBLIC_STACK_ADDITIONS.filter((id) =>
+        publicGroups[id].some((capability) => additions.includes(capability)),
+      ).map((id) => ({
+        id,
+        requirements: [
+          ...new Set(
+            publicGroups[id].flatMap((capability) => [...CAPABILITIES[capability].configuration]),
+          ),
+        ],
+      })),
       dryRun: parsed.has('--dry-run'),
       resourcesProvisionedByCli: false,
       activation: 'not verified',
@@ -402,30 +327,18 @@ export async function runCapabilityCommand(
   const format = () => {
     if (command === 'add')
       return `${parsed.has('--dry-run') ? 'Plan' : 'Source additions'}: ${(result.added as string[]).join(', ') || 'already installed'}\n${(result.files as string[]).map((file) => '  ' + file).join('\n')}\nReview capability configuration and migrations before deployment. No resources were provisioned.`;
-    else if (scope === 'public') {
+    else {
       const rows =
         parsed.positional[0] === 'list'
           ? PUBLIC_STACK_ADDITIONS.map((id) => `${id}\t${ANHEDRAL_STACK.additions[id].name}`)
-          : (result.additions as { id: string; sourceState: string }[]).map(
-              (item) => `${item.id}\t${item.sourceState}`,
-            );
+          : (
+              result.additions as {
+                id: string;
+                sourceState: string;
+              }[]
+            ).map((item) => `${item.id}\t${item.sourceState}`);
       return `${ANHEDRAL_STACK.name}\n${ANHEDRAL_STACK.foundation.name}\n${rows.join('\n')}\nSource state is not live provider activation.`;
-    } else
-      return (
-        (
-          result.capabilities as {
-            id: string;
-            name: string;
-            sourceState?: string;
-            requires?: readonly string[];
-          }[]
-        )
-          .map(
-            (item) =>
-              `${item.id}\t${item.sourceState ?? item.name}\t${item.requires?.join(', ') ?? ''}`,
-          )
-          .join('\n') + '\nSource state is not live provider activation.'
-      );
+    }
   };
   createReporter(output, format).result(result);
 }

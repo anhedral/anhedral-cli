@@ -2,7 +2,7 @@
   "notice": "Synthetic acceptance fixture only. Does not approve a CLI artifact, runtime image or live hosting profile.",
   "manifest": {
     "contractVersion": 1,
-    "foundation": "next-opennext",
+    "foundation": "tanstack-start",
     "capabilities": [
       "hono",
       "database-auth"
@@ -15,7 +15,7 @@
     },
     "intent": {
       "contractVersion": 1,
-      "runtimeProfile": "progressive-next-hono-d1-v1",
+      "runtimeProfile": "anhedral-stack",
       "environment": "preview",
       "visibility": "protected"
     }
@@ -26,7 +26,7 @@
     "projectId": "00000000-0000-4000-8000-000000000002",
     "manifest": {
       "contractVersion": 1,
-      "foundation": "next-opennext",
+      "foundation": "tanstack-start",
       "capabilities": [
         "hono",
         "database-auth"
@@ -39,7 +39,7 @@
       },
       "intent": {
         "contractVersion": 1,
-        "runtimeProfile": "progressive-next-hono-d1-v1",
+        "runtimeProfile": "anhedral-stack",
         "environment": "preview",
         "visibility": "protected"
       }
@@ -114,7 +114,7 @@
         },
         "intent": {
           "contractVersion": 1,
-          "runtimeProfile": "progressive-tanstack-v1",
+          "runtimeProfile": "anhedral-stack",
           "environment": "preview",
           "visibility": "protected"
         }
@@ -146,7 +146,7 @@
         },
         "intent": {
           "contractVersion": 1,
-          "runtimeProfile": "progressive-tanstack-v1",
+          "runtimeProfile": "anhedral-stack",
           "environment": "preview",
           "visibility": "protected"
         }
@@ -180,7 +180,7 @@
         },
         "intent": {
           "contractVersion": 1,
-          "runtimeProfile": "progressive-tanstack-v1",
+          "runtimeProfile": "anhedral-stack",
           "environment": "preview",
           "visibility": "protected"
         }
@@ -214,7 +214,7 @@
         },
         "intent": {
           "contractVersion": 1,
-          "runtimeProfile": "progressive-tanstack-v1",
+          "runtimeProfile": "anhedral-stack",
           "environment": "preview",
           "visibility": "protected"
         }
@@ -250,7 +250,7 @@
         },
         "intent": {
           "contractVersion": 1,
-          "runtimeProfile": "progressive-tanstack-v1",
+          "runtimeProfile": "anhedral-stack",
           "environment": "preview",
           "visibility": "protected"
         }

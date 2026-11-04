@@ -13,7 +13,10 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parse } from 'yaml';
 import { spawnSync } from 'node:child_process';
-import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.js';
+import {
+  scaffoldAnhedralStack as scaffoldStandardProject,
+  parseInitOptions as parseStandardOptions,
+} from '../dist/index.js';
 import { configureDependencyPatches, writeDependencyAudit } from '../dist/dependency-patches.js';
 
 const patch = 'patches/braces@3.0.3.patch';

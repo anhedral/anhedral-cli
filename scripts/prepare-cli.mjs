@@ -1,12 +1,10 @@
 import { checkRepositoryBoundary } from './repository-boundaries.mjs';
 import { chmodSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { validateStackCatalog } from '../dist/stack-registry.js';
 import { ANHEDRAL_STACK } from '../dist/capability-catalog.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
 
 checkRepositoryBoundary();
-validateStackCatalog();
 const entry = fileURLToPath(new URL('../dist/bin.js', import.meta.url));
 if (!readFileSync(entry, 'utf8').startsWith('#!/usr/bin/env node\n')) {
   throw new Error('Compiled CLI must preserve its Node.js shebang');

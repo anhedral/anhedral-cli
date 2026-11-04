@@ -13,7 +13,6 @@ import {
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
 
 const cli = path.resolve('dist/bin.js');
 const scratch = mkdtempSync(path.join(tmpdir(), 'anhedral-public-stack-'));
@@ -81,20 +80,17 @@ test('unsupported executable add commands fail before reading or recovering tran
   ]) {
     const result = run(['add', addition, '--skip-install', '--json'], root);
     assert.equal(result.status, 1, addition);
-    assert.match(JSON.parse(result.stderr).error, /codex\/preserved-progressive-stack-20261102/);
+    assert.match(JSON.parse(result.stderr).error, /Anhedral Stack/);
     assert.equal(fingerprint(root), before, addition);
   }
 });
 
 test('public add refuses legacy Next source before recovering pending transactions', async () => {
-  const root = path.join(scratch, 'legacy');
-  await scaffoldStandardProject(
-    parseStandardOptions([root, '--skip-install', '--no-git']),
-    () => {
-      throw Error('Network forbidden');
-    },
-    { quiet: true },
-  );
+  const root = generate('legacy-source');
+  const fresh = root;
+  const rootManifest = read(fresh, 'apps/web/package.json');
+  rootManifest.dependencies = { next: '16.4.2' };
+  writeFileSync(path.join(fresh, 'apps/web/package.json'), JSON.stringify(rootManifest));
   writeFileSync(path.join(root, '.anhedral-journal.json'), 'preserve pending legacy material');
   const before = fingerprint(root);
   const result = run(['add', 'backend', '--skip-install', '--json'], root);

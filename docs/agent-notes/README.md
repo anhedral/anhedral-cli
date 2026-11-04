@@ -83,3 +83,17 @@ promotion or package publication is part of this change.
 
 Keep public CLI notes within 100 lines and the repository within 20 Markdown files.
 Private operational evidence stays outside this repository; history remains in Git.
+
+## 2026-11-03 — OJ single-stack cutover
+
+CLI 0.19.0 is a breaking source candidate: one OJ/TanStack Start/shadcn foundation.
+Legacy generators, SDK aliases and native UI paths are removed. Backend adds Hono,
+Better Auth and D1 together; R2 and Stripe extend it. Projects list/create are integrated.
+
+The seven-file public contract is pinned to `47d921f53ce7b57a683b840a89025f5e35aef0fa`.
+Additions upgrade canonical launchers atomically and preserve customization conflicts.
+Canonical documents use side-effect CSS; only exact prior documents auto-upgrade.
+Affected custom documents require reconciliation; safe customer documents stay untouched.
+
+Build, lint, package checks and source tests passed. Runtime artifacts remain immutable
+per reviewed source checkpoint. No package/plugin publication occurred from this checkout.

@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "Generate the Anhedral Stack as editable source: start with web UI, then add backend, storage and payments.",
   "type": "module",
   "exports": {
@@ -74,7 +74,6 @@
     "pretest": "pnpm build",
     "prepublishOnly": "pnpm test:all",
     "test:cli:validation": "node --test tests/test-cli-validation.test.mjs",
-    "test:contracts:types": "node tests/test-generated-contracts-types.mjs",
     "test:pack": "pnpm build && node tests/test-packed-cli.js",
     "test:pack:exact": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
     "test:packlist": "pnpm build && node tests/test-packlist.js",
@@ -84,7 +83,6 @@
     "release:pack": "pnpm build && pnpm plugin:build && node scripts/create-release-artifact.mjs && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:verify": "node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json",
     "release:artifact:smoke": "node tests/test-packed-cli.js .artifacts/release/metadata.json",
-    "test:standard": "pnpm build && node --test tests/test-standard.test.mjs",
     "test:unit": "node --test --test-concurrency=4 --test-reporter=spec tests/*.test.mjs",
     "test:integration": "pnpm build && node tests/test-generated-apps.mjs",
     "format": "prettier --write src scripts tests \"assets/patches/*.mjs\" assets/ui assets/security && node scripts/stack-template-format.mjs --write",
@@ -92,7 +90,6 @@
     "plugin:build": "node scripts/check-plugin.mjs",
     "plugin:check": "node scripts/check-plugin.mjs",
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
-    "test:next-runtime": "pnpm build && node scripts/next-runtime-smoke.mjs",
     "check:boundaries": "node scripts/repository-boundaries.mjs",
     "test:tanstack-runtime": "pnpm build && node scripts/tanstack-runtime-smoke.mjs",
     "check:standalone": "node scripts/standalone-checkout.mjs"

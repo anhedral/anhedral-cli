@@ -140,7 +140,7 @@ for (const dependency of ['next', 'expo']) {
           return '';
         }),
       ),
-      /Anhedral Stack web foundation|No matching/,
+      /Anhedral Stack.*(?:foundation|application)/,
     );
     assert.equal(calls, 0);
     assert.deepEqual(tree(root), before);
@@ -186,16 +186,13 @@ test('public UI plans and installs official shadcn only inside the generated web
   );
 });
 
-test('retained direct library callers keep legacy Next and native catalog compatibility', async (t) => {
+test('direct library calls reject native selectors and retired Next source', async (t) => {
   const { root } = workspace(t, { dependency: 'next' });
-  await inside(root, () =>
-    runUiCommand(['add', 'button', '--dry-run'], { quiet: true }, () => {
-      throw Error('Unexpected installer');
-    }),
+  await assert.rejects(
+    inside(root, () => runUiCommand(['add', 'button', '--dry-run'], { quiet: true })),
+    /Anhedral Stack.*application/,
   );
-  const output = await capture(() => runUiCommand(['list', '--native'], { json: true }));
-  const result = JSON.parse(output);
-  assert.ok(result.components.some((item) => item.native));
+  await assert.rejects(runUiCommand(['list', '--native'], { json: true }), /web application only/);
 });
 
 test('CLI dispatch applies the public guard and does not fall back to legacy UI', (t) => {
@@ -207,22 +204,16 @@ test('CLI dispatch applies the public guard and does not fall back to legacy UI'
     { encoding: 'utf8', timeout: 5000 },
   );
   assert.equal(result.status, 1, result.stdout);
-  assert.match(result.stderr, /Anhedral Stack web foundation/);
+  assert.match(result.stderr, /Anhedral Stack.*(?:foundation|application)/);
   assert.deepEqual(tree(root), before);
 });
 
-test('prior Anhedral web-launch marker remains read-compatible without metadata rewrites', async (t) => {
+test('retired web-launch marker is rejected without metadata rewrites', async (t) => {
   const { root } = workspace(t, { stack: 'anhedral-web-launch' });
   const before = tree(root);
-  const report = JSON.parse(
-    await inside(root, () => capture(() => runAnhedralUiCommand(['doctor'], { json: true }))),
-  );
-  assert.equal(report.configurationReady, true);
-  assert.equal(report.targets[0].guide, 'https://ui.shadcn.com/docs/installation/tanstack');
-  await inside(root, () =>
-    runAnhedralUiCommand(['add', 'button', '--dry-run'], { quiet: true }, () => {
-      throw Error('Unexpected installer');
-    }),
+  await assert.rejects(
+    inside(root, () => runAnhedralUiCommand(['doctor'], { json: true })),
+    /Select apps\/web/,
   );
   assert.deepEqual(tree(root), before);
 });
