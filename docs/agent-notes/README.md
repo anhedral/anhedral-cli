@@ -86,20 +86,14 @@ Private operational evidence stays outside this repository; history remains in G
 
 ## 2026-11-03 — OJ single-stack cutover
 
-Generated Anhedral Stack apps now use pinned OJ for dev/build and TanStack Start
-with shadcn. Backend adds Hono, Better Auth and D1; R2 and Stripe extend it.
-Removed legacy generators, SDK aliases, native UI paths and unused recipe assets.
-CLI build/lint and packlist passed; generated pinned-binary/tamper checks passed.
-The reviewed seven-file public contract projection is pinned to Platform commit
-`47d921f53ce7b57a683b840a89025f5e35aef0fa`. Existing canonical TanStack apps upgrade
-to pinned OJ atomically on additions; customization conflicts leave source untouched.
-No package/plugin publication or provider deployment occurred from this checkout.
+CLI 0.19.0 is a breaking source candidate: one OJ/TanStack Start/shadcn foundation.
+Legacy generators, SDK aliases and native UI paths are removed. Backend adds Hono,
+Better Auth and D1 together; R2 and Stripe extend it. Projects list/create are integrated.
 
-CLI 0.19.0 is a breaking source candidate: OJ replaces Vite as the dev/build
-runtime and legacy framework generators/SDK aliases are removed. The reviewed
-projects list/create commands are integrated locally. Publication remains separate.
+The seven-file public contract is pinned to `47d921f53ce7b57a683b840a89025f5e35aef0fa`.
+Additions upgrade canonical launchers atomically and preserve customization conflicts.
+Canonical documents use side-effect CSS; only exact prior documents auto-upgrade.
+Affected custom documents require reconciliation; safe customer documents stay untouched.
 
-The canonical document imports CSS by side effect to keep OJ preview hydration
-consistent. Additions repair only the exact prior document; affected customized
-documents require reconciliation and safe customer documents remain source-owned.
-The prior reviewed package stays immutable until a separately reviewed refresh.
+Build, lint, package checks and source tests passed. Runtime artifacts remain immutable
+per reviewed source checkpoint. No package/plugin publication occurred from this checkout.
