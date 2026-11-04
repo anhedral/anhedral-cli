@@ -92,3 +92,7 @@ Removed legacy generators, SDK aliases, native UI paths and unused recipe assets
 CLI build/lint and packlist passed; generated pinned-binary/tamper checks passed.
 The shared deployment-contract projection and combined release remain pending.
 No package/plugin publication or provider deployment occurred from this checkout.
+
+CLI 0.19.0 is a breaking source candidate: OJ replaces Vite as the dev/build
+runtime and legacy framework generators/SDK aliases are removed. The reviewed
+projects list/create commands are integrated locally. Publication remains separate.
