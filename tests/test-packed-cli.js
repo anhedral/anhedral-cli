@@ -148,7 +148,7 @@ try {
       [
         '--input-type=module',
         '--eval',
-        "import { deploymentContractVersion, deploymentIntentSchema } from 'anhedral/deployment'; console.log(deploymentContractVersion, deploymentIntentSchema.safeParse({contractVersion:1,runtimeProfile:'fixture',environment:'preview',visibility:'protected'}).success);",
+        "import { deploymentContractVersion, deploymentIntentSchema } from 'anhedral/deployment'; console.log(deploymentContractVersion, deploymentIntentSchema.safeParse({contractVersion:1,runtimeProfile:'anhedral-stack',environment:'preview',visibility:'protected'}).success);",
       ],
       installRoot,
     ).stdout.trim(),

@@ -25,7 +25,7 @@ export function composeSourceProvenance(
   return compositionSchema.parse({
     contractVersion: 2,
     foundation: 'tanstack-start',
-    generatorVersion: old.generatorVersion,
+    generatorVersion: GENERATOR_VERSION,
     identity,
     capabilities: Object.fromEntries(
       installed.map((id) => [

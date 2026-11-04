@@ -90,7 +90,9 @@ Generated Anhedral Stack apps now use pinned OJ for dev/build and TanStack Start
 with shadcn. Backend adds Hono, Better Auth and D1; R2 and Stripe extend it.
 Removed legacy generators, SDK aliases, native UI paths and unused recipe assets.
 CLI build/lint and packlist passed; generated pinned-binary/tamper checks passed.
-The shared deployment-contract projection and combined release remain pending.
+The reviewed seven-file public contract projection is pinned to Platform commit
+`47d921f53ce7b57a683b840a89025f5e35aef0fa`. Existing canonical TanStack apps upgrade
+to pinned OJ atomically on additions; customization conflicts leave source untouched.
 No package/plugin publication or provider deployment occurred from this checkout.
 
 CLI 0.19.0 is a breaking source candidate: OJ replaces Vite as the dev/build

@@ -24,7 +24,7 @@ export const CAPABILITIES = {
       'apps/api/src/security.ts',
       'apps/api/src/auth-platform.ts',
       'apps/api/src/features/auth.ts',
-      'apps/web/lib/auth-client.ts',
+      'apps/web/src/lib/auth-client.ts',
     ],
     configuration: [
       'D1 resource ID',
@@ -106,12 +106,7 @@ export const ANHEDRAL_STACK = {
       name: 'Backend',
       description: 'API, database and authentication together.',
       requires: [] as string[],
-      targets: [
-        ...CAPABILITIES.hono.targets,
-        ...CAPABILITIES['database-auth'].targets.map((target) =>
-          target === 'apps/web/lib/auth-client.ts' ? 'apps/web/src/lib/auth-client.ts' : target,
-        ),
-      ],
+      targets: [...CAPABILITIES.hono.targets, ...CAPABILITIES['database-auth'].targets],
     },
     r2: {
       name: 'Private storage',

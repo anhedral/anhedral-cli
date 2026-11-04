@@ -144,7 +144,9 @@ test('generated source records composition transactionally without changing iden
     const invalid = JSON.parse(repeated);
     invalid.composition.identity = 'platform-application-services-v1';
     writeFileSync(file, JSON.stringify(invalid));
-    await assert.rejects(invoke(['stripe']), /Preserve existing application identity/);
+    await assert.rejects(invoke(['stripe']), (error) =>
+      error.issues?.some((issue) => issue.code === 'invalid_value' && issue.path[0] === 'identity'),
+    );
     assert.equal(readFileSync(file, 'utf8'), JSON.stringify(invalid));
   } finally {
     process.chdir(beforeCwd);

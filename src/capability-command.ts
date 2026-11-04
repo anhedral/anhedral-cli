@@ -13,6 +13,8 @@ import {
 } from './capability-catalog.js';
 import { CapabilityEditor } from './capability-editor.js';
 import { addCapabilityRecipe, composeCapabilities } from './capability-recipes.js';
+import { normalizeOjFoundation } from './platforms/tanstack.js';
+import { GENERATOR_VERSION } from './version.js';
 import {
   PostCommitError,
   runStagedTransaction,
@@ -180,53 +182,6 @@ export async function runCapabilityCommand(
       assertPublicWorkspace(root, false, 'stack');
       const e = new CapabilityEditor(root, {});
       const state = readState(e);
-      const capabilities = CAPABILITY_IDS.map((id) => {
-        const missing = CAPABILITIES[id].requires.filter(
-          (parent) => !state.installed.includes(parent),
-        );
-        const installed = state.installed.includes(id);
-        const missingFiles = installed
-          ? CAPABILITIES[id].targets
-              .map((target) =>
-                target === 'apps/web/lib/auth-client.ts' &&
-                e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-                  ? 'apps/web/src/lib/auth-client.ts'
-                  : target,
-              )
-              .filter((target) => !existsSync(path.join(root, target)))
-          : [];
-        return {
-          id,
-          name: CAPABILITIES[id].name,
-          sourceState: installed
-            ? missingFiles.length
-              ? 'incomplete'
-              : 'installed'
-            : missing.length
-              ? 'locked'
-              : 'available',
-          missingPrerequisites: missing,
-          missingFiles,
-          configuration: installed ? CAPABILITIES[id].configuration : [],
-          activation: 'not verified',
-        };
-      });
-      const foundationReady =
-        existsSync(path.join(root, 'apps/web/package.json')) &&
-        !!(
-          e.json('apps/web/package.json').dependencies?.next ||
-          e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-        );
-      const sourceReady =
-        foundationReady && capabilities.every((c) => c.sourceState !== 'incomplete');
-      result = {
-        root,
-        foundationReady,
-        sourceReady,
-        capabilities,
-        runtimeAcceptance: 'not evaluated',
-        resourcesProvisionedByCli: false,
-      };
       result = publicStackState(root, state);
       if (action === 'doctor' && !result.sourceReady) process.exitCode = 1;
     }
@@ -251,25 +206,13 @@ export async function runCapabilityCommand(
     const manifest = e.json('package.json');
     if (typeof manifest.name !== 'string' || !manifest.name)
       throw Error('The workspace needs a package name.');
-    if (!(
-      e.json('apps/web/package.json').dependencies?.next ||
-      e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-    ))
-      throw Error('An Anhedral Next.js or TanStack Start foundation is required.');
     for (const id of state.installed)
-      for (const original of CAPABILITIES[id].targets) {
-        const target =
-          original === 'apps/web/lib/auth-client.ts' &&
-          e.json('apps/web/package.json').dependencies?.['@tanstack/react-start']
-            ? 'apps/web/src/lib/auth-client.ts'
-            : original;
+      for (const target of CAPABILITIES[id].targets)
         if (!existsSync(path.join(root, target)))
           throw Error(
             `Installed capability is incomplete: ${id} (${target}). Reconcile its source first.`,
           );
-      }
     if (
-      true &&
       !parsed.has('--with-dependencies') &&
       !parsed.positional.includes('backend') &&
       !(state.installed.includes('hono') && state.installed.includes('database-auth')) &&
@@ -290,6 +233,11 @@ export async function runCapabilityCommand(
       parsed.has('--with-dependencies'),
     );
     const installed = [...state.installed, ...additions];
+    const beforeConfiguration = e.json('anhedral.json');
+    const metadataChanged =
+      beforeConfiguration.setup?.cliVersion !== GENERATOR_VERSION ||
+      beforeConfiguration.composition?.generatorVersion !== GENERATOR_VERSION;
+    const foundationChanged = normalizeOjFoundation(e, state.installed, metadataChanged);
     const composition = composeSourceProvenance(
       e.json('anhedral.json').composition,
       installed,
@@ -300,6 +248,9 @@ export async function runCapabilityCommand(
       for (const [file, source] of Object.entries(capabilityReferences()))
         if (e.read(file) === null) e.create(file, source);
       composeCapabilities(e, installed);
+    }
+    if (additions.length || foundationChanged || metadataChanged) {
+      e.set('anhedral.json', ['setup', 'cliVersion'], GENERATOR_VERSION);
       e.set('anhedral.json', ['composition'], composition);
       e.set('anhedral.json', ['capabilities'], {
         schemaVersion: 1,
