@@ -1,5 +1,27 @@
 # Development notes
 
+## 2026-11-03 Codex MCP loader compatibility
+
+PR #107 follow-up removes unsupported per-server OAuth extensions from the
+portable MCP transport. Current Codex registers the server with discovery-based
+OAuth; Platform remains responsible for consent, scopes and project authority.
+An exact-archive host smoke covers MCP and skill discovery. Production MCP remains
+operator-gated; staging OAuth client compatibility is tracked separately.
+
+## 2026-11-03 Claude Code plugin from the shared distribution
+
+The shared distribution moved from `plugins/codex/distribution` to `plugin/`. It
+carries `.claude-plugin/plugin.json` and `.mcp.json` beside the Codex files; root
+`.claude-plugin/marketplace.json` pins the same `plugin-v<version>` tag path as the
+Codex marketplace. Skills and references are shared unchanged.
+Packaging, source publication and release policy validate both manifests; build
+syncs both versions. `claude plugin validate --strict` passed for the distribution
+and marketplace. A headless `--plugin-dir` session listed and invoked both skills
+and registered `plugin:anhedral:platform`; a temporary local marketplace installed,
+inventoried and uninstalled cleanly. Codex 0.163 installed and enabled the same
+directory from a local marketplace in an isolated home. The remote endpoint returned
+HTTP 404, so no OAuth login was exercised. `plugin-v0.18.0` predates the Claude files.
+
 ## 2026-11-02 Web launch initializer
 
 `codex/web-launch-init` starts at staging `4749139`. Broader source is retained on
@@ -59,42 +81,6 @@ lint/typecheck, static security, explicit contract fingerprints, plugin checks a
 package-file policy and the installed exact-package/generated-app smoke passed. `check:boundaries` is unavailable on this staging base;
 the pending primary-checkout boundary implementation was not imported. No provider operation, production
 promotion or package publication is part of this change.
-
-## 2026-10-31 — CLI discovery and scripting compatibility
-
-Candidate implementation `18d8513` on `codex/cli-design-increments`, based on
-staging `11c0f7c`, implements contextual example-based help, shared argument
-parsing, consistent reporters and typed recovery, offline Bash/zsh completion
-and opt-in `whoami --context`. Platform keeps compact implicit JSON; `--human`
-is opt-in, explicit JSON survives quiet, and numeric failure status remains 1.
-The public init parser preserves its return shape, Git defaults and legacy
-identical booleans; empty explicit paths fail before writes.
-
-Independent agent review repaired extra leaf help arguments and empty-directory
-handling; final review found no further actionable defects. Node 24.14.0
-`pnpm release:check` passed: 155 tests passed, one conditional patch unit test
-skipped, followed by successful explicit braces/node-forge install regressions,
-packed generated-project installation and packlist checks (751125 packed bytes).
-Type/format/hygiene, release/security policy and OSV checks passed. Plugin check
-and the 20/20 Markdown budget passed. Bash and zsh syntax/behavior ran locally;
-Linux CI may skip zsh when unavailable. New suites are in the required CI gate.
-PR #97 targets staging; hosted validation and retained exact-package acceptance
-are tracked there. No npm/plugin publication, main promotion, provider activation
-or database changes were performed. Presentation-only work does not establish
-live Platform or native-device acceptance.
-
-## 2026-10-31 — Public CLI boundary review candidate
-
-Keep consumer manifests and Platform client messages public. Hosting policy,
-artifact allowlists and isolated-builder enforcement remain server-owned.
-Release and upload checks share credential patterns. Public content hashes track
-only this repository's reviewed contracts; private checkout revisions are omitted.
-Publication remains paused pending review. Node 24 build, type/format/hygiene,
-release/security policies, OSV, full unit suite, dependency patch installs and
-packed installation/packlist checks passed. The optional native-device test is
-not run. Focused checks cover public contract drift, credential rejection and
-local plugin pointer preparation. Exact package/plugin review artifacts remain
-local; no tag, package publication, provider activation or database change occurs.
 
 Keep public CLI notes within 100 lines and the repository within 20 Markdown files.
 Private operational evidence stays outside this repository; history remains in Git.

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 // Reviewed public distribution: changing this list requires ownership review.
 export const pluginPackageFiles = Object.freeze([
+  '.claude-plugin/plugin.json',
+  '.mcp.json',
   'LICENSE',
   'assets/anhedral-mark-dark.svg',
   'assets/anhedral-mark.svg',

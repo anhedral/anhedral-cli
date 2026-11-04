@@ -404,31 +404,44 @@ export function validateWorkflowPolicy(root) {
 }
 
 function validatePluginRelease(root, version) {
-  const manifest = JSON.parse(
-    readFileSync(path.join(root, 'plugins/codex/distribution/plugin.json'), 'utf8'),
-  );
+  const manifest = JSON.parse(readFileSync(path.join(root, 'plugin/plugin.json'), 'utf8'));
   const failures = [];
   const stack = JSON.parse(
-    readFileSync(
-      path.join(root, 'plugins/codex/distribution/references/stack-registry.json'),
-      'utf8',
-    ),
+    readFileSync(path.join(root, 'plugin/references/stack-registry.json'), 'utf8'),
   );
-  const marketplace = JSON.parse(
-    readFileSync(path.join(root, '.agents/plugins/marketplace.json'), 'utf8'),
+  // Both marketplaces install the same immutable tag tree, so they share one comparison.
+  // Immutable release tags retain their public installation path. Checkout
+  // source lives in plugin/ and is packed into that tag tree.
+  const claudeManifest = JSON.parse(
+    readFileSync(path.join(root, 'plugin/.claude-plugin/plugin.json'), 'utf8'),
   );
-  const entry = marketplace.plugins?.find((plugin) => plugin.name === 'anhedral');
-  if (
-    entry?.source?.source !== 'git-subdir' ||
-    entry.source.url !== 'https://github.com/anhedral/anhedral-cli.git' ||
-    // Immutable release tags retain their public installation path. Checkout
-    // source lives in plugins/codex/distribution and is packed into that tag tree.
-    entry.source.path !== './plugins/anhedral' ||
-    entry.source.ref !== `plugin-v${version}` ||
-    entry.policy?.installation !== 'AVAILABLE' ||
-    entry.category !== 'Developer Tools'
-  )
-    failures.push('Marketplace must pin the matching self-contained plugin release');
+  for (const { file, label, installPath, strict } of [
+    {
+      file: '.agents/plugins/marketplace.json',
+      label: 'Marketplace',
+      installPath: './plugins/anhedral',
+      strict: (entry) => entry.policy?.installation === 'AVAILABLE',
+    },
+    {
+      file: '.claude-plugin/marketplace.json',
+      label: 'Claude marketplace',
+      installPath: 'plugins/anhedral',
+      strict: (entry) => entry.version === version && claudeManifest.version === version,
+    },
+  ]) {
+    const entry = JSON.parse(readFileSync(path.join(root, file), 'utf8')).plugins?.find(
+      (plugin) => plugin.name === 'anhedral',
+    );
+    if (
+      entry?.source?.source !== 'git-subdir' ||
+      entry.source.url !== 'https://github.com/anhedral/anhedral-cli.git' ||
+      entry.source.path !== installPath ||
+      entry.source.ref !== `plugin-v${version}` ||
+      entry.category !== 'Developer Tools' ||
+      !strict(entry)
+    )
+      failures.push(`${label} must pin the matching self-contained plugin release`);
+  }
   if (
     manifest.version !== version ||
     stack.cliVersion !== version ||

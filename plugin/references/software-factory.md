@@ -163,7 +163,20 @@ The plugin includes source skills plus one remote MCP connection at
 `https://platform.anhedral.com/api/mcp`. OAuth consent grants scoped project
 access; CLI credentials are separate. Secret imports initiated through ChatGPT
 open a secure browser form rather than accepting values as tool arguments.
-The plugin packages no executable server, credential or authorization header. Its root `mcp.json` uses the [official remote OAuth declaration](https://developers.openai.com/plugins/build/plugins#bundled-mcp-servers-and-lifecycle-hooks), DCR and read-only default scopes; write access requires additional consent.
+The plugin packages no executable server, credential or authorization header. Its root `mcp.json` uses the portable remote HTTP transport. Codex currently rejects per-server `extensions`, so OAuth uses protected-resource/authorization-server discovery and DCR rather than manifest auth overrides. Platform must enforce scopes, explicit consent and project roles; the transport declaration grants no access. `tests/test-plugin-codex.test.mjs` installs the exact archive in an isolated Codex home and verifies both skills and MCP registration when Codex is available (override the binary with `ANHEDRAL_CODEX_BIN`).
+One distribution directory, `plugin/`, serves Codex and Claude Code. Codex reads `plugin.json`,
+`mcp.json` and `skills/*/agents/openai.yaml`; Claude Code reads
+`.claude-plugin/plugin.json`, `.mcp.json` and the same `skills/*/SKILL.md`. Each
+host ignores the other's manifests. The Claude `.mcp.json` declares only the
+`http` transport and the same endpoint; Claude Code discovers OAuth metadata and
+registers its client itself, so scopes come from the server's consent prompt.
+Packaging validates both manifests against one release identity. Root
+`.claude-plugin/marketplace.json` is the Claude marketplace; add it with
+`claude plugin marketplace add anhedral/anhedral-cli`, then install
+`anhedral@anhedral`. The pinned `plugin-v0.18.0` tag predates the Claude files, so
+the first installable Claude release is the next coordinated version; until then use
+`--plugin-dir`. For local review use `claude plugin validate --strict` on the
+distribution and `claude --plugin-dir plugin`.
 Server features remain unavailable until their operator-controlled gates are enabled.
 
 The CLI and plugin share one release version. Build prepares the
