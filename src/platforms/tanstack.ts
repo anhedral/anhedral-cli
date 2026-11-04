@@ -182,14 +182,14 @@ import { defineConfig } from 'vite';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import react from '@vitejs/plugin-react';
-export default defineConfig(({ command }) => ({
+export default defineConfig(${backend ? '({ command }) => (' : ''}{
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
     cloudflare({ viteEnvironment: { name: 'ssr' }, ${backend ? "auxiliaryWorkers: command === 'serve' ? [{ configPath: '../api/wrangler.jsonc' }] : [], persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) }, " : ''}remoteBindings: false }),
     tanstackStart({ server: { entry: './server.ts' } }),
     react(),
   ],
-}));
+}${backend ? ')' : ''});
 `;
 }
 
@@ -251,9 +251,18 @@ export function normalizeOjFoundation(
     );
     changed = true;
   }
-  if (changed || refreshConfiguration) {
-    const desired = tanstackViteConfiguration(installed);
-    if (e.read('apps/web/vite.config.ts') !== desired) e.owned('apps/web/vite.config.ts', desired);
+  const configuration = 'apps/web/vite.config.ts';
+  const currentConfiguration = e.read(configuration);
+  const desiredConfiguration = tanstackViteConfiguration(installed);
+  if (
+    currentConfiguration !== desiredConfiguration &&
+    (changed ||
+      refreshConfiguration ||
+      (currentConfiguration !== null &&
+        e.managed[configuration] === fingerprint(currentConfiguration)))
+  ) {
+    e.owned(configuration, desiredConfiguration);
+    changed = true;
   }
   return changed;
 }

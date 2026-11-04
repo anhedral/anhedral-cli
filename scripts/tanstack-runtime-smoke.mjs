@@ -173,6 +173,7 @@ try {
       redirect: 'manual',
       signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
     });
+  await run(process.execPath, [path.join(repository, 'tests/test-generated-config-lint.mjs'), app]);
   phase = 'minimal-web-runtime';
   console.log('TanStack proof: verify the minimal web foundation before adding services.');
   preview = start(
@@ -245,7 +246,8 @@ try {
   console.log('TanStack proof: migrate only the disposable local D1 database.');
   await run('pnpm', ['db:migrate', '--local']);
   phase = 'compile';
-  console.log('TanStack proof: typecheck and build web/API artifacts.');
+  console.log('TanStack proof: lint, typecheck and build web/API artifacts.');
+  await run(process.execPath, [path.join(repository, 'tests/test-generated-config-lint.mjs'), app]);
   await run('pnpm', ['--filter', '@workspace/web', 'typecheck']);
   await run('pnpm', ['build']);
   phase = 'runtime-start';

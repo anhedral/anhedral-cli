@@ -221,3 +221,30 @@ test('a customized affected root rejects every source write rather than replacin
   assert.equal(existsSync(path.join(root, '.anhedral-journal.json')), false);
   assert.equal(existsSync(path.join(root, 'apps/api')), false);
 });
+
+test('an owned web configuration refreshes without requiring metadata or CSS changes', async (t) => {
+  const { CapabilityEditor, fingerprint } = await import('../dist/capability-editor.js');
+  const { normalizeOjFoundation } = await import('../dist/platforms/tanstack.js');
+  const root = fixture(t);
+  const file = 'apps/web/vite.config.ts';
+  const current = readFileSync(path.join(root, file), 'utf8');
+  const previous = current
+    .replace('defineConfig({', 'defineConfig(({ command }) => ({')
+    .replace('\n});', '\n}));');
+  writeFileSync(path.join(root, file), previous);
+  const managed = {
+    ...json(root, 'anhedral.json').capabilities.managedFiles,
+    [file]: fingerprint(previous),
+  };
+  const editor = new CapabilityEditor(root, managed);
+  assert.equal(normalizeOjFoundation(editor, []), true);
+  assert.equal(editor.writes.get(file), current);
+  assert.equal(editor.managed[file], fingerprint(current));
+  editor.verify();
+  const custom = previous + '\n// Customer bundler configuration\n';
+  writeFileSync(path.join(root, file), custom);
+  const protectedEditor = new CapabilityEditor(root, managed);
+  assert.equal(normalizeOjFoundation(protectedEditor, []), false);
+  assert.equal(protectedEditor.writes.has(file), false);
+  assert.equal(readFileSync(path.join(root, file), 'utf8'), custom);
+});
