@@ -47,7 +47,7 @@ Local generation requires no account. For an existing Platform project, use brow
 
 `deploy plan --manifest <file>`, `deploy prepare` and `deploy status` submit intent and read candidate receipts. Platform independently checks current authority, exact artifacts and runtime admission. Upload/build success is not production approval. The current manifest runtime profile is `anhedral-stack`; an application cannot approve itself for hosting.
 
-`env list/import/set` manages variable metadata and private imports. Send values through an owner-only file or stdin, never command arguments or chat. `staging status/deploy` operates on ready candidates; `logs` reads redacted runtime events. The optional plugin for Codex and Claude Code uses separate OAuth consent for Platform tools. See [the operating workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
+`env list/import/set` manages variable metadata and private imports. Send values through an owner-only file or stdin, never command arguments or chat. `staging status/deploy` operates on ready candidates; `logs` reads redacted runtime events. The Codex and Claude Code plugin provides CLI usage guidance; authentication and managed project operations run through the CLI. See [the operating workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
 
 ## Help and automation
 
