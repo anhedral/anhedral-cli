@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
-import { lstat, mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, open, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { CliArgumentError } from './cli-arguments.js';
 import { CliFailure } from './cli-errors.js';
 
@@ -97,6 +97,36 @@ export async function writePrivate(path: string, data: unknown) {
     await rename(temp, path);
   } finally {
     await unlink(temp).catch(() => {});
+  }
+}
+/** Serialize project selection and request journals; never steal a potentially live lock. */
+export async function withProjectLock<T>(
+  directory: string,
+  operation: () => Promise<T>,
+): Promise<T> {
+  await safeDirectory(directory);
+  const lockPath = join(directory, 'project-operation.lock');
+  let file;
+  try {
+    file = await open(lockPath, 'wx', 0o600);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST')
+      throw platformFailure(
+        'Another project operation holds the workspace lock.',
+        'Wait for the operation to finish. After an interrupted process, inspect .anhedral/platform/project-operation.lock and remove it only after confirming no project operation is running; preserve project-create.json, then retry the same project creation without --new.',
+        'conflict',
+        true,
+      );
+    throw error;
+  }
+  try {
+    await file.writeFile(
+      JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() }) + '\n',
+    );
+    return await operation();
+  } finally {
+    await file.close();
+    await unlink(lockPath);
   }
 }
 export interface SecretStore {

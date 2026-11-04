@@ -134,3 +134,25 @@ test('zsh completes nested verbs, values and contextual flags', { skip: !hasZsh 
     run('zsh', ['anhedral', '--cwd', 'project']).some((value) => value.startsWith('files:-/')),
   );
 });
+
+for (const shell of ['bash', 'zsh']) {
+  test(
+    `${shell} completes project commands and operation-specific options offline`,
+    { skip: !available(shell) },
+    () => {
+      assert.ok(run(shell, ['anhedral', '']).includes('projects'));
+      assert.deepEqual(run(shell, ['anhedral', 'projects', '']), ['list', 'create']);
+      assert.deepEqual(run(shell, ['anhedral', 'help', 'projects', 'c']), ['create']);
+      assert.deepEqual(run(shell, ['anhedral', 'projects', '--team', 'fixture-team', 'l']), [
+        'list',
+      ]);
+      const create = run(shell, ['anhedral', 'projects', 'create', '--']);
+      assert.ok(create.includes('--name'));
+      assert.ok(create.includes('--link'));
+      assert.ok(!create.includes('--cursor'));
+      const list = run(shell, ['anhedral', 'projects', 'list', '--']);
+      assert.ok(list.includes('--limit'));
+      assert.ok(!list.includes('--name'));
+    },
+  );
+}

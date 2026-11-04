@@ -16,6 +16,10 @@ import { stripVTControlCharacters } from 'node:util';
 import { createReporter, type OutputOptions } from './cli-output.js';
 import {
   canonicalCliJson,
+  cliProjectListQuerySchema,
+  cliProjectCreateInputSchema,
+  cliProjectListSchema,
+  cliProjectCreateReceiptSchema,
   cliPlanInputSchema,
   cliPlanSchema,
   cliPreparationSchema,
@@ -35,6 +39,7 @@ import {
   readPrivate,
   secretStore,
   writePrivate,
+  withProjectLock,
   type SecretStore,
   type PlatformFailureCategory,
 } from './platform-state.js';
@@ -43,6 +48,15 @@ const pending = z
   .object({ origin: z.string(), device: cliDeviceSchema, expiresAt: z.number() })
   .strict();
 const linkSchema = cliLinkSchema.extend({ origin: z.string() }).strict();
+const projectCreateState = z
+  .object({
+    origin: z.string(),
+    principalId: z.uuid(),
+    teamId: z.uuid(),
+    input: cliProjectCreateInputSchema,
+    receipt: cliProjectCreateReceiptSchema.optional(),
+  })
+  .strict();
 const uploadState = z
   .object({
     origin: z.string(),
@@ -90,6 +104,35 @@ function formatPlatformResult(command: string, result: unknown): string {
           ]
         : []),
     ].join('\n');
+  }
+  if (command === 'projects') {
+    if (data.status === 'dry_run')
+      return `Project creation preview: ${visible(data.name)}.\nNo project, source or deployment was created.`;
+    if (Array.isArray(data.projects)) {
+      const projects = data.projects as { name: string; projectId: string; canLink: boolean }[];
+      const teams = data.availableTeams as { name: string; id: string }[];
+      return [
+        data.team
+          ? `Team: ${visible((data.team as { name: string }).name)} (${visible((data.team as { id: string }).id)}).`
+          : 'No team is selected.',
+        ...projects.map(
+          (project) =>
+            `${visible(project.name)} (${visible(project.projectId)})${project.canLink ? '' : ' [cannot link]'}`,
+        ),
+        ...(projects.length ? [] : ['No projects found.']),
+        'Available teams:',
+        ...teams.map((team) => `${visible(team.name)} (${visible(team.id)})`),
+        ...(data.teamsTruncated
+          ? ['Team list is truncated. Use a known team ID with --team.']
+          : []),
+        ...(data.nextCursor
+          ? [
+              `Next: anhedral projects list --cursor ${visible(data.nextCursor)}${data.team ? ` --team ${visible((data.team as { id: string }).id)}` : ''} (with the same API origin and credential store).`,
+            ]
+          : []),
+      ].join('\n');
+    }
+    return `Created project ${visible(data.name)} (${visible(data.projectId)}).\nTeam: ${visible(data.teamId)}.${data.linked ? '\nSaved verified local project link.' : ''}\n${data.linked ? 'Next: anhedral source upload --dry-run' : `Next: anhedral link --project ${visible(data.projectId)} --team ${visible(data.teamId)}`} (with the same API origin and credential store).\nNo source was generated or deployment started.`;
   }
   if (command === 'link')
     return `Linked to ${visible(data.name)} (${visible(data.projectId)}).\nTeam: ${visible(data.teamId)}.`;
@@ -196,15 +239,62 @@ async function runPlatformOperation(
       command,
       'Supply existing project and team UUIDs with --project and --team.',
     );
+  let projectInput: { name: string; summary: string } | undefined;
+  if (command === 'projects') {
+    const operation = options.positional[0];
+    if (options.has('--team') && !z.uuid().safeParse(options.value('--team')).success)
+      throw commandArgumentError(command, 'Supply a team UUID with --team.');
+    if (operation === 'list') {
+      if (['--name', '--summary', '--link', '--dry-run', '--new'].some((flag) => options.has(flag)))
+        throw commandArgumentError(command, 'Creation options apply to projects create only.');
+      const query = cliProjectListQuerySchema.safeParse({
+        ...(options.has('--limit') ? { limit: options.value('--limit') } : {}),
+        ...(options.has('--cursor') ? { cursor: options.value('--cursor') } : {}),
+      });
+      if (!query.success || (options.has('--limit') && !/^[0-9]+$/.test(options.value('--limit')!)))
+        throw commandArgumentError(command, 'Use --limit 1–100 and an optional cursor UUID.');
+    } else {
+      if (options.has('--limit') || options.has('--cursor'))
+        throw commandArgumentError(command, 'Pagination options apply to projects list only.');
+      const parsed = cliProjectCreateInputSchema.safeParse({
+        protocol: 1,
+        requestId: randomUUID(),
+        name: options.value('--name'),
+        summary: options.value('--summary') ?? '',
+      });
+      if (!parsed.success)
+        throw commandArgumentError(
+          command,
+          'Supply --name with 1–160 characters and an optional summary up to 2000 characters.',
+        );
+      projectInput = { name: parsed.data.name, summary: parsed.data.summary };
+      if (options.has('--dry-run')) {
+        emit({
+          status: 'dry_run',
+          ...projectInput,
+          teamId: options.value('--team') ?? null,
+          link: options.has('--link'),
+          initialization: 'source-upload',
+        });
+        return;
+      }
+    }
+  }
   const root = process.cwd(),
     stateDir = join(root, '.anhedral', 'platform'),
     linkPath = join(stateDir, 'project.json'),
     uploadPath = join(stateDir, 'upload.json');
 
   if (command === 'unlink') {
-    await readPrivate(linkPath);
-    await unlink(linkPath).catch((e) => {
-      if (e.code !== 'ENOENT') throw e;
+    if ((await readPrivate(linkPath)) === null) {
+      emit({ status: 'unlinked' });
+      return;
+    }
+    await withProjectLock(stateDir, async () => {
+      await readPrivate(linkPath);
+      await unlink(linkPath).catch((e) => {
+        if (e.code !== 'ENOENT') throw e;
+      });
     });
     emit({ status: 'unlinked' });
     return;
@@ -277,17 +367,23 @@ async function runPlatformOperation(
       });
     } catch {
       throw platformFailure(
-        'Platform request was interrupted. Retry the same command to resume.',
+        command === 'projects' && options.positional[0] === 'create'
+          ? 'Platform request was interrupted. Retry the saved project request without --new to resume.'
+          : 'Platform request was interrupted. Retry the same command to resume.',
         'network',
         true,
-        `Retry anhedral ${command} with the same API origin, working directory and options to resume.`,
+        command === 'projects' && options.positional[0] === 'create'
+          ? 'Retry anhedral projects create with the same name, summary, team, API origin, credential store and working directory, omitting --new to reuse the saved request.'
+          : `Retry anhedral ${command} with the same API origin, working directory and options to resume.`,
       );
     }
     const data: unknown = await readSourceBounded(
       response.body,
       /\/projects\/[^/]+\/(environment|staging|runtime-logs)(\?|$)/.test(path)
         ? 1024 * 1024
-        : 65536,
+        : command === 'projects'
+          ? 1024 * 1024
+          : 65536,
     )
       .then((b) => JSON.parse(new TextDecoder().decode(b)))
       .catch(() => {
@@ -314,17 +410,21 @@ async function runPlatformOperation(
           : response.status === 409
             ? command === 'deploy'
               ? 'Deployment plan is stale or inputs conflict. Review deploy plan --new.'
-              : command === 'staging'
-                ? 'Candidate, configuration or staging generation changed. Review staging status before starting a new deployment.'
-                : command === 'env'
-                  ? 'Environment versions or import contents conflict. Review env list and preserve saved retry state before starting a new import.'
-                  : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
+              : command === 'projects'
+                ? 'Project creation conflicts with the saved request. Preserve retry state; use projects create --new only to create another project.'
+                : command === 'staging'
+                  ? 'Candidate, configuration or staging generation changed. Review staging status before starting a new deployment.'
+                  : command === 'env'
+                    ? 'Environment versions or import contents conflict. Review env list and preserve saved retry state before starting a new import.'
+                    : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
             : response.status === 403
-              ? command === 'env'
-                ? 'Current project environment access or administrator permission is unavailable.'
-                : command === 'logs'
-                  ? 'Current project log access is unavailable.'
-                  : 'Current project build access is unavailable.'
+              ? command === 'projects'
+                ? 'Current team project access or project creation permission is unavailable.'
+                : command === 'env'
+                  ? 'Current project environment access or administrator permission is unavailable.'
+                  : command === 'logs'
+                    ? 'Current project log access is unavailable.'
+                    : 'Current project build access is unavailable.'
               : `Platform request failed (${response.status}).`,
         response.status === 401
           ? 'auth'
@@ -485,20 +585,131 @@ async function runPlatformOperation(
     return;
   }
 
+  if (command === 'projects') {
+    const selectedTeam = options.value('--team') ?? actor.teamId;
+    if (options.positional[0] === 'list') {
+      const query = cliProjectListQuerySchema.parse({
+        ...(options.has('--limit') ? { limit: options.value('--limit') } : {}),
+        ...(options.has('--cursor') ? { cursor: options.value('--cursor') } : {}),
+      });
+      const params = new URLSearchParams({ limit: String(query.limit) });
+      if (query.cursor) params.set('cursor', query.cursor);
+      const result = cliProjectListSchema.parse(
+        await request(`/projects?${params}`, 'GET', undefined, token, selectedTeam ?? undefined),
+      );
+      if (
+        result.principalId !== actor.principalId ||
+        (selectedTeam && result.team?.id !== selectedTeam) ||
+        result.projects.some((project) => project.teamId !== result.team?.id)
+      )
+        throw platformFailure('Project list identity differs.');
+      emit(result);
+      return;
+    }
+    if (!selectedTeam)
+      throw platformFailure(
+        'No team is selected. Run anhedral projects list to discover available teams, then use --team <uuid>.',
+      );
+    await withProjectLock(stateDir, async () => {
+      const journalPath = join(stateDir, 'project-create.json');
+      const previous = await readPrivate(journalPath);
+      let state = previous === null ? null : projectCreateState.parse(previous);
+      if (
+        state &&
+        !options.has('--new') &&
+        (state.origin !== origin ||
+          state.principalId !== actor.principalId ||
+          state.teamId !== selectedTeam ||
+          state.input.name !== projectInput!.name ||
+          state.input.summary !== projectInput!.summary)
+      )
+        throw platformFailure(
+          'Saved project creation belongs to different input or context. Restore the original options to retry, or explicitly use --new to create another project.',
+        );
+      if (!state || options.has('--new'))
+        state = {
+          origin,
+          principalId: actor.principalId,
+          teamId: selectedTeam,
+          input: cliProjectCreateInputSchema.parse({
+            protocol: 1,
+            requestId: randomUUID(),
+            ...projectInput,
+          }),
+        };
+      const checkLink = async () => {
+        const value = await readPrivate(linkPath);
+        if (value === null) return;
+        const existing = linkSchema.parse(value);
+        if (
+          existing.origin !== origin ||
+          existing.principalId !== actor.principalId ||
+          existing.teamId !== selectedTeam ||
+          existing.projectId !== state!.input.requestId
+        )
+          throw platformFailure(
+            'A different local project link exists. Use another working directory or explicitly unlink before creating with --link.',
+          );
+      };
+      if (options.has('--link')) await checkLink();
+      await writePrivate(journalPath, state);
+      const receipt = cliProjectCreateReceiptSchema.parse(
+        await request('/projects', 'POST', state.input, token, selectedTeam),
+      );
+      if (
+        receipt.requestId !== state.input.requestId ||
+        receipt.projectId !== state.input.requestId ||
+        receipt.principalId !== actor.principalId ||
+        receipt.teamId !== selectedTeam ||
+        receipt.name !== state.input.name ||
+        receipt.summary !== state.input.summary
+      )
+        throw platformFailure(
+          'Project creation receipt identity or input differs. Preserve saved retry state.',
+        );
+      state = { ...state, receipt };
+      await writePrivate(journalPath, state);
+      if (options.has('--link')) {
+        await checkLink();
+        const link = cliLinkSchema.parse(
+          await request(
+            '/link',
+            'POST',
+            { projectId: receipt.projectId, teamId: selectedTeam },
+            token,
+            selectedTeam,
+          ),
+        );
+        if (
+          link.principalId !== actor.principalId ||
+          link.projectId !== receipt.projectId ||
+          link.teamId !== selectedTeam
+        )
+          throw platformFailure('Project link identity differs.');
+        await checkLink();
+        await writePrivate(linkPath, { ...link, origin });
+      }
+      emit({ ...receipt, linked: options.has('--link') });
+    });
+    return;
+  }
   if (command === 'link') {
-    const input = z
-      .object({ projectId: z.uuid(), teamId: z.uuid() })
-      .parse({ projectId: options.value('--project'), teamId: options.value('--team') });
-    if (options.positional.length) throw commandArgumentError(command, 'Use --project and --team.');
-    const link = cliLinkSchema.parse(await request('/link', 'POST', input, token, input.teamId));
-    if (
-      link.principalId !== actor.principalId ||
-      link.projectId !== input.projectId ||
-      link.teamId !== input.teamId
-    )
-      throw platformFailure('Project link identity differs.');
-    await writePrivate(linkPath, { ...link, origin });
-    emit({ ...link, origin });
+    await withProjectLock(stateDir, async () => {
+      const input = z
+        .object({ projectId: z.uuid(), teamId: z.uuid() })
+        .parse({ projectId: options.value('--project'), teamId: options.value('--team') });
+      if (options.positional.length)
+        throw commandArgumentError(command, 'Use --project and --team.');
+      const link = cliLinkSchema.parse(await request('/link', 'POST', input, token, input.teamId));
+      if (
+        link.principalId !== actor.principalId ||
+        link.projectId !== input.projectId ||
+        link.teamId !== input.teamId
+      )
+        throw platformFailure('Project link identity differs.');
+      await writePrivate(linkPath, { ...link, origin });
+      emit({ ...link, origin });
+    });
     return;
   }
   if (['env', 'staging', 'logs'].includes(command)) {
