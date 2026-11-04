@@ -1,7 +1,7 @@
 import { starterTitle } from '../starter';
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import styles from '../styles.css?url';
+import '../styles.css';
 
 export const Route = createRootRoute({
   head: () => ({
@@ -11,7 +11,6 @@ export const Route = createRootRoute({
       { title: starterTitle },
       { name: 'description', content: 'Anhedral web application' },
     ],
-    links: [{ rel: 'stylesheet', href: styles }],
   }),
   component: Root,
   notFoundComponent: () => <section className="stack"><h1>Page not found</h1><Link to="/">Return home</Link></section>,

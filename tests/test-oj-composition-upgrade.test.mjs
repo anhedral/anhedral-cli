@@ -30,7 +30,16 @@ function fixture(t, backend = false) {
   }
   return root;
 }
+function previousRoot(root) {
+  const file = path.join(root, 'apps/web/src/routes/__root.tsx');
+  const old = readFileSync(file, 'utf8')
+    .replace("import '../styles.css';", "import styles from '../styles.css?url';")
+    .replace('    ],\n  }),', "    ],\n    links: [{ rel: 'stylesheet', href: styles }],\n  }),");
+  assert.equal(digest(old), '21af7892e39130c9ec3d7ffb583b3f5d24bee771440ca253d8d7b8ce41be9801');
+  writeFileSync(file, old);
+}
 function previousFoundation(root) {
+  previousRoot(root);
   const pkg = json(root, 'apps/web/package.json');
   Object.assign(pkg.scripts, {
     dev: 'vite dev --host 0.0.0.0 --port 3000',
@@ -72,6 +81,9 @@ function snapshot(root) {
     .sort(([a], [b]) => a.localeCompare(b));
 }
 function assertOj(root) {
+  const document = readFileSync(path.join(root, 'apps/web/src/routes/__root.tsx'), 'utf8');
+  assert.match(document, /import '\.\.\/styles\.css';/);
+  assert.doesNotMatch(document, /styles\.css\?url|href: styles/);
   const pkg = json(root, 'apps/web/package.json');
   assert.match(pkg.scripts.dev, /scripts\/oj\.mjs dev/);
   assert.match(pkg.scripts.build, /scripts\/oj\.mjs build/);
@@ -173,3 +185,39 @@ for (const conflict of ['launcher', 'runtime-helper', 'generated-configuration']
     assert.equal(existsSync(path.join(root, '.anhedral-journal.json')), false);
     assert.equal(existsSync(path.join(root, 'apps/api')), false);
   });
+
+test('an OJ application with the untouched previous root is repaired on a repeated addition', (t) => {
+  const root = fixture(t, true);
+  previousRoot(root);
+  const before = json(root, 'anhedral.json').composition;
+  const result = run(root, ['add', 'backend']);
+  assert.equal(result.status, 0, result.stderr);
+  assertOj(root);
+  assert.deepEqual(json(root, 'anhedral.json').composition, before);
+  assert.equal(
+    json(root, 'anhedral.json').capabilities.managedFiles['apps/web/src/routes/__root.tsx'],
+    undefined,
+  );
+});
+test('safe customized root content remains source-owned through additions', (t) => {
+  const root = fixture(t);
+  const file = path.join(root, 'apps/web/src/routes/__root.tsx');
+  writeFileSync(file, readFileSync(file, 'utf8') + '\n// Customer document and navigation\n');
+  const before = readFileSync(file, 'utf8');
+  const result = run(root, ['add', 'backend']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readFileSync(file, 'utf8'), before);
+});
+test('a customized affected root rejects every source write rather than replacing customer content', (t) => {
+  const root = fixture(t);
+  previousRoot(root);
+  const file = path.join(root, 'apps/web/src/routes/__root.tsx');
+  writeFileSync(file, readFileSync(file, 'utf8') + '\n// Customer document and navigation\n');
+  const before = snapshot(root);
+  const result = run(root, ['add', 'backend']);
+  assert.equal(result.status, 1, result.stdout);
+  assert.match(result.stderr, /Preserve customized root route CSS/);
+  assert.deepEqual(snapshot(root), before);
+  assert.equal(existsSync(path.join(root, '.anhedral-journal.json')), false);
+  assert.equal(existsSync(path.join(root, 'apps/api')), false);
+});

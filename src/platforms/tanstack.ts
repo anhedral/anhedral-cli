@@ -214,6 +214,19 @@ export function normalizeOjFoundation(
       );
   }
   let changed = false;
+  const rootRoute = 'apps/web/src/routes/__root.tsx';
+  const rootSource = e.read(rootRoute);
+  // A one-way repair of the exact shipped document, without owning customer routes.
+  if (
+    rootSource !== null &&
+    fingerprint(rootSource) === '21af7892e39130c9ec3d7ffb583b3f5d24bee771440ca253d8d7b8ce41be9801'
+  ) {
+    e.writes.set(rootRoute, template('root.tsx.txt'));
+    changed = true;
+  } else if (rootSource !== null && /\bfrom\s*(['"])\.\.\/styles\.css\?url\1/.test(rootSource))
+    throw Error(
+      'Preserve customized root route CSS. Reconcile its stylesheet URL import with the OJ side-effect CSS pattern before adding capabilities. No files were changed.',
+    );
   for (const [name, desired] of Object.entries(ojScripts)) {
     if (scripts[name] !== desired) {
       e.set(file, ['scripts', name], desired);

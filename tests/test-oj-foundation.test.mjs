@@ -43,6 +43,9 @@ test('generated development/build invoke only pinned OJ and leave backend absent
   );
   assert.match(readFileSync(path.join(root, '.gitignore'), 'utf8'), /\.oj-cache\//);
   assert.match(readFileSync(path.join(root, 'scripts/OJ.LICENSE'), 'utf8'), /MIT License/);
+  const document = readFileSync(path.join(root, 'apps/web/src/routes/__root.tsx'), 'utf8');
+  assert.match(document, /import '\.\.\/styles\.css';/);
+  assert.doesNotMatch(document, /styles\.css\?url|href: styles/);
 });
 test('a modified cached OJ executable fails before any download or fallback launch', (t) => {
   const root = generated(t);
