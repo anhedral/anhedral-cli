@@ -13,7 +13,7 @@ import { readStoredArchive } from '../scripts/publish-plugin-source.mjs';
 const binary = process.env.ANHEDRAL_CODEX_BIN || 'codex';
 const available = spawnSync(binary, ['--version'], { encoding: 'utf8', timeout: 10000 });
 test(
-  'Codex installs the exact plugin archive and discovers both skills and its remote MCP',
+  'Codex installs the exact plugin archive and discovers both CLI skills without remote connections',
   {
     skip: available.error?.code === 'ENOENT' ? 'Codex CLI is unavailable' : false,
     timeout: 30000,
@@ -123,7 +123,9 @@ test(
       });
       const { plugin } = await request('plugin/read', { marketplacePath, pluginName: 'anhedral' });
       assert.equal(plugin.summary.enabled, true);
-      assert.deepEqual(plugin.mcpServers, ['anhedral']);
+      assert.deepEqual(plugin.mcpServers, []);
+      assert.deepEqual(plugin.apps, []);
+      assert.deepEqual(plugin.hooks, []);
       const result = await request('skills/list', { cwds: [root], forceReload: true });
       const skills = result.data.flatMap((item) => {
         assert.deepEqual(item.errors, []);

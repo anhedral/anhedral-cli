@@ -2,7 +2,7 @@
   "name": "anhedral",
   "displayName": "Anhedral",
   "version": "0.18.0",
-  "description": "Scaffold the Anhedral Stack and connect projects, configuration, deployments and logs through Platform.",
+  "description": "Scaffold and extend the Anhedral Stack using the Anhedral CLI.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"

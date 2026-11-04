@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
   "version": "0.18.0",
-  "description": "Scaffold the Anhedral Stack and connect projects, configuration, deployments and logs through Platform.",
+  "description": "Scaffold and extend the Anhedral Stack using the Anhedral CLI.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Build with the Anhedral Stack",
-        "longDescription": "Generate the Anhedral Stack as editable web UI, then add backend services, private storage and Stripe when needed. Optionally connect Platform through OAuth for project configuration, deployment receipts and logs. Secrets stay in the browser and Platform.",
+        "longDescription": "Use the Anhedral CLI to generate editable web UI, add backend services, private storage and Stripe, and inspect source. Skills guide terminal commands; managed project workflows use the separately configured CLI client.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
         "composerIcon": "./assets/anhedral-mark.svg",

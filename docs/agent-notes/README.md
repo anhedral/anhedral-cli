@@ -1,26 +1,18 @@
 # Development notes
 
-## 2026-11-03 Codex MCP loader compatibility
+## 2026-11-03 CLI-only plugin guidance
 
-PR #107 follow-up removes unsupported per-server OAuth extensions from the
-portable MCP transport. Current Codex registers the server with discovery-based
-OAuth; Platform remains responsible for consent, scopes and project authority.
-An exact-archive host smoke covers MCP and skill discovery. Production MCP remains
-operator-gated; staging OAuth client compatibility is tracked separately.
+User direction removes the direct plugin-to-Platform MCP/OAuth pathway. Both host
+manifests and shared skills describe CLI usage, while package/publication guards
+reject connection files, remote apps and hooks. Exact-archive host acceptance
+checks both CLI skills with no MCP servers. Existing Platform CLI commands remain.
+Public release artifacts require a separate coordinated versioned publication.
 
-## 2026-11-03 Claude Code plugin from the shared distribution
+## 2026-11-03 Shared Codex and Claude Code distribution
 
-The shared distribution moved from `plugins/codex/distribution` to `plugin/`. It
-carries `.claude-plugin/plugin.json` and `.mcp.json` beside the Codex files; root
-`.claude-plugin/marketplace.json` pins the same `plugin-v<version>` tag path as the
-Codex marketplace. Skills and references are shared unchanged.
-Packaging, source publication and release policy validate both manifests; build
-syncs both versions. `claude plugin validate --strict` passed for the distribution
-and marketplace. A headless `--plugin-dir` session listed and invoked both skills
-and registered `plugin:anhedral:platform`; a temporary local marketplace installed,
-inventoried and uninstalled cleanly. Codex 0.163 installed and enabled the same
-directory from a local marketplace in an isolated home. The remote endpoint returned
-HTTP 404, so no OAuth login was exercised. `plugin-v0.18.0` predates the Claude files.
+The shared distribution lives in `plugin/` with host-specific manifests and one
+set of CLI skills/references. Both marketplaces pin the same immutable release
+source. Builds keep identities synchronized; publication remains a separate step.
 
 ## 2026-11-02 Web launch initializer
 

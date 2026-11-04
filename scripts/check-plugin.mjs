@@ -37,4 +37,4 @@ for (const target of ['plugin', '.']) {
       `claude plugin validate --strict ${target} failed:\n${result.stdout}${result.stderr}`,
     );
 }
-console.log('Source skills and remote Platform MCP plugin validated for Codex and Claude Code.');
+console.log('CLI guidance plugin validated for Codex and Claude Code.');

@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { buildPluginArchive } from '../scripts/package-plugin.mjs';
 import { readStoredArchive } from '../scripts/publish-plugin-source.mjs';
 import { scanText } from '../scripts/secret-scanner.mjs';
-test('plugin ownership rejects extra files and linked distribution roots while retaining remote MCP', () => {
+test('plugin ownership rejects extra files and linked distribution roots without remote connections', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-boundary-'));
   try {
     const folder = path.join(root, 'plugin');
@@ -23,13 +23,40 @@ test('plugin ownership rejects extra files and linked distribution roots while r
     cpSync(new URL('../package.json', import.meta.url), path.join(root, 'package.json'));
     const good = buildPluginArchive(root);
     const files = readStoredArchive(good.contents);
-    assert.ok(files.some((file) => file.name === 'mcp.json'));
+    assert.ok(!files.some((file) => /(?:^|\/)\.?mcp\.json$/.test(file.name)));
     // One distribution serves Codex and Claude Code; both manifests ship in the archive.
-    for (const name of ['.mcp.json', '.claude-plugin/plugin.json'])
+    for (const name of ['.claude-plugin/plugin.json'])
       assert.ok(
         files.some((file) => file.name === name),
         name,
       );
+    for (const name of ['mcp.json', '.mcp.json']) {
+      writeFileSync(
+        path.join(folder, name),
+        JSON.stringify({ mcpServers: { remote: { url: 'https://example.invalid/mcp' } } }),
+      );
+      assert.throws(() => buildPluginArchive(root), /reviewed public distribution/);
+      rmSync(path.join(folder, name));
+    }
+    const manifestFile = path.join(folder, 'plugin.json');
+    const original = readFileSync(manifestFile, 'utf8');
+    for (const change of [
+      (manifest) => {
+        manifest.mcpServers = { remote: { url: 'https://example.invalid/mcp' } };
+      },
+      (manifest) => {
+        manifest.extensions['com.openai'].hooks = './hooks.json';
+      },
+      (manifest) => {
+        manifest.extensions['com.openai'].apps = './apps.json';
+      },
+    ]) {
+      const changed = JSON.parse(original);
+      change(changed);
+      writeFileSync(manifestFile, JSON.stringify(changed));
+      assert.throws(() => buildPluginArchive(root), /CLI plugin/);
+    }
+    writeFileSync(manifestFile, original);
     const claudeManifestFile = path.join(folder, '.claude-plugin/plugin.json');
     const claudeManifest = readFileSync(claudeManifestFile, 'utf8');
     const drifted = JSON.parse(claudeManifest);

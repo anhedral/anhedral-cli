@@ -48,7 +48,7 @@ dist module or private import requires explicit review. Portable contracts are
 synced only from a reviewed, licensed Platform projection with exact provenance,
 never as a build side effect. Local credential scanning additionally retains the
 CLI's stricter source-upload policy. Plugin packaging accepts its explicit reviewed
-MCP-inclusive file set, refuses linked distribution roots and verifies the bounded
+skills-only file set, refuses linked distribution roots and verifies the bounded
 publisher archive format before npm publication. Oversized unscanned text is an
 explicit review failure, not a clean secret scan.
 
@@ -159,25 +159,25 @@ production explicitly with `--environment production`; filter by deployment,
 level, source or range, and pass `--cursor` for the next page. Coverage, dropped
 events and seven-day retention are part of the response.
 
-The plugin includes source skills plus one remote MCP connection at
-`https://platform.anhedral.com/api/mcp`. OAuth consent grants scoped project
-access; CLI credentials are separate. Secret imports initiated through ChatGPT
-open a secure browser form rather than accepting values as tool arguments.
-The plugin packages no executable server, credential or authorization header. Its root `mcp.json` uses the portable remote HTTP transport. Codex currently rejects per-server `extensions`, so OAuth uses protected-resource/authorization-server discovery and DCR rather than manifest auth overrides. Platform must enforce scopes, explicit consent and project roles; the transport declaration grants no access. `tests/test-plugin-codex.test.mjs` installs the exact archive in an isolated Codex home and verifies both skills and MCP registration when Codex is available (override the binary with `ANHEDRAL_CODEX_BIN`).
-One distribution directory, `plugin/`, serves Codex and Claude Code. Codex reads `plugin.json`,
-`mcp.json` and `skills/*/agents/openai.yaml`; Claude Code reads
-`.claude-plugin/plugin.json`, `.mcp.json` and the same `skills/*/SKILL.md`. Each
-host ignores the other's manifests. The Claude `.mcp.json` declares only the
-`http` transport and the same endpoint; Claude Code discovers OAuth metadata and
-registers its client itself, so scopes come from the server's consent prompt.
-Packaging validates both manifests against one release identity. Root
-`.claude-plugin/marketplace.json` is the Claude marketplace; add it with
-`claude plugin marketplace add anhedral/anhedral-cli`, then install
-`anhedral@anhedral`. The pinned `plugin-v0.18.0` tag predates the Claude files, so
-the first installable Claude release is the next coordinated version; until then use
-`--plugin-dir`. For local review use `claude plugin validate --strict` on the
-distribution and `claude --plugin-dir plugin`.
-Server features remain unavailable until their operator-controlled gates are enabled.
+The plugin contains CLI usage instructions only. It registers no MCP server, remote
+app, OAuth connection or executable hook, and it does not bundle a CLI runtime.
+Users run the reviewed CLI version in a host terminal; managed project operations
+use the separately configured CLI client described above. Packaging admits only
+reviewed skills, references, assets and host manifests, and rejects connection files
+or executable declarations. `tests/test-plugin-codex.test.mjs` installs the exact
+archive in an isolated Codex home and verifies both skills with no MCP, app or hook
+registration when Codex is available (`ANHEDRAL_CODEX_BIN` overrides the binary).
+
+One distribution directory, `plugin/`, serves Codex and Claude Code. Codex reads
+`plugin.json` and `skills/*/agents/openai.yaml`; Claude Code reads
+`.claude-plugin/plugin.json` and the same `skills/*/SKILL.md`. Packaging validates
+both manifests against one release identity. Root `.claude-plugin/marketplace.json`
+is the Claude marketplace; add it with `claude plugin marketplace add
+anhedral/anhedral-cli`, then install `anhedral@anhedral`. The existing pinned tag
+predates the Claude files and this cleanup; a coordinated versioned release is
+required before those changes are installable from the public marketplace. Local
+review uses `claude plugin validate --strict plugin`, `claude --plugin-dir plugin`
+and a temporary Codex marketplace, without account connection.
 
 The CLI and plugin share one release version. Build prepares the
 marketplace pointer to that version's immutable `plugin-v<version>` tag; it does

@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "description": "Anhedral Stack source skills and the remote Platform MCP connection. Installable from the first release tag that carries the Claude plugin files.",
+  "description": "Anhedral CLI usage guidance for Codex and Claude Code. Installable from a release tag carrying both host manifests.",
   "owner": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "anhedral",
-      "description": "Scaffold the Anhedral Stack and connect projects, configuration, deployments and logs through Platform.",
+      "description": "Scaffold and extend the Anhedral Stack using the Anhedral CLI.",
       "version": "0.18.0",
       "category": "Developer Tools",
       "source": {

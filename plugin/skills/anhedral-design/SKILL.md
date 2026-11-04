@@ -5,6 +5,8 @@ description: "Extend the Anhedral Stack's source-owned web UI through official s
 
 # Anhedral Design
 
+This plugin provides Anhedral CLI instructions for hosts with a terminal and filesystem. It registers no remote tools or account connection. Inspect the reviewed CLI version and command help before execution; the plugin does not bundle the CLI runtime.
+
 Read consumer instructions and source. Anhedral UI is the Anhedral Stack's source-owned web UI layer over official shadcn. Do not introduce another runtime UI library or advertise native/alternate-framework paths.
 
 Read ../../references/ui.md. Use `anhedral ui list`, `init`, `add`, `diff` and `doctor`; select the current web application with `--cwd` or optional `--web`. Preview with `--dry-run --json`. Current public UI commands operate on Anhedral Stack web projects only. Initialization already includes configuration and three reviewed starter components.

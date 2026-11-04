@@ -5,6 +5,8 @@ description: "Generate the Anhedral Stack: start with web UI, then add backend, 
 
 # Anhedral Init
 
+This plugin provides CLI instructions for hosts with a terminal and filesystem. It registers no remote tools or account connection. Inspect `anhedral --version` and use the explicitly reviewed CLI version; the plugin does not bundle or install the CLI runtime.
+
 Use the single current Anhedral Stack. Inspect/preserve the destination and use the explicitly reviewed CLI version. Preview `anhedral init <directory> --dry-run --json`, then apply the same options. `--skip-install --no-git` generates offline. Init creates only the web foundation: TanStack Start SSR/server functions and source-owned shadcn Anhedral UI.
 
 Read emitted README/AGENTS and run `pnpm dev`. Observe its actual URL and validate browser behavior before reporting it working. Use `anhedral ui` for web UI and `anhedral stack list/status/doctor` for source inspection. There is no stack selector, mobile option or separate public stack registry.
@@ -15,4 +17,4 @@ Hono owns privileged business/auth/database/storage work. Web server functions c
 
 Keep historical generators, native/client recipes and protocol values as compatibility details. Do not advertise them as current options or restore retired auth/ship/provider-management commands. See ../../references/capabilities.md, ../../references/stack-standard.md and ../anhedral-design/SKILL.md.
 
-Generation needs no Platform account. Optional remote tools use separate OAuth consent and project roles. Read metadata for projects, variable names, deployment receipts and logs. Initiate secure browser imports for secrets; never ask for values in chat or pass them in MCP arguments. CLI imports use owner-only files or stdin, with offline names/types-only dry runs. Platform runtime admission and production approval remain authoritative; local source compatibility is not live hosted readiness.
+Generation needs no Platform account. For an existing managed project, use the CLI's separately configured `login`, `link`, `source`, `deploy`, `env`, `staging` and `logs` commands. Read ../../references/software-factory.md for the current CLI workflow and use `anhedral <command> --help` before execution. Send secret values through owner-only files or stdin, never chat or command arguments. Preview imports with `--dry-run`; Platform admission, project roles and production approval remain authoritative.

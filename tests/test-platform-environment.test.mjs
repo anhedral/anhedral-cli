@@ -17,7 +17,6 @@ import { runPlatformCommand } from '../dist/platform-command.js';
 import { readPrivate, writePrivate } from '../dist/platform-state.js';
 import { validateCommand } from '../dist/cli-arguments.js';
 import { commandHelp } from '../dist/registry/usage.js';
-import { validateClaudePluginRemote, validatePluginRemote } from '../scripts/plugin-remote.mjs';
 const context = {
   origin: 'https://platform.anhedral.com',
   principalId: '11111111-1111-4111-8111-111111111111',
@@ -208,41 +207,6 @@ test('replacement is explicit and receipts must advance each exact version', asy
     await rm(root, { recursive: true, force: true });
   }
 });
-test('remote plugin configuration admits only the reviewed HTTPS server without executable or credential fields', async () => {
-  const config = JSON.parse(await readFile(new URL('../plugin/mcp.json', import.meta.url), 'utf8'));
-  validatePluginRemote(config);
-  for (const change of [
-    { url: 'https://evil.invalid/mcp' },
-    { headers: { Authorization: 'Bearer fixture' } },
-    { command: 'node' },
-    { extensions: { 'com.openai': { auth: { type: 'oauth' } } } },
-  ])
-    assert.throws(() =>
-      validatePluginRemote({
-        ...config,
-        mcpServers: { anhedral: { ...config.mcpServers.anhedral, ...change } },
-      }),
-    );
-  // Claude Code reads `.mcp.json` from the same distribution and must target the same endpoint.
-  const claude = JSON.parse(
-    await readFile(new URL('../plugin/.mcp.json', import.meta.url), 'utf8'),
-  );
-  validateClaudePluginRemote(claude);
-  assert.equal(claude.mcpServers.platform.url, config.mcpServers.anhedral.url);
-  for (const change of [
-    { url: 'https://evil.invalid/mcp' },
-    { headers: { Authorization: 'Bearer fixture' } },
-    { command: 'node' },
-    { type: 'sse' },
-    { oauth: { clientId: 'fixture' } },
-  ])
-    assert.throws(() =>
-      validateClaudePluginRemote({
-        mcpServers: { platform: { ...claude.mcpServers.platform, ...change } },
-      }),
-    );
-});
-
 test('new imports accept the monotonic version of a recreated deleted variable', async () => {
   const root = await directory(),
     old = process.cwd();
