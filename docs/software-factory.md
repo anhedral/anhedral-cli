@@ -62,8 +62,10 @@ application matrices remain in [Full validation](https://github.com/anhedral/anh
 
 `node scripts/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
 application and exercises local workerd, SSR/server functions, progressive backend,
-private storage and the generated Stripe build/migration path. It uses isolated
-local data, never a configured database or live payment provider. Preserve source/tool/lock identities and distinguish prepared,
+private storage and the generated Stripe build/migration path. The compiled web
+and API Workers run together with the migrated local D1 state. Bundle measurements
+follow OJ’s emitted Worker configuration and count its runtime modules. It uses
+isolated local data, never a configured database or live payment provider. Preserve source/tool/lock identities and distinguish prepared,
 passed and failed evidence. Tests are not provider deployment acceptance. Run
 `node tests/test-generated-config-lint.mjs <installed-workspace>` to exercise the
 generated web ESLint policy; runtime proof checks both web-only and composed source.

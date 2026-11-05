@@ -38,6 +38,17 @@ export function measureWorker(directory, maxGzipBytes, entrypoint = 'worker.js')
     throw Error('Positive integer bundle budget required');
   return { ...report, passed: report.gzipBytes <= maxGzipBytes };
 }
+// Follow the compiler's emitted Worker configuration without excluding sibling modules.
+export function measureConfiguredWorker(configPath, maxGzipBytes) {
+  const directory = path.dirname(path.resolve(configPath));
+  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  if (typeof config.main !== 'string' || !config.main)
+    throw Error('Compiled Worker configuration requires main');
+  const main = path.resolve(directory, config.main);
+  if (path.dirname(main) !== directory)
+    throw Error('Compiled Worker main must be inside the measured output directory');
+  return measureWorker(directory, maxGzipBytes, path.basename(main));
+}
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [directory, output, budget] = process.argv.slice(2);
   const report = measureWorker(path.resolve(directory), Number(budget));

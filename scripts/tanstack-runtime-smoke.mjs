@@ -10,7 +10,7 @@ import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
-import { measureWorker } from './measure-worker.mjs';
+import { measureConfiguredWorker, measureWorker } from './measure-worker.mjs';
 
 const repository = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(repository, '.artifacts/anhedral-stack-runtime');
@@ -250,6 +250,11 @@ try {
       'dev',
       '--config',
       'dist/ssr/wrangler.json',
+      '--config',
+      '../api/wrangler.jsonc',
+      '--local',
+      '--persist-to',
+      path.join(app, 'apps/api/.wrangler/state'),
       '--port',
       String(localPort),
     ],
@@ -385,7 +390,7 @@ try {
   await run('pnpm', ['build']);
   const measurements = {
     schemaVersion: 1,
-    web: measureWorker(path.join(web, 'dist/server'), 4 * 1024 * 1024, 'index.js'),
+    web: measureConfiguredWorker(path.join(web, 'dist/ssr/wrangler.json'), 4 * 1024 * 1024),
     api: measureWorker(path.join(app, 'apps/api/dist'), 4 * 1024 * 1024, 'index.js'),
   };
   await writeFile(
