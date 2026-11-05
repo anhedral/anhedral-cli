@@ -218,6 +218,9 @@ reviewed skills, references, assets and host manifests, and rejects connection f
 or executable declarations. `tests/test-plugin-codex.test.mjs` installs the exact
 archive in an isolated Codex home and verifies both skills with no MCP, app or hook
 registration when Codex is available (`ANHEDRAL_CODEX_BIN` overrides the binary).
+`ANHEDRAL_CLAUDE_BIN` selects an explicitly installed Claude validator; use a current
+version supporting `plugin validate --strict`. Installed older validators fail the
+gate rather than silently dropping strict validation.
 
 One distribution directory, `plugin/`, serves Codex and Claude Code. Codex reads
 `plugin.json` and `skills/*/agents/openai.yaml`; Claude Code reads
