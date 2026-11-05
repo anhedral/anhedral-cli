@@ -545,6 +545,7 @@ test('credential command construction covers Darwin and Linux under mocks on eve
         return JSON.stringify(value);
       },
       platform,
+      async () => '/usr/bin/secret-tool',
     );
     await store.write(value);
     assert.deepEqual(await store.read(), value);
@@ -556,7 +557,7 @@ test('credential command construction covers Darwin and Linux under mocks on eve
       assert.ok(commands.some((command) => command.argv[0] === '-i'));
       assert.equal(commands.at(-1).argv[0], 'delete-generic-password');
     } else {
-      assert.ok(commands.every((command) => command.binary === 'secret-tool'));
+      assert.ok(commands.every((command) => command.binary === '/usr/bin/secret-tool'));
       assert.equal(commands[0].argv[0], 'store');
       assert.equal(commands.at(-1).argv[0], 'clear');
     }
