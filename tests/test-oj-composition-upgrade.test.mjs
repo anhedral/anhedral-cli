@@ -85,7 +85,7 @@ function assertOj(root) {
   assert.match(document, /import '\.\.\/styles\.css';/);
   assert.doesNotMatch(document, /styles\.css\?url|href: styles/);
   const pkg = json(root, 'apps/web/package.json');
-  assert.match(pkg.scripts.dev, /scripts\/oj\.mjs dev/);
+  assert.equal(pkg.scripts.dev, 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000');
   assert.match(pkg.scripts.build, /scripts\/oj\.mjs build/);
   assert.equal(pkg.scripts.preview, 'wrangler dev --config dist/ssr/wrangler.json --port 3000');
   assert.equal(pkg.scripts.deploy, 'wrangler deploy --config dist/ssr/wrangler.json');
@@ -247,4 +247,50 @@ test('an owned web configuration refreshes without requiring metadata or CSS cha
   assert.equal(normalizeOjFoundation(protectedEditor, []), false);
   assert.equal(protectedEditor.writes.has(file), false);
   assert.equal(readFileSync(path.join(root, file), 'utf8'), custom);
+});
+
+function previousBackendEntry(root) {
+  const file = 'apps/web/src/server.ts';
+  const source = readFileSync(path.join(root, file), 'utf8')
+    .replace(
+      "import { createStartHandler, defaultStreamHandler } from '@tanstack/react-start/server';",
+      "import handler from '@tanstack/react-start/server-entry';",
+    )
+    .replace('\nconst handler = createStartHandler(defaultStreamHandler);\n', '')
+    .replace('return handler(request,', 'return handler.fetch(request,');
+  assert.equal(digest(source), '703adff2e57adfbbdb7fa90b4dadffde8617c86cc31a185943931ef7c623eca7');
+  writeFileSync(path.join(root, file), source);
+  const pkg = json(root, 'apps/web/package.json');
+  pkg.scripts.dev = 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000';
+  writeFileSync(path.join(root, 'apps/web/package.json'), JSON.stringify(pkg, null, 2) + '\n');
+  const metadata = json(root, 'anhedral.json');
+  metadata.capabilities.managedFiles[file] = digest(source);
+  writeFileSync(path.join(root, 'anhedral.json'), JSON.stringify(metadata, null, 2) + '\n');
+  return file;
+}
+for (const addition of ['backend', 'r2'])
+  test(`shipped backend entry preserves Start context when adding ${addition}`, (t) => {
+    const root = fixture(t, true);
+    const file = previousBackendEntry(root);
+    const result = run(root, ['add', addition]);
+    assert.equal(result.status, 0, result.stderr);
+    assertOj(root);
+    const source = readFileSync(path.join(root, file), 'utf8');
+    assert.match(source, /createStartHandler\(defaultStreamHandler\)/);
+    assert.match(source, /handler\(request, \{ context: \{ api: bindings.ANHEDRAL_API \} \}\)/);
+    assert.doesNotMatch(source, /server-entry|handler\.fetch/);
+    assert.equal(json(root, 'anhedral.json').capabilities.managedFiles[file], digest(source));
+  });
+test('edited previous backend entry remains protected from a new capability composition', (t) => {
+  const root = fixture(t, true);
+  const file = previousBackendEntry(root);
+  writeFileSync(
+    path.join(root, file),
+    readFileSync(path.join(root, file), 'utf8') + '\n// Customer adapter\n',
+  );
+  const before = snapshot(root);
+  const result = run(root, ['add', 'r2']);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Preserve edited generated source/);
+  assert.deepEqual(snapshot(root), before);
 });

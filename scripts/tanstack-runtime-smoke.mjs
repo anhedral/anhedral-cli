@@ -10,7 +10,7 @@ import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
-import { measureWorker } from './measure-worker.mjs';
+import { measureConfiguredWorker, measureWorker } from './measure-worker.mjs';
 
 const repository = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(repository, '.artifacts/anhedral-stack-runtime');
@@ -178,15 +178,7 @@ try {
   console.log('TanStack proof: verify the minimal web foundation before adding services.');
   preview = start(
     process.execPath,
-    [
-      path.join(app, 'scripts/oj.mjs'),
-      'dev',
-      '.',
-      '--host',
-      'localhost',
-      '--port',
-      String(localPort),
-    ],
+    [path.join(app, 'scripts/oj.mjs'), 'dev', '.', '--host=localhost', '--port', String(localPort)],
     web,
     120000,
   );
@@ -258,6 +250,11 @@ try {
       'dev',
       '--config',
       'dist/ssr/wrangler.json',
+      '--config',
+      '../api/wrangler.jsonc',
+      '--local',
+      '--persist-to',
+      path.join(app, 'apps/api/.wrangler/state'),
       '--port',
       String(localPort),
     ],
@@ -292,7 +289,7 @@ try {
   assert.match(
     markup,
     /API:\s*(?:<!--[^>]*-->\s*)*connected/,
-    'Server function did not reach Hono.',
+    `Server function did not reach Hono: ${markup.match(/<p data-rendering="server">.*?<\/p>/s)?.[0] ?? 'missing rendered status'}`,
   );
   const account = await request('/sign-in');
   assert.equal(account.status, 200, 'Account route must render.');
@@ -393,7 +390,7 @@ try {
   await run('pnpm', ['build']);
   const measurements = {
     schemaVersion: 1,
-    web: measureWorker(path.join(web, 'dist/server'), 4 * 1024 * 1024, 'index.js'),
+    web: measureConfiguredWorker(path.join(web, 'dist/ssr/wrangler.json'), 4 * 1024 * 1024),
     api: measureWorker(path.join(app, 'apps/api/dist'), 4 * 1024 * 1024, 'index.js'),
   };
   await writeFile(
