@@ -208,7 +208,9 @@ export function normalizeOjFoundation(
   for (const [name, desired] of Object.entries(ojScripts)) {
     const current = scripts[name];
     const previous = Reflect.get(previousScripts, name);
-    if (current !== undefined && current !== desired && current !== previous)
+    const previousOjDev =
+      name === 'dev' && current === 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000';
+    if (current !== undefined && current !== desired && current !== previous && !previousOjDev)
       throw Error(
         `Preserve customized web launcher scripts.${name}. Reconcile it with the pinned OJ runtime before adding capabilities. No files were changed.`,
       );

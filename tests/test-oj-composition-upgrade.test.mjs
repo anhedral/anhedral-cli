@@ -260,6 +260,9 @@ function previousBackendEntry(root) {
     .replace('return handler(request,', 'return handler.fetch(request,');
   assert.equal(digest(source), '703adff2e57adfbbdb7fa90b4dadffde8617c86cc31a185943931ef7c623eca7');
   writeFileSync(path.join(root, file), source);
+  const pkg = json(root, 'apps/web/package.json');
+  pkg.scripts.dev = 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000';
+  writeFileSync(path.join(root, 'apps/web/package.json'), JSON.stringify(pkg, null, 2) + '\n');
   const metadata = json(root, 'anhedral.json');
   metadata.capabilities.managedFiles[file] = digest(source);
   writeFileSync(path.join(root, 'anhedral.json'), JSON.stringify(metadata, null, 2) + '\n');
@@ -271,6 +274,7 @@ for (const addition of ['backend', 'r2'])
     const file = previousBackendEntry(root);
     const result = run(root, ['add', addition]);
     assert.equal(result.status, 0, result.stderr);
+    assertOj(root);
     const source = readFileSync(path.join(root, file), 'utf8');
     assert.match(source, /createStartHandler\(defaultStreamHandler\)/);
     assert.match(source, /handler\(request, \{ context: \{ api: bindings.ANHEDRAL_API \} \}\)/);
