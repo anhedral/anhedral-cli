@@ -6,7 +6,11 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 if (existsSync(new URL('../plugin/runtime', import.meta.url)))
   throw Error('Plugin must not ship an executable managed runtime.');
 const manifest = JSON.parse(readFileSync(new URL('../plugin/plugin.json', import.meta.url)));
-if (!manifest.description.includes('Scaffold')) throw Error('Plugin source scope differs.');
+if (
+  !manifest.description.includes('Anhedral Stack') ||
+  !manifest.description.includes('Anhedral CLI')
+)
+  throw Error('Plugin must describe Anhedral Stack source workflows through the Anhedral CLI.');
 const stack = JSON.parse(
   readFileSync(new URL('../plugin/references/stack-registry.json', import.meta.url)),
 );
@@ -23,11 +27,15 @@ buildPluginArchive(root);
 // Claude Code's own validator is authoritative for its manifests and skill frontmatter.
 // It is optional locally; an unavailable CLI is reported, never treated as a pass.
 for (const target of ['plugin', '.']) {
-  const result = spawnSync('claude', ['plugin', 'validate', '--strict', target], {
-    cwd: root,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  const result = spawnSync(
+    process.env.ANHEDRAL_CLAUDE_BIN || 'claude',
+    ['plugin', 'validate', '--strict', target],
+    {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
   if (result.error?.code === 'ENOENT') {
     console.warn('Claude Code CLI not found: strict Claude plugin validation was skipped.');
     break;
