@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { deploymentManifestSchema } from "./deployment.ts";
+import { cliArtifactSchema, deploymentManifestSchema } from "./deployment.ts";
 export const CLI_CLIENT_ID = "anhedral-cli";
 export const SOURCE_LIMITS = {
   bytes: 16 * 1024 * 1024,
@@ -143,6 +143,42 @@ export const cliPlanInputSchema = z
     manifest: deploymentManifestSchema,
   })
   .strict();
+export const cliPlanBlockerSchema = z.enum([
+  "HOSTED_ADMISSION_DISABLED",
+  "ARTIFACT_UNREVIEWED",
+  "CONFIGURATION_UNVERIFIED",
+  "RUNTIME_UNAVAILABLE",
+  "ARTIFACT_MISMATCH",
+  "SOURCE_VERSION_MISMATCH",
+  "DEPENDENCY_LOCK_MISMATCH",
+]);
+export const cliPlanAdmissionSchema = z
+  .object({
+    version: z.literal(1),
+    expectedCliArtifact: cliArtifactSchema.nullable(),
+    supportedCompositions: z
+      .array(
+        z
+          .object({
+            dependencyLockDigest: sourceHashSchema,
+            capabilities: z.array(z.enum(["hono", "database-auth", "r2", "stripe"])).max(4),
+          })
+          .strict(),
+      )
+      .max(32),
+    diagnostics: z
+      .array(
+        z
+          .object({
+            code: cliPlanBlockerSchema,
+            message: z.string().min(1).max(500),
+            action: z.string().min(1).max(500),
+          })
+          .strict(),
+      )
+      .max(8),
+  })
+  .strict();
 export const cliPlanSchema = z
   .object({
     protocol: z.literal(1),
@@ -167,16 +203,14 @@ export const cliPlanSchema = z
     policyDigest: sourceHashSchema,
     migrationDigests: z.array(sourceHashSchema).max(100),
     expiresAt: z.iso.datetime(),
-    runtimeImage: z.null(),
+    runtimeImage: z.string().max(256).nullable(),
     configurationRevision: z.null(),
-    artifactVerified: z.literal(false),
-    hostedAdmission: z.literal(false),
+    artifactVerified: z.boolean(),
+    hostedAdmission: z.boolean(),
     identityAction: z.literal("preserve"),
-    blockers: z.tuple([
-      z.literal("HOSTED_ADMISSION_DISABLED"),
-      z.literal("ARTIFACT_UNREVIEWED"),
-      z.literal("CONFIGURATION_UNVERIFIED"),
-    ]),
+    blockers: z.array(cliPlanBlockerSchema).max(8),
+    // Optional so parsing an old immutable plan never adds signed fields.
+    admission: cliPlanAdmissionSchema.optional(),
   })
   .strict();
 export const cliPrepareInputSchema = z

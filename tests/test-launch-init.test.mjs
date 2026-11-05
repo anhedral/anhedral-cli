@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { parse as parseYaml } from 'yaml';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -45,6 +46,10 @@ test('public init produces only TanStack Start and Anhedral UI', () => {
     assert.equal(existsSync(path.join(root, directory)), false);
   assert.equal(web.dependencies['better-auth'], undefined);
   assert.equal(configuration.setup.cliVersion, configuration.composition.generatorVersion);
+  const policy = parseYaml(readFileSync(path.join(root, 'pnpm-workspace.yaml'), 'utf8'));
+  assert.deepEqual(policy.allowBuilds, { esbuild: true, workerd: true });
+  assert.equal(policy.onlyBuiltDependencies, undefined);
+  assert.equal(policy.dangerouslyAllowAllBuilds, undefined);
   assert.equal(run(['stack', 'doctor', '--json'], root).status, 0);
   assert.equal(run(['ui', 'doctor', '--web', '--json'], root).status, 0);
 });

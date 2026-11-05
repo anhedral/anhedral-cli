@@ -20,6 +20,7 @@ const portable = new Set([
   'environment-transport',
   'environment-file',
   'staging-transport',
+  'production-transport',
   'runtime-logs-transport',
 ]);
 const clientShared = new Set(['cli-arguments', 'cli-output', 'cli-errors', 'command-schema']);

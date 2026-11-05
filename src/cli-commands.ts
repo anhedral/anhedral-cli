@@ -31,6 +31,7 @@ export async function runCommand(
       'deploy',
       'env',
       'staging',
+      'production',
       'logs',
     ].includes(command)
   )

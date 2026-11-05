@@ -1,3 +1,4 @@
+import { runProductionCommand, validateProductionArguments } from './platform-production.js';
 import { runEnvironmentCommand, validateEnvironmentArguments } from './platform-environment.js';
 import {
   runStagingCommand,
@@ -146,7 +147,19 @@ function formatPlatformResult(command: string, result: unknown): string {
         ? `Candidate ${visible(data.state)} (${visible(data.candidateId)}).`
         : `Deployment plan prepared (${visible(data.id)}).`,
       `Source revision: ${visible(data.sourceRevision)}.`,
-      'Server policy controls runtime admission. No preview or deployment was activated.',
+      ...(
+        (
+          data.admission as
+            { diagnostics?: { code: string; message: string; action: string }[] } | undefined
+        )?.diagnostics ?? []
+      ).flatMap((item) => [
+        `[${visible(item.code)}] ${visible(item.message)}`,
+        `Next: ${visible(item.action)}`,
+      ]),
+      ...(data.admission && (data.blockers as unknown[] | undefined)?.length === 0
+        ? ['Source is eligible for candidate preparation. Run anhedral deploy prepare.']
+        : []),
+      'No preview or deployment was activated.',
     ].join('\n');
   return 'Platform command completed.';
 }
@@ -204,6 +217,7 @@ async function runPlatformOperation(
     origin = platformOrigin(options.value('--api-url'));
   if (command === 'env') validateEnvironmentArguments(args);
   if (command === 'staging') validateStagingArguments(args);
+  if (command === 'production') validateProductionArguments(args);
   if (command === 'logs') validateLogsArguments(args);
   const emit = (result: unknown) => reporter.result(result);
   if (
@@ -379,7 +393,7 @@ async function runPlatformOperation(
     }
     const data: unknown = await readSourceBounded(
       response.body,
-      /\/projects\/[^/]+\/(environment|staging|runtime-logs)(\?|$)/.test(path)
+      /\/projects\/[^/]+\/(environment|staging|production|runtime-logs)(\?|$)/.test(path)
         ? 1024 * 1024
         : command === 'projects'
           ? 1024 * 1024
@@ -404,28 +418,41 @@ async function runPlatformOperation(
           .safeParse(data);
         if (error.success) return error.data;
       }
+      const serverMessage = z.object({ error: z.string().max(2000) }).safeParse(data);
+      const admissionProblem =
+        serverMessage.success &&
+        /^\[(?:RUNTIME_UNAVAILABLE|ARTIFACT_MISMATCH|SOURCE_VERSION_MISMATCH|DEPENDENCY_LOCK_MISMATCH|INDEPENDENT_APPROVAL_REQUIRED|PRODUCTION_PERMISSION_REQUIRED)\] [^\r\n]{1,1500}$/.test(
+          serverMessage.data.error,
+        )
+          ? visible(serverMessage.data.error)
+          : null;
       throw platformFailure(
-        response.status === 401
-          ? 'CLI login expired or was revoked. Run anhedral login.'
-          : response.status === 409
-            ? command === 'deploy'
-              ? 'Deployment plan is stale or inputs conflict. Review deploy plan --new.'
-              : command === 'projects'
-                ? 'Project creation conflicts with the saved request. Preserve retry state; use projects create --new only to create another project.'
-                : command === 'staging'
-                  ? 'Candidate, configuration or staging generation changed. Review staging status before starting a new deployment.'
+        admissionProblem ??
+          (response.status === 401
+            ? 'CLI login expired or was revoked. Run anhedral login.'
+            : response.status === 409
+              ? command === 'deploy'
+                ? 'Deployment plan is stale or inputs conflict. Review deploy plan --new.'
+                : command === 'projects'
+                  ? 'Project creation conflicts with the saved request. Preserve retry state; use projects create --new only to create another project.'
+                  : command === 'staging'
+                    ? 'Candidate, configuration or staging generation changed. Review staging status before starting a new deployment.'
+                    : command === 'production'
+                      ? 'Candidate, production configuration, permissions or generation changed. Review production status before retrying.'
+                      : command === 'env'
+                        ? 'Environment versions or import contents conflict. Review env list and preserve saved retry state before starting a new import.'
+                        : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
+              : response.status === 403
+                ? command === 'projects'
+                  ? 'Current team project access or project creation permission is unavailable.'
                   : command === 'env'
-                    ? 'Environment versions or import contents conflict. Review env list and preserve saved retry state before starting a new import.'
-                    : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
-            : response.status === 403
-              ? command === 'projects'
-                ? 'Current team project access or project creation permission is unavailable.'
-                : command === 'env'
-                  ? 'Current project environment access or administrator permission is unavailable.'
-                  : command === 'logs'
-                    ? 'Current project log access is unavailable.'
-                    : 'Current project build access is unavailable.'
-              : `Platform request failed (${response.status}).`,
+                    ? 'Current project environment access or administrator permission is unavailable.'
+                    : command === 'logs'
+                      ? 'Current project log access is unavailable.'
+                      : command === 'production'
+                        ? 'Current production permission or team approval policy does not allow this deployment. Review production status and the team policy.'
+                        : 'Current project build access is unavailable.'
+                : `Platform request failed (${response.status}).`),
         response.status === 401
           ? 'auth'
           : response.status === 403
@@ -436,7 +463,9 @@ async function runPlatformOperation(
         response.status === 429 || response.status >= 500,
         response.status === 401
           ? 'Run anhedral login with the same API origin and credential store.'
-          : `Run anhedral ${command} --help.`,
+          : response.status === 403 && command === 'production'
+            ? 'Run anhedral production status and review current production permissions and the team approval policy in Platform.'
+            : `Run anhedral ${command} --help.`,
       );
     }
     return data;
@@ -712,7 +741,7 @@ async function runPlatformOperation(
     });
     return;
   }
-  if (['env', 'staging', 'logs'].includes(command)) {
+  if (['env', 'staging', 'production', 'logs'].includes(command)) {
     const link = linkSchema.parse(await readPrivate(linkPath));
     if (link.origin !== origin || link.principalId !== actor.principalId)
       throw platformFailure('Link this project to the selected API origin and signed-in identity.');
@@ -721,7 +750,9 @@ async function runPlatformOperation(
         ? runEnvironmentCommand
         : command === 'staging'
           ? runStagingCommand
-          : runLogsCommand;
+          : command === 'production'
+            ? runProductionCommand
+            : runLogsCommand;
     return operation(
       args,
       output,
@@ -901,6 +932,17 @@ async function runPlatformOperation(
         emit(plan);
       }
       return;
+    }
+    if (state.plan.admission && state.plan.blockers.length) {
+      const issue = state.plan.admission.diagnostics[0];
+      throw platformFailure(
+        issue
+          ? `[${issue.code}] ${visible(issue.message)}`
+          : 'This source is not eligible for candidate preparation.',
+        'conflict',
+        false,
+        issue ? visible(issue.action) : 'Review anhedral deploy plan output before preparing.',
+      );
     }
     const requestId = state.prepareRequestId ?? randomUUID();
     await persist({ ...state, prepareRequestId: requestId });

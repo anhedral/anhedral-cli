@@ -23,6 +23,7 @@
     "contracts/deployment",
     "contracts/environment-file",
     "contracts/environment-transport",
+    "contracts/production-transport",
     "contracts/runtime-logs-transport",
     "contracts/source-bundle",
     "contracts/source-profile",
@@ -34,6 +35,7 @@
     "platform-command",
     "platform-environment",
     "platform-operations",
+    "platform-production",
     "platform-source",
     "platform-state",
     "platforms/tanstack",
@@ -54,10 +56,11 @@
   ],
   "platformModules": [
     "platform-command",
-    "platform-source",
-    "platform-state",
     "platform-environment",
-    "platform-operations"
+    "platform-operations",
+    "platform-production",
+    "platform-source",
+    "platform-state"
   ],
   "runtimeAssets": ["assets/security/credential-patterns.mjs"]
 }
