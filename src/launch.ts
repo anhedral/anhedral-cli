@@ -83,7 +83,7 @@ function rootFiles(root: string, name: string) {
   setPnpmPolicy(root, {
     packages: ['apps/*', 'packages/*'],
     sharedWorkspaceLockfile: true,
-    onlyBuiltDependencies: ['esbuild', 'workerd'],
+    allowBuilds: { esbuild: true, workerd: true },
   });
   json(root, 'anhedral.json', {
     schemaVersion: 1,

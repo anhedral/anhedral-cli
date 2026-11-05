@@ -68,6 +68,8 @@ passed and failed evidence. Tests are not provider deployment acceptance. Run
 `node tests/test-generated-config-lint.mjs <installed-workspace>` to exercise the
 generated web ESLint policy; runtime proof checks both web-only and composed source.
 
+Generated workspaces explicitly allow dependency build scripts only for esbuild and workerd through the pnpm `allowBuilds` map. This keeps installation noninteractive under the pinned pnpm release and pnpm11 without allowing arbitrary dependency scripts.
+
 ## Platform CLI access and source upload
 
 `login --start` prints browser approval instructions; `login --resume` redeems the
@@ -129,8 +131,8 @@ of subsequent local edits. The manifest follows Platform's `deploymentManifestSc
 in `src/contracts/deployment.ts`; it must match the archive's recorded composition,
 capabilities, CLI version and existing standalone identity. Runtime-profile admission is server-owned. Staged server sources include Hono/D1
 and web candidates; source support does not establish a deployed cohort or provider readiness. Plans bind source/lockfile/migrations,
-routing state, principal epoch and project authority. Artifact provenance and
-runtime configuration remain explicitly unverified; null receipts are not approval.
+routing state, principal epoch and project authority. Signed plans report current artifact, source-version and dependency-lock compatibility.
+A null project configuration revision means deployment has not yet captured its environment snapshot; it is not a request to find an operator approver.
 Anhedral Stack source composition version 2 records framework foundation
 `tanstack-start`; the public runtime profile is `anhedral-stack`. Its five compositions are
 web-only, backend (`hono` plus `database-auth`), backend/R2, backend/Stripe and
@@ -140,7 +142,7 @@ not current public selections or hosted support.
 Continue selecting an explicit manifest; the CLI never infers an admitted artifact
 from locally generated source. Native candidate receipts name an immutable registry
 image with `scope: candidate-workspace`; legacy isolated-build receipts remain valid.
-Both describe build admission, not production approval.
+Both describe automatic build compatibility, not a requirement for a human artifact approver. Plans list exact runtime, source-version or lockfile mismatches and remediation. Do not relabel source provenance to clear a mismatch.
 
 `deploy prepare` reserves an immutable candidate. `deploy status` reads
 `awaiting-runtime`, `building`, `built`, `ready` or `failed`. A built candidate grants no
@@ -172,6 +174,8 @@ retains one generation-bound request across retries. `--new` starts another
 deployment after reviewing the current state. Saved receipts must match their
 project, candidate, request and generation before replay. CLI runtime admission remains a
 separate server gate; a built source upload alone is not a ready candidate.
+`production status` reads current production generation, deployment history and approval policy. `production deploy --candidate <uuid> --name <slug>` freezes production configuration and publishes through the signed-in user's existing production permissions. Self-service teams need no second approver; an explicit independent-review policy remains enforced. Lost responses reuse the saved request and generation; use `--new` only for another candidate, name or deliberate deployment.
+
 `logs` reads bounded, redacted runtime events, defaulting to staging. Select
 production explicitly with `--environment production`; filter by deployment,
 level, source or range, and pass `--cursor` for the next page. Coverage, dropped

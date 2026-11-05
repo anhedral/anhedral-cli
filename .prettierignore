@@ -9,6 +9,7 @@ tests/native-ui/.generated/
 src/contracts/environment-transport.ts
 src/contracts/environment-file.ts
 src/contracts/staging-transport.ts
+src/contracts/production-transport.ts
 src/contracts/runtime-logs-transport.ts
 
 # Exact reviewed portable deployment snapshot.

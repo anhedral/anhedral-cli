@@ -122,6 +122,25 @@ const STAGING_OPTIONS: readonly CommandOption[] = [
   },
   { flag: '--new', description: 'Start a new staging deployment using the current generation.' },
 ];
+const PRODUCTION_OPTIONS: readonly CommandOption[] = [
+  ...PLATFORM_OPTIONS,
+  {
+    flag: '--candidate',
+    value: 'uuid',
+    arity: 'required',
+    description: 'Select a ready, runtime-verified deployment candidate.',
+  },
+  {
+    flag: '--name',
+    value: 'slug',
+    arity: 'required',
+    description: 'Select the public application name for production.',
+  },
+  {
+    flag: '--new',
+    description: 'Start another production deployment using the current generation.',
+  },
+];
 const PROJECT_OPTIONS: readonly CommandOption[] = [
   ...PLATFORM_OPTIONS,
   {
@@ -355,6 +374,30 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     },
     examples: ['staging status', 'staging deploy --candidate <uuid>'],
     note: 'Retried requests retain the same identity and generation. Configuration is frozen for each new staging deployment; production approval stays in Platform.',
+  },
+  production: {
+    description: 'Deploy a ready candidate with your current production permissions.',
+    usage: 'production <status|deploy> [options]',
+    options: PRODUCTION_OPTIONS,
+    positional: { name: 'operation', min: 1, max: 1, choices: ['status', 'deploy'] },
+    children: {
+      status: {
+        description: 'Read production history and active deployment.',
+        usage: 'production status',
+        options: PLATFORM_OPTIONS,
+        positional: { name: 'operation', min: 0, max: 0 },
+        examples: ['production status --json'],
+      },
+      deploy: {
+        description: 'Request production publication of a ready candidate.',
+        usage: 'production deploy --candidate <uuid> --name <slug> [--new]',
+        options: PRODUCTION_OPTIONS,
+        positional: { name: 'operation', min: 0, max: 0 },
+        examples: ['production deploy --candidate <uuid> --name my-app'],
+      },
+    },
+    examples: ['production status', 'production deploy --candidate <uuid> --name my-app'],
+    note: 'Platform checks current production permissions and freezes configuration. Self-service teams need no second approver; an explicitly required independent review remains enforced.',
   },
   logs: {
     description: 'Read redacted runtime logs for the linked project.',
