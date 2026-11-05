@@ -32,6 +32,7 @@ test('public init produces only TanStack Start and Anhedral UI', () => {
   assert.deepEqual(configuration.capabilities.installed, []);
   const web = json(path.join(root, 'apps/web/package.json'));
   assert.ok(web.dependencies['@tanstack/react-start']);
+  assert.equal(web.scripts.dev, 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000');
   assert.equal(web.dependencies.next, undefined);
   assert.equal(web.dependencies['@opennextjs/cloudflare'], undefined);
   for (const file of ['apps/web/src/server.ts', 'apps/web/src/routes/index.tsx'])
@@ -75,6 +76,14 @@ test('backend is one atomic addition, with storage and Stripe independently prog
   ]);
   assert.ok(existsSync(path.join(root, 'apps/api/src/auth.ts')));
   assert.ok(existsSync(path.join(root, 'apps/web/src/routes/sign-in.tsx')));
+  const server = readFileSync(path.join(root, 'apps/web/src/server.ts'), 'utf8');
+  assert.match(server, /createStartHandler\(defaultStreamHandler\)/);
+  assert.match(
+    server,
+    /return handler\(request, \{ context: \{ api: bindings.ANHEDRAL_API \} \}\)/,
+  );
+  assert.doesNotMatch(server, /server-entry|handler\.fetch/);
+
   assert.equal(existsSync(path.join(root, 'apps/api/src/features/storage.ts')), false);
   assert.match(
     readFileSync(path.join(root, 'apps/api/src/auth-features.ts'), 'utf8'),

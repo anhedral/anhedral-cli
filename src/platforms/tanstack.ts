@@ -21,7 +21,7 @@ export function scaffoldTanstack(root: string, name: string): void {
     version: '0.1.0',
     type: 'module',
     scripts: {
-      dev: 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000',
+      dev: 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000',
       build: 'node ../../scripts/oj.mjs build .',
       preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
       deploy: 'wrangler deploy --config dist/ssr/wrangler.json',
@@ -160,7 +160,7 @@ function assertTanstack(e: CapabilityEditor) {
 }
 
 const ojScripts = {
-  dev: 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000',
+  dev: 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000',
   build: 'node ../../scripts/oj.mjs build .',
   preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
   deploy: 'wrangler deploy --config dist/ssr/wrangler.json',
@@ -208,12 +208,27 @@ export function normalizeOjFoundation(
   for (const [name, desired] of Object.entries(ojScripts)) {
     const current = scripts[name];
     const previous = Reflect.get(previousScripts, name);
-    if (current !== undefined && current !== desired && current !== previous)
+    const previousOjDev =
+      name === 'dev' && current === 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000';
+    if (current !== undefined && current !== desired && current !== previous && !previousOjDev)
       throw Error(
         `Preserve customized web launcher scripts.${name}. Reconcile it with the pinned OJ runtime before adding capabilities. No files were changed.`,
       );
   }
   let changed = false;
+  const serverEntry = 'apps/web/src/server.ts';
+  const currentEntry = e.read(serverEntry);
+  // Repair only the exact shipped adapter whose default-entry shim drops Start context in OJ.
+  if (
+    installed.includes('hono') &&
+    currentEntry !== null &&
+    fingerprint(currentEntry) ===
+      '703adff2e57adfbbdb7fa90b4dadffde8617c86cc31a185943931ef7c623eca7' &&
+    e.managed[serverEntry] === fingerprint(currentEntry)
+  ) {
+    e.owned(serverEntry, template('server.ts.txt'));
+    changed = true;
+  }
   const rootRoute = 'apps/web/src/routes/__root.tsx';
   const rootSource = e.read(rootRoute);
   // A one-way repair of the exact shipped document, without owning customer routes.

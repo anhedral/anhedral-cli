@@ -1,5 +1,7 @@
-import handler from '@tanstack/react-start/server-entry';
+import { createStartHandler, defaultStreamHandler } from '@tanstack/react-start/server';
 import { proxyApi } from './lib/api-proxy';
+
+const handler = createStartHandler(defaultStreamHandler);
 
 export default {
   fetch(request: Request, bindings: Env) {
@@ -8,6 +10,6 @@ export default {
       return proxyApi(request, { binding: bindings.ANHEDRAL_API, development: false });
     }
     // Start retains this server-owned capability only inside the current request.
-    return handler.fetch(request, { context: { api: bindings.ANHEDRAL_API } });
+    return handler(request, { context: { api: bindings.ANHEDRAL_API } });
   },
 } satisfies ExportedHandler<Env>;

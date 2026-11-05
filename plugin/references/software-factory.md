@@ -62,13 +62,17 @@ application matrices remain in [Full validation](https://github.com/anhedral/anh
 
 `node scripts/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
 application and exercises local workerd, SSR/server functions, progressive backend,
-private storage and the generated Stripe build/migration path. It uses isolated
-local data, never a configured database or live payment provider. Preserve source/tool/lock identities and distinguish prepared,
+private storage and the generated Stripe build/migration path. The compiled web
+and API Workers run together with the migrated local D1 state. Bundle measurements
+follow OJ’s emitted Worker configuration and count its runtime modules. It uses
+isolated local data, never a configured database or live payment provider. Preserve source/tool/lock identities and distinguish prepared,
 passed and failed evidence. Tests are not provider deployment acceptance. Run
 `node tests/test-generated-config-lint.mjs <installed-workspace>` to exercise the
 generated web ESLint policy; runtime proof checks both web-only and composed source.
 
-Generated workspaces explicitly allow dependency build scripts only for esbuild and workerd through the pnpm `allowBuilds` map. This keeps installation noninteractive under the pinned pnpm release and pnpm11 without allowing arbitrary dependency scripts.
+Backend server entries call TanStack’s `createStartHandler(defaultStreamHandler)` directly so request-local API bindings survive OJ compilation. Source additions repair the exact previous owned adapter and preserve customer edits.
+
+OJ dev commands attach an explicit host value with `--host=<hostname>`, as required by the pinned runtime. Generated workspaces explicitly allow dependency build scripts only for esbuild and workerd through the pnpm `allowBuilds` map. This keeps installation noninteractive under the pinned pnpm release and pnpm11 without allowing arbitrary dependency scripts.
 
 ## Platform CLI access and source upload
 
