@@ -424,21 +424,37 @@ test('credential helper bounds stalled processes and preserves ordinary completi
 });
 
 test('OS credential clear propagates backend failures and accepts successful deletion', async () => {
-  if (!['darwin', 'linux'].includes(process.platform)) return;
-  const commands = [];
-  const success = secretStore(origin, undefined, async (binary, values) => {
-    commands.push([binary, values]);
-    return '';
-  });
-  await success.clear();
-  assert.equal(commands.length, 1);
-  assert.ok(
-    commands[0][1].includes(process.platform === 'darwin' ? 'delete-generic-password' : 'clear'),
-  );
-  const failure = secretStore(origin, undefined, async () => {
-    throw Error('simulated credential service failure');
-  });
-  await assert.rejects(failure.clear(), /simulated credential service failure/);
+  for (const platform of ['darwin', 'linux']) {
+    const commands = [];
+    const linuxHelper = async () => '/usr/bin/secret-tool';
+    const success = secretStore(
+      origin,
+      undefined,
+      async (binary, values) => {
+        commands.push([binary, values]);
+        return '';
+      },
+      platform,
+      linuxHelper,
+    );
+    await success.clear();
+    assert.equal(commands.length, 1);
+    assert.equal(
+      commands[0][0],
+      platform === 'darwin' ? '/usr/bin/security' : '/usr/bin/secret-tool',
+    );
+    assert.ok(commands[0][1].includes(platform === 'darwin' ? 'delete-generic-password' : 'clear'));
+    const failure = secretStore(
+      origin,
+      undefined,
+      async () => {
+        throw Error('simulated credential service failure');
+      },
+      platform,
+      linuxHelper,
+    );
+    await assert.rejects(failure.clear(), /simulated credential service failure/);
+  }
 });
 
 test('prepare and status accept a ready server candidate without activating deployment', async (t) => {
@@ -545,6 +561,7 @@ test('credential command construction covers Darwin and Linux under mocks on eve
         return JSON.stringify(value);
       },
       platform,
+      async () => '/usr/bin/secret-tool',
     );
     await store.write(value);
     assert.deepEqual(await store.read(), value);
@@ -556,7 +573,7 @@ test('credential command construction covers Darwin and Linux under mocks on eve
       assert.ok(commands.some((command) => command.argv[0] === '-i'));
       assert.equal(commands.at(-1).argv[0], 'delete-generic-password');
     } else {
-      assert.ok(commands.every((command) => command.binary === 'secret-tool'));
+      assert.ok(commands.every((command) => command.binary === '/usr/bin/secret-tool'));
       assert.equal(commands[0].argv[0], 'store');
       assert.equal(commands.at(-1).argv[0], 'clear');
     }

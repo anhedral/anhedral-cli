@@ -54,6 +54,7 @@ function artifactMetadata(contents, overrides = {}) {
     schemaVersion: 1,
     name: 'anhedral',
     version: '1.2.3',
+    sourceRevision: 'a'.repeat(40),
     filename: 'anhedral-1.2.3.tgz',
     integrity: sha512Sri(contents),
     shasum: createHash('sha1').update(contents).digest('hex'),
@@ -339,6 +340,17 @@ try {
   );
   assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /exact reviewed main commit/);
   writeFileSync(path.join(workflowPolicyDirectory, 'release-on-main.yml'), releaseOnMainWorkflow);
+  writeFileSync(
+    path.join(workflowPolicyDirectory, 'release.yml'),
+    releaseWorkflow.replace(
+      'ANHEDRAL_EXPECTED_SOURCE_REVISION: ${{ inputs.release_sha }}',
+      'UNPINNED_SOURCE: main',
+    ),
+  );
+  assert.match(
+    validateWorkflowPolicy(workflowPolicyRoot).join('\n'),
+    /exact reviewed source revision/,
+  );
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release.yml'),
     releaseWorkflow.replace('ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY:', 'UNPINNED_PLUGIN:'),

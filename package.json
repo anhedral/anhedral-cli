@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "Generate the Anhedral Stack as editable source: start with web UI, then add backend, storage and payments.",
   "type": "module",
   "exports": {
