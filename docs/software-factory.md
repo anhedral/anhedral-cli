@@ -74,11 +74,36 @@ Backend server entries call TanStack’s `createStartHandler(defaultStreamHandle
 
 OJ dev commands attach an explicit host value with `--host=<hostname>`, as required by the pinned runtime. Generated workspaces explicitly allow dependency build scripts only for esbuild and workerd through the pnpm `allowBuilds` map. This keeps installation noninteractive under the pinned pnpm release and pnpm11 without allowing arbitrary dependency scripts.
 
+## Updating existing source
+
+Plugin updates refresh agent guidance; select its matching published CLI separately.
+Use the host's configured marketplace: Codex refreshes its marketplace with
+`codex plugin marketplace upgrade <marketplace>` and installs the refreshed
+`codex plugin add anhedral@<marketplace>`; Claude Code uses
+`claude plugin marketplace update <marketplace>` and
+`claude plugin update anhedral@<marketplace>`. Verify the installed manifest version
+and reload/restart the host when required before relying on its new guidance.
+Run `stack update --dry-run --json`, inspect the bounded file diffs and conflicts,
+then apply `stack update --expect-plan <planId> --json`. The plan binds source
+preimages, target generator and resolved release artifact. Changed plans and
+customized generated files stop the update; authored routes and assets remain
+owned by the application. This operation uses the existing journaled transaction
+without installing dependencies or running project scripts. Resolve source
+conflicts before another preview, then install dependencies and run application
+checks/build separately. It never changes authentication or deployment authority.
+Official release metadata and npm integrity establish deployment provenance;
+project-supplied metadata cannot select another registry, credential destination
+or executable. Offline source inspection cannot attest a newly published artifact.
+
 ## Platform CLI access and source upload
 
 `login --start` prints browser approval instructions; `login --resume` redeems the
 saved approval. Interactive `login` polls after showing the URL and confirmation
 code. Tokens and device secrets use macOS Keychain or Linux Secret Service;
+Linux selects a validated root-owned system helper without searching project
+`PATH`. `ANHEDRAL_CLI_SECRET_TOOL_PATH` can select an absolute trusted system
+installation; its executable and path ownership/permissions are validated.
+Untrusted or unavailable helpers fail closed.
 `--credential-file <path>` explicitly selects an owner-only file. Credential
 storage is currently unsupported on Windows. Credentials are
 bound to the explicit `--api-url` origin (HTTPS, with literal loopback for fixtures).

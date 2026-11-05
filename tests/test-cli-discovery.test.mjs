@@ -30,7 +30,12 @@ test('root help is compact and detailed topics render existing examples', () => 
 });
 
 test('structured child commands describe completion and positional semantics', () => {
-  assert.deepEqual(Object.keys(commandDefinition('stack').children), ['list', 'status', 'doctor']);
+  assert.deepEqual(Object.keys(commandDefinition('stack').children), [
+    'update',
+    'list',
+    'status',
+    'doctor',
+  ]);
   assert.equal(commandTopic(['ui', 'add']).positional.kind, 'component');
   assert.equal(commandDefinition('add').positional.kind, 'capability');
   assert.equal(

@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
-  "version": "0.19.0",
-  "description": "Scaffold and extend the Anhedral Stack using the Anhedral CLI.",
+  "version": "0.20.0",
+  "description": "Create, update and extend Anhedral Stack projects using the Anhedral CLI.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Anhedral",
         "shortDescription": "Build with the Anhedral Stack",
-        "longDescription": "Use the Anhedral CLI to generate editable web UI, add backend services, private storage and Stripe, and inspect source. Skills guide terminal commands; managed project workflows use the separately configured CLI client.",
+        "longDescription": "Create editable web UI, update existing generated source while preserving authored changes, add backend services, and authenticate/build/deploy through the separately configured CLI. Skills guide reviewed terminal commands.",
         "developerName": "Anhedral",
         "category": "Developer Tools",
         "composerIcon": "./assets/anhedral-mark.svg",
@@ -22,7 +22,8 @@
         "logo": "./assets/anhedral-mark.svg",
         "logoDark": "./assets/anhedral-mark-dark.svg",
         "defaultPrompt": [
-          "Initialize the Anhedral Stack, start it locally and open it in my browser."
+          "Initialize the Anhedral Stack, start it locally and open it in my browser.",
+          "Update this Anhedral Stack project while preserving my changes, run its checks, then authenticate and deploy it."
         ],
         "capabilities": [
           "Read",

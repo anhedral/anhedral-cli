@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { lstat, mkdir, open, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { CliArgumentError } from './cli-arguments.js';
 import { CliFailure } from './cli-errors.js';
+import { trustedLinuxCredentialHelper } from './credential-helper.js';
 
 export type PlatformFailureCategory = ConstructorParameters<typeof CliFailure>[3];
 export const platformFailure = (
@@ -180,6 +181,7 @@ export function secretStore(
   file?: string,
   runProcess = runCredentialProcess,
   platform = process.platform,
+  linuxHelper = trustedLinuxCredentialHelper,
 ): SecretStore {
   if (file && platform === 'win32')
     throw platformFailure(
@@ -247,7 +249,7 @@ export function secretStore(
   if (platform === 'linux')
     return {
       read: async () => {
-        const value = await runProcess('secret-tool', [
+        const value = await runProcess(await linuxHelper(), [
           'lookup',
           'service',
           'dev.anhedral.cli.v1',
@@ -258,13 +260,13 @@ export function secretStore(
       },
       write: async (data) => {
         await runProcess(
-          'secret-tool',
+          await linuxHelper(),
           ['store', '--label=Anhedral CLI', 'service', 'dev.anhedral.cli.v1', 'origin', account],
           JSON.stringify(data),
         );
       },
       clear: async () => {
-        await runProcess('secret-tool', [
+        await runProcess(await linuxHelper(), [
           'clear',
           'service',
           'dev.anhedral.cli.v1',

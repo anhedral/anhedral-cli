@@ -505,9 +505,42 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   },
   stack: {
     description: 'Inspect the Anhedral Stack and its three optional additions.',
-    usage: 'stack <list|status|doctor>',
-    options: [],
+    usage: 'stack <list|status|doctor|update>',
+    options: [
+      { flag: '--dry-run', description: 'Preview bounded source updates without writes.' },
+      {
+        flag: '--offline',
+        description: 'Update source without resolving a published deployment artifact.',
+      },
+      {
+        flag: '--expect-plan',
+        arity: 'required',
+        value: 'sha256',
+        description: 'Apply only the reviewed source update plan.',
+      },
+    ],
     children: {
+      update: {
+        description: 'Preview or apply bounded source updates without executing project scripts.',
+        usage: 'stack update [--dry-run] [--expect-plan <sha256>]',
+        options: [
+          {
+            flag: '--dry-run',
+            description: 'Show exact source changes and conflicts without writes.',
+          },
+          {
+            flag: '--offline',
+            description: 'Skip published artifact resolution; leave deployment provenance pending.',
+          },
+          {
+            flag: '--expect-plan',
+            arity: 'required',
+            value: 'sha256',
+            description: 'Apply only if the reviewed update plan still matches.',
+          },
+        ],
+        examples: ['stack update --dry-run --json', 'stack update --json'],
+      },
       list: {
         description: 'Show the Anhedral Stack foundation and optional additions.',
         usage: 'stack list',

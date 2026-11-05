@@ -30,6 +30,7 @@ defaults:
 
 env:
   RELEASE_NODE_VERSION: '24.21.0'
+  ANHEDRAL_EXPECTED_SOURCE_REVISION: ${{ inputs.release_sha }}
 
 concurrency:
   group: npm-publish-anhedral

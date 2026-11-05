@@ -19,6 +19,7 @@ const metadata = regularJson(metadataPath);
 const expectations = [
   ['name', process.env.ANHEDRAL_EXPECTED_NAME],
   ['version', process.env.ANHEDRAL_EXPECTED_VERSION],
+  ['sourceRevision', process.env.ANHEDRAL_EXPECTED_SOURCE_REVISION],
   ['filename', process.env.ANHEDRAL_EXPECTED_FILENAME],
   ['integrity', process.env.ANHEDRAL_EXPECTED_INTEGRITY],
 ];
@@ -26,6 +27,9 @@ const expectations = [
 if (metadata.schemaVersion !== 1) {
   throw new Error(`Unsupported release metadata schema: ${metadata.schemaVersion}`);
 }
+
+if (typeof metadata.sourceRevision !== 'string' || !/^[a-f0-9]{40}$/.test(metadata.sourceRevision))
+  throw new Error('Release metadata requires an exact Git source revision');
 
 if (metadata.name !== 'anhedral') {
   throw new Error(`Unexpected release package name: ${metadata.name}`);

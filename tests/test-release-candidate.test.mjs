@@ -30,6 +30,7 @@ test('manual main candidate is verified after quick checks before immutable uplo
     steps[candidate].if,
     "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'",
   );
+  assert.equal(steps[candidate].env.ANHEDRAL_EXPECTED_SOURCE_REVISION, '${{ github.sha }}');
   assert.deepEqual(steps[candidate].run.trim().split('\n'), [
     'node scripts/create-release-artifact.mjs',
     'pnpm release:artifact:verify',

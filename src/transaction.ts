@@ -783,6 +783,7 @@ export async function runStagedTransaction(
     deletePaths?: string[];
     seedPaths?: string[];
     dryRun?: boolean;
+    recover?: boolean;
     prepare?: () => boolean | void | Promise<boolean | void>;
     afterCommit?: () => void | Promise<void>;
     onPlan?: (paths: readonly string[]) => void;
@@ -802,6 +803,8 @@ export async function runStagedTransaction(
         'Dry-run cannot recover an interrupted transaction. Re-run the original command without --dry-run first.',
       );
     }
+    if (options.recover === false && pathEntryExists(path.join(root, JOURNAL_FILE)))
+      throw new Error('An interrupted transaction requires recovery before this operation.');
     recoverInterruptedTransactionUnlocked(root);
     if (!options.dryRun) cleanupOrphanTransactionRoots(root);
     if ((await options.prepare?.()) === false) return Object.freeze([]);
