@@ -85,7 +85,7 @@ function assertOj(root) {
   assert.match(document, /import '\.\.\/styles\.css';/);
   assert.doesNotMatch(document, /styles\.css\?url|href: styles/);
   const pkg = json(root, 'apps/web/package.json');
-  assert.match(pkg.scripts.dev, /scripts\/oj\.mjs dev/);
+  assert.equal(pkg.scripts.dev, 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000');
   assert.match(pkg.scripts.build, /scripts\/oj\.mjs build/);
   assert.equal(pkg.scripts.preview, 'wrangler dev --config dist/ssr/wrangler.json --port 3000');
   assert.equal(pkg.scripts.deploy, 'wrangler deploy --config dist/ssr/wrangler.json');

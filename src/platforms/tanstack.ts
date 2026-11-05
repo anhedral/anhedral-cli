@@ -21,7 +21,7 @@ export function scaffoldTanstack(root: string, name: string): void {
     version: '0.1.0',
     type: 'module',
     scripts: {
-      dev: 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000',
+      dev: 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000',
       build: 'node ../../scripts/oj.mjs build .',
       preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
       deploy: 'wrangler deploy --config dist/ssr/wrangler.json',
@@ -160,7 +160,7 @@ function assertTanstack(e: CapabilityEditor) {
 }
 
 const ojScripts = {
-  dev: 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000',
+  dev: 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000',
   build: 'node ../../scripts/oj.mjs build .',
   preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
   deploy: 'wrangler deploy --config dist/ssr/wrangler.json',

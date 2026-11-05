@@ -32,6 +32,7 @@ test('public init produces only TanStack Start and Anhedral UI', () => {
   assert.deepEqual(configuration.capabilities.installed, []);
   const web = json(path.join(root, 'apps/web/package.json'));
   assert.ok(web.dependencies['@tanstack/react-start']);
+  assert.equal(web.scripts.dev, 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000');
   assert.equal(web.dependencies.next, undefined);
   assert.equal(web.dependencies['@opennextjs/cloudflare'], undefined);
   for (const file of ['apps/web/src/server.ts', 'apps/web/src/routes/index.tsx'])

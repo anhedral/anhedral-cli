@@ -178,15 +178,7 @@ try {
   console.log('TanStack proof: verify the minimal web foundation before adding services.');
   preview = start(
     process.execPath,
-    [
-      path.join(app, 'scripts/oj.mjs'),
-      'dev',
-      '.',
-      '--host',
-      'localhost',
-      '--port',
-      String(localPort),
-    ],
+    [path.join(app, 'scripts/oj.mjs'), 'dev', '.', '--host=localhost', '--port', String(localPort)],
     web,
     120000,
   );
