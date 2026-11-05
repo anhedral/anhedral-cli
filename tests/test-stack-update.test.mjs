@@ -473,3 +473,30 @@ test('oversized update previews fail closed without dumping or truncating projec
   assert.ok(result.stdout.length < 10000);
   assert.deepEqual(snapshot(root), before);
 });
+
+for (const escaped of [false, true])
+  test(`duplicate ${escaped ? 'escaped' : 'literal'} nested launcher keys cannot produce a successful partial update`, (t) => {
+    const root = fixture(t);
+    const file = path.join(root, 'apps/web/package.json');
+    const old = 'node ../../scripts/oj.mjs dev . --host 0.0.0.0 --port 3000';
+    const pkg = json(root, 'apps/web/package.json');
+    pkg.scripts.dev = old;
+    const key = escaped ? String.raw`\u0064ev` : 'dev';
+    const replacement = [
+      `"dev": ${JSON.stringify(old)},`,
+      `    "${key}": ${JSON.stringify(old)}`,
+    ].join('\n');
+    const source = JSON.stringify(pkg, null, 2).replace(
+      `"dev": ${JSON.stringify(old)}`,
+      replacement,
+    );
+    writeFileSync(file, source);
+    const before = snapshot(root);
+    for (const args of [['--dry-run'], []]) {
+      const result = run(root, args);
+      assert.notEqual(result.status, 0);
+      assert.match(result.stdout + result.stderr, /Duplicate JSON object keys/);
+      assert.equal(JSON.parse(readFileSync(file, 'utf8')).scripts.dev, old);
+      assert.deepEqual(snapshot(root), before);
+    }
+  });

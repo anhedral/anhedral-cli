@@ -424,21 +424,37 @@ test('credential helper bounds stalled processes and preserves ordinary completi
 });
 
 test('OS credential clear propagates backend failures and accepts successful deletion', async () => {
-  if (!['darwin', 'linux'].includes(process.platform)) return;
-  const commands = [];
-  const success = secretStore(origin, undefined, async (binary, values) => {
-    commands.push([binary, values]);
-    return '';
-  });
-  await success.clear();
-  assert.equal(commands.length, 1);
-  assert.ok(
-    commands[0][1].includes(process.platform === 'darwin' ? 'delete-generic-password' : 'clear'),
-  );
-  const failure = secretStore(origin, undefined, async () => {
-    throw Error('simulated credential service failure');
-  });
-  await assert.rejects(failure.clear(), /simulated credential service failure/);
+  for (const platform of ['darwin', 'linux']) {
+    const commands = [];
+    const linuxHelper = async () => '/usr/bin/secret-tool';
+    const success = secretStore(
+      origin,
+      undefined,
+      async (binary, values) => {
+        commands.push([binary, values]);
+        return '';
+      },
+      platform,
+      linuxHelper,
+    );
+    await success.clear();
+    assert.equal(commands.length, 1);
+    assert.equal(
+      commands[0][0],
+      platform === 'darwin' ? '/usr/bin/security' : '/usr/bin/secret-tool',
+    );
+    assert.ok(commands[0][1].includes(platform === 'darwin' ? 'delete-generic-password' : 'clear'));
+    const failure = secretStore(
+      origin,
+      undefined,
+      async () => {
+        throw Error('simulated credential service failure');
+      },
+      platform,
+      linuxHelper,
+    );
+    await assert.rejects(failure.clear(), /simulated credential service failure/);
+  }
 });
 
 test('prepare and status accept a ready server candidate without activating deployment', async (t) => {

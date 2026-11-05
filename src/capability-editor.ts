@@ -2,7 +2,7 @@ import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from './bounded-file.js';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync } from 'node:fs';
 import path from 'node:path';
-import { parse, modify, applyEdits, type ParseError } from 'jsonc-parser';
+import { parse, visit, modify, applyEdits, type ParseError } from 'jsonc-parser';
 
 export const fingerprint = (source: string | Buffer) =>
   createHash('sha256').update(source).digest('hex');
@@ -49,6 +49,31 @@ export class CapabilityEditor {
     const value = parse(source, errors, { allowTrailingComma: true });
     if (errors.length || !value || typeof value !== 'object' || Array.isArray(value))
       throw Error(`Invalid JSON/JSONC in ${relative}.`);
+    // JSON modification targets the first property while runtime parsers use the last.
+    // Compare decoded keys in each object so escaped aliases cannot bypass this guard.
+    const objects: Set<string>[] = [];
+    let duplicate = false;
+    visit(
+      source,
+      {
+        onObjectBegin() {
+          objects.push(new Set());
+        },
+        onObjectProperty(property) {
+          const keys = objects.at(-1)!;
+          if (keys.has(property)) duplicate = true;
+          keys.add(property);
+        },
+        onObjectEnd() {
+          objects.pop();
+        },
+      },
+      { allowTrailingComma: true },
+    );
+    if (duplicate)
+      throw Error(
+        `Duplicate JSON object keys in ${relative}; preserve and reconcile them before editing source.`,
+      );
     return value;
   }
   create(relative: string, source: string) {
