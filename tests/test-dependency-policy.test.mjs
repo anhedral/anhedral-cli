@@ -83,14 +83,13 @@ test('maintained dependency catalog audits the foundation dependencies', async (
   const source = readFileSync(new URL('../src/dependencies.ts', import.meta.url), 'utf8');
   const pins = collectCatalogDependencyPins(source);
   for (const name of [
-    'expo',
-    'next',
-    '@opennextjs/cloudflare',
+    '@tanstack/react-start',
+    '@tanstack/react-router',
+    '@cloudflare/vite-plugin',
     'hono',
     'drizzle-orm',
     'wrangler',
     'pnpm',
-    'wxt',
     'stripe',
     '@better-auth/drizzle-adapter',
   ])
@@ -98,6 +97,16 @@ test('maintained dependency catalog audits the foundation dependencies', async (
       pins.some((pin) => pin.name === name),
       name,
     );
-  for (const name of ['vinext', 'void', 'vercel', 'electron', '@neondatabase/serverless'])
+  for (const name of [
+    'next',
+    '@opennextjs/cloudflare',
+    'expo',
+    'wxt',
+    'vinext',
+    'void',
+    'vercel',
+    'electron',
+    '@neondatabase/serverless',
+  ])
     assert.ok(!pins.some((pin) => pin.name === name), name);
 });

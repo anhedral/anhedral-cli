@@ -229,7 +229,7 @@ test('TanStack CLI rejects an incorrect foundation/profile before creating a pla
   assert.equal(await readPrivate(join(root, '.anhedral/platform/deployment.json')), null);
 });
 
-test('native candidate admission rejects mutable or cross-protocol images and keeps legacy receipts', () => {
+test('candidate admission accepts only immutable candidate-workspace receipts', () => {
   const base = {
     protocol: 1,
     planId: randomUUID(),
@@ -250,9 +250,12 @@ test('native candidate admission rejects mutable or cross-protocol images and ke
     image: 'registry.example.com/fixture/candidate@sha256:' + 'd'.repeat(64),
     scope: 'candidate-workspace',
   };
-  for (const admission of [legacy, native])
-    assert.deepEqual(cliPreparationSchema.parse({ ...base, admission }), { ...base, admission });
+  assert.deepEqual(cliPreparationSchema.parse({ ...base, admission: native }), {
+    ...base,
+    admission: native,
+  });
   for (const admission of [
+    legacy,
     { ...native, image: legacy.image },
     { ...legacy, image: native.image },
     { ...native, image: 'registry.example.com/fixture/candidate:latest' },

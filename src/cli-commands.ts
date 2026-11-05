@@ -31,12 +31,12 @@ export async function runCommand(
       'deploy',
       'env',
       'staging',
+      'production',
       'logs',
     ].includes(command)
   )
     return runPlatformCommand(command, args, output);
-  if (command === 'add' || command === 'stack')
-    return runCapabilityCommand(command, args, output, undefined, 'public');
+  if (command === 'add' || command === 'stack') return runCapabilityCommand(command, args, output);
   if (command === 'ui') return runAnhedralUiCommand(args, output);
   if (command !== 'init')
     throw commandArgumentError(command, 'Use init, add, stack or ui. Run anhedral --help.');

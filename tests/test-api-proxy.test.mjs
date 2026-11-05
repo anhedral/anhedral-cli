@@ -1,13 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import ts from 'typescript';
-import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
 import { createServer } from 'node:http';
 import { gzipSync } from 'node:zlib';
-import { WEB_API_PROXY } from '../dist/platforms/web.js';
-import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
+import { WEB_API_PROXY } from '../dist/api-proxy.js';
 const javascript = ts.transpileModule(WEB_API_PROXY, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
 }).outputText;
@@ -15,7 +11,7 @@ const { proxyApi } = await import(
   'data:text/javascript;base64,' + Buffer.from(javascript).toString('base64')
 );
 
-test('Next proxy requires a production binding and cannot use configured remote/local URLs in production', async () => {
+test('API proxy requires a production binding and cannot use configured remote/local URLs in production', async () => {
   let sends = 0;
   const binding = {
     fetch: async () => {
@@ -43,7 +39,7 @@ test('Next proxy requires a production binding and cannot use configured remote/
   assert.equal(sends, 0);
 });
 
-test('Next proxy streams exact bytes/cookies, preserves origin and idempotency, strips forged identities', async () => {
+test('API proxy streams exact bytes/cookies, preserves origin and idempotency, strips forged identities', async () => {
   const bytes = Uint8Array.from([0, 255, 128, 10, 13]);
   let observed;
   const response = await proxyApi(
@@ -106,7 +102,7 @@ test('Next proxy streams exact bytes/cookies, preserves origin and idempotency, 
   assert.equal(response.headers.get('access-control-allow-origin'), null);
 });
 
-test('Next development proxy supports explicit loopback sidecar and production path remains bound', async () => {
+test('Development API proxy supports explicit loopback sidecar and production path remains bound', async () => {
   const response = await proxyApi(new Request('http://localhost:3000/api/health'), {
     development: true,
     devOrigin: 'http://127.0.0.1:3001',
@@ -118,7 +114,7 @@ test('Next development proxy supports explicit loopback sidecar and production p
   assert.deepEqual(await response.json(), { ok: true });
 });
 
-test('Next development proxy removes stale wire headers after Node fetch decompresses the sidecar response', async () => {
+test('Development API proxy removes stale wire headers after Node fetch decompresses the sidecar response', async () => {
   const compressed = gzipSync(JSON.stringify({ ok: true }));
   const server = createServer((_request, response) => {
     response.writeHead(200, {
@@ -142,57 +138,5 @@ test('Next development proxy removes stale wire headers after Node fetch decompr
   } finally {
     server.closeAllConnections();
     await new Promise((resolve) => server.close(resolve));
-  }
-});
-
-test('explicit API/data workspace separates Next web and privileged Hono runtime', async () => {
-  const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-next-contract-'));
-  const root = path.join(temporary, 'product');
-  const read = (file) => readFileSync(path.join(root, file), 'utf8');
-  try {
-    await scaffoldStandardProject(
-      {
-        ...parseStandardOptions([root, '--skip-install', '--no-git']),
-        products: ['d1', 'hono', 'next', 'r2', 'styling'],
-      },
-      () => {
-        throw Error('offline generation');
-      },
-      { quiet: true },
-    );
-    const web = JSON.parse(read('apps/web/package.json'));
-    assert.equal(JSON.parse(read('apps/web/components.json')).style, 'base-nova');
-    assert.match(read('pnpm-workspace.yaml'), /@node-minify\/core>glob.*14\.0\.2/);
-    assert.match(read('pnpm-workspace.yaml'), /miniflare>undici.*7\.30\.1/);
-    assert.equal(web.dependencies.next, '16.4.2');
-    assert.equal(web.dependencies['@opennextjs/cloudflare'], '1.20.12');
-    assert.equal(web.devDependencies.wrangler, '4.151.0');
-    for (const name of ['react-native', 'react-native-web', 'expo', '@workspace/native-ui'])
-      assert.equal(web.dependencies[name], undefined);
-    assert.equal(existsSync(path.join(root, 'apps/mobile')), false);
-    assert.equal(existsSync(path.join(root, 'packages/native-ui')), false);
-    assert.match(web.scripts.dev, /^next dev/);
-    assert.match(web.scripts.build, /opennextjs-cloudflare build/);
-    assert.doesNotMatch(read('apps/web/next.config.ts'), /output:.*export/);
-    assert.doesNotMatch(read('apps/web/app/page.tsx'), /headers\(|cookies\(|force-dynamic/);
-    assert.match(read('apps/web/public/_headers'), /max-age=31536000, immutable/);
-    assert.equal(existsSync(path.join(root, 'apps/web/app/account/page.tsx')), false);
-    assert.match(read('apps/web/components/ui/button.tsx'), /@base-ui\/react\/button/);
-    assert.match(read('apps/web/components/ui/input.tsx'), /@base-ui\/react\/input/);
-    assert.doesNotMatch(read('apps/web/components/ui/input.tsx'), /focus-visible:(?:ring|border)/);
-    assert.equal(existsSync(path.join(root, 'apps/web/app/sign-in/page.tsx')), false);
-    assert.match(read('apps/web/UPSTREAM.json'), /shadcn/);
-    const worker = JSON.parse(read('apps/web/wrangler.jsonc'));
-    assert.equal(worker.main, '.open-next/worker.js');
-    assert.equal(worker.assets.binding, 'ASSETS');
-    assert.ok(worker.services.some((item) => item.binding === 'ANHEDRAL_API'));
-    assert.equal(worker.d1_databases, undefined);
-    assert.equal(worker.r2_buckets, undefined);
-    assert.doesNotMatch(
-      read('apps/web/lib/server-api.ts'),
-      /BETTER_AUTH_SECRET|STRIPE_SECRET|REVENUECAT_SECRET/,
-    );
-  } finally {
-    rmSync(temporary, { recursive: true, force: true });
   }
 });

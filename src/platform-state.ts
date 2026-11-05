@@ -113,7 +113,7 @@ export async function withProjectLock<T>(
     if ((error as NodeJS.ErrnoException).code === 'EEXIST')
       throw platformFailure(
         'Another project operation holds the workspace lock.',
-        'Wait for the operation to finish. After an interrupted process, inspect .anhedral/platform/project-operation.lock and remove it only after confirming no project operation is running; preserve project-create.json, then retry the same project creation without --new.',
+        'Wait for the operation to finish. After an interrupted process, inspect .anhedral/platform/project-operation.lock and remove it only after confirming no project operation is running; preserve the saved operation state, then retry the same command without --new.',
         'conflict',
         true,
       );

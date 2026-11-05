@@ -9,14 +9,15 @@ import {
   mkdirSync,
   rmSync,
   symlinkSync,
-  chmodSync,
-  statSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { CAPABILITY_IDS } from '../dist/capability-catalog.js';
 import { runCapabilityCommand } from '../dist/capability-command.js';
-import { parseStandardOptions, scaffoldStandardProject } from '../dist/standard.js';
+import {
+  parseInitOptions as parseStandardOptions,
+  scaffoldAnhedralStack as scaffoldStandardProject,
+} from '../dist/index.js';
 
 const offline = () => {
   throw Error('No external commands in source tests');
@@ -60,14 +61,14 @@ test('prerequisites fail before writes; explicitly requested dependency expansio
   const { root, app } = await fixture();
   try {
     const before = snapshot(app);
-    await assert.rejects(add(app, ['stripe']), /requires database-auth/);
+    await assert.rejects(add(app, ['stripe']), /require backend/);
     assert.deepEqual(snapshot(app), before);
     await add(app, ['stripe', '--with-dependencies']);
     const state = JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities;
     assert.deepEqual(state.installed, ['hono', 'database-auth', 'stripe']);
     assert.equal(existsSync(path.join(app, 'apps/mobile')), false);
     assert.match(
-      readFileSync(path.join(app, 'apps/web/lib/api-proxy.ts'), 'utf8'),
+      readFileSync(path.join(app, 'apps/web/src/lib/api-proxy.ts'), 'utf8'),
       /stripe-signature/,
     );
     assert.match(
@@ -79,26 +80,19 @@ test('prerequisites fail before writes; explicitly requested dependency expansio
   }
 });
 
-test('all capability branches compose offline and repeat additions preserve edited source', async () => {
+test('all three additions compose offline and repeat additions preserve customer source', async () => {
   const { root, app } = await fixture();
   try {
-    await add(app, [...CAPABILITY_IDS]);
-    const state = JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities;
-    assert.deepEqual(new Set(state.installed), new Set(CAPABILITY_IDS));
-    assert.match(readFileSync(path.join(app, 'apps/mobile/package.json'), 'utf8'), /nativewind/);
-    assert.equal(existsSync(path.join(app, 'packages/native-ui')), false);
-    assert.match(
-      readFileSync(path.join(app, 'apps/extension/anhedral-background.ts'), 'utf8'),
-      /sidePanel/,
-    );
-    assert.match(
-      readFileSync(path.join(app, 'apps/desktop/Cargo.toml'), 'utf8'),
-      /gpui = \{ version = "=0.2.2"/,
-    );
+    await add(app, ['backend', 'r2', 'stripe']);
+    const installed = JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities
+      .installed;
+    assert.deepEqual(new Set(installed), new Set(CAPABILITY_IDS));
+    for (const name of ['mobile', 'extension', 'desktop'])
+      assert.equal(existsSync(path.join(app, 'apps', name)), false);
     const file = path.join(app, 'apps/api/src/index.ts');
-    writeFileSync(file, readFileSync(file, 'utf8') + '\n// Consumer routes\n');
+    writeFileSync(file, readFileSync(file, 'utf8') + '\n// Customer routes\n');
     const before = snapshot(app);
-    await add(app, [...CAPABILITY_IDS]);
+    await add(app, ['backend', 'r2', 'stripe']);
     assert.deepEqual(snapshot(app), before);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -108,7 +102,7 @@ test('all capability branches compose offline and repeat additions preserve edit
 test('JSONC comments, custom scripts and application source survive sequential additions', async () => {
   const { root, app } = await fixture();
   try {
-    await add(app, ['hono']);
+    await add(app, ['backend']);
     const index = path.join(app, 'apps/api/src/index.ts');
     writeFileSync(index, readFileSync(index, 'utf8') + '\n// owned application behavior\n');
     const config = path.join(app, 'apps/api/wrangler.jsonc');
@@ -117,38 +111,35 @@ test('JSONC comments, custom scripts and application source survive sequential a
     const value = JSON.parse(readFileSync(pkg));
     value.scripts.custom = 'echo custom';
     writeFileSync(pkg, JSON.stringify(value, null, 2) + '\n');
-    await add(app, ['database-auth']);
+    await add(app, ['r2']);
     assert.match(readFileSync(index, 'utf8'), /owned application behavior/);
     assert.match(readFileSync(config, 'utf8'), /custom operational note/);
     assert.equal(JSON.parse(readFileSync(pkg)).scripts.custom, 'echo custom');
     const owned = path.join(app, 'apps/api/src/capabilities.ts');
     writeFileSync(owned, readFileSync(owned, 'utf8') + '// edited composition\n');
     const before = snapshot(app);
-    await assert.rejects(add(app, ['r2']), /Preserve edited generated source/);
+    await assert.rejects(add(app, ['stripe']), /Preserve edited generated source/);
     assert.deepEqual(snapshot(app), before);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('a late source collision rejects the whole batch; no earlier API capability is installed', async () => {
+test('a late source collision rejects the entire atomic backend addition', async () => {
   const { root, app } = await fixture();
   try {
-    mkdirSync(path.join(app, 'apps/desktop'), { recursive: true });
-    writeFileSync(path.join(app, 'apps/desktop/package.json'), '{}\n');
+    mkdirSync(path.join(app, 'apps/api/src'), { recursive: true });
+    writeFileSync(path.join(app, 'apps/api/src/auth-features.ts'), '// Customer source');
     const before = snapshot(app);
-    await assert.rejects(
-      add(app, ['gpui', '--with-dependencies']),
-      /conflicts with existing source/,
-    );
+    await assert.rejects(add(app, ['backend']), /conflicts with existing source/);
     assert.deepEqual(snapshot(app), before);
-    assert.equal(existsSync(path.join(app, 'apps/api')), false);
+    assert.equal(existsSync(path.join(app, 'apps/api/src/index.ts')), false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('compatibility recipe dry-run is network-free, includes all files and does not create transaction metadata', async () => {
+test('single-stack recipe dry-run is network-free, includes all files and does not create transaction metadata', async () => {
   const { root, app } = await fixture();
   try {
     const before = snapshot(app);
@@ -156,7 +147,7 @@ test('compatibility recipe dry-run is network-free, includes all files and does 
     await inside(app, () =>
       runCapabilityCommand(
         'add',
-        ['revenuecat', 'side-panel', 'native-ui', '--with-dependencies', '--dry-run'],
+        ['backend', 'r2', 'stripe', '--with-dependencies', '--dry-run'],
         {
           json: true,
           io: {
@@ -176,8 +167,8 @@ test('compatibility recipe dry-run is network-free, includes all files and does 
     );
     const plan = JSON.parse(stdout);
     assert.equal(plan.sourceInstalled, false);
-    assert.ok(plan.added.includes('hono'));
-    assert.ok(plan.files.includes('apps/mobile/components.json'));
+    assert.ok(plan.added.includes('backend'));
+    assert.ok(plan.files.includes('apps/api/src/auth.ts'));
     assert.equal(plan.activation, 'not verified');
     assert.deepEqual(snapshot(app), before);
     assert.equal(existsSync(path.join(app, '.anhedral-txn')), false);
@@ -196,7 +187,7 @@ test('symlinked targets are rejected without touching the linked tree', async ()
       path.join(app, 'apps/api'),
       process.platform === 'win32' ? 'junction' : 'dir',
     );
-    await assert.rejects(add(app, ['hono']), /symlink/);
+    await assert.rejects(add(app, ['backend']), /symlink/);
     assert.deepEqual(readdirSync(external), []);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -208,7 +199,7 @@ test('dependency install failure retains the committed source with a recoverable
   try {
     await assert.rejects(
       inside(app, () =>
-        runCapabilityCommand('add', ['hono'], { quiet: true }, () => {
+        runCapabilityCommand('add', ['backend'], { quiet: true }, () => {
           throw Error('fixture install failure');
         }),
       ),
@@ -217,12 +208,12 @@ test('dependency install failure retains the committed source with a recoverable
     assert.ok(existsSync(path.join(app, 'apps/api/src/index.ts')));
     assert.deepEqual(
       JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities.installed,
-      ['hono'],
+      ['hono', 'database-auth'],
     );
     const source = snapshot(path.join(app, 'apps/api'));
     const calls = [];
     await inside(app, () =>
-      runCapabilityCommand('add', ['hono'], { quiet: true }, (_cmd, args) => {
+      runCapabilityCommand('add', ['backend'], { quiet: true }, (_cmd, args) => {
         calls.push(args);
         writeFileSync(path.join(app, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
       }),
@@ -232,28 +223,6 @@ test('dependency install failure retains the committed source with a recoverable
       ['install', '--frozen-lockfile'],
     ]);
     assert.deepEqual(snapshot(path.join(app, 'apps/api')), source);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test('sequential clients preserve product source, background behavior and configuration permissions', async () => {
-  const { root, app } = await fixture();
-  try {
-    await add(app, ['expo', 'wxt', '--with-dependencies']);
-    const background = path.join(app, 'apps/extension/entrypoints/background.ts');
-    const mobile = path.join(app, 'apps/mobile/App.tsx');
-    for (const file of [background, mobile])
-      writeFileSync(file, readFileSync(file, 'utf8') + '\n// Product customization\n');
-    const originalBackground = readFileSync(background, 'utf8');
-    const originalMobile = readFileSync(mobile, 'utf8');
-    const manifest = path.join(app, 'apps/mobile/package.json');
-    chmodSync(manifest, 0o600);
-    await add(app, ['native-ui', 'side-panel']);
-    assert.equal(readFileSync(background, 'utf8'), originalBackground);
-    assert.equal(readFileSync(mobile, 'utf8'), originalMobile);
-    if (process.platform !== 'win32') assert.equal(statSync(manifest).mode & 0o777, 0o600);
-    assert.ok(existsSync(path.join(app, 'apps/mobile/UPSTREAM.json')));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

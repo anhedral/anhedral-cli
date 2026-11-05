@@ -5,29 +5,11 @@ export const deploymentContractVersion = 1;
 export const deploymentDigestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const revisionSchema = z.string().regex(/^[a-f0-9]{40}$/);
 const versionSchema = z.string().regex(/^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/);
-export const applicationIdentitySchema = z.enum([
-  "none",
-  "better-auth-d1-v1",
-  "platform-application-services-v1",
-]);
-export const deploymentCapabilitySchema = z.enum([
-  "hono",
-  "database-auth",
-  "r2",
-  "stripe",
-  "realtime",
-  "rtc",
-  "ai",
-  "expo",
-  "native-ui",
-  "revenuecat",
-  "wxt",
-  "side-panel",
-  "gpui",
-]);
+export const applicationIdentitySchema = z.enum(["none", "better-auth-d1-v1"]);
+export const deploymentCapabilitySchema = z.enum(["hono", "database-auth", "r2", "stripe"]);
 const capabilitiesSchema = z
   .array(deploymentCapabilitySchema)
-  .max(13)
+  .max(4)
   .refine((items) => new Set(items).size === items.length, "Duplicate capabilities.");
 export const cliArtifactSchema = z
   .object({
@@ -39,7 +21,7 @@ export const cliArtifactSchema = z
 export const deploymentIntentSchema = z
   .object({
     contractVersion: z.literal(1),
-    runtimeProfile: z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),
+    runtimeProfile: z.literal("anhedral-stack"),
     environment: z.enum(["preview", "production"]),
     visibility: z.enum(["protected", "public"]),
   })
@@ -47,25 +29,17 @@ export const deploymentIntentSchema = z
 /** Source provenance only. Null versions preserve unknown legacy origins honestly. */
 export const sourceCompositionSchema = z
   .object({
-    contractVersion: z.union([z.literal(1), z.literal(2)]),
-    foundation: z.enum(["next-opennext", "tanstack-start"]),
+    contractVersion: z.literal(2),
+    foundation: z.literal("tanstack-start"),
     generatorVersion: versionSchema.nullable(),
     identity: applicationIdentitySchema,
     capabilities: z.partialRecord(deploymentCapabilitySchema, versionSchema.nullable()),
   })
-  .strict()
-  .superRefine((value, ctx) => {
-    if ((value.contractVersion === 1) !== (value.foundation === "next-opennext"))
-      ctx.addIssue({
-        code: "custom",
-        path: ["foundation"],
-        message: "Source composition version must match its foundation.",
-      });
-  });
+  .strict();
 export const deploymentManifestSchema = z
   .object({
     contractVersion: z.literal(1),
-    foundation: z.enum(["next-opennext", "tanstack-start"]),
+    foundation: z.literal("tanstack-start"),
     capabilities: capabilitiesSchema,
     identity: applicationIdentitySchema,
     cliArtifact: cliArtifactSchema,
@@ -75,10 +49,7 @@ export const deploymentManifestSchema = z
   .superRefine((value, ctx) => {
     const selected = new Set(value.capabilities);
     const tanstack = value.foundation === "tanstack-start";
-    if (
-      tanstack !==
-      ["anhedral-stack", "progressive-tanstack-v1"].includes(value.intent.runtimeProfile)
-    )
+    if (tanstack !== (value.intent.runtimeProfile === "anhedral-stack"))
       ctx.addIssue({
         code: "custom",
         path: ["intent", "runtimeProfile"],
@@ -109,15 +80,6 @@ export const deploymentManifestSchema = z
       "database-auth": ["hono"],
       r2: ["database-auth"],
       stripe: ["database-auth"],
-      realtime: ["database-auth"],
-      rtc: ["database-auth"],
-      ai: ["database-auth"],
-      expo: ["database-auth"],
-      "native-ui": ["expo"],
-      revenuecat: ["expo", "stripe"],
-      wxt: ["database-auth"],
-      "side-panel": ["wxt"],
-      gpui: ["database-auth"],
     };
     for (const id of value.capabilities)
       for (const parent of prerequisites[id] ?? [])

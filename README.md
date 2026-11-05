@@ -13,7 +13,7 @@ cd my-app
 pnpm dev
 ```
 
-Init creates `apps/web` and shared tooling with TanStack Start server rendering/server functions and source-owned Anhedral UI built on shadcn. It does not add an API, database, authentication, storage or payments. Preview with `anhedral init my-app --dry-run --json`; use `--skip-install --no-git` for offline source generation.
+Init creates `apps/web` and shared tooling with OJ and TanStack Start server rendering/server functions and source-owned Anhedral UI built on shadcn. It does not add an API, database, authentication, storage or payments. Preview with `anhedral init my-app --dry-run --json`; use `--skip-install --no-git` for offline source generation.
 
 ## Add services
 
@@ -26,9 +26,9 @@ anhedral add stripe
 
 `backend` adds Hono, Better Auth and Drizzle/D1 together in one source transaction. `r2` adds private storage; `stripe` adds subscriptions. Both require the backend. Include missing prerequisites explicitly with `anhedral add r2 stripe --with-dependencies`.
 
-After adding backend, configure `apps/api/.dev.vars` from its example, review the initial SQL and apply it deliberately with `pnpm db:migrate --local`. The same Vite process then runs the web and auxiliary API Workers with local resources. Authentication methods start disabled and need explicit configuration. After adding Stripe, run `pnpm db:generate`, review the billing SQL and migrate before testing webhooks. Builds/startup never migrate databases or activate providers.
+After adding backend, configure `apps/api/.dev.vars` from its example, review the initial SQL and apply it deliberately with `pnpm db:migrate --local`. The OJ development server then runs the web and auxiliary API Workers with local resources. Authentication methods start disabled and need explicit configuration. After adding Stripe, run `pnpm db:generate`, review the billing SQL and migrate before testing webhooks. Builds/startup never migrate databases or activate providers.
 
-Use `anhedral stack list`, `status` and `doctor` to inspect the Anhedral Stack and its additions. These checks describe source completeness, not live provider readiness. Current public generation is web-only. Historical generators and protocol values remain compatibility implementation details; preserved development branches retain the broader earlier work.
+Use `anhedral stack list`, `status` and `doctor` to inspect the Anhedral Stack and its additions. These checks describe source completeness, not live provider readiness. Current public generation is web-only. OJ runs development and builds. Historical generators and framework aliases are removed.
 
 ## Source-owned UI
 
@@ -45,9 +45,9 @@ UI commands operate on Anhedral Stack web applications. Components are editable 
 
 Local generation requires no account. After browser-approved `login`, use `projects list --human` to discover projects and team IDs. Register your generated application with `projects create --name <name> --link --human`, or connect an existing project with `link --project <uuid> --team <uuid>`. `source upload --dry-run` inspects packaging without uploading; `source upload` sends a resumable immutable checkpoint.
 
-`deploy plan --manifest <file>`, `deploy prepare` and `deploy status` submit intent and read candidate receipts. Platform independently checks current authority, exact artifacts and runtime admission. Upload/build success is not production approval. The current manifest runtime profile is `anhedral-stack`; an application cannot approve itself for hosting.
+`deploy plan --manifest <file>`, `deploy prepare` and `deploy status` submit intent and read candidate receipts. Platform independently checks current authority, exact artifacts and runtime admission. Upload/build success does not publish production. Plans report current runtime compatibility and actionable remediation; candidate preparation does not require another person to review the CLI artifact. The current manifest runtime profile is `anhedral-stack`; an application cannot approve itself for hosting.
 
-`env list/import/set` manages variable metadata and private imports. Send values through an owner-only file or stdin, never command arguments or chat. `staging status/deploy` operates on ready candidates; `logs` reads redacted runtime events. The Codex and Claude Code plugin provides CLI usage guidance; authentication and managed project operations run through the CLI. See [the operating workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
+`env list/import/set` manages variable metadata and private imports. Send values through an owner-only file or stdin, never command arguments or chat. `staging status/deploy` operates on ready candidates. `production status` reads production history; `production deploy --candidate <uuid> --name <slug>` requests publication with your existing production permissions, without a second approver for self-service teams. Explicit independent-review team policy remains enforced; `logs` reads redacted runtime events. The Codex and Claude Code plugin provides CLI usage guidance; authentication and managed project operations run through the CLI. See [the operating workflow](docs/software-factory.md#platform-cli-access-and-source-upload).
 
 ## Help and automation
 

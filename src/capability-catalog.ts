@@ -24,7 +24,7 @@ export const CAPABILITIES = {
       'apps/api/src/security.ts',
       'apps/api/src/auth-platform.ts',
       'apps/api/src/features/auth.ts',
-      'apps/web/lib/auth-client.ts',
+      'apps/web/src/lib/auth-client.ts',
     ],
     configuration: [
       'D1 resource ID',
@@ -58,90 +58,6 @@ export const CAPABILITIES = {
       'billing schema migration',
     ],
   },
-  realtime: {
-    name: 'Realtime events',
-    requires: ['database-auth'],
-    targets: ['apps/api/src/features/events.ts', 'packages/db/src/events-schema.ts'],
-    configuration: ['event schema migration'],
-  },
-  rtc: {
-    name: 'Realtime RTC',
-    requires: ['database-auth'],
-    targets: ['apps/api/src/features/rtc.ts', 'packages/db/src/rtc-schema.ts'],
-    configuration: ['Cloudflare Realtime SFU app ID and secret'],
-  },
-  ai: {
-    name: 'Workers AI',
-    requires: ['database-auth'],
-    targets: ['apps/api/src/features/ai.ts', 'packages/db/src/ai-schema.ts'],
-    configuration: ['Workers AI binding', 'explicit model selection and daily quota'],
-  },
-  expo: {
-    name: 'Expo mobile app',
-    requires: ['database-auth'],
-    targets: [
-      'apps/mobile/package.json',
-      'apps/mobile/App.tsx',
-      'apps/mobile/anhedral-entry.tsx',
-      'apps/mobile/lib/auth-client.ts',
-      'apps/mobile/components/session-controls.tsx',
-    ],
-    configuration: [
-      'device-reachable API URL',
-      'trusted native origin',
-      'native development build',
-    ],
-  },
-  'native-ui': {
-    name: 'Anhedral UI for Expo',
-    requires: ['expo'],
-    targets: [
-      'apps/mobile/components.json',
-      'apps/mobile/global.css',
-      'apps/mobile/metro.config.js',
-      'apps/mobile/components/ui/button.tsx',
-      'apps/mobile/components/ui/text.tsx',
-    ],
-    configuration: ['Android/iOS interaction validation'],
-  },
-  revenuecat: {
-    name: 'RevenueCat mobile subscriptions',
-    requires: ['expo', 'stripe'],
-    targets: ['apps/mobile/lib/purchases.ts', 'apps/api/src/features/revenuecat.ts'],
-    configuration: [
-      'RevenueCat app/project, public SDK keys and server credentials',
-      'store sandbox validation',
-    ],
-  },
-  wxt: {
-    name: 'WXT browser extension',
-    requires: ['database-auth'],
-    targets: [
-      'apps/extension/package.json',
-      'apps/extension/wxt.config.ts',
-      'apps/extension/anhedral-background.ts',
-      'apps/extension/entrypoints/background.ts',
-    ],
-    configuration: ['API origin and host permissions', 'extension authentication flow'],
-  },
-  'side-panel': {
-    name: 'Side Panel API',
-    requires: ['wxt'],
-    targets: [
-      'apps/extension/entrypoints/sidepanel/index.html',
-      'apps/extension/entrypoints/sidepanel/main.tsx',
-    ],
-    configuration: ['Chromium side panel validation'],
-  },
-  gpui: {
-    name: 'GPUI native desktop app',
-    requires: ['database-auth'],
-    targets: ['apps/desktop/package.json', 'apps/desktop/Cargo.toml', 'apps/desktop/src/main.rs'],
-    configuration: [
-      'Rust toolchain and native platform libraries',
-      'native account flow and distribution',
-    ],
-  },
 } as const;
 export type Capability = keyof typeof CAPABILITIES;
 export const CAPABILITY_IDS = Object.keys(CAPABILITIES) as Capability[];
@@ -169,7 +85,7 @@ export function capabilityOrder(
   return [...selected];
 }
 
-/** The sole active public source composition. Legacy recipes above remain library compatibility. */
+/** The sole source composition, extended only by backend, storage and payments. */
 export const ANHEDRAL_STACK = {
   schemaVersion: 1,
   id: 'anhedral-stack',
@@ -190,12 +106,7 @@ export const ANHEDRAL_STACK = {
       name: 'Backend',
       description: 'API, database and authentication together.',
       requires: [] as string[],
-      targets: [
-        ...CAPABILITIES.hono.targets,
-        ...CAPABILITIES['database-auth'].targets.map((target) =>
-          target === 'apps/web/lib/auth-client.ts' ? 'apps/web/src/lib/auth-client.ts' : target,
-        ),
-      ],
+      targets: [...CAPABILITIES.hono.targets, ...CAPABILITIES['database-auth'].targets],
     },
     r2: {
       name: 'Private storage',

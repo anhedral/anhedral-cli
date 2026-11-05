@@ -11,7 +11,10 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { scaffoldStandardProject, parseStandardOptions } from '../dist/standard.js';
+import {
+  parseInitOptions as parseStandardOptions,
+  scaffoldAnhedralStack as scaffoldStandardProject,
+} from '../dist/index.js';
 import { runCapabilityCommand } from '../dist/capability-command.js';
 import { CapabilityEditor } from '../dist/capability-editor.js';
 import { initializeUiMetadata } from '../dist/ui-project.js';
@@ -47,21 +50,17 @@ const add = (app, names) =>
       offline,
     ),
   );
-test('progressive clients compose scoped cache outputs/env while preserving unrelated tasks', async () => {
+test('backend and payment additions preserve unrelated root tasks', async () => {
   const { root, app } = await fixture();
   try {
-    const file = path.join(app, 'turbo.json'),
-      turbo = JSON.parse(readFileSync(file));
+    const file = path.join(app, 'turbo.json');
+    const turbo = JSON.parse(readFileSync(file));
     turbo.tasks.custom = { cache: false };
     writeFileSync(file, JSON.stringify(turbo));
-    await add(app, ['wxt', 'gpui']);
-    const next = JSON.parse(readFileSync(file));
-    assert.deepEqual(next.tasks.custom, { cache: false });
-    assert.ok(next.tasks['@workspace/extension#build'].outputs.includes('.output/**'));
-    assert.ok(next.tasks['@workspace/extension#build'].env.includes('WXT_API_ORIGIN'));
-    assert.ok(next.tasks['@workspace/extension#dev'].env.includes('WXT_API_ORIGIN'));
-    assert.equal(next.tasks['@workspace/desktop#build'].cache, false);
-    assert.ok(!next.globalEnv.includes('WXT_API_ORIGIN'));
+    await add(app, ['stripe']);
+    const after = JSON.parse(readFileSync(file));
+    assert.deepEqual(after.tasks.custom, { cache: false });
+    assert.deepEqual(after.tasks['db:migrate'], { cache: false });
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -69,7 +68,7 @@ test('progressive clients compose scoped cache outputs/env while preserving unre
 test('doctor detects missing required source without rejecting consumer edits', async () => {
   const { root, app } = await fixture();
   try {
-    await add(app, ['database-auth']);
+    await add(app, ['backend']);
     const file = path.join(app, 'apps/api/src/auth-features.ts');
     writeFileSync(file, readFileSync(file, 'utf8') + '\n// Consumer edit\n');
     const doctor = () =>
@@ -103,8 +102,8 @@ test('doctor detects missing required source without rejecting consumer edits', 
       const result = await doctor();
       assert.equal(result.sourceReady, false);
       assert.ok(
-        result.capabilities
-          .find((c) => c.id === 'database-auth')
+        result.additions
+          .find((c) => c.id === 'backend')
           .missingFiles.includes('apps/api/src/auth-features.ts'),
       );
       assert.equal(process.exitCode, 1);

@@ -11,8 +11,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
 const stackFiles = [
-  'assets/stack/ai-schema.ts.txt',
-  'assets/stack/ai.ts.txt',
   'assets/stack/api-index.ts.txt',
   'assets/stack/auth-features.ts.txt',
   'assets/stack/auth-journal.json.txt',
@@ -23,31 +21,13 @@ const stackFiles = [
   'assets/stack/auth.ts.txt',
   'assets/stack/billing-mode.ts.txt',
   'assets/stack/billing-schema.ts.txt',
-  'assets/stack/desktop.rs.txt',
   'assets/stack/entitlement-guard.ts.txt',
   'assets/stack/entitlements.ts.txt',
-  'assets/stack/events-schema.ts.txt',
-  'assets/stack/event-retention.sql.txt',
-  'assets/stack/events.ts.txt',
-  'assets/stack/mobile-auth.ts.txt',
-  'assets/stack/mobile-billing.tsx.txt',
-  'assets/stack/mobile-session.tsx.txt',
-  'assets/stack/native-button.tsx.txt',
-  'assets/stack/native-global.css.txt',
-  'assets/stack/native-lib-utils.ts.txt',
-  'assets/stack/native-metro.config.js.txt',
-  'assets/stack/native-nativewind-env.d.ts.txt',
-  'assets/stack/native-tailwind.config.js.txt',
-  'assets/stack/native-text.tsx.txt',
-  'assets/stack/purchases.ts.txt',
-  'assets/stack/revenuecat.ts.txt',
-  'assets/stack/rtc-schema.ts.txt',
-  'assets/stack/rtc.ts.txt',
   'assets/stack/security.ts.txt',
   'assets/stack/storage.ts.txt',
   'assets/stack/stripe.ts.txt',
-  'assets/stack/web-sign-in.tsx.txt',
 ];
+
 const publicContractAssets = [
   'assets/contracts/deployment-provenance.json',
   'assets/contracts/LICENSE',
@@ -63,6 +43,9 @@ const requiredFiles = new Set([
   'dist/contracts/deployment.js',
   'dist/contracts/deployment.d.ts',
   ...stackFiles,
+  'assets/launch/oj/run.mjs',
+  'assets/launch/oj/runtime.json',
+  'assets/launch/oj/OJ.LICENSE',
   ...[
     'minimal-server.ts.txt',
     'minimal-application.server.ts.txt',

@@ -1,0 +1,21 @@
+{
+  "version": "0.4.0",
+  "repository": "https://github.com/lovablelabs/oj",
+  "sourceRevision": "40837765296064f5411bc48d1cd6afb1069e77c8",
+  "targets": {
+    "linux-x64": {
+      "asset": "oj-x86_64-unknown-linux-gnu.tar.gz",
+      "archiveBytes": 66040061,
+      "archiveSha256": "bef564eebb4c3f06fe264e2ed86ead197f54d2d43a7d56c29c81fe1a4151bf46",
+      "binaryBytes": 195888592,
+      "binarySha256": "e277cf0449affba28f42981d0588a5084d5e50c392713729a58825c7cb8620c7"
+    },
+    "darwin-arm64": {
+      "asset": "oj-aarch64-apple-darwin.tar.gz",
+      "archiveBytes": 60678688,
+      "archiveSha256": "953ce529e9a7ed69ea1fefbb698875fb615fa5a7d031366655b6fcbfcada1313",
+      "binaryBytes": 171043184,
+      "binarySha256": "4ca43edac2be0cc729f5b83887de040772a11a161d55de4cad1b8ed3529ca506"
+    }
+  }
+}

@@ -10,6 +10,7 @@ assert.equal(manifest.owner, 'anhedral/platform-contracts/operations');
 assert.equal(manifest.license, 'Apache-2.0');
 assert.match(manifest.sourceRevision, /^[a-f0-9]{40}$/);
 const files = {
+  'production-transport.ts': 'src/contracts/production-transport.ts',
   'staging-transport.ts': 'src/contracts/staging-transport.ts',
   'runtime-logs-transport.ts': 'src/contracts/runtime-logs-transport.ts',
   LICENSE: 'assets/contracts/LICENSE.operations',
