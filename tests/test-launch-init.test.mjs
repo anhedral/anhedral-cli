@@ -76,6 +76,14 @@ test('backend is one atomic addition, with storage and Stripe independently prog
   ]);
   assert.ok(existsSync(path.join(root, 'apps/api/src/auth.ts')));
   assert.ok(existsSync(path.join(root, 'apps/web/src/routes/sign-in.tsx')));
+  const server = readFileSync(path.join(root, 'apps/web/src/server.ts'), 'utf8');
+  assert.match(server, /createStartHandler\(defaultStreamHandler\)/);
+  assert.match(
+    server,
+    /return handler\(request, \{ context: \{ api: bindings.ANHEDRAL_API \} \}\)/,
+  );
+  assert.doesNotMatch(server, /server-entry|handler\.fetch/);
+
   assert.equal(existsSync(path.join(root, 'apps/api/src/features/storage.ts')), false);
   assert.match(
     readFileSync(path.join(root, 'apps/api/src/auth-features.ts'), 'utf8'),

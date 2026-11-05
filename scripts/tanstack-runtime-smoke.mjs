@@ -289,7 +289,7 @@ try {
   assert.match(
     markup,
     /API:\s*(?:<!--[^>]*-->\s*)*connected/,
-    'Server function did not reach Hono.',
+    `Server function did not reach Hono: ${markup.match(/<p data-rendering="server">.*?<\/p>/s)?.[0] ?? 'missing rendered status'}`,
   );
   const account = await request('/sign-in');
   assert.equal(account.status, 200, 'Account route must render.');

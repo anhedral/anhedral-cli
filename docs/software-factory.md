@@ -70,6 +70,8 @@ passed and failed evidence. Tests are not provider deployment acceptance. Run
 `node tests/test-generated-config-lint.mjs <installed-workspace>` to exercise the
 generated web ESLint policy; runtime proof checks both web-only and composed source.
 
+Backend server entries call TanStack’s `createStartHandler(defaultStreamHandler)` directly so request-local API bindings survive OJ compilation. Source additions repair the exact previous owned adapter and preserve customer edits.
+
 OJ dev commands attach an explicit host value with `--host=<hostname>`, as required by the pinned runtime. Generated workspaces explicitly allow dependency build scripts only for esbuild and workerd through the pnpm `allowBuilds` map. This keeps installation noninteractive under the pinned pnpm release and pnpm11 without allowing arbitrary dependency scripts.
 
 ## Platform CLI access and source upload

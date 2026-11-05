@@ -214,6 +214,19 @@ export function normalizeOjFoundation(
       );
   }
   let changed = false;
+  const serverEntry = 'apps/web/src/server.ts';
+  const currentEntry = e.read(serverEntry);
+  // Repair only the exact shipped adapter whose default-entry shim drops Start context in OJ.
+  if (
+    installed.includes('hono') &&
+    currentEntry !== null &&
+    fingerprint(currentEntry) ===
+      '703adff2e57adfbbdb7fa90b4dadffde8617c86cc31a185943931ef7c623eca7' &&
+    e.managed[serverEntry] === fingerprint(currentEntry)
+  ) {
+    e.owned(serverEntry, template('server.ts.txt'));
+    changed = true;
+  }
   const rootRoute = 'apps/web/src/routes/__root.tsx';
   const rootSource = e.read(rootRoute);
   // A one-way repair of the exact shipped document, without owning customer routes.
