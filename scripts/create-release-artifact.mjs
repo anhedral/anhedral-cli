@@ -26,6 +26,11 @@ if (artifactDirectory === repoRoot || !artifactDirectory.startsWith(`${repoRoot}
   throw new Error('Release artifact directory must be inside the repository root');
 }
 
+// The artifact hash cannot embed itself. Its external metadata binds the exact source.
+const source = spawnSyncPortable('git', ['rev-parse', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' });
+const sourceRevision = String(source.stdout ?? '').trim();
+if (source.status !== 0 || !/^[a-f0-9]{40}$/.test(sourceRevision))
+  throw new Error('Release artifact requires an exact Git source revision');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-release-pack-'));
 
 function parsePackJson(output) {
@@ -96,6 +101,7 @@ try {
     schemaVersion: 1,
     name: packageResult.name,
     version: packageResult.version,
+    sourceRevision,
     filename: packageResult.filename,
     integrity,
     shasum,

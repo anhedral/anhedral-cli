@@ -30,6 +30,10 @@ After adding backend, configure `apps/api/.dev.vars` from its example, review th
 
 Use `anhedral stack list`, `status` and `doctor` to inspect the Anhedral Stack and its additions. These checks describe source completeness, not live provider readiness. Current public generation is web-only. OJ runs development and builds. Historical generators and framework aliases are removed.
 
+## Update an existing project
+
+Update your agent plugin through its host and select the matching published CLI version. Preview `anhedral stack update --dry-run --json`, review the returned diffs/conflicts, then apply `anhedral stack update --expect-plan <planId> --json`. Updates preserve authored source and stop on customized-file conflicts or a changed plan. They refresh generated runtime/configuration and deployment provenance without running project scripts or installing dependencies. Validate dependencies and the application separately before upload/deployment. See [the operating workflow](docs/software-factory.md).
+
 ## Source-owned UI
 
 ```sh

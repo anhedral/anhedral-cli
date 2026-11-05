@@ -1,4 +1,5 @@
 import { runPlatformCommand } from './platform-command.js';
+import { runStackUpdate } from './stack-update.js';
 import { runCapabilityCommand } from './capability-command.js';
 import { runAnhedralUiCommand } from './ui-command.js';
 import { commandArgumentError } from './cli-arguments.js';
@@ -36,6 +37,8 @@ export async function runCommand(
     ].includes(command)
   )
     return runPlatformCommand(command, args, output);
+  if (command === 'stack' && commandArguments('stack', args).positional[0] === 'update')
+    return runStackUpdate(args, output);
   if (command === 'add' || command === 'stack') return runCapabilityCommand(command, args, output);
   if (command === 'ui') return runAnhedralUiCommand(args, output);
   if (command !== 'init')

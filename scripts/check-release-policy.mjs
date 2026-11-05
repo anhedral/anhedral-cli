@@ -198,6 +198,10 @@ function validateGitHubReleaseAssets(releaseWorkflow) {
 
 function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
   const failures = [];
+  if (!releaseWorkflow.includes('ANHEDRAL_EXPECTED_SOURCE_REVISION: ${{ inputs.release_sha }}'))
+    failures.push(
+      '.github/workflows/release.yml: release metadata must match the exact reviewed source revision',
+    );
   if (
     !/^  verify:\n    if: github\.repository == 'anhedral\/anhedral-cli'$/m.test(releaseWorkflow) ||
     !/^  prepare:\n    if: github\.repository == 'anhedral\/anhedral-cli'$/m.test(

@@ -16,6 +16,7 @@ function candidate() {
     schemaVersion: 1,
     name: 'anhedral',
     version: '1.2.3',
+    sourceRevision: 'a'.repeat(40),
     filename: 'anhedral-1.2.3.tgz',
     integrity: integrity(cli),
     shasum: createHash('sha1').update(cli).digest('hex'),
@@ -42,6 +43,7 @@ function candidate() {
       encoding: 'utf8',
       env: {
         ...process.env,
+        ANHEDRAL_EXPECTED_SOURCE_REVISION: 'a'.repeat(40),
         ANHEDRAL_EXPECTED_INTEGRITY: metadata.integrity,
         ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: integrity(plugin),
         ...environment,
@@ -59,11 +61,21 @@ for (const failure of [
   'foreign version',
   'symlink metadata',
   'invalid prerelease',
+  'missing source revision',
+  'forged source revision',
 ])
   test(`reviewed candidate verification: ${failure}`, () => {
     const fixture = candidate();
     try {
       const plugin = fixture.metadata.plugin;
+      if (failure === 'missing source revision') {
+        delete fixture.metadata.sourceRevision;
+        fixture.save();
+      }
+      if (failure === 'forged source revision') {
+        fixture.metadata.sourceRevision = 'b'.repeat(40);
+        fixture.save();
+      }
       if (failure === 'missing plugin') {
         delete fixture.metadata.plugin;
         writeFileSync(fixture.file, JSON.stringify(fixture.metadata));

@@ -38,7 +38,7 @@ Start a project:
   add           Add backend, private storage or payments.
 
 Inspect source and UI:
-  stack         Inspect the Anhedral Stack or run doctor.
+  stack         Inspect, update or diagnose the Anhedral Stack.
   ui            Initialize, add, list, diff or check UI components.
 
 Optional Platform access:
@@ -50,6 +50,7 @@ Optional Platform access:
   deploy        Plan, prepare or inspect a candidate; never activates it.
   env           Import private configuration or list variable metadata.
   staging       Deploy verified candidates to persistent staging.
+  production    Publish ready candidates with current project permissions.
   logs          Read redacted runtime logs for a linked project.
 
 Shell setup:

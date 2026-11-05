@@ -98,6 +98,8 @@ jobs:
         run: pnpm plugin:build
       - name: Build and verify Linux release candidate
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        env:
+          ANHEDRAL_EXPECTED_SOURCE_REVISION: ${{ github.sha }}
         run: |
           node scripts/create-release-artifact.mjs
           pnpm release:artifact:verify

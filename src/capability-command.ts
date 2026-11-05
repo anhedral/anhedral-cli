@@ -26,7 +26,7 @@ import { capabilityReferences } from './capability-references.js';
 import { configureDependencyPatches } from './dependency-patches.js';
 import { composeSourceProvenance } from './composition.js';
 import type { CommandRunner } from './command-types.js';
-function projectRoot(cwd: string, allowRecovery = false) {
+export function projectRoot(cwd: string, allowRecovery = false) {
   let root = realpathSync(cwd);
   for (;;) {
     if (
@@ -41,7 +41,7 @@ function projectRoot(cwd: string, allowRecovery = false) {
   }
   throw Error('No Anhedral workspace found. Select a generated project with --cwd.');
 }
-function readState(e: CapabilityEditor) {
+export function readState(e: CapabilityEditor) {
   const project = e.json('anhedral.json');
   const state = project.capabilities ?? { schemaVersion: 1, installed: [], managedFiles: {} };
   if (
@@ -74,7 +74,7 @@ function publicScopeError(command: 'add' | 'stack' = 'add') {
   );
 }
 /** Identify the source before any recovery or source mutation. One missing manifest can be an interrupted add. */
-function assertPublicWorkspace(
+export function assertPublicWorkspace(
   root: string,
   allowRecovery = false,
   command: 'add' | 'stack' = 'add',
