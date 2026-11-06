@@ -24,7 +24,7 @@ function generate(name, extra = []) {
 }
 test.after(() => rmSync(workspace, { recursive: true, force: true }));
 
-test('public init produces only TanStack Start and Anhedral UI', () => {
+test('public init defaults to shadcn without UI ownership metadata', () => {
   const root = generate('core');
   const configuration = json(path.join(root, 'anhedral.json'));
   assert.equal(configuration.composition.foundation, 'tanstack-start');
@@ -52,7 +52,21 @@ test('public init produces only TanStack Start and Anhedral UI', () => {
   assert.equal(policy.onlyBuiltDependencies, undefined);
   assert.equal(policy.dangerouslyAllowAllBuilds, undefined);
   assert.equal(run(['stack', 'doctor', '--json'], root).status, 0);
-  assert.equal(run(['ui', 'doctor', '--web', '--json'], root).status, 0);
+  const app = path.join(root, 'apps/web');
+  assert.equal(existsSync(path.join(app, '.anhedral-ui.json')), false);
+  assert.equal(existsSync(path.join(app, 'ANHEDRAL_UI_LICENSES')), false);
+  assert.equal(
+    json(path.join(app, 'components.json')).$schema,
+    'https://ui.shadcn.com/schema.json',
+  );
+  assert.match(
+    readFileSync(path.join(app, 'LICENSE.shadcn'), 'utf8'),
+    /Copyright \(c\) 2023 shadcn/,
+  );
+  for (const component of ['button', 'input', 'label'])
+    assert.ok(existsSync(path.join(app, `src/components/ui/${component}.tsx`)));
+  assert.match(readFileSync(path.join(root, 'README.md'), 'utf8'), /use any UI library/);
+  assert.equal(run(['ui', 'doctor', '--json'], root).status, 1);
 });
 
 test('dry run does not create a destination and distinguishes literal flag-shaped directories', () => {

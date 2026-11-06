@@ -1,6 +1,6 @@
 # Anhedral Stack additions
 
-There is one current **Anhedral Stack**. `anhedral init` creates its web foundation with TanStack Start SSR/server functions and source-owned shadcn Anhedral UI. Add the remaining services only when needed.
+There is one current **Anhedral Stack**. `anhedral init` creates its web foundation with TanStack Start SSR/server functions and editable shadcn components. Add the remaining services only when needed.
 
 ```sh
 anhedral init my-app

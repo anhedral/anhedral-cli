@@ -51,9 +51,6 @@
     "stack-update",
     "transaction",
     "transaction-lock",
-    "ui-catalog",
-    "ui-command",
-    "ui-project",
     "util",
     "version"
   ],

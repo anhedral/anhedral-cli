@@ -9,7 +9,7 @@ The Anhedral Stack has one current web foundation and progressive backend/storag
 3. Preview and add [capabilities](capabilities.md) as needed. Configure selected
    providers/auth methods, apply reviewed migrations and validate actual runtime
    behavior before deployment. Source installation is not provider activation.
-4. Extend [source-owned UI](ui.md), implement features and run consumer checks.
+4. Choose or extend [web UI](ui.md), implement features and run consumer checks.
 
 ## Evidence-driven maintenance
 

@@ -2,7 +2,7 @@
 
 **Anhedral Stack** is the single current stack. The CLI generates its editable source; Platform independently owns managed builds, resource admission, deployment and operations. There is no public multi-stack registry or framework selector.
 
-The web foundation uses TanStack Start SSR/server functions and source-owned shadcn Anhedral UI. `anhedral init` creates only that foundation. `add backend` composes Hono, Drizzle/D1 and Better Auth together. Add private R2 or Stripe subscriptions later when needed. See [additions](capabilities.md).
+The web foundation uses TanStack Start SSR/server functions and editable shadcn components. `anhedral init` creates only that foundation. `add backend` composes Hono, Drizzle/D1 and Better Auth together. Add private R2 or Stripe subscriptions later when needed. See [additions](capabilities.md).
 
 When selected, Hono owns privileged business/auth/data/storage operations. Web server functions call its scoped service binding; application source is never imported across application boundaries. Keep resources private, enforce identity/ownership/limits and configure secrets per environment.
 

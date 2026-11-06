@@ -25,6 +25,7 @@ try {
       'rollback',
     ].map((command) => [command]),
     ['add', 'expo'],
+    ['ui', 'add', 'button'],
     ['auth', '--unknown'],
     ['auth', '--provider'],
     ['ship', '--platform', 'ios'],
@@ -54,6 +55,9 @@ try {
     if (args[0] === 'cloud') assert.equal(failure.code, 'UNKNOWN_COMMAND');
     assert.deepEqual(readdirSync(root), [], 'invalid commands must not create files');
   }
+  const retiredUi = JSON.parse(run('ui', 'list', '--json').stderr);
+  assert.equal(retiredUi.code, 'UNKNOWN_COMMAND');
+  assert.match(retiredUi.nextAction, /shadcn/);
   const target = path.join(root, 'planned');
   const result = run('init', target, '--dry-run', '--json');
   assert.equal(result.status, 0, result.stderr);

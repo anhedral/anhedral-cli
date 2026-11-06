@@ -7,7 +7,6 @@ import {
   type CommandOption,
 } from './command-schema.js';
 import { PUBLIC_STACK_ADDITIONS } from './capability-catalog.js';
-import { UI_CATALOG } from './ui-catalog.js';
 
 /** Quote data for shell source. Completion never evaluates user input. */
 function quote(value: string): string {
@@ -30,8 +29,6 @@ function choices(definition: CommandDefinition): readonly string[] {
   if (definition.children) return Object.keys(definition.children);
   const positional = definition.positional;
   if (positional?.kind === 'capability') return PUBLIC_STACK_ADDITIONS;
-  if (positional?.kind === 'component')
-    return UI_CATALOG.components.filter((entry) => entry.web).map((entry) => entry.name);
   return positional?.choices ?? [];
 }
 function optionCase(context: string, option: CommandOption): string {

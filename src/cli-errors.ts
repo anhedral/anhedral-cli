@@ -52,13 +52,11 @@ export function describeFailure(error: unknown, command?: string) {
       ? 'GENERATION_FAILED'
       : command === 'add' || command === 'stack'
         ? 'CAPABILITY_COMMAND_FAILED'
-        : command === 'ui'
-          ? 'UI_COMMAND_FAILED'
-          : ['login', 'logout', 'whoami', 'link', 'unlink', 'source', 'deploy'].includes(
-                command ?? '',
-              )
-            ? 'PLATFORM_COMMAND_FAILED'
-            : 'INTERNAL_ERROR';
+        : ['login', 'logout', 'whoami', 'link', 'unlink', 'source', 'deploy'].includes(
+              command ?? '',
+            )
+          ? 'PLATFORM_COMMAND_FAILED'
+          : 'INTERNAL_ERROR';
   return {
     error: error instanceof Error ? error.message : String(error),
     code,
