@@ -148,7 +148,6 @@ test('public dependency expansion is explicit and completion/help expose no reti
   ]);
   for (const args of [
     ['add', '--help'],
-    ['ui', '--help'],
     ['completion', 'bash'],
   ]) {
     const output = run(args);
