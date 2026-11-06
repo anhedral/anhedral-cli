@@ -1,11 +1,11 @@
 # Development notes
 
-## 2026-11-03 Project discovery and registration
+## 2026-11-05 · Coordinated 0.21.0 release (#128)
 
-Issue #111 adds native CLI project listing and metadata-only creation, paired with
-Platform issue #509 and its reviewed public transport projection. Creation uses a
-durable retry identity; optional linking checks live build authority and preserves
-generated source identity. No provider activation or package publication is implied.
+Breaking 0.x change: `anhedral ui` is retired. Init defaults to editable shadcn
+components; use upstream shadcn or any UI library. Existing source and required
+upstream notices are preserved. CLI and plugin share the version and immutable
+release artifacts; publication does not deploy Landing or update runtime pins.
 
 ## 2026-11-03 CLI-only plugin guidance
 

@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
   "displayName": "Anhedral",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "description": "Create, update and extend Anhedral Stack projects using the Anhedral CLI.",
   "author": {
     "name": "Anhedral",
