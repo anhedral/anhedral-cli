@@ -93,7 +93,7 @@ test('every exact-artifact smoke job provisions the generated workspace package 
   }
   assert.equal(
     checked,
-    3,
-    'main candidate, release verification and exact artifact jobs are covered',
+    1,
+    'the exact package is executed once when the immutable candidate is prepared',
   );
 });

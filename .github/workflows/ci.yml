@@ -5,6 +5,12 @@ on:
     branches: [staging]
   pull_request:
     branches: [staging, main]
+  workflow_call:
+    outputs:
+      cli_integrity:
+        value: ${{ jobs.gate.outputs.cli_integrity }}
+      plugin_integrity:
+        value: ${{ jobs.gate.outputs.plugin_integrity }}
   workflow_dispatch:
     inputs:
       runtime_proof:
@@ -28,6 +34,9 @@ jobs:
     name: CI gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      cli_integrity: ${{ steps.identity.outputs.cli_integrity }}
+      plugin_integrity: ${{ steps.identity.outputs.plugin_integrity }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -114,3 +123,13 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
+      - name: Summarize verified candidate
+        id: identity
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        run: |
+          node --input-type=module - <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          const m = JSON.parse(readFileSync('.artifacts/release/metadata.json', 'utf8'));
+          appendFileSync(process.env.GITHUB_OUTPUT, `cli_integrity=${m.integrity}\nplugin_integrity=${m.plugin.integrity}\n`);
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Release candidate\nSource: ${m.sourceRevision}\n\nCLI: ${m.integrity}\n\nPlugin: ${m.plugin.integrity}\n\nReview this identity before approving the npm environment.\n`);
+          JS
