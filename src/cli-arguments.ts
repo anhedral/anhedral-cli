@@ -86,6 +86,12 @@ export function globalArguments(input: readonly string[]) {
 function definitionFor(command: string) {
   const definition = commandDefinition(command);
   if (!definition) {
+    if (command === 'ui')
+      throw new CliArgumentError(
+        'The Anhedral UI command has been retired. Use shadcn directly or your preferred UI library.',
+        'Run pnpm dlx shadcn@4.22.1 add <component> from apps/web, or see https://ui.shadcn.com/docs/installation/tanstack.',
+        'UNKNOWN_COMMAND',
+      );
     const recommendation = suggest(command, [...Object.keys(COMMANDS), 'help']);
     const name = /^[a-z-]{1,32}$/.test(command) ? `: ${command}` : '';
     throw new CliArgumentError(

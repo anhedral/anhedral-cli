@@ -112,5 +112,5 @@ test('typed failures retain old fields, classify known commands and expose post-
   assert.match(committed.nextAction, /files were kept/i);
   assert.equal(committed.retryable, false);
   assert.equal(describeFailure(new Error('Unexpected'), 'deploy').code, 'PLATFORM_COMMAND_FAILED');
-  assert.equal(describeFailure(new Error('Unexpected'), 'ui').code, 'UI_COMMAND_FAILED');
+  assert.equal(describeFailure(new Error('Unexpected'), 'ui').code, 'INTERNAL_ERROR');
 });

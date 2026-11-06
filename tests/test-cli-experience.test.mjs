@@ -44,7 +44,7 @@ test('public help is compact, contextual and requires no workspace or authentica
     assert.equal(JSON.parse(result.stderr).code, 'INVALID_ARGUMENT');
   }
   assert.equal(run('init', 'sample', '--help').status, 0);
-  assert.equal(run('ui', 'add', 'button', '--help').status, 0);
+  assert.equal(run('ui', 'add', 'button', '--help').status, 1);
 });
 
 test('init flag ordering and end-of-options preserve the same public plan shape', () => {
