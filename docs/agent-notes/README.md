@@ -1,5 +1,12 @@
 # Development notes
 
+## 2026-11-05 · Coordinated 0.21.0 release (#128)
+
+Breaking 0.x change: `anhedral ui` is retired. Init defaults to editable shadcn
+components; use upstream shadcn or any UI library. Existing source and required
+upstream notices are preserved. CLI and plugin share the version and immutable
+release artifacts; publication does not deploy Landing or update runtime pins.
+
 ## 2026-11-03 Project discovery and registration
 
 Issue #111 adds native CLI project listing and metadata-only creation, paired with
