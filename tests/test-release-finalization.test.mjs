@@ -59,6 +59,8 @@ test('current-main admission remains required for publication; only historical-m
           FAKE_ANCESTOR: String(ancestor),
           FINALIZE_ONLY: String(finalize),
           REVIEWED_SHA: reviewed,
+          DISPATCH_SHA: head,
+          RECOVERY_RUN_ID: '',
           REVIEWED_CLI: integrity,
           REVIEWED_PLUGIN: integrity,
           GITHUB_OUTPUT: path.join(root, 'output'),
