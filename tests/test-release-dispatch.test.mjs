@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { parse } from 'yaml';
-import { validateRecoveryCandidate } from '../scripts/release-candidate-run.mjs';
+import { recoveryJobs, validateRecoveryCandidate } from '../scripts/release-candidate-run.mjs';
 
 const root = new URL('../', import.meta.url);
 const read = (name) => parse(readFileSync(new URL(`.github/workflows/${name}.yml`, root), 'utf8'));
@@ -180,4 +180,25 @@ test('published automatic candidates survive failed finalization and a main adva
   );
   assert.match(registryGuard.run, /check-release-registry.mjs verify/);
   assert.equal(release.jobs.publish.if, 'inputs.finalize_only != true');
+});
+
+test('failed-job retries retain the successful immutable candidate from an earlier attempt', () => {
+  const steps = [
+    'Build and verify Linux release candidate',
+    'Share verified release candidate for review',
+    'Summarize verified candidate',
+  ].map((name) => ({ name, conclusion: 'success' }));
+  const calls = [];
+  const jobs = recoveryJobs({ run_attempt: 2 }, (url) => {
+    calls.push(url);
+    return url.includes('/attempts/1/')
+      ? { total_count: 1, jobs: [{ conclusion: 'success', steps }] }
+      : { total_count: 1, jobs: [{ conclusion: 'failure', steps: [] }] };
+  });
+  assert.equal(calls.length, 2);
+  assert.equal(
+    jobs.some((j) => j.conclusion === 'success' && j.steps.length === 3),
+    true,
+  );
+  assert.throws(() => recoveryJobs({ run_attempt: 0 }, () => {}));
 });

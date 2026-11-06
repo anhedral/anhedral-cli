@@ -31,6 +31,26 @@ export function validateRecoveryCandidate(run, jobs, { runId, sourceRevision }) 
   );
 }
 
+export function recoveryJobs(run, api) {
+  assert.ok(Number.isSafeInteger(run.run_attempt) && run.run_attempt > 0);
+  const jobs = [];
+  // Re-run-failed-jobs omits successful jobs from earlier attempts. Check the
+  // original preparation as well, while retaining bounded API work.
+  const oldest = Math.max(1, run.run_attempt - 9);
+  for (let attempt = run.run_attempt; attempt >= oldest; attempt--) {
+    let count = 0;
+    for (let page = 1; page <= 10; page++) {
+      const result = api(`/attempts/${attempt}/jobs?per_page=100&page=${page}`);
+      assert.ok(Array.isArray(result.jobs) && Number.isSafeInteger(result.total_count));
+      jobs.push(...result.jobs);
+      count += result.jobs.length;
+      if (count >= result.total_count) break;
+      assert.ok(page < 10, 'Candidate job inventory exceeds recovery bound');
+    }
+  }
+  return jobs;
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const runId = process.env.CANDIDATE_RUN_ID;
   assert.match(runId ?? '', /^[1-9]\d*$/);
@@ -42,13 +62,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       }),
     );
   const run = api('');
-  const jobs = [];
-  for (let page = 1; page <= 10; page++) {
-    const result = api(`/attempts/${run.run_attempt}/jobs?per_page=100&page=${page}`);
-    jobs.push(...result.jobs);
-    if (jobs.length >= result.total_count) break;
-    assert.ok(page < 10, 'Candidate job inventory exceeds recovery bound');
-  }
+  const jobs = recoveryJobs(run, api);
   validateRecoveryCandidate(run, jobs, { runId, sourceRevision: process.env.RELEASE_SHA });
   console.log(`Verified recovery candidate run ${runId} at ${run.head_sha}`);
 }
