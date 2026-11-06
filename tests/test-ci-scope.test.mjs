@@ -159,7 +159,6 @@ test('staging and main share one fast gate; generated runtime and broad validati
     'test-launch-init.test.mjs',
     'test-public-stack.test.mjs',
     'test-standard.test.mjs',
-    'test-ui-stack.test.mjs',
     'test-deployment-contract.test.mjs',
     'test-tanstack-platform.test.mjs',
   ])
