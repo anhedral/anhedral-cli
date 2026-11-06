@@ -69,6 +69,9 @@ isolated local data, never a configured database or live payment provider. Prese
 passed and failed evidence. Tests are not provider deployment acceptance. Run
 `node tests/test-generated-config-lint.mjs <installed-workspace>` to exercise the
 generated web ESLint policy; runtime proof checks both web-only and composed source.
+`node tests/test-generated-router.mjs <installed-workspace>` temporarily replaces
+the example route, runs the generated web typecheck and restores the route. The
+router imports its own Start augmentation so ordinary page edits remain type-safe.
 
 Backend server entries call TanStack’s `createStartHandler(defaultStreamHandler)` directly so request-local API bindings survive OJ compilation. Source additions repair the exact previous owned adapter and preserve customer edits.
 
