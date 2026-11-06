@@ -92,7 +92,7 @@ export const ANHEDRAL_STACK = {
   name: 'Anhedral Stack',
   foundation: {
     id: 'tanstack-start',
-    name: 'TanStack Start + Anhedral UI',
+    name: 'TanStack Start + shadcn',
     targets: [
       'apps/web/package.json',
       'apps/web/src/router.tsx',

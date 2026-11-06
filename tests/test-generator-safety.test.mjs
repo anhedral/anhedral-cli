@@ -17,7 +17,6 @@ import {
 } from '../dist/index.js';
 import { runCapabilityCommand } from '../dist/capability-command.js';
 import { CapabilityEditor } from '../dist/capability-editor.js';
-import { initializeUiMetadata } from '../dist/ui-project.js';
 import { needsFullCI } from '../scripts/ci-scope.mjs';
 const offline = () => {
   throw Error('External commands forbidden');
@@ -110,23 +109,6 @@ test('doctor detects missing required source without rejecting consumer edits', 
     } finally {
       process.exitCode = old;
     }
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-test('UI metadata containment rejects directory and dangling file symlinks before any helper write', () => {
-  const root = mkdtempSync(path.join(tmpdir(), 'anhedral-ui-containment-'));
-  try {
-    const app = path.join(root, 'app'),
-      outside = path.join(root, 'outside');
-    mkdirSync(app);
-    mkdirSync(outside);
-    symlinkSync(outside, path.join(app, 'ANHEDRAL_UI_LICENSES'));
-    assert.throws(() => initializeUiMetadata(app, 'web'), /Unsafe UI metadata/);
-    assert.deepEqual(readDirectory(outside), []);
-    rmSync(path.join(app, 'ANHEDRAL_UI_LICENSES'));
-    symlinkSync(path.join(outside, 'missing'), path.join(app, '.anhedral-ui.json'));
-    assert.throws(() => initializeUiMetadata(app, 'web'), /Unsafe UI metadata/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

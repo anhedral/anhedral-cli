@@ -13,7 +13,7 @@ cd my-app
 pnpm dev
 ```
 
-Init creates `apps/web` and shared tooling with OJ and TanStack Start server rendering/server functions and source-owned Anhedral UI built on shadcn. It does not add an API, database, authentication, storage or payments. Preview with `anhedral init my-app --dry-run --json`; use `--skip-install --no-git` for offline source generation.
+Init creates `apps/web` and shared tooling with OJ and TanStack Start server rendering/server functions and editable shadcn starter components. It does not add an API, database, authentication, storage or payments. Preview with `anhedral init my-app --dry-run --json`; use `--skip-install --no-git` for offline source generation.
 
 ## Add services
 
@@ -34,16 +34,16 @@ Use `anhedral stack list`, `status` and `doctor` to inspect the Anhedral Stack a
 
 Update your agent plugin through its host and select the matching published CLI version. Preview `anhedral stack update --dry-run --json`, review the returned diffs/conflicts, then apply `anhedral stack update --expect-plan <planId> --json`. Updates preserve authored source and stop on customized-file conflicts or a changed plan. They refresh generated runtime/configuration and deployment provenance without running project scripts or installing dependencies. Validate dependencies and the application separately before upload/deployment. See [the operating workflow](docs/software-factory.md).
 
-## Source-owned UI
+## Web UI
+
+Init includes shadcn Button, Input and Label source with standard `components.json` configuration. Use upstream shadcn directly for more components, or replace the UI with any library. There is no Anhedral UI catalog or CLI wrapper.
 
 ```sh
-anhedral ui list
-anhedral ui add card --web
-anhedral ui diff card --web
-anhedral ui doctor --web
+cd apps/web
+pnpm dlx shadcn@4.22.1 add card
 ```
 
-UI commands operate on Anhedral Stack web applications. Components are editable source copied through the pinned official shadcn installer. Preserve local edits, semantic theme tokens and MIT attribution. See [UI ownership](docs/ui.md).
+Review diffs and preserve local edits and required upstream notices. The generated `LICENSE.shadcn` accompanies the bundled starter source. See [web UI](docs/ui.md).
 
 ## Optional Platform access
 

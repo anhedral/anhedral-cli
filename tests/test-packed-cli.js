@@ -58,10 +58,12 @@ function runInstalledScaffold(installRoot) {
     existsSync(path.join(projectRoot, 'apps/web/node_modules/@tanstack/react-start/package.json')),
   );
   assert.equal(existsSync(path.join(projectRoot, 'apps/mobile')), false);
-  assert.ok(existsSync(path.join(projectRoot, 'apps/web/.anhedral-ui.json')));
-  const catalog = JSON.parse(run(binPath, ['ui', 'list', '--json'], installRoot).stdout);
-  assert.ok(catalog.components.some((item) => item.name === 'button' && item.web));
-  assert.ok(catalog.components.every((item) => !Object.hasOwn(item, 'native')));
+  assert.equal(existsSync(path.join(projectRoot, 'apps/web/.anhedral-ui.json')), false);
+  assert.ok(existsSync(path.join(projectRoot, 'apps/web/LICENSE.shadcn')));
+  const shadcn = JSON.parse(
+    readFileSync(path.join(projectRoot, 'apps/web/components.json'), 'utf8'),
+  );
+  assert.equal(shadcn.$schema, 'https://ui.shadcn.com/schema.json');
   for (const name of ['auth', 'billing', 'managed-email'])
     assert.equal(existsSync(path.join(projectRoot, 'packages', name)), false);
   assert.equal(existsSync(path.join(projectRoot, '.anhedral')), false);

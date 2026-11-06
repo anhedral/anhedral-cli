@@ -1,11 +1,9 @@
 import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { ANHEDRAL_STACK_DEPENDENCIES, WEB_DEPENDENCIES } from '../dependencies.js';
 import { CapabilityEditor, fingerprint } from '../capability-editor.js';
 import type { Capability } from '../capability-catalog.js';
 import { resourceName } from '../render.js';
 import { json, put, workerConfig } from '../scaffold/files.js';
-import { initializeUiMetadata } from '../ui-project.js';
 
 const template = (name: string) =>
   readFileSync(new URL(`../../assets/launch/${name}`, import.meta.url), 'utf8');
@@ -106,7 +104,6 @@ export default [...config, { ignores: ['dist/**', '.wrangler/**', 'src/routeTree
     },
     iconLibrary: 'lucide',
   });
-  initializeUiMetadata(path.join(root, app), 'web');
   put(
     root,
     `${app}/src/lib/utils.ts`,

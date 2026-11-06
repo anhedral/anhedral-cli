@@ -1,7 +1,6 @@
 import { runPlatformCommand } from './platform-command.js';
 import { runStackUpdate } from './stack-update.js';
 import { runCapabilityCommand } from './capability-command.js';
-import { runAnhedralUiCommand } from './ui-command.js';
 import { commandArgumentError } from './cli-arguments.js';
 import { createReporter, type OutputOptions } from './cli-output.js';
 import { scaffoldLaunchProject, parseAnhedralStackOptions } from './launch.js';
@@ -40,9 +39,8 @@ export async function runCommand(
   if (command === 'stack' && commandArguments('stack', args).positional[0] === 'update')
     return runStackUpdate(args, output);
   if (command === 'add' || command === 'stack') return runCapabilityCommand(command, args, output);
-  if (command === 'ui') return runAnhedralUiCommand(args, output);
   if (command !== 'init')
-    throw commandArgumentError(command, 'Use init, add, stack or ui. Run anhedral --help.');
+    throw commandArgumentError(command, 'Use init, add or stack. Run anhedral --help.');
   let options;
   try {
     options = parseAnhedralStackOptions(args);
