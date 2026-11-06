@@ -60,7 +60,7 @@ remain separate, explicit checks when the affected behavior requires them.
 
 Previously reviewed candidates remain supported: supply the exact main SHA and both
 CLI/plugin integrities to reuse trusted main CI artifacts without rebuilding. Candidate
-artifacts expire after one day; normal blank-input dispatch prepares a fresh candidate.
+artifacts expire after seven days; normal blank-input dispatch prepares a fresh candidate.
 A fresh candidate requires fresh approval; never substitute it for a previously approved
 artifact. Runtime compatibility changes still need their owning Platform review.
 
@@ -71,8 +71,11 @@ publication entry point; main merges never publish npm automatically. Confirm np
 version/integrity and GitHub release assets in the workflow result after publication.
 
 If publication succeeded but immutable tags/plugin assets were interrupted,
-`finalize_only` can resume the exact accepted main ancestor only after verifying its
-existing registry identity and trusted successful candidate artifact. It skips npm
+`finalize_only`, with the original automatic release’s `candidate_run_id`, exact SHA
+and both integrities, can resume the exact accepted main ancestor only after verifying its
+existing registry identity and trusted successful candidate preparation/upload. The
+original release may have failed after preparation. Historical run recovery never
+rebuilds artifacts; legacy standalone CI candidates remain supported without a run ID. It skips npm
 publication and completes only that immutable candidate's release assets. New
 publication still requires current main admission and separate authorization.
 

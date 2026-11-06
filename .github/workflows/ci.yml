@@ -121,7 +121,7 @@ jobs:
           path: .artifacts/release/
           include-hidden-files: true
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
           compression-level: 0
       - name: Summarize verified candidate
         id: identity

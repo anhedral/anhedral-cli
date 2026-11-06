@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       candidate_run_id:
-        description: Same-run candidate prepared by the release caller (blank uses trusted CI)
+        description: Prepared release run (historical runs require finalize-only recovery)
         required: false
         default: ''
         type: string
@@ -106,9 +106,13 @@ jobs:
           FINALIZE_ONLY: ${{ inputs.finalize_only }}
         run: |
           if [ -n "$CANDIDATE_RUN_ID" ]; then
-            test "$CANDIDATE_RUN_ID" = "$CURRENT_RUN_ID" || exit 1
             test "$CALLER_WORKFLOW" = "anhedral/anhedral-cli/.github/workflows/release-on-main.yml@refs/heads/main" || exit 1
-            test "$FINALIZE_ONLY" != "true" || exit 1
+            if [ "$CANDIDATE_RUN_ID" != "$CURRENT_RUN_ID" ]; then
+              test "$FINALIZE_ONLY" = "true" || exit 1
+              node scripts/release-candidate-run.mjs
+            else
+              test "$FINALIZE_ONLY" != "true" || exit 1
+            fi
             echo "run_id=$CANDIDATE_RUN_ID" >> "$GITHUB_OUTPUT"
             exit 0
           fi

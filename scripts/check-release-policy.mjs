@@ -264,11 +264,13 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
     !candidate.includes('name: release-candidate') ||
     !candidate.includes('run-id: ${{ steps.candidate.outputs.run_id }}') ||
     !candidate.includes('github-token: ${{ github.token }}') ||
-    !candidate.includes('test "$CANDIDATE_RUN_ID" = "$CURRENT_RUN_ID" || exit 1') ||
+    !candidate.includes('if [ "$CANDIDATE_RUN_ID" != "$CURRENT_RUN_ID" ]; then') ||
     !candidate.includes(
       'anhedral/anhedral-cli/.github/workflows/release-on-main.yml@refs/heads/main',
     ) ||
-    !candidate.includes('test "$FINALIZE_ONLY" != "true" || exit 1')
+    !candidate.includes('test "$FINALIZE_ONLY" != "true" || exit 1') ||
+    !candidate.includes('test "$FINALIZE_ONLY" = "true" || exit 1') ||
+    !candidate.includes('node scripts/release-candidate-run.mjs')
   )
     failures.push(
       '.github/workflows/release.yml: candidate must come from successful trusted main CI for the exact reviewed commit',

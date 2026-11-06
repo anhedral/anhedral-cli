@@ -3,6 +3,10 @@ name: Release Reviewed Candidate
 on:
   workflow_dispatch:
     inputs:
+      candidate_run_id:
+        description: Original release run ID for finalize-only recovery (otherwise blank)
+        required: false
+        type: string
       release_sha:
         description: Exact main commit (blank uses the selected main revision)
         required: false
@@ -59,6 +63,7 @@ jobs:
         env:
           REVIEWED_SHA: ${{ inputs.release_sha || github.sha }}
           DISPATCH_SHA: ${{ github.sha }}
+          RECOVERY_RUN_ID: ${{ inputs.candidate_run_id }}
           FINALIZE_ONLY: ${{ inputs.finalize_only }}
           REVIEWED_CLI: ${{ inputs.cli_integrity }}
           REVIEWED_PLUGIN: ${{ inputs.plugin_integrity }}
@@ -83,10 +88,14 @@ jobs:
               exit 1
             fi
           fi
+          if [ -n "$RECOVERY_RUN_ID" ]; then
+            test "$FINALIZE_ONLY" = "true" || exit 1
+            [[ "$RECOVERY_RUN_ID" =~ ^[1-9][0-9]*$ ]] || exit 1
+          fi
           echo "release_sha=$REVIEWED_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Require successful CI for the reviewed commit
-        if: inputs.cli_integrity != '' || inputs.finalize_only
+        if: (inputs.cli_integrity != '' || inputs.finalize_only) && inputs.candidate_run_id == ''
         env:
           GH_TOKEN: ${{ github.token }}
           REVIEWED_SHA: ${{ inputs.release_sha || github.sha }}
@@ -119,4 +128,4 @@ jobs:
       finalize_only: ${{ inputs.finalize_only }}
       cli_integrity: ${{ inputs.cli_integrity || needs.candidate.outputs.cli_integrity }}
       plugin_integrity: ${{ inputs.plugin_integrity || needs.candidate.outputs.plugin_integrity }}
-      candidate_run_id: ${{ needs.candidate.result == 'success' && github.run_id || '' }}
+      candidate_run_id: ${{ needs.candidate.result == 'success' && github.run_id || inputs.candidate_run_id }}

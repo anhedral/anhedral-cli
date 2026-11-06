@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { parse } from 'yaml';
+import { validateRecoveryCandidate } from '../scripts/release-candidate-run.mjs';
 
 const root = new URL('../', import.meta.url);
 const read = (name) => parse(readFileSync(new URL(`.github/workflows/${name}.yml`, root), 'utf8'));
@@ -117,4 +118,66 @@ test('publication keeps exact identity and environment approval without repeated
     step(release, 'verify', 'Require existing exact publication before finalization').if,
     'inputs.finalize_only == true',
   );
+});
+
+test('published automatic candidates survive failed finalization and a main advance', () => {
+  const previous = execFileSync('git', ['rev-parse', 'HEAD^'], { encoding: 'utf8' }).trim();
+  const run = {
+    id: 123,
+    repository: { full_name: 'anhedral/anhedral-cli' },
+    head_repository: { full_name: 'anhedral/anhedral-cli' },
+    head_branch: 'main',
+    head_sha: previous,
+    event: 'workflow_dispatch',
+    path: '.github/workflows/release-on-main.yml',
+    conclusion: 'failure',
+  };
+  const jobs = [
+    {
+      conclusion: 'success',
+      steps: [
+        'Build and verify Linux release candidate',
+        'Share verified release candidate for review',
+        'Summarize verified candidate',
+      ].map((name) => ({ name, conclusion: 'success' })),
+    },
+  ];
+  const expected = { runId: '123', sourceRevision: previous };
+  assert.doesNotThrow(() => validateRecoveryCandidate(run, jobs, expected));
+  assert.equal(
+    shell(guard.run, {
+      ...valid,
+      REVIEWED_SHA: previous,
+      FINALIZE_ONLY: 'true',
+      RECOVERY_RUN_ID: '123',
+      REVIEWED_CLI: sri,
+      REVIEWED_PLUGIN: sri,
+    }).status,
+    0,
+  );
+  assert.notEqual(shell(guard.run, { ...valid, RECOVERY_RUN_ID: '123' }).status, 0);
+  for (const change of [
+    { id: 456 },
+    { head_sha: sha },
+    { head_branch: 'staging' },
+    { event: 'pull_request' },
+    { path: '.github/workflows/other.yml' },
+    { repository: { full_name: 'other/cli' } },
+    { head_repository: { full_name: 'other/cli' } },
+  ])
+    assert.throws(() => validateRecoveryCandidate({ ...run, ...change }, jobs, expected));
+  assert.throws(() => validateRecoveryCandidate(run, [], expected));
+  assert.throws(() =>
+    validateRecoveryCandidate(run, [{ ...jobs[0], conclusion: 'failure' }], expected),
+  );
+  assert.throws(() =>
+    validateRecoveryCandidate(run, [{ ...jobs[0], steps: jobs[0].steps.slice(0, 2) }], expected),
+  );
+  const registryGuard = step(
+    release,
+    'verify',
+    'Require existing exact publication before finalization',
+  );
+  assert.match(registryGuard.run, /check-release-registry.mjs verify/);
+  assert.equal(release.jobs.publish.if, 'inputs.finalize_only != true');
 });

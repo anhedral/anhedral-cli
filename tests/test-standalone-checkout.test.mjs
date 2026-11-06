@@ -109,7 +109,7 @@ test('publication rejects removal of the upstream repository guard', () => {
       const source = readFileSync(target, 'utf8');
       writeFileSync(
         target,
-        source.replace("    if: github.repository == 'anhedral/anhedral-cli'\n", ''),
+        source.replace(/^    if: github\.repository == 'anhedral\/anhedral-cli'.*\n/m, ''),
       );
       assert.ok(
         validateWorkflowPolicy(directory).some((failure) => /repository contexts/.test(failure)),
