@@ -33,6 +33,8 @@ test('reviewed public snapshot verifies provenance without importing raw private
   assert.equal(snapshot.files.length, 7);
   assert.equal(contract.hostingPolicySchema, undefined);
   assert.equal(contract.hostingCompatibility, undefined);
+  assert.equal(contract.deploymentPlanSchema, undefined);
+  assert.equal(contract.deploymentSourceSchema, undefined);
 });
 
 test('portable contract snapshot matches its exact provenance and the CLI capability catalog', () => {

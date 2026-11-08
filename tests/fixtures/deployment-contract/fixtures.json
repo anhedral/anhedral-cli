@@ -20,46 +20,6 @@
       "visibility": "protected"
     }
   },
-  "plan": {
-    "contractVersion": 1,
-    "requestId": "00000000-0000-4000-8000-000000000001",
-    "projectId": "00000000-0000-4000-8000-000000000002",
-    "manifest": {
-      "contractVersion": 1,
-      "foundation": "tanstack-start",
-      "capabilities": [
-        "hono",
-        "database-auth"
-      ],
-      "identity": "better-auth-d1-v1",
-      "cliArtifact": {
-        "version": "0.17.0",
-        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "packageIntegrity": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-      },
-      "intent": {
-        "contractVersion": 1,
-        "runtimeProfile": "anhedral-stack",
-        "environment": "preview",
-        "visibility": "protected"
-      }
-    },
-    "source": {
-      "inventoryVersion": 2,
-      "inventoryProfile": "fixture-source-v1",
-      "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "lockfileDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-      "manifestDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
-    },
-    "policyDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-    "runtimeImage": "registry.example.com/fixture/candidate@sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-    "configurationRevision": "1111111111111111111111111111111111111111111111111111111111111111",
-    "expectedGeneration": 0,
-    "migrationDigests": [
-      "2222222222222222222222222222222222222222222222222222222222222222"
-    ],
-    "requiredAuthority": "preview"
-  },
   "event": {
     "contractVersion": 1,
     "requestId": "00000000-0000-4000-8000-000000000001",

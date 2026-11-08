@@ -7,10 +7,10 @@ if (existsSync(new URL('../plugin/runtime', import.meta.url)))
   throw Error('Plugin must not ship an executable managed runtime.');
 const manifest = JSON.parse(readFileSync(new URL('../plugin/plugin.json', import.meta.url)));
 if (
-  !manifest.description.includes('Anhedral Stack') ||
+  !manifest.description.includes('apps on Anhedral') ||
   !manifest.description.includes('Anhedral CLI')
 )
-  throw Error('Plugin must describe Anhedral Stack source workflows through the Anhedral CLI.');
+  throw Error('Plugin must describe building apps on Anhedral through the Anhedral CLI.');
 const stack = JSON.parse(
   readFileSync(new URL('../plugin/references/stack-registry.json', import.meta.url)),
 );

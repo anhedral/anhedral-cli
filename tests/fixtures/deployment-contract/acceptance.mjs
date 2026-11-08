@@ -6,7 +6,6 @@ export function deploymentAcceptance(contract, fixture) {
   test("deployment wire fixtures are strict, versioned and separate pending from readiness", () => {
     for (const [schema, value] of [
       [contract.deploymentManifestSchema, fixture.manifest],
-      [contract.deploymentPlanSchema, fixture.plan],
       [contract.deploymentEventSchema, fixture.event],
       [contract.deploymentResultSchema, fixture.pending],
       [contract.deploymentResultSchema, fixture.ready],
@@ -35,18 +34,13 @@ export function deploymentAcceptance(contract, fixture) {
       }).success,
       false,
     );
-    const production = copy(fixture.plan);
-    production.manifest.intent.environment = "production";
-    assert.equal(contract.deploymentPlanSchema.safeParse(production).success, false);
-    production.requiredAuthority = "production-approval";
-    assert.equal(contract.deploymentPlanSchema.safeParse(production).success, true);
     assert.equal(
       contract.deploymentErrorSchema.parse({ ...fixture.error, stateChanged: "unknown" })
         .stateChanged,
       "unknown",
     );
   });
-  test("invalid prerequisites, identities, digests and mutable images fail before deployment", () => {
+  test("invalid prerequisites and identities fail before deployment", () => {
     for (const change of [
       (m) => {
         m.capabilities = ["database-auth"];
@@ -70,21 +64,6 @@ export function deploymentAcceptance(contract, fixture) {
       const manifest = copy(fixture.manifest);
       change(manifest);
       assert.equal(contract.deploymentManifestSchema.safeParse(manifest).success, false);
-    }
-    for (const change of [
-      (p) => {
-        p.source.sourceDigest = "git-branch";
-      },
-      (p) => {
-        p.runtimeImage = "registry.example.com/candidate:latest";
-      },
-      (p) => {
-        p.expectedGeneration = -1;
-      },
-    ]) {
-      const plan = copy(fixture.plan);
-      change(plan);
-      assert.equal(contract.deploymentPlanSchema.safeParse(plan).success, false);
     }
   });
   test("TanStack source versions and the five launch manifests preserve the hosting boundary", () => {

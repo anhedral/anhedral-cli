@@ -74,39 +74,6 @@ export const deploymentManifestSchema = z
             message: `${id} requires ${parent}.`,
           });
   });
-export const deploymentSourceSchema = z
-  .object({
-    inventoryVersion: z.literal(2),
-    inventoryProfile: z.string().min(1).max(100),
-    sourceDigest: deploymentDigestSchema,
-    lockfileDigest: deploymentDigestSchema,
-    manifestDigest: deploymentDigestSchema,
-  })
-  .strict();
-const runtimeImageSchema = z
-  .string()
-  .regex(/^registry\.[a-z0-9.-]+\/[a-zA-Z0-9/_.-]+@sha256:[a-f0-9]{64}$/);
-export const deploymentPlanSchema = z
-  .object({
-    contractVersion: z.literal(1),
-    requestId: z.uuid(),
-    projectId: z.uuid(),
-    manifest: deploymentManifestSchema,
-    source: deploymentSourceSchema,
-    policyDigest: deploymentDigestSchema,
-    runtimeImage: runtimeImageSchema,
-    configurationRevision: deploymentDigestSchema,
-    expectedGeneration: z.number().int().nonnegative(),
-    migrationDigests: z.array(deploymentDigestSchema).max(100),
-    requiredAuthority: z.enum(["preview", "production-approval"]),
-  })
-  .strict()
-  .refine(
-    (plan) =>
-      plan.requiredAuthority ===
-      (plan.manifest.intent.environment === "production" ? "production-approval" : "preview"),
-    "Production requires exact-candidate approval.",
-  );
 export const deploymentErrorSchema = z
   .object({
     code: z.enum([
@@ -180,8 +147,6 @@ export const deploymentResultSchema = z.discriminatedUnion("status", [
     .strict(),
 ]);
 export type DeploymentManifest = z.infer<typeof deploymentManifestSchema>;
-export type DeploymentPlan = z.infer<typeof deploymentPlanSchema>;
-export type DeploymentSource = z.infer<typeof deploymentSourceSchema>;
 export type DeploymentIntent = z.infer<typeof deploymentIntentSchema>;
 export type DeploymentEvent = z.infer<typeof deploymentEventSchema>;
 export type DeploymentResult = z.infer<typeof deploymentResultSchema>;
