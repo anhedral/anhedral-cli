@@ -78,13 +78,7 @@ const requiredFiles = new Set([
   'assets/ui/web/label.tsx',
   'assets/ui/LICENSE.shadcn',
   'assets/ui/UPSTREAM.json',
-  'assets/ui/catalog.json',
-  'assets/ui/extensions/registry.json',
-  'assets/ui/LICENSE.react-native-reusables',
   'docs/ui.md',
-  'dist/ui-command.js',
-  'dist/ui-catalog.js',
-  'dist/ui-project.js',
   'dist/bin.js',
   'dist/index.d.ts',
   'dist/index.js',
@@ -215,12 +209,7 @@ try {
       /^(?:assets\/ui\/(?:native\/|native-portal\/|theme(?:-storage)?\.)|dist\/(?:platforms\/mobile\.|scaffold\/(?:native-ui|expo-runtime)\.))/,
       'Retired native port must not return to the published CLI',
     );
-    const allowedNativeUI =
-      [
-        'assets/ui/catalog.json',
-        'assets/ui/extensions/registry.json',
-        'assets/ui/LICENSE.react-native-reusables',
-      ].includes(file.path) ||
+    const allowedWebUI =
       /^assets\/ui\/(?:web\/(?:button|input|label)\.tsx|LICENSE\.shadcn|UPSTREAM(?:-LOCK)?\.json)$/.test(
         file.path,
       );
@@ -245,7 +234,7 @@ try {
         'assets/security/credential-patterns.mjs',
         'assets/security/credential-patterns.d.mts',
       ].includes(file.path) ||
-      allowedNativeUI ||
+      allowedWebUI ||
       stackFiles.includes(file.path) ||
       (file.path.startsWith('assets/launch/') && requiredFiles.has(file.path)) ||
       allowedDist ||

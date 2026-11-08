@@ -67,17 +67,13 @@ test(
     assert.deepEqual(run('bash', ['anhedral', 'help', 'source', 'u']), ['upload']);
   },
 );
-test(
-  'Bash completes capabilities and components and avoids consumed names',
-  { skip: !hasBash },
-  () => {
-    assert.deepEqual(run('bash', ['anhedral', 'add', 'back']), ['backend']);
-    assert.deepEqual(run('bash', ['anhedral', 'add', '']), ['backend', 'r2', 'stripe']);
-    assert.deepEqual(run('bash', ['anhedral', 'add', 'backend', 'back']), []);
-    assert.ok(run('bash', ['anhedral', 'ui', 'add', 'but']).includes('button'));
-    assert.deepEqual(run('bash', ['anhedral', 'completion', 'z']), ['zsh']);
-  },
-);
+test('Bash completes capabilities and avoids consumed names', { skip: !hasBash }, () => {
+  assert.deepEqual(run('bash', ['anhedral', 'add', 'back']), ['backend']);
+  assert.deepEqual(run('bash', ['anhedral', 'add', '']), ['backend', 'r2', 'stripe']);
+  assert.deepEqual(run('bash', ['anhedral', 'add', 'backend', 'back']), []);
+  assert.ok(!run('bash', ['anhedral', '']).includes('ui'));
+  assert.deepEqual(run('bash', ['anhedral', 'completion', 'z']), ['zsh']);
+});
 test(
   'Bash exposes contextual flags, aliases and excludes used/conflicting flags',
   { skip: !hasBash },
@@ -85,8 +81,6 @@ test(
     const prepare = run('bash', ['anhedral', 'deploy', 'prepare', '--']);
     assert.ok(prepare.includes('--api-url'));
     assert.ok(!prepare.includes('--manifest'));
-    const flags = run('bash', ['anhedral', 'ui', 'add', 'button', '--web', '--']);
-    for (const invalid of ['--web', '--native', '--all']) assert.ok(!flags.includes(invalid));
     assert.ok(!run('bash', ['anhedral', 'init', '--git', '--']).includes('--no-git'));
     assert.ok(run('bash', ['anhedral', 'init', '-']).includes('-c'));
   },
@@ -126,7 +120,7 @@ test(
 test('zsh completes nested verbs, values and contextual flags', { skip: !hasZsh }, () => {
   assert.deepEqual(run('zsh', ['anhedral', '--quiet', 'source', 'u']), ['upload']);
   assert.deepEqual(run('zsh', ['anhedral', 'add', 'back']), ['backend']);
-  assert.ok(run('zsh', ['anhedral', 'ui', 'add', 'but']).includes('button'));
+  assert.ok(!run('zsh', ['anhedral', '']).includes('ui'));
   const prepare = run('zsh', ['anhedral', 'deploy', 'prepare', '--']);
   assert.ok(prepare.includes('--api-url'));
   assert.ok(!prepare.includes('--manifest'));

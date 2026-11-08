@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
   "displayName": "Anhedral",
-  "version": "0.20.0",
+  "version": "0.22.0",
   "description": "Build and manage apps on Anhedral through the Anhedral CLI with Codex or Claude Code.",
   "author": {
     "name": "Anhedral",

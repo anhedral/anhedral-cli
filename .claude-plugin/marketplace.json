@@ -9,13 +9,13 @@
     {
       "name": "anhedral",
       "description": "Build and manage apps on Anhedral through the CLI.",
-      "version": "0.20.0",
+      "version": "0.22.0",
       "category": "Developer Tools",
       "source": {
         "source": "git-subdir",
         "url": "https://github.com/anhedral/anhedral-cli.git",
         "path": "plugins/anhedral",
-        "ref": "plugin-v0.20.0"
+        "ref": "plugin-v0.22.0"
       }
     }
   ]

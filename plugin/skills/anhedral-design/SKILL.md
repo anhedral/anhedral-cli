@@ -1,16 +1,16 @@
 ---
 name: anhedral-design
-description: "Extend the Anhedral Stack's source-owned web UI through official shadcn components and semantic tokens."
+description: "Design Anhedral Stack web applications with standard shadcn defaults or the consumer's chosen UI library."
 ---
 
-# Anhedral Design
+# Web design
 
-This plugin provides Anhedral CLI instructions for hosts with a terminal and filesystem. It registers no remote tools or account connection. Inspect the reviewed CLI version and command help before execution; the plugin does not bundle the CLI runtime.
+This compatibility-named skill provides web design guidance, not a separate Anhedral UI library or installer. It registers no remote tools, account connection or bundled CLI runtime.
 
-Read consumer instructions and source. Anhedral UI is the Anhedral Stack's source-owned web UI layer over official shadcn. Do not introduce another runtime UI library or advertise native/alternate-framework paths.
+Read consumer instructions and source, then ../../references/ui.md. Init includes standard shadcn configuration and editable Button, Input and Label components. Consumers may use any UI library; preserve their existing choice and authored source. There is no Anhedral UI catalog or `anhedral ui` command.
 
-Read ../../references/ui.md. Use `anhedral ui list`, `init`, `add`, `diff` and `doctor`; select the current web application with `--cwd` or optional `--web`. Preview with `--dry-run --json`. Current public UI commands operate on Anhedral Stack web projects only. Initialization already includes configuration and three reviewed starter components.
+For the default shadcn setup, run the upstream CLI from `apps/web`, for example `pnpm dlx shadcn@4.22.1 add card` or `pnpm dlx shadcn@4.22.1 diff card`. Inspect upstream help and source changes before applying. Do not request automatic overwrite. Review dependencies and diffs and reconcile customized files explicitly.
 
-Preserve consumer edits, semantic tokens and MIT attribution. The CLI never requests overwrite. Inspect diffs before updates, use existing components before custom primitives, and keep visible keyboard focus and browser interactions intact. Read version-matched framework guidance and validate actual browser behavior; source/type checks alone are not acceptance.
+Preserve semantic tokens, existing components and required upstream notices, including the starter's `LICENSE.shadcn` and `UPSTREAM.json`. Keep visible keyboard focus and browser interactions intact. Read version-matched framework guidance and validate actual browser behavior; source/type checks alone are not acceptance. Existing legacy UI metadata does not require a destructive migration.
 
-UI does not require backend services. Add the backend, storage or Stripe only for a demonstrated application need through the current Anhedral Stack additions. Keep business/auth/resource work in Hono, communicate through scoped API bindings and never cross-import application source. See ../../references/capabilities.md.
+UI does not require backend services. Add backend, storage or Stripe only for a demonstrated application need through current Anhedral Stack additions. Keep business/auth/resource work in Hono, communicate through scoped API bindings and never cross-import application source. See ../../references/capabilities.md. Expo and React Native Reusables are post-MVP direction, not current CLI options.

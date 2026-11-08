@@ -36,7 +36,7 @@ test('structured child commands describe completion and positional semantics', (
     'status',
     'doctor',
   ]);
-  assert.equal(commandTopic(['ui', 'add']).positional.kind, 'component');
+  assert.equal(commandTopic(['ui', 'add']), undefined);
   assert.equal(commandDefinition('add').positional.kind, 'capability');
   assert.equal(
     commandTopic(['deploy', 'plan']).options.find((o) => o.flag === '--manifest').kind,
@@ -95,14 +95,11 @@ test('nested grammar validates before command handlers and preserves family opti
   assert.throws(() => validateCommand('source', ['status', 'extra']), /no extra arguments/);
   assert.throws(() => validateCommand('stack', []), /Choose stack/);
   assert.throws(() => validateCommand('login', ['--start', '--resume']), /Choose one/);
-  for (const flag of ['--native', '--all'])
-    assert.throws(() => validateCommand('ui', ['list', '--web', flag]), /Unknown ui option/);
-  assert.doesNotThrow(() => validateCommand('ui', ['list', '--web']));
+  assert.throws(() => validateCommand('ui', ['list']), /retired.*shadcn/);
   assert.throws(() => validateCommand('completion', ['fish']), /Choose bash, zsh/);
   assert.doesNotThrow(() => validateCommand('source', ['--dry-run', 'upload']));
   // Accepted no-op family flags remain accepted for older scripts.
   assert.doesNotThrow(() => validateCommand('source', ['status', '--new']));
-  assert.doesNotThrow(() => validateCommand('ui', ['list', '--dry-run']));
   assert.throws(
     () => validateCommand('init', ['--skip-install', '--skip-install']),
     /Specify --skip-install once/,

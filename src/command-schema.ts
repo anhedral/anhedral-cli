@@ -563,45 +563,6 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     examples: ['stack list', 'stack status --json', 'stack doctor'],
     note: 'Installed source is not proof of live provider activation.',
   },
-  ui: {
-    description: 'Source-owned web UI for the Anhedral Stack.',
-    usage: 'ui <init|add|list|diff|doctor> [components...] [options]',
-    options: [
-      { flag: '--web', description: 'Select the Anhedral Stack web application.' },
-      { flag: '--dry-run', description: 'Show the installer plan without writes or network.' },
-    ],
-    children: Object.fromEntries(
-      ['init', 'add', 'list', 'diff', 'doctor'].map((action) => [
-        action,
-        {
-          description: {
-            init: 'Initialize Anhedral UI configuration.',
-            add: 'Install selected UI components.',
-            list: 'List available Anhedral Stack web components.',
-            diff: 'Inspect differences for selected UI components.',
-            doctor: 'Check UI configuration.',
-          }[action]!,
-          usage: `ui ${action}${['add', 'diff'].includes(action) ? ' <components...>' : ''} [options]`,
-          options: [
-            { flag: '--web', description: 'Select the Anhedral Stack web application.' },
-            { flag: '--dry-run', description: 'Preview without writes or network.' },
-          ],
-          positional: {
-            name: 'components',
-            min: ['add', 'diff'].includes(action) ? 1 : 0,
-            max: ['add', 'diff'].includes(action) ? 50 : 0,
-            kind: 'component' as const,
-          },
-          examples: [
-            `ui ${action}${['add', 'diff'].includes(action) ? ' button --web' : ''}`,
-            `ui ${action}${['add', 'diff'].includes(action) ? ' button --web' : ''} --json`,
-          ],
-        },
-      ]),
-    ),
-    examples: ['ui list', 'ui add button --web', 'ui diff button', 'ui doctor'],
-    note: 'Web component installation uses the pinned official shadcn CLI. No automatic overwrite or provider operations.',
-  },
   init: {
     description: 'Create the Anhedral Stack: web UI first, then add backend, storage and payments.',
     usage: 'init [directory] [options]',

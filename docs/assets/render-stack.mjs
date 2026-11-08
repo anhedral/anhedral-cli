@@ -59,7 +59,7 @@ export function renderStack(light = false) {
       '01 / WEB FOUNDATION',
       'Next.js',
       'App Router · OpenNext',
-      'Cloudflare Workers · Anhedral UI',
+      'Cloudflare Workers · shadcn',
       'nextjs.org',
     ],
     [

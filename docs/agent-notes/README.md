@@ -5,12 +5,16 @@
 Removed internal deployment plan/source exports and synthetic internal plan fixtures
 from the licensed public contract projection. Customer manifests and receipts remain.
 This is a breaking removal for consumers importing those server plan exports;
-use the CLI's versioned plan/prepare commands. README and plugin metadata now describe
-the API client and agent workflow. Local integration is on the preserved older
-submodule checkout; publication and verification against current release remain pending. Build, typecheck,
-focused contract/client tests, hygiene, repository boundaries and release secret scanning
-passed. Installed Claude lacks `plugin validate --strict`; real host acceptance remains pending.
+use the CLI's versioned plan/prepare commands. README and plugin metadata describe
+the API client and agent workflow. Changes are reconciled with current staging;
+publishing and Platform/runtime admission remain independent.
 
+## 2026-11-08 Coordinated 0.22.0 release
+
+Breaking 0.x release: deployment plans and candidate receipts omit private runtime
+metadata. Use the matching Platform API and refresh saved plans with `--new`.
+Source versions and runtime admission remain independently reviewed. Release
+preparation uses the existing action with exact artifact identities (#132).
 
 ## 2026-11-08 Public receipt boundary
 
@@ -20,12 +24,12 @@ snapshot is exported from immutable owner commit
 `c2b6bc60de8852173c7dc8e0cfe544d13ef41a5f`; source hashes and provenance are
 verified together. Client boundary, credential and deployment fixtures pass.
 
-## 2026-11-03 Project discovery and registration
+## 2026-11-05 · Coordinated 0.21.0 release (#128)
 
-Issue #111 adds native CLI project listing and metadata-only creation, paired with
-Platform issue #509 and its reviewed public transport projection. Creation uses a
-durable retry identity; optional linking checks live build authority and preserves
-generated source identity. No provider activation or package publication is implied.
+Breaking 0.x change: `anhedral ui` is retired. Init defaults to editable shadcn
+components; use upstream shadcn or any UI library. Existing source and required
+upstream notices are preserved. CLI and plugin share the version and immutable
+release artifacts; publication does not deploy Landing or update runtime pins.
 
 ## 2026-11-03 CLI-only plugin guidance
 
@@ -65,25 +69,6 @@ package/installed smoke and 27 focused checks passed. Full unit validation passe
 214 of 215 tests; one existing optional patch-byte check skipped. Compiled runtime
 helpers/templates are unchanged; no additional generated Next build was needed.
 No provider/database operation, package publication or deployment was performed.
-
-## 2026-11-01 Comprehensive maintenance implementation
-
-Based on staging `2014a612`, code candidate `850fe692` implements C01–C12,
-CLI Q01–Q03/Q08–Q10 and reviewed transport/document boundaries. Independent
-review passed 56 focused tests with no remaining findings. The complete unit
-suite passed 194 of 195 tests; one existing optional patch-byte test skipped.
-Build, lint/typecheck, static security, exact plugin/archive preflight and the
-67-module package boundary passed. Exact package smoke passed on Node 20.19,
-22.12 and 26.8. The clean-candidate generated Next/OpenNext/workerd and local
-Wrangler/D1 auth proof passed, retained resolved locks/receipts, and measured
-976.83 KiB web gzip. Actual Turbo planning proved WXT outputs/env and disabled
-native build caching. Runtime checks caught and repaired generated body-limit
-413 translation; typed/generic server errors remain sanitized. Retention is an
-owner-scoped example with consumer acceptance, never scheduled cleanup.
-Evidence remains in `.artifacts/cli-final-*.log` and `.artifacts/next-runtime/`.
-Windows process-tree cleanup, browser/native compilation/devices and live
-provider acceptance were not exercised. No publication, provider activation,
-production promotion or live migration is authorized by these checks.
 
 ## 2026-11-01 — Platform client recovery fixes
 

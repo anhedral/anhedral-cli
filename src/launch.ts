@@ -124,7 +124,7 @@ function documentation(root: string, name: string) {
     `# ${name}
 
 Anhedral Stack: web UI powered by OJ and TanStack Start server rendering/server functions
-and source-owned shadcn Anhedral UI.
+and editable shadcn components.
 Only the web application is created initially. No backend or provider is provisioned.
 
 ## Develop
@@ -132,7 +132,9 @@ Only the web application is created initially. No backend or provider is provisi
 Use the Node/pnpm versions in package.json. Run pnpm install if generation skipped
 installation, then pnpm dev and open http://localhost:3000. Run pnpm check and
 pnpm audit:deps before deployment. Editable routes live in apps/web/src/routes.
-Use anhedral ui add card --web for more shadcn components; preserve local edits.
+Use cd apps/web && pnpm dlx shadcn@4.22.1 add card for more shadcn components.
+Shadcn is the default, not a restriction: use any UI library and preserve local edits.
+Keep LICENSE.shadcn with the copied starter components.
 
 ## Add services progressively
 

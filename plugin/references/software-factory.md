@@ -11,7 +11,7 @@ The CLI also generates the Anhedral Stack with one web foundation and progressiv
 3. Preview and add [capabilities](capabilities.md) as needed. Configure selected
    providers/auth methods, apply reviewed migrations and validate actual runtime
    behavior before deployment. Source installation is not provider activation.
-4. Extend [source-owned UI](ui.md), implement features and run consumer checks.
+4. Choose or extend [web UI](ui.md), implement features and run consumer checks.
 
 ## Evidence-driven maintenance
 
@@ -56,6 +56,11 @@ explicit review failure, not a clean secret scan.
 
 ## Runtime verification
 
+For local development, `pnpm test` builds once and runs unit tests; `pnpm lint`
+checks source without emitting a build. `pnpm release:check` builds and type-checks
+once, then runs the full source, security, advisory, unit, patch and package checks.
+Use `pnpm release:pack` when preparing a standalone release artifact; it builds fresh.
+
 Routine CI compiles the CLI once and runs fast source/security checks and selected
 contract tests. Generated applications are not installed or built in that path.
 Dispatch [CI](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/ci.yml) with `runtime_proof` enabled for the
@@ -71,6 +76,9 @@ isolated local data, never a configured database or live payment provider. Prese
 passed and failed evidence. Tests are not provider deployment acceptance. Run
 `node tests/test-generated-config-lint.mjs <installed-workspace>` to exercise the
 generated web ESLint policy; runtime proof checks both web-only and composed source.
+`node tests/test-generated-router.mjs <installed-workspace>` temporarily replaces
+the example route, runs the generated web typecheck and restores the route. The
+router imports its own Start augmentation so ordinary page edits remain type-safe.
 
 Backend server entries call TanStack’s `createStartHandler(defaultStreamHandler)` directly so request-local API bindings survive OJ compilation. Source additions repair the exact previous owned adapter and preserve customer edits.
 
@@ -108,7 +116,6 @@ adjacent environment, staging, production and runtime-log transport modules.
 Internal browser and service routes are not part of this external contract.
 `https://api.internal` in generated application templates is a synthetic
 service-binding URL for the customer's backend, not an Anhedral service endpoint.
-
 
 `login --start` prints browser approval instructions; `login --resume` redeems the
 saved approval. Interactive `login` polls after showing the URL and confirmation
