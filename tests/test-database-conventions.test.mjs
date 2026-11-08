@@ -5,7 +5,7 @@ import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { scaffoldAnhedralStack, parseInitOptions } from '../dist/index.js';
-import { runCapabilityCommand } from '../dist/capability-command.js';
+import { runCapabilityCommand } from '../dist/composition/command.js';
 test('D1 migrations default to local, use API binding, and propagate failures', async () => {
   const base = mkdtempSync(path.join(tmpdir(), 'anhedral-migrations-'));
   const root = path.join(base, 'product');

@@ -3,7 +3,7 @@ import { readBoundedFile } from './bounded-file.js';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { resolveCommand } from './command.js';
+import { resolveCommand } from './process/resolve-command.js';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
@@ -79,7 +79,7 @@ export function execFile(executable: string, args: readonly string[], cwd: strin
     writeFileSync(configuration, bytes, { flag: 'wx', mode: 0o600 });
     const wrapper = spawnSync(
       process.execPath,
-      [fileURLToPath(new URL('./command-runner.js', import.meta.url)), configuration, resultFile],
+      [fileURLToPath(new URL('./process/runner.js', import.meta.url)), configuration, resultFile],
       {
         cwd,
         shell: false,

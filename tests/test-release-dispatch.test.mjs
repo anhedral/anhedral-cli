@@ -5,7 +5,10 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { parse } from 'yaml';
-import { recoveryJobs, validateRecoveryCandidate } from '../scripts/release-candidate-run.mjs';
+import {
+  recoveryJobs,
+  validateRecoveryCandidate,
+} from '../scripts/release/release-candidate-run.mjs';
 
 const root = new URL('../', import.meta.url);
 const read = (name) => parse(readFileSync(new URL(`.github/workflows/${name}.yml`, root), 'utf8'));

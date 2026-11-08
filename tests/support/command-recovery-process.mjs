@@ -1,6 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { runStagedTransaction, recoverInterruptedTransaction } from '../../dist/transaction.js';
+import {
+  runStagedTransaction,
+  recoverInterruptedTransaction,
+} from '../../dist/transactions/transaction.js';
 
 const [mode, root] = process.argv.slice(2);
 if (!['rollback', 'recover', 'legacy'].includes(mode) || !root || !path.isAbsolute(root))

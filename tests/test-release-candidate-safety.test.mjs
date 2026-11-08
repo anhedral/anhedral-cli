@@ -39,7 +39,7 @@ function candidate() {
   };
   save();
   const verify = (environment = {}) =>
-    spawnSync(process.execPath, ['scripts/verify-release-artifact.mjs', file], {
+    spawnSync(process.execPath, ['scripts/release/verify-release-artifact.mjs', file], {
       encoding: 'utf8',
       env: {
         ...process.env,

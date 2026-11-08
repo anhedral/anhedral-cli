@@ -13,6 +13,18 @@ The CLI also generates the Anhedral Stack with one web foundation and progressiv
    behavior before deployment. Source installation is not provider activation.
 4. Choose or extend [web UI](ui.md), implement features and run consumer checks.
 
+## Source ownership
+
+`src/platform/` owns the thin authenticated API client; `src/composition/` owns
+progressive source additions and updates. Foundation generation lives in
+`src/scaffold/` with the launch entrypoint. `src/transactions/` owns journaled
+source writes and durable filesystem operations; `src/process/` owns child-process
+execution. Portable contracts remain in `src/contracts/`. Internal moves update
+`scripts/checks/public-package-policy.json` and packed-artifact tests together; public
+package exports and CLI commands stay stable. Tooling is grouped under
+`scripts/build`, `checks`, `contracts`, `plugin`, `release`, `runtime` and `security`;
+root script helpers are shared infrastructure for those owners.
+
 ## Evidence-driven maintenance
 
 Inspect current Git state and preserve unrelated work. Verify runtime entrypoints,
@@ -44,7 +56,7 @@ without recursive submodules; publishing rejects calls from another repository.
 These checks do not make a submodule a security sandbox: review tracked files,
 package contents, inherited environment and publication authority independently.
 
-The reviewed public module inventory in `scripts/public-package-policy.json` and
+The reviewed public module inventory in `scripts/checks/public-package-policy.json` and
 `pnpm check:boundaries` constrain compilation and package preparation; an unexpected
 dist module or private import requires explicit review. Portable contracts are
 synced only from a reviewed, licensed Platform projection with exact provenance,
@@ -67,7 +79,7 @@ Dispatch [CI](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflo
 Anhedral Stack proof and one-day measurements. Broader compatibility and generated
 application matrices remain in [Full validation](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/validation.yml).
 
-`node scripts/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
+`node scripts/runtime/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
 application and exercises local workerd, SSR/server functions, progressive backend,
 private storage and the generated Stripe build/migration path. The compiled web
 and API Workers run together with the migrated local D1 state. Bundle measurements
@@ -169,7 +181,7 @@ checks/builds; authored routes, router configuration and server source remain
 included. Credential scanning is deliberately conservative; inspect source before uploading.
 
 Public upload limits and message shapes live in `src/contracts`; protocol code is
-in `src/platform-command.ts`. The server independently authenticates the caller,
+in `src/platform/command.ts`. The server independently authenticates the caller,
 checks current tenant/project authority and revocation, validates source, and
 enforces admission. Client checks and supplied IDs cannot grant access. Upload
 does not deploy, activate providers, migrate a database or replace identities.

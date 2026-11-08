@@ -5,10 +5,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { trustedLinuxCredentialHelper } from '../dist/credential-helper.js';
+import { trustedLinuxCredentialHelper } from '../dist/platform/credential-helper.js';
 import { sourceContainsCredential } from '../assets/security/credential-patterns.mjs';
 import * as transport from '../dist/contracts/cli-transport.js';
-import { packageSource } from '../dist/platform-source.js';
+import { packageSource } from '../dist/platform/source.js';
 import { scanText } from '../scripts/secret-scanner.mjs';
 
 const examples = [
@@ -111,7 +111,7 @@ test(
       await writeFile(helper, '#!/bin/sh\ncat > "' + join(root, 'captured') + '"\n', {
         mode: 0o755,
       });
-      const module = new URL('../dist/platform-state.js', import.meta.url).href;
+      const module = new URL('../dist/platform/state.js', import.meta.url).href;
       await writeFile(
         join(root, 'probe.mjs'),
         `

@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
-import { measureConfiguredWorker, measureWorker } from '../scripts/measure-worker.mjs';
+import { measureConfiguredWorker, measureWorker } from '../scripts/runtime/measure-worker.mjs';
 
 test('bundle budget counts nested runtime JS/Wasm, excludes maps and fails growth', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'worker-budget-'));

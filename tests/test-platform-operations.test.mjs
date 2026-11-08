@@ -3,9 +3,9 @@ import test from 'node:test';
 import { mkdtemp, realpath, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runStagingCommand, runLogsCommand } from '../dist/platform-operations.js';
+import { runStagingCommand, runLogsCommand } from '../dist/platform/operations.js';
 import { commandHelp } from '../dist/registry/usage.js';
-import { writePrivate } from '../dist/platform-state.js';
+import { writePrivate } from '../dist/platform/state.js';
 import { validateCommand } from '../dist/cli-arguments.js';
 const context = {
   origin: 'https://platform.anhedral.com',

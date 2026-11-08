@@ -4,17 +4,17 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { readContractSnapshot } from '../scripts/deployment-contract-snapshot.mjs';
+import { readContractSnapshot } from '../scripts/contracts/deployment-contract-snapshot.mjs';
 import * as contract from '../dist/contracts/deployment.js';
 import * as transport from '../dist/contracts/cli-transport.js';
-import { composeSourceProvenance } from '../dist/composition.js';
+import { composeSourceProvenance } from '../dist/composition/composition.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
-import { CAPABILITY_IDS, CAPABILITIES } from '../dist/capability-catalog.js';
+import { CAPABILITY_IDS, CAPABILITIES } from '../dist/composition/catalog.js';
 import {
   parseInitOptions as parseStandardOptions,
   scaffoldAnhedralStack as scaffoldStandardProject,
 } from '../dist/index.js';
-import { runCapabilityCommand } from '../dist/capability-command.js';
+import { runCapabilityCommand } from '../dist/composition/command.js';
 import {
   deploymentAcceptance,
   cliProjectsAcceptance,

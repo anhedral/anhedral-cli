@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { mapWithConcurrency } from '../scripts/async-pool.mjs';
-import { collectOsvFindings } from '../scripts/osv-audit-core.mjs';
+import { collectOsvFindings } from '../scripts/security/osv-audit-core.mjs';
 import {
   collectPnpmLockPackages,
   compareSemver,
   osvAdvisoryAffectsPackageVersion,
   packageCoordinateFromPnpmKey,
   versionMatchesComparatorRange,
-} from '../scripts/osv-packages.mjs';
+} from '../scripts/security/osv-packages.mjs';
 
 assert.deepEqual(packageCoordinateFromPnpmKey("'@clerk/example@1.2.3(react@19.2.3)'"), {
   name: '@clerk/example',

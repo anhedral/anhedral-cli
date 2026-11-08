@@ -1,6 +1,7 @@
-import { runPlatformCommand } from './platform-command.js';
-import { runStackUpdate } from './stack-update.js';
-import { runCapabilityCommand } from './capability-command.js';
+import { commandDefinition } from './command-schema.js';
+import { runPlatformCommand } from './platform/command.js';
+import { runStackUpdate } from './composition/update.js';
+import { runCapabilityCommand } from './composition/command.js';
 import { commandArgumentError } from './cli-arguments.js';
 import { createReporter, type OutputOptions } from './cli-output.js';
 import { scaffoldLaunchProject, parseAnhedralStackOptions } from './launch.js';
@@ -19,22 +20,7 @@ export async function runCommand(
     createReporter(output, () => script.trimEnd()).result({ shell, script });
     return;
   }
-  if (
-    [
-      'login',
-      'logout',
-      'whoami',
-      'projects',
-      'link',
-      'unlink',
-      'source',
-      'deploy',
-      'env',
-      'staging',
-      'production',
-      'logs',
-    ].includes(command)
-  )
+  if (commandDefinition(command)?.owner === 'platform')
     return runPlatformCommand(command, args, output);
   if (command === 'stack' && commandArguments('stack', args).positional[0] === 'update')
     return runStackUpdate(args, output);

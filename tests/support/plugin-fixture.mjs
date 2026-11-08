@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { pluginPackageFiles } from '../../scripts/plugin-package-policy.mjs';
-import { readStoredArchive } from '../../scripts/publish-plugin-source.mjs';
-import { buildPluginArchive } from '../../scripts/package-plugin.mjs';
+import { pluginPackageFiles } from '../../scripts/plugin/plugin-package-policy.mjs';
+import { readStoredArchive } from '../../scripts/plugin/publish-plugin-source.mjs';
+import { buildPluginArchive } from '../../scripts/plugin/package-plugin.mjs';
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';

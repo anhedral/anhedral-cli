@@ -3,7 +3,7 @@ import test from 'node:test';
 import { createReporter } from '../dist/cli-output.js';
 import { CliFailure, describeFailure } from '../dist/cli-errors.js';
 import { CliArgumentError } from '../dist/cli-arguments.js';
-import { PostCommitError } from '../dist/transaction.js';
+import { PostCommitError } from '../dist/transactions/transaction.js';
 
 function output(options = {}, defaultJson = false) {
   let stdout = '',

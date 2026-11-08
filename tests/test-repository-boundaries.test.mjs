@@ -3,13 +3,16 @@ import test from 'node:test';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { readContractSnapshot, contractTargets } from '../scripts/deployment-contract-snapshot.mjs';
+import {
+  readContractSnapshot,
+  contractTargets,
+} from '../scripts/contracts/deployment-contract-snapshot.mjs';
 import {
   assertPublishedModules,
   checkRepositoryBoundary,
   policy,
   sourceViolations,
-} from '../scripts/repository-boundaries.mjs';
+} from '../scripts/checks/repository-boundaries.mjs';
 
 test('public repository contains only reviewed portable source and client modules', () => {
   assert.equal(checkRepositoryBoundary(), policy.modules.length);
@@ -27,23 +30,23 @@ test('private imports cannot bypass boundaries through types, re-exports or comp
   ])
     assert.ok(sourceViolations('src/standard.ts', source).length, source);
   assert.deepEqual(
-    sourceViolations('src/standard.ts', 'import { x } from "./composition.js";'),
+    sourceViolations('src/standard.ts', 'import { x } from "./composition/composition.js";'),
     [],
   );
   assert.deepEqual(sourceViolations('src/contracts/deployment.ts', 'import { z } from "zod";'), []);
 });
 test('generation, transport and Platform client keep distinct dependency layers', () => {
   for (const [file, source] of [
-    ['src/standard.ts', 'import "./platform-command.js";'],
-    ['src/platform-command.ts', 'import "./capability-recipes.js";'],
-    ['src/contracts/deployment.ts', 'export * from "../platform-state.js";'],
+    ['src/standard.ts', 'import "./platform/command.js";'],
+    ['src/platform/command.ts', 'import "../composition/recipes.js";'],
+    ['src/contracts/deployment.ts', 'export * from "../platform/state.js";'],
     ['src/contracts/deployment.ts', 'import "node:fs";'],
-    ['src/platform-state.ts', 'import "stripe";'],
+    ['src/platform/state.ts', 'import "stripe";'],
   ])
     assert.ok(sourceViolations(file, source).length, file);
-  assert.deepEqual(sourceViolations('src/cli-commands.ts', 'import "./platform-command.js";'), []);
+  assert.deepEqual(sourceViolations('src/cli-commands.ts', 'import "./platform/command.js";'), []);
   assert.deepEqual(
-    sourceViolations('src/platform-command.ts', 'import "./contracts/cli-transport.js";'),
+    sourceViolations('src/platform/command.ts', 'import "../contracts/cli-transport.js";'),
     [],
   );
 });

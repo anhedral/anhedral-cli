@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createInterface } from 'node:readline';
 import test from 'node:test';
-import { buildPluginArchive } from '../scripts/package-plugin.mjs';
-import { readStoredArchive } from '../scripts/publish-plugin-source.mjs';
+import { buildPluginArchive } from '../scripts/plugin/package-plugin.mjs';
+import { readStoredArchive } from '../scripts/plugin/publish-plugin-source.mjs';
 
 // Host acceptance is optional on CI images without Codex, but exercises the real
 // loader when installed. No model inference, credentials or live OAuth is needed.

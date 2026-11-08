@@ -19,7 +19,7 @@ import {
   PostCommitError,
   recoverInterruptedTransaction,
   runStagedTransaction,
-} from '../dist/transaction.js';
+} from '../dist/transactions/transaction.js';
 
 const JOURNAL_TOKEN = ['2147483647', '22222222', '2222', '4222', '8222', '222222222222'].join('-');
 

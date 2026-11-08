@@ -4,8 +4,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { buildPluginArchive } from '../scripts/package-plugin.mjs';
-import { readStoredArchive } from '../scripts/publish-plugin-source.mjs';
+import { buildPluginArchive } from '../scripts/plugin/package-plugin.mjs';
+import { readStoredArchive } from '../scripts/plugin/publish-plugin-source.mjs';
 
 // Explicit offline host acceptance, never part of an automatic network matrix.
 // Supply an exact previous release ZIP; the current generated plugin is packaged
