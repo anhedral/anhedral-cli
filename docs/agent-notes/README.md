@@ -54,25 +54,6 @@ package/installed smoke and 27 focused checks passed. Full unit validation passe
 helpers/templates are unchanged; no additional generated Next build was needed.
 No provider/database operation, package publication or deployment was performed.
 
-## 2026-11-01 Comprehensive maintenance implementation
-
-Based on staging `2014a612`, code candidate `850fe692` implements C01–C12,
-CLI Q01–Q03/Q08–Q10 and reviewed transport/document boundaries. Independent
-review passed 56 focused tests with no remaining findings. The complete unit
-suite passed 194 of 195 tests; one existing optional patch-byte test skipped.
-Build, lint/typecheck, static security, exact plugin/archive preflight and the
-67-module package boundary passed. Exact package smoke passed on Node 20.19,
-22.12 and 26.8. The clean-candidate generated Next/OpenNext/workerd and local
-Wrangler/D1 auth proof passed, retained resolved locks/receipts, and measured
-976.83 KiB web gzip. Actual Turbo planning proved WXT outputs/env and disabled
-native build caching. Runtime checks caught and repaired generated body-limit
-413 translation; typed/generic server errors remain sanitized. Retention is an
-owner-scoped example with consumer acceptance, never scheduled cleanup.
-Evidence remains in `.artifacts/cli-final-*.log` and `.artifacts/next-runtime/`.
-Windows process-tree cleanup, browser/native compilation/devices and live
-provider acceptance were not exercised. No publication, provider activation,
-production promotion or live migration is authorized by these checks.
-
 ## 2026-11-01 — Platform client recovery fixes
 
 Based on staging `1096f7f`, the public `cliPreparationSchema` block was reviewed
