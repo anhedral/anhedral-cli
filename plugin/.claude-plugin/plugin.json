@@ -2,7 +2,7 @@
   "name": "anhedral",
   "displayName": "Anhedral",
   "version": "0.22.0",
-  "description": "Create, update and extend Anhedral Stack projects using the Anhedral CLI.",
+  "description": "Build and manage apps on Anhedral through the Anhedral CLI with Codex or Claude Code.",
   "author": {
     "name": "Anhedral",
     "email": "support@anhedral.com"

@@ -3,7 +3,9 @@
 > [!WARNING]
 > Under construction. Commands, generated source and managed integration are evolving.
 
-Generate the **Anhedral Stack** as editable source. Start with web UI, then add the backend, private storage and payments when needed. There is one current stack and one CLI generator; no stack selector or separate public stack registry is required.
+The open-source CLI for building and managing apps through the **Anhedral API**. Use it directly or through the Codex and Claude Code plugin to create projects, upload source, configure environments, deploy apps and read runtime logs.
+
+The plugin guides an agent through CLI commands so you can describe what you want to build in conversation. Platform enforces account, project and deployment permissions. The CLI also generates the **Anhedral Stack** as editable source, starting with web UI and adding backend, storage and payments when needed. Local source generation requires no account.
 
 ## Start
 
@@ -45,7 +47,7 @@ pnpm dlx shadcn@4.22.1 add card
 
 Review diffs and preserve local edits and required upstream notices. The generated `LICENSE.shadcn` accompanies the bundled starter source. See [web UI](docs/ui.md).
 
-## Optional Platform access
+## Connect to Anhedral
 
 Local generation requires no account. After browser-approved `login`, use `projects list --human` to discover projects and team IDs. Register your generated application with `projects create --name <name> --link --human`, or connect an existing project with `link --project <uuid> --team <uuid>`. `source upload --dry-run` inspects packaging without uploading; `source upload` sends a resumable immutable checkpoint.
 
