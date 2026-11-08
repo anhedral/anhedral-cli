@@ -1,3 +1,3 @@
 interface:
   display_name: "Anhedral Init"
-  short_description: "Create the Anhedral Stack"
+  short_description: "Build and deploy apps on Anhedral"

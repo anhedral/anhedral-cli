@@ -200,10 +200,8 @@ export const cliPlanSchema = z
       .strict(),
     routingRevision: sourceHashSchema,
     expectedGeneration: z.number().int().nonnegative(),
-    policyDigest: sourceHashSchema,
     migrationDigests: z.array(sourceHashSchema).max(100),
     expiresAt: z.iso.datetime(),
-    runtimeImage: z.string().max(256).nullable(),
     configurationRevision: z.null(),
     artifactVerified: z.boolean(),
     hostedAdmission: z.boolean(),
@@ -231,15 +229,6 @@ export const cliPreparationSchema = z
     state: z.enum(["awaiting-runtime", "building", "built", "ready", "failed"]),
     buildDigest: sourceHashSchema.nullable().optional(),
     error: z.string().max(300).nullable().optional(),
-    admission: z
-      .object({
-        policyDigest: sourceHashSchema,
-        image: z.string().regex(/^registry\.[a-z0-9.-]+\/[a-zA-Z0-9/_.-]+@sha256:[a-f0-9]{64}$/),
-        scope: z.literal("candidate-workspace"),
-      })
-      .strict()
-      .nullable()
-      .optional(),
     hostedAdmission: z.boolean(),
     identityAction: z.literal("preserve"),
   })

@@ -48,34 +48,18 @@ export const deploymentManifestSchema = z
   .strict()
   .superRefine((value, ctx) => {
     const selected = new Set(value.capabilities);
-    const tanstack = value.foundation === "tanstack-start";
-    if (tanstack !== (value.intent.runtimeProfile === "anhedral-stack"))
+    if (selected.has("hono") !== selected.has("database-auth"))
       ctx.addIssue({
         code: "custom",
-        path: ["intent", "runtimeProfile"],
-        message: "Anhedral Stack source requires the anhedral-stack runtime profile.",
+        path: ["capabilities"],
+        message: "Anhedral Stack hosting requires Hono and database-auth together.",
       });
-    if (tanstack) {
-      for (const id of value.capabilities)
-        if (!["hono", "database-auth", "r2", "stripe"].includes(id))
-          ctx.addIssue({
-            code: "custom",
-            path: ["capabilities"],
-            message: `${id} is outside the Anhedral Stack hosting contract.`,
-          });
-      if (selected.has("hono") !== selected.has("database-auth"))
-        ctx.addIssue({
-          code: "custom",
-          path: ["capabilities"],
-          message: "Anhedral Stack hosting requires Hono and database-auth together.",
-        });
-      if (value.identity !== (selected.has("database-auth") ? "better-auth-d1-v1" : "none"))
-        ctx.addIssue({
-          code: "custom",
-          path: ["identity"],
-          message: "Anhedral Stack hosting preserves standalone Better Auth/D1 identity.",
-        });
-    }
+    if (value.identity !== (selected.has("database-auth") ? "better-auth-d1-v1" : "none"))
+      ctx.addIssue({
+        code: "custom",
+        path: ["identity"],
+        message: "Anhedral Stack hosting preserves standalone Better Auth/D1 identity.",
+      });
     const prerequisites: Record<string, string[]> = {
       "database-auth": ["hono"],
       r2: ["database-auth"],
@@ -89,46 +73,7 @@ export const deploymentManifestSchema = z
             path: ["capabilities"],
             message: `${id} requires ${parent}.`,
           });
-    if (selected.has("database-auth") !== (value.identity !== "none"))
-      ctx.addIssue({
-        code: "custom",
-        path: ["identity"],
-        message: "Identity must match database-auth source.",
-      });
   });
-export const deploymentSourceSchema = z
-  .object({
-    inventoryVersion: z.literal(2),
-    inventoryProfile: z.string().min(1).max(100),
-    sourceDigest: deploymentDigestSchema,
-    lockfileDigest: deploymentDigestSchema,
-    manifestDigest: deploymentDigestSchema,
-  })
-  .strict();
-const runtimeImageSchema = z
-  .string()
-  .regex(/^registry\.[a-z0-9.-]+\/[a-zA-Z0-9/_.-]+@sha256:[a-f0-9]{64}$/);
-export const deploymentPlanSchema = z
-  .object({
-    contractVersion: z.literal(1),
-    requestId: z.uuid(),
-    projectId: z.uuid(),
-    manifest: deploymentManifestSchema,
-    source: deploymentSourceSchema,
-    policyDigest: deploymentDigestSchema,
-    runtimeImage: runtimeImageSchema,
-    configurationRevision: deploymentDigestSchema,
-    expectedGeneration: z.number().int().nonnegative(),
-    migrationDigests: z.array(deploymentDigestSchema).max(100),
-    requiredAuthority: z.enum(["preview", "production-approval"]),
-  })
-  .strict()
-  .refine(
-    (plan) =>
-      plan.requiredAuthority ===
-      (plan.manifest.intent.environment === "production" ? "production-approval" : "preview"),
-    "Production requires exact-candidate approval.",
-  );
 export const deploymentErrorSchema = z
   .object({
     code: z.enum([
@@ -202,8 +147,6 @@ export const deploymentResultSchema = z.discriminatedUnion("status", [
     .strict(),
 ]);
 export type DeploymentManifest = z.infer<typeof deploymentManifestSchema>;
-export type DeploymentPlan = z.infer<typeof deploymentPlanSchema>;
-export type DeploymentSource = z.infer<typeof deploymentSourceSchema>;
 export type DeploymentIntent = z.infer<typeof deploymentIntentSchema>;
 export type DeploymentEvent = z.infer<typeof deploymentEventSchema>;
 export type DeploymentResult = z.infer<typeof deploymentResultSchema>;

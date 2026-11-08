@@ -1,7 +1,7 @@
 {
   "name": "anhedral",
   "version": "0.20.0",
-  "description": "Generate the Anhedral Stack as editable source: start with web UI, then add backend, storage and payments.",
+  "description": "The open-source Anhedral API client for building, configuring and deploying apps, with editable source generation.",
   "type": "module",
   "exports": {
     ".": {

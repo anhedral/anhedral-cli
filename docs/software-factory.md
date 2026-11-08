@@ -1,6 +1,8 @@
-# Anhedral Stack workflow
+# Anhedral CLI workflow
 
-The Anhedral Stack has one current web foundation and progressive backend/storage/payment additions. There is no public stack selection or independent stack-registry repository.
+The public CLI connects people and agents to the Anhedral API for project management, source uploads, environment configuration, deployment and runtime logs. Codex and Claude Code skills guide the same CLI commands. Platform owns authentication, authorization and provider operations.
+
+The CLI also generates the Anhedral Stack with one web foundation and progressive backend/storage/payment additions. Local source generation works without a Platform account.
 
 1. Preview an empty destination with `anhedral init my-app --dry-run --json`, then
    run `anhedral init my-app` and `pnpm dev` inside it.
@@ -97,6 +99,17 @@ or executable. Offline source inspection cannot attest a newly published artifac
 
 ## Platform CLI access and source upload
 
+The supported external API is `/api/cli/v1` at the explicit Platform origin,
+defaulting to `https://platform.anhedral.com`. Requests carry
+`x-anhedral-cli-protocol: 1`; authenticated requests use a browser-approved bearer
+token. `x-anhedral-team` selects a team but never grants membership or project
+access. Versioned wire schemas live in `src/contracts/cli-transport.ts` and the
+adjacent environment, staging, production and runtime-log transport modules.
+Internal browser and service routes are not part of this external contract.
+`https://api.internal` in generated application templates is a synthetic
+service-binding URL for the customer's backend, not an Anhedral service endpoint.
+
+
 `login --start` prints browser approval instructions; `login --resume` redeems the
 saved approval. Interactive `login` polls after showing the URL and confirmation
 code. Tokens and device secrets use macOS Keychain or Linux Secret Service;
@@ -169,9 +182,14 @@ backend/R2/Stripe. Backend manifests preserve `better-auth-d1-v1`; web-only uses
 `none`. Broader retained capability/protocol values are compatibility implementation,
 not current public selections or hosted support.
 Continue selecting an explicit manifest; the CLI never infers an admitted artifact
-from locally generated source. Native candidate receipts name an immutable registry
-image with `scope: candidate-workspace`; legacy isolated-build receipts remain valid.
-Both describe automatic build compatibility, not a requirement for a human artifact approver. Plans list exact runtime, source-version or lockfile mismatches and remediation. Do not relabel source provenance to clear a mismatch.
+from locally generated source. Public plans and candidate receipts omit internal
+registry images and build-policy digests. The public deployment module exports
+customer manifests and receipts; internal deployment plan/source schemas belong
+to Platform and are not public CLI exports. Platform retains these admission details
+privately and returns a digest over the public plan fields for client verification.
+Previously saved plans containing internal fields require a fresh plan with `--new`.
+Plans list runtime, source-version or lockfile mismatches and remediation. Do not
+relabel source provenance to clear a mismatch.
 
 `deploy prepare` reserves an immutable candidate. `deploy status` reads
 `awaiting-runtime`, `building`, `built`, `ready` or `failed`. A built candidate grants no

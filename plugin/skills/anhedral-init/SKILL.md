@@ -1,6 +1,6 @@
 ---
 name: anhedral-init
-description: "Create or update an Anhedral Stack project while preserving authored source; add backend, storage or payments when needed."
+description: "Build and manage apps on Anhedral through the CLI: create or update source, connect projects, configure environments and deploy."
 ---
 
 # Anhedral Init

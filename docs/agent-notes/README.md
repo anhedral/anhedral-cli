@@ -1,5 +1,25 @@
 # Development notes
 
+## 2026-11-08: public API boundary
+
+Removed internal deployment plan/source exports and synthetic internal plan fixtures
+from the licensed public contract projection. Customer manifests and receipts remain.
+This is a breaking removal for consumers importing those server plan exports;
+use the CLI's versioned plan/prepare commands. README and plugin metadata now describe
+the API client and agent workflow. Local integration is on the preserved older
+submodule checkout; publication and verification against current release remain pending. Build, typecheck,
+focused contract/client tests, hygiene, repository boundaries and release secret scanning
+passed. Installed Claude lacks `plugin validate --strict`; real host acceptance remains pending.
+
+
+## 2026-11-08 Public receipt boundary
+
+Local client contracts omit internal plan policy/image fields and candidate admission
+metadata. The owner snapshot also reconciles deployment response validation. The reviewed
+snapshot is exported from immutable owner commit
+`c2b6bc60de8852173c7dc8e0cfe544d13ef41a5f`; source hashes and provenance are
+verified together. Client boundary, credential and deployment fixtures pass.
+
 ## 2026-11-03 Project discovery and registration
 
 Issue #111 adds native CLI project listing and metadata-only creation, paired with
