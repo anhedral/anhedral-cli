@@ -111,8 +111,8 @@ function validateTrustedRelease(releaseWorkflow) {
   const beforeTag = releaseWorkflow.split('\n  tag:')[0];
   if (
     /ref:\s*\$\{\{\s*inputs\./.test(beforeTag) ||
-    (beforeTag.match(/ref: main/g) ?? []).length !== 3 ||
-    (beforeTag.match(/name: Require the prepared main commit/g) ?? []).length !== 3 ||
+    (beforeTag.match(/ref: main/g) ?? []).length !== 2 ||
+    (beforeTag.match(/name: Require the prepared main commit/g) ?? []).length !== 2 ||
     !tag.includes('ref: ${{ inputs.release_sha }}') ||
     !tag.includes('name: Require the published candidate commit') ||
     !tag.includes(
@@ -127,13 +127,6 @@ function validateTrustedRelease(releaseWorkflow) {
   }
   const releaseTrigger =
     releaseWorkflow.match(/^on:\s*$[\s\S]*?(?=^[a-zA-Z0-9_-]+:\s*(?:$|\S))/m)?.[0] ?? '';
-  const portabilityJob =
-    releaseWorkflow.split('\n  portability:')[1]?.split('\n  publish:')[0] ?? '';
-  if (!/name: Require the prepared main commit\n\s+shell: bash/.test(portabilityJob)) {
-    failures.push(
-      '.github/workflows/release.yml: the cross-platform commit guard must explicitly use Bash',
-    );
-  }
   if (/^\s{2}workflow_dispatch:/m.test(releaseTrigger)) {
     failures.push(
       '.github/workflows/release.yml: reusable release must be dispatched through release-on-main.yml for trusted publishing',
@@ -204,7 +197,7 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
     );
   if (
     !/^  verify:\n    if: github\.repository == 'anhedral\/anhedral-cli'$/m.test(releaseWorkflow) ||
-    !/^  prepare:\n    if: github\.repository == 'anhedral\/anhedral-cli'$/m.test(
+    !/^  prepare:\n    if: github\.repository == 'anhedral\/anhedral-cli' && github\.ref == 'refs\/heads\/main'$/m.test(
       releaseOnMainWorkflow,
     )
   )
@@ -226,7 +219,7 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
       /name: Require exact reviewed commit[\s\S]*?(?=\n      - name:|\n  release:)/,
     )?.[0] ?? '';
   if (
-    !/REVIEWED_SHA: \$\{\{ inputs\.release_sha \}\}/.test(reviewGuard) ||
+    !/REVIEWED_SHA: \$\{\{ inputs\.release_sha \|\| github\.sha \}\}/.test(reviewGuard) ||
     !/git rev-parse HEAD/.test(reviewGuard) ||
     !/REVIEWED_CLI: \$\{\{ inputs\.cli_integrity \}\}/.test(reviewGuard) ||
     !/REVIEWED_PLUGIN: \$\{\{ inputs\.plugin_integrity \}\}/.test(reviewGuard) ||
@@ -244,7 +237,7 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
       releaseWorkflow.match(
         /ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: \$\{\{ needs\.verify\.outputs\.plugin_integrity \}\}/g,
       ) ?? []
-    ).length !== 3
+    ).length !== 2
   )
     failures.push(
       '.github/workflows/release.yml: every release gate must require the reviewed CLI and plugin artifacts',
@@ -270,10 +263,31 @@ function validateReviewedRelease(releaseOnMainWorkflow, releaseWorkflow) {
     !candidate.includes('select(.event == "push" or .event == "workflow_dispatch")') ||
     !candidate.includes('name: release-candidate') ||
     !candidate.includes('run-id: ${{ steps.candidate.outputs.run_id }}') ||
-    !candidate.includes('github-token: ${{ github.token }}')
+    !candidate.includes('github-token: ${{ github.token }}') ||
+    !candidate.includes('if [ "$CANDIDATE_RUN_ID" != "$CURRENT_RUN_ID" ]; then') ||
+    !candidate.includes(
+      'anhedral/anhedral-cli/.github/workflows/release-on-main.yml@refs/heads/main',
+    ) ||
+    !candidate.includes('test "$FINALIZE_ONLY" != "true" || exit 1') ||
+    !candidate.includes('test "$FINALIZE_ONLY" = "true" || exit 1') ||
+    !candidate.includes('node scripts/release-candidate-run.mjs')
   )
     failures.push(
       '.github/workflows/release.yml: candidate must come from successful trusted main CI for the exact reviewed commit',
+    );
+  if (
+    !releaseOnMainWorkflow.includes('uses: ./.github/workflows/ci.yml') ||
+    !releaseOnMainWorkflow.includes(
+      'inputs.cli_integrity || needs.candidate.outputs.cli_integrity',
+    ) ||
+    !releaseOnMainWorkflow.includes(
+      'inputs.plugin_integrity || needs.candidate.outputs.plugin_integrity',
+    ) ||
+    !releaseOnMainWorkflow.includes("needs.candidate.result == 'success'") ||
+    !reviewGuard.includes('"$REVIEWED_SHA" != "$DISPATCH_SHA"')
+  )
+    failures.push(
+      'Release preparation must reuse CI and pin automatic candidate digests to the dispatched main revision.',
     );
   if (!/^    environment: npm$/m.test(releaseWorkflow))
     failures.push(

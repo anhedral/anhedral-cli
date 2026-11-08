@@ -336,7 +336,10 @@ try {
   );
   writeFileSync(
     path.join(workflowPolicyDirectory, 'release-on-main.yml'),
-    releaseOnMainWorkflow.replace('REVIEWED_SHA: ${{ inputs.release_sha }}', 'REVIEWED_SHA: main'),
+    releaseOnMainWorkflow.replace(
+      'REVIEWED_SHA: ${{ inputs.release_sha || github.sha }}',
+      'REVIEWED_SHA: main',
+    ),
   );
   assert.match(validateWorkflowPolicy(workflowPolicyRoot).join('\n'), /exact reviewed main commit/);
   writeFileSync(path.join(workflowPolicyDirectory, 'release-on-main.yml'), releaseOnMainWorkflow);

@@ -54,6 +54,11 @@ explicit review failure, not a clean secret scan.
 
 ## Runtime verification
 
+For local development, `pnpm test` builds once and runs unit tests; `pnpm lint`
+checks source without emitting a build. `pnpm release:check` builds and type-checks
+once, then runs the full source, security, advisory, unit, patch and package checks.
+Use `pnpm release:pack` when preparing a standalone release artifact; it builds fresh.
+
 Routine CI compiles the CLI once and runs fast source/security checks and selected
 contract tests. Generated applications are not installed or built in that path.
 Dispatch [CI](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/ci.yml) with `runtime_proof` enabled for the

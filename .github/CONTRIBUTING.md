@@ -49,15 +49,33 @@ Staging pushes and staging/main PRs run one Linux Node 24 **CI gate**: install w
 
 Run focused tests locally while developing. Before publishing, run `pnpm release:check` locally plus plugin/generated-profile checks relevant to the changed behavior, and record that evidence in the release PR. `pnpm plugin:check` also runs `claude plugin validate --strict` when the Claude Code CLI is installed; record a skipped validation as unavailable. Before the first release that carries the Claude files, install the built plugin once through `claude --plugin-dir plugin` and `codex plugin add` from a temporary local marketplace. The optional **Full validation (manual)** workflow retains the broader hosted tests for investigations; it never blocks routine merging or publishing merely because it has not been run.
 
-To publish, explicitly run **CI** on current main to prepare the immutable candidate. That manual run adds plugin compilation and packaging/integrity/smoke checks; generated runtime proof remains an explicit `runtime_proof` opt-in and the full validation matrix stays separate. Review the CLI/plugin integrities, then dispatch **Release Reviewed Candidate**. Publishing verifies the exact artifact using Linux/Node 24, retains the npm environment approval, OIDC/provenance and immutable tags, and does not run a cross-platform matrix. Candidate artifacts expire after one day; rerun the manual main candidate step if needed.
+To publish, run **Release Reviewed Candidate** on current main with blank inputs.
+It runs the existing CI gate, compiles once, prepares and smoke-tests immutable CLI/plugin
+artifacts, and carries their verified identities into publication. Review the candidate
+summary before approving the protected npm environment. No separate CI dispatch or
+copied integrity values is needed. Publication retains OIDC/provenance, immutable tags,
+registry verification and independent Platform/runtime admission. It never publishes
+from staging or automatically on merge. Generated runtime proofs and full matrices
+remain separate, explicit checks when the affected behavior requires them.
+
+Previously reviewed candidates remain supported: supply the exact main SHA and both
+CLI/plugin integrities to reuse trusted main CI artifacts without rebuilding. Candidate
+artifacts expire after seven days; normal blank-input dispatch prepares a fresh candidate.
+A fresh candidate requires fresh approval; never substitute it for a previously approved
+artifact. Runtime compatibility changes still need their owning Platform review.
 
 Use a separate version-preparation PR into staging for each targeted release. Keep `package.json`, `src/version.ts` and both marketplace plugin tags synchronized; build refreshes bundled references and the Codex and Claude Code manifests. Use SemVer: patch for compatible fixes, minor for additions, and explicitly document breaking 0.x changes. List included PRs and known limitations in the release PR and GitHub release notes.
 
-Merge staging → main with a merge commit. Explicitly run CI on main to build the candidate. Review its CLI/plugin SHA-512 integrities and dispatch **Release Reviewed Candidate** against the exact current main SHA. Existing exact-artifact verification, protected npm environment, portability, trusted publishing, provenance and immutable tags remain required. Main merges never automatically publish npm. Confirm npm version/integrity and GitHub release assets after publication.
+Merge staging → main with a merge commit. The release action is the sole normal
+publication entry point; main merges never publish npm automatically. Confirm npm
+version/integrity and GitHub release assets in the workflow result after publication.
 
 If publication succeeded but immutable tags/plugin assets were interrupted,
-`finalize_only` can resume the exact accepted main ancestor only after verifying its
-existing registry identity and trusted successful candidate artifact. It skips npm
+`finalize_only`, with the original automatic release’s `candidate_run_id`, exact SHA
+and both integrities, can resume the exact accepted main ancestor only after verifying its
+existing registry identity and trusted successful candidate preparation/upload. The
+original release may have failed after preparation. Historical run recovery never
+rebuilds artifacts; legacy standalone CI candidates remain supported without a run ID. It skips npm
 publication and completes only that immutable candidate's release assets. New
 publication still requires current main admission and separate authorization.
 

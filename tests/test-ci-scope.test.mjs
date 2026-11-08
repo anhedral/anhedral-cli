@@ -202,12 +202,8 @@ test('staging and main share one fast gate; generated runtime and broad validati
   const release = parse(
     readFileSync(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8'),
   );
-  assert.equal(
-    release.jobs.portability.strategy,
-    undefined,
-    'publishing has no compatibility matrix',
-  );
-  assert.equal(release.jobs.portability['runs-on'], 'ubuntu-latest');
+  assert.equal(release.jobs.verify.strategy, undefined, 'publishing has no compatibility matrix');
+  assert.equal(release.jobs.verify['runs-on'], 'ubuntu-latest');
 });
 
 test('main rejects topic PRs and identifies promotions without expanding hosted checks', () => {

@@ -56,7 +56,7 @@ test('manual main candidate is verified after quick checks before immutable uplo
     path: '.artifacts/release/',
     'include-hidden-files': true,
     'if-no-files-found': 'error',
-    'retention-days': 1,
+    'retention-days': 7,
     'compression-level': 0,
   });
   assert.equal(workflow.permissions.contents, 'read');
@@ -93,7 +93,7 @@ test('every exact-artifact smoke job provisions the generated workspace package 
   }
   assert.equal(
     checked,
-    3,
-    'main candidate, release verification and exact artifact jobs are covered',
+    1,
+    'the exact package is executed once when the immutable candidate is prepared',
   );
 });
