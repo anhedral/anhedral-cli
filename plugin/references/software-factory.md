@@ -172,9 +172,12 @@ backend/R2/Stripe. Backend manifests preserve `better-auth-d1-v1`; web-only uses
 `none`. Broader retained capability/protocol values are compatibility implementation,
 not current public selections or hosted support.
 Continue selecting an explicit manifest; the CLI never infers an admitted artifact
-from locally generated source. Native candidate receipts name an immutable registry
-image with `scope: candidate-workspace`; legacy isolated-build receipts remain valid.
-Both describe automatic build compatibility, not a requirement for a human artifact approver. Plans list exact runtime, source-version or lockfile mismatches and remediation. Do not relabel source provenance to clear a mismatch.
+from locally generated source. Public plans and candidate receipts omit internal
+registry images and build-policy digests. Platform retains these admission details
+privately and returns a digest over the public plan fields for client verification.
+Previously saved plans containing internal fields require a fresh plan with `--new`.
+Plans list runtime, source-version or lockfile mismatches and remediation. Do not
+relabel source provenance to clear a mismatch.
 
 `deploy prepare` reserves an immutable candidate. `deploy status` reads
 `awaiting-runtime`, `building`, `built`, `ready` or `failed`. A built candidate grants no

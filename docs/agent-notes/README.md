@@ -1,5 +1,13 @@
 # Development notes
 
+## 2026-11-08 Public receipt boundary
+
+Local client contracts omit internal plan policy/image fields and candidate admission
+metadata. The owner snapshot also reconciles deployment response validation. The reviewed
+snapshot is exported from immutable owner commit
+`c2b6bc60de8852173c7dc8e0cfe544d13ef41a5f`; source hashes and provenance are
+verified together. Client boundary, credential and deployment fixtures pass.
+
 ## 2026-11-05 · Coordinated 0.21.0 release (#128)
 
 Breaking 0.x change: `anhedral ui` is retired. Init defaults to editable shadcn

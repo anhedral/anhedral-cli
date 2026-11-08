@@ -7,7 +7,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runPlatformCommand } from '../dist/platform-command.js';
 import { readPrivate, writePrivate } from '../dist/platform-state.js';
-import { canonicalCliJson, cliPreparationSchema } from '../dist/contracts/cli-transport.js';
+import {
+  canonicalCliJson,
+  cliPlanSchema,
+  cliPreparationSchema,
+} from '../dist/contracts/cli-transport.js';
 import { composeSourceProvenance, launchCompositionSchema } from '../dist/composition.js';
 
 const fixture = JSON.parse(
@@ -79,16 +83,11 @@ async function workspace(t, manifest) {
 }
 
 for (const { composition, manifest } of fixture.tanstackCompositions) {
-  test(`TanStack CLI plan/prepare/status preserves ${manifest.capabilities.join('+') || 'web-only'} source and native receipt identity`, async (t) => {
+  test(`TanStack CLI plan/prepare/status preserves ${manifest.capabilities.join('+') || 'web-only'} source and public receipt identity`, async (t) => {
     const { root, input: upload, uploadId } = await workspace(t, manifest);
     const calls = [];
     let plan;
     const candidateId = randomUUID();
-    const admission = {
-      scope: 'candidate-workspace',
-      image: 'registry.example.com/fixture/candidate@sha256:' + 'e'.repeat(64),
-      policyDigest: 'f'.repeat(64),
-    };
     const fetch = async (url, request) => {
       const path = new URL(url).pathname;
       calls.push({ path, method: request.method });
@@ -123,10 +122,8 @@ for (const { composition, manifest } of fixture.tanstackCompositions) {
           routing: { generation: 0, activeReleaseId: null, desiredReleaseId: null },
           routingRevision: 'e'.repeat(64),
           expectedGeneration: 0,
-          policyDigest: 'f'.repeat(64),
           migrationDigests: [],
           expiresAt,
-          runtimeImage: null,
           configurationRevision: null,
           artifactVerified: false,
           hostedAdmission: false,
@@ -146,7 +143,6 @@ for (const { composition, manifest } of fixture.tanstackCompositions) {
         planDigest: plan.digest,
         candidateId,
         sourceRevision: plan.sourceRevision,
-        admission,
         identityAction: 'preserve',
       };
       if (path.endsWith('/candidates'))
@@ -171,7 +167,15 @@ for (const { composition, manifest } of fixture.tanstackCompositions) {
       );
       const result = JSON.parse(output.text);
       if (operation === 'plan') assert.deepEqual(result.manifest, manifest);
-      else assert.deepEqual(result.admission, admission);
+      else {
+        assert.equal(result.candidateId, candidateId);
+        assert.equal(Object.hasOwn(result, 'admission'), false);
+      }
+      for (const field of ['runtimeImage', 'policyDigest']) {
+        assert.equal(Object.hasOwn(result, field), false);
+        if (operation === 'plan')
+          assert.equal(cliPlanSchema.safeParse({ ...result, [field]: 'internal' }).success, false);
+      }
     }
     const saved = await readPrivate(join(root, '.anhedral/platform/deployment.json'));
     assert.equal(saved.candidateId, candidateId);
@@ -229,7 +233,7 @@ test('TanStack CLI rejects an incorrect foundation/profile before creating a pla
   assert.equal(await readPrivate(join(root, '.anhedral/platform/deployment.json')), null);
 });
 
-test('candidate admission accepts only immutable candidate-workspace receipts', () => {
+test('public candidate receipts reject internal admission, image and policy fields', () => {
   const base = {
     protocol: 1,
     planId: randomUUID(),
@@ -240,27 +244,18 @@ test('candidate admission accepts only immutable candidate-workspace receipts', 
     hostedAdmission: false,
     identityAction: 'preserve',
   };
-  const legacy = {
-    policyDigest: 'c'.repeat(64),
-    image: 'sha256:' + 'd'.repeat(64),
-    scope: 'isolated-build',
-  };
-  const native = {
+  assert.deepEqual(cliPreparationSchema.parse(base), base);
+  const admission = {
     policyDigest: 'c'.repeat(64),
     image: 'registry.example.com/fixture/candidate@sha256:' + 'd'.repeat(64),
     scope: 'candidate-workspace',
   };
-  assert.deepEqual(cliPreparationSchema.parse({ ...base, admission: native }), {
-    ...base,
-    admission: native,
-  });
-  for (const admission of [
-    legacy,
-    { ...native, image: legacy.image },
-    { ...legacy, image: native.image },
-    { ...native, image: 'registry.example.com/fixture/candidate:latest' },
-    { ...native, policyDigest: null },
-    { ...native, sourceApproved: true },
+  for (const internal of [
+    { admission },
+    { admission: null },
+    { image: admission.image },
+    { runtimeImage: admission.image },
+    { policyDigest: admission.policyDigest },
   ])
-    assert.equal(cliPreparationSchema.safeParse({ ...base, admission }).success, false);
+    assert.equal(cliPreparationSchema.safeParse({ ...base, ...internal }).success, false);
 });

@@ -48,34 +48,18 @@ export const deploymentManifestSchema = z
   .strict()
   .superRefine((value, ctx) => {
     const selected = new Set(value.capabilities);
-    const tanstack = value.foundation === "tanstack-start";
-    if (tanstack !== (value.intent.runtimeProfile === "anhedral-stack"))
+    if (selected.has("hono") !== selected.has("database-auth"))
       ctx.addIssue({
         code: "custom",
-        path: ["intent", "runtimeProfile"],
-        message: "Anhedral Stack source requires the anhedral-stack runtime profile.",
+        path: ["capabilities"],
+        message: "Anhedral Stack hosting requires Hono and database-auth together.",
       });
-    if (tanstack) {
-      for (const id of value.capabilities)
-        if (!["hono", "database-auth", "r2", "stripe"].includes(id))
-          ctx.addIssue({
-            code: "custom",
-            path: ["capabilities"],
-            message: `${id} is outside the Anhedral Stack hosting contract.`,
-          });
-      if (selected.has("hono") !== selected.has("database-auth"))
-        ctx.addIssue({
-          code: "custom",
-          path: ["capabilities"],
-          message: "Anhedral Stack hosting requires Hono and database-auth together.",
-        });
-      if (value.identity !== (selected.has("database-auth") ? "better-auth-d1-v1" : "none"))
-        ctx.addIssue({
-          code: "custom",
-          path: ["identity"],
-          message: "Anhedral Stack hosting preserves standalone Better Auth/D1 identity.",
-        });
-    }
+    if (value.identity !== (selected.has("database-auth") ? "better-auth-d1-v1" : "none"))
+      ctx.addIssue({
+        code: "custom",
+        path: ["identity"],
+        message: "Anhedral Stack hosting preserves standalone Better Auth/D1 identity.",
+      });
     const prerequisites: Record<string, string[]> = {
       "database-auth": ["hono"],
       r2: ["database-auth"],
@@ -89,12 +73,6 @@ export const deploymentManifestSchema = z
             path: ["capabilities"],
             message: `${id} requires ${parent}.`,
           });
-    if (selected.has("database-auth") !== (value.identity !== "none"))
-      ctx.addIssue({
-        code: "custom",
-        path: ["identity"],
-        message: "Identity must match database-auth source.",
-      });
   });
 export const deploymentSourceSchema = z
   .object({
