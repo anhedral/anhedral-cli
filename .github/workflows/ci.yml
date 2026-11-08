@@ -5,6 +5,12 @@ on:
     branches: [staging]
   pull_request:
     branches: [staging, main]
+  workflow_call:
+    outputs:
+      cli_integrity:
+        value: ${{ jobs.gate.outputs.cli_integrity }}
+      plugin_integrity:
+        value: ${{ jobs.gate.outputs.plugin_integrity }}
   workflow_dispatch:
     inputs:
       runtime_proof:
@@ -28,6 +34,9 @@ jobs:
     name: CI gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      cli_integrity: ${{ steps.identity.outputs.cli_integrity }}
+      plugin_integrity: ${{ steps.identity.outputs.plugin_integrity }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -79,7 +88,7 @@ jobs:
         run: pnpm format:check && pnpm check:hygiene && pnpm check:security && pnpm check:release-policy
       - name: Fast contract smoke tests
         if: steps.scope.outputs.full == 'true'
-        run: node --test tests/test-standalone-checkout.test.mjs tests/test-cli-validation.test.mjs tests/test-cli-discovery.test.mjs tests/test-cli-output.test.mjs tests/test-platform-ux.test.mjs tests/test-cli-experience.test.mjs tests/test-completion.test.mjs tests/test-standard.test.mjs tests/test-launch-init.test.mjs tests/test-public-stack.test.mjs tests/test-deployment-contract.test.mjs tests/test-tanstack-platform.test.mjs tests/test-capabilities.test.mjs tests/test-ci-scope.test.mjs tests/test-next-web.test.mjs tests/test-worker-measurement.test.mjs tests/test-runtime-proof-receipt.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-util-exec.test.mjs tests/test-credential-boundary.test.mjs tests/test-stack-update.test.mjs tests/test-release-artifact.test.mjs
+        run: node --test tests/test-standalone-checkout.test.mjs tests/test-cli-validation.test.mjs tests/test-cli-discovery.test.mjs tests/test-cli-output.test.mjs tests/test-platform-ux.test.mjs tests/test-cli-experience.test.mjs tests/test-completion.test.mjs tests/test-standard.test.mjs tests/test-launch-init.test.mjs tests/test-public-stack.test.mjs tests/test-deployment-contract.test.mjs tests/test-tanstack-platform.test.mjs tests/test-capabilities.test.mjs tests/test-ci-scope.test.mjs tests/test-next-web.test.mjs tests/test-worker-measurement.test.mjs tests/test-runtime-proof-receipt.test.mjs tests/test-dependency-audit.test.mjs tests/test-release-candidate.test.mjs tests/test-release-dispatch.test.mjs tests/test-command-orchestration.test.mjs tests/test-util-exec.test.mjs tests/test-credential-boundary.test.mjs tests/test-stack-update.test.mjs tests/test-release-artifact.test.mjs
       - name: Compiled Anhedral Stack runtime and bundle budget
         if: github.event_name == 'workflow_dispatch' && inputs.runtime_proof
         run: node scripts/tanstack-runtime-smoke.mjs
@@ -112,5 +121,15 @@ jobs:
           path: .artifacts/release/
           include-hidden-files: true
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
           compression-level: 0
+      - name: Summarize verified candidate
+        id: identity
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        run: |
+          node --input-type=module - <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          const m = JSON.parse(readFileSync('.artifacts/release/metadata.json', 'utf8'));
+          appendFileSync(process.env.GITHUB_OUTPUT, `cli_integrity=${m.integrity}\nplugin_integrity=${m.plugin.integrity}\n`);
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Release candidate\nSource: ${m.sourceRevision}\n\nCLI: ${m.integrity}\n\nPlugin: ${m.plugin.integrity}\n\nReview this identity before approving the npm environment.\n`);
+          JS

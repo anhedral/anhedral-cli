@@ -54,6 +54,11 @@ explicit review failure, not a clean secret scan.
 
 ## Runtime verification
 
+For local development, `pnpm test` builds once and runs unit tests; `pnpm lint`
+checks source without emitting a build. `pnpm release:check` builds and type-checks
+once, then runs the full source, security, advisory, unit, patch and package checks.
+Use `pnpm release:pack` when preparing a standalone release artifact; it builds fresh.
+
 Routine CI compiles the CLI once and runs fast source/security checks and selected
 contract tests. Generated applications are not installed or built in that path.
 Dispatch [CI](https://github.com/anhedral/anhedral-cli/blob/main/.github/workflows/ci.yml) with `runtime_proof` enabled for the
@@ -69,6 +74,9 @@ isolated local data, never a configured database or live payment provider. Prese
 passed and failed evidence. Tests are not provider deployment acceptance. Run
 `node tests/test-generated-config-lint.mjs <installed-workspace>` to exercise the
 generated web ESLint policy; runtime proof checks both web-only and composed source.
+`node tests/test-generated-router.mjs <installed-workspace>` temporarily replaces
+the example route, runs the generated web typecheck and restores the route. The
+router imports its own Start augmentation so ordinary page edits remain type-safe.
 
 Backend server entries call TanStack’s `createStartHandler(defaultStreamHandler)` directly so request-local API bindings survive OJ compilation. Source additions repair the exact previous owned adapter and preserve customer edits.
 
@@ -169,9 +177,12 @@ backend/R2/Stripe. Backend manifests preserve `better-auth-d1-v1`; web-only uses
 `none`. Broader retained capability/protocol values are compatibility implementation,
 not current public selections or hosted support.
 Continue selecting an explicit manifest; the CLI never infers an admitted artifact
-from locally generated source. Native candidate receipts name an immutable registry
-image with `scope: candidate-workspace`; legacy isolated-build receipts remain valid.
-Both describe automatic build compatibility, not a requirement for a human artifact approver. Plans list exact runtime, source-version or lockfile mismatches and remediation. Do not relabel source provenance to clear a mismatch.
+from locally generated source. Public plans and candidate receipts omit internal
+registry images and build-policy digests. Platform retains these admission details
+privately and returns a digest over the public plan fields for client verification.
+Previously saved plans containing internal fields require a fresh plan with `--new`.
+Plans list runtime, source-version or lockfile mismatches and remediation. Do not
+relabel source provenance to clear a mismatch.
 
 `deploy prepare` reserves an immutable candidate. `deploy status` reads
 `awaiting-runtime`, `building`, `built`, `ready` or `failed`. A built candidate grants no
