@@ -174,6 +174,7 @@ try {
       signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
     });
   await run(process.execPath, [path.join(repository, 'tests/test-generated-config-lint.mjs'), app]);
+  await run(process.execPath, [path.join(repository, 'tests/test-generated-router.mjs'), app]);
   phase = 'minimal-web-runtime';
   console.log('TanStack proof: verify the minimal web foundation before adding services.');
   preview = start(
