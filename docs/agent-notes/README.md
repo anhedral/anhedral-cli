@@ -1,5 +1,12 @@
 # Development notes
 
+## 2026-11-08 Coordinated 0.22.0 release
+
+Breaking 0.x release: deployment plans and candidate receipts omit private runtime
+metadata. Use the matching Platform API and refresh saved plans with `--new`.
+Source versions and runtime admission remain independently reviewed. Release
+preparation uses the existing action with exact artifact identities (#132).
+
 ## 2026-11-08 Public receipt boundary
 
 Local client contracts omit internal plan policy/image fields and candidate admission
