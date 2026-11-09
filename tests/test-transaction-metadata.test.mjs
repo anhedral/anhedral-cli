@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const moduleUrl = pathToFileURL(path.resolve('dist/transaction.js')).href;
+const moduleUrl = pathToFileURL(path.resolve('dist/transactions/transaction.js')).href;
 
 test('transaction recovery rejects nonregular and oversized metadata without hanging or removing it', () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'anhedral-transaction-metadata-'));

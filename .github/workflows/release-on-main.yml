@@ -56,7 +56,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Require standalone public CLI checkout
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - name: Require exact reviewed commit
         id: review

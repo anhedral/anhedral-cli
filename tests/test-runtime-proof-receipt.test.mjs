@@ -3,7 +3,10 @@ import test from 'node:test';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { prepareRuntimeProof, finishRuntimeProof } from '../scripts/runtime-proof-receipt.mjs';
+import {
+  prepareRuntimeProof,
+  finishRuntimeProof,
+} from '../scripts/runtime/runtime-proof-receipt.mjs';
 test('runtime proof retains exact lock before compilation and preserves it on failure', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-runtime-evidence-'));
   try {

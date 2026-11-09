@@ -1,5 +1,5 @@
 import { CliArgumentError } from './cli-arguments.js';
-import { PostCommitError } from './transaction.js';
+import { PostCommitError } from './transactions/transaction.js';
 
 export type FailureCategory =
   'usage' | 'auth' | 'permission' | 'network' | 'conflict' | 'context' | 'post_commit' | 'internal';

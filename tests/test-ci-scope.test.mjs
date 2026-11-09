@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { parse } from 'yaml';
-import { needsFullCI } from '../scripts/ci-scope.mjs';
+import { needsFullCI } from '../scripts/checks/ci-scope.mjs';
 
 test('only ordinary documentation takes the lightweight path', () => {
   assert.equal(
@@ -44,7 +44,7 @@ test('manual runs and missing history conservatively require code checks', () =>
       { GITHUB_EVENT_NAME: 'pull_request', CI_BASE_SHA: '' },
     ]) {
       const output = path.join(directory, `${env.GITHUB_EVENT_NAME}.txt`);
-      execFileSync(process.execPath, ['scripts/ci-scope.mjs'], {
+      execFileSync(process.execPath, ['scripts/checks/ci-scope.mjs'], {
         env: { ...process.env, ...env, GITHUB_OUTPUT: output },
       });
       assert.equal(
@@ -69,7 +69,7 @@ test('Git comparison accepts docs but detects source renamed into docs and rejec
     rmSync(output, { force: true });
     execFileSync(
       process.execPath,
-      [fileURLToPath(new URL('../scripts/ci-scope.mjs', import.meta.url))],
+      [fileURLToPath(new URL('../scripts/checks/ci-scope.mjs', import.meta.url))],
       {
         cwd: directory,
         env: {
@@ -211,7 +211,7 @@ test('main rejects topic PRs and identifies promotions without expanding hosted 
   try {
     const output = path.join(directory, 'output');
     const run = (head) =>
-      execFileSync(process.execPath, ['scripts/ci-scope.mjs'], {
+      execFileSync(process.execPath, ['scripts/checks/ci-scope.mjs'], {
         env: {
           ...process.env,
           GITHUB_EVENT_NAME: 'pull_request',

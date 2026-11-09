@@ -1,6 +1,6 @@
 import { pluginFixture } from './support/plugin-fixture.mjs';
 import { test } from 'node:test';
-import { releaseDirectory } from '../scripts/release-directory.mjs';
+import { releaseDirectory } from '../scripts/release/release-directory.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
@@ -24,7 +24,7 @@ import {
   validateGeneratorVersion,
   validateReleaseDeclaration,
   validateWorkflowPolicy,
-} from '../scripts/check-release-policy.mjs';
+} from '../scripts/release/check-release-policy.mjs';
 import { scanTarball, scanText } from '../scripts/secret-scanner.mjs';
 import { resolveSpawnCommand } from '../scripts/spawn-command.mjs';
 
@@ -490,16 +490,16 @@ try {
   writeFileSync(path.join(artifactRoot, metadata.plugin.filename), pluginContents);
   writeFileSync(path.join(artifactRoot, 'plugin-metadata.json'), JSON.stringify(metadata.plugin));
   writeMetadata(artifactRoot, metadata);
-  assert.equal(runScript('verify-release-artifact.mjs', [metadataPath]).status, 0);
+  assert.equal(runScript('release/verify-release-artifact.mjs', [metadataPath]).status, 0);
 
   writeFileSync(path.join(artifactRoot, metadata.filename), Buffer.from('tampered artifact'));
-  assert.notEqual(runScript('verify-release-artifact.mjs', [metadataPath]).status, 0);
+  assert.notEqual(runScript('release/verify-release-artifact.mjs', [metadataPath]).status, 0);
   writeFileSync(path.join(artifactRoot, metadata.filename), contents);
 
   writeMetadata(artifactRoot, artifactMetadata(contents, { filename: '../escape.tgz' }));
-  assert.notEqual(runScript('verify-release-artifact.mjs', [metadataPath]).status, 0);
+  assert.notEqual(runScript('release/verify-release-artifact.mjs', [metadataPath]).status, 0);
   writeMetadata(artifactRoot, artifactMetadata(contents, { version: '01.2.3' }));
-  assert.notEqual(runScript('verify-release-artifact.mjs', [metadataPath]).status, 0);
+  assert.notEqual(runScript('release/verify-release-artifact.mjs', [metadataPath]).status, 0);
   writeMetadata(artifactRoot, metadata);
 
   const fakeNpm = path.join(temporaryRoot, 'fake-npm.mjs');
@@ -534,7 +534,7 @@ console.error(response.message || 'registry unavailable'); process.exit(response
   };
 
   let registry = runScript(
-    'check-release-registry.mjs',
+    'release/check-release-registry.mjs',
     ['preflight', registryMetadata],
     registryEnv([{ kind: 'missing' }]),
   );
@@ -542,7 +542,7 @@ console.error(response.message || 'registry unavailable'); process.exit(response
   assert.equal(registry.stdout.trim(), 'missing');
 
   registry = runScript(
-    'check-release-registry.mjs',
+    'release/check-release-registry.mjs',
     ['preflight', registryMetadata],
     registryEnv([{ kind: 'found', integrity: metadata.integrity }]),
   );
@@ -550,7 +550,7 @@ console.error(response.message || 'registry unavailable'); process.exit(response
   assert.equal(registry.stdout.trim(), 'matching');
 
   registry = runScript(
-    'check-release-registry.mjs',
+    'release/check-release-registry.mjs',
     ['preflight', registryMetadata],
     registryEnv([{ kind: 'found', integrity: 'sha512-wrong' }]),
   );
@@ -558,7 +558,7 @@ console.error(response.message || 'registry unavailable'); process.exit(response
   assert.match(registry.stderr, /different integrity/);
 
   registry = runScript(
-    'check-release-registry.mjs',
+    'release/check-release-registry.mjs',
     ['preflight', registryMetadata],
     registryEnv([{ kind: 'error', message: 'offline' }]),
   );
@@ -566,14 +566,14 @@ console.error(response.message || 'registry unavailable'); process.exit(response
   assert.match(registry.stderr, /registry query failed/);
 
   registry = runScript(
-    'check-release-registry.mjs',
+    'release/check-release-registry.mjs',
     ['verify', registryMetadata],
     registryEnv([{ kind: 'missing' }, { kind: 'found', integrity: metadata.integrity }]),
   );
   assert.equal(registry.status, 0);
   assert.equal(registry.stdout.trim(), 'matching');
 
-  registry = runScript('check-release-registry.mjs', ['verify', registryMetadata], {
+  registry = runScript('release/check-release-registry.mjs', ['verify', registryMetadata], {
     ...registryEnv([{ kind: 'missing' }]),
     ANHEDRAL_REGISTRY_VERIFY_ATTEMPTS: '2',
   });

@@ -32,14 +32,14 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Require standalone public CLI checkout
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - id: scope
         env:
           CI_TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
           CI_HEAD_BRANCH: ${{ github.head_ref }}
           CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: node scripts/ci-scope.mjs
+        run: node scripts/checks/ci-scope.mjs
 
   checks:
     needs: [scope, plugin-ui]
@@ -68,7 +68,7 @@ jobs:
           persist-credentials: false
       - name: Require standalone public CLI checkout
         if: ${{ needs.scope.outputs.full == 'true' }}
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - name: Setup pnpm
         if: ${{ needs.scope.outputs.full == 'true' }}
@@ -141,7 +141,7 @@ jobs:
           persist-credentials: false
       - name: Require standalone public CLI checkout
         if: ${{ needs.scope.outputs.full == 'true' }}
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         if: ${{ needs.scope.outputs.full == 'true' }}
@@ -180,7 +180,7 @@ jobs:
           submodules: false
           persist-credentials: false
       - name: Require standalone public CLI checkout
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
@@ -206,7 +206,7 @@ jobs:
           submodules: false
           persist-credentials: false
       - name: Require standalone public CLI checkout
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - id: profiles
         run: |
@@ -232,7 +232,7 @@ jobs:
           submodules: false
           persist-credentials: false
       - name: Require standalone public CLI checkout
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
         with:

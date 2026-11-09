@@ -16,9 +16,9 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { parse } from 'yaml';
 import { GENERATOR_VERSION } from '../dist/version.js';
-import { planStackUpdate, runStackUpdate, updateDiff } from '../dist/stack-update.js';
+import { planStackUpdate, runStackUpdate, updateDiff } from '../dist/composition/update.js';
 import { ArtifactUnavailableError, resolvePublishedCliArtifact } from '../dist/release-artifact.js';
-import { runStagedTransaction } from '../dist/transaction.js';
+import { runStagedTransaction } from '../dist/transactions/transaction.js';
 
 const executable = path.resolve('dist/bin.js');
 const digest = (value) => createHash('sha256').update(value).digest('hex');

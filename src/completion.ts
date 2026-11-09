@@ -6,7 +6,7 @@ import {
   type CommandDefinition,
   type CommandOption,
 } from './command-schema.js';
-import { PUBLIC_STACK_ADDITIONS } from './capability-catalog.js';
+import { PUBLIC_STACK_ADDITIONS } from './composition/catalog.js';
 
 /** Quote data for shell source. Completion never evaluates user input. */
 function quote(value: string): string {

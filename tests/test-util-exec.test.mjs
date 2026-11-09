@@ -1,4 +1,4 @@
-import { resolveCommand } from '../dist/command.js';
+import { resolveCommand } from '../dist/process/resolve-command.js';
 import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

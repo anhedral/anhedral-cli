@@ -17,7 +17,7 @@ import {
   loadPluginRelease,
   publishPluginSource,
   readStoredArchive,
-} from '../scripts/publish-plugin-source.mjs';
+} from '../scripts/plugin/publish-plugin-source.mjs';
 
 const hash = (bytes, algorithm = 'sha256', encoding = 'hex') =>
   createHash(algorithm).update(bytes).digest(encoding);

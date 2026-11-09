@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { findUncataloguedDependencyPins } from '../scripts/dependency-policy.mjs';
+import { findUncataloguedDependencyPins } from '../scripts/build/dependency-policy.mjs';
 
 test('owned dependency policy catches quoted and unquoted pins, tags and recipe maps', () => {
   for (const source of [
@@ -27,7 +27,7 @@ test('owned dependency policy catches quoted and unquoted pins, tags and recipe 
 });
 
 test('catalog audit includes all property spellings, aliases and tagged tools without engine constraints', async () => {
-  const { collectCatalogDependencyPins } = await import('../scripts/dependency-policy.mjs');
+  const { collectCatalogDependencyPins } = await import('../scripts/build/dependency-policy.mjs');
   const pins = collectCatalogDependencyPins(
     `
 // renovate: datasource=npm depName=eslint
@@ -79,7 +79,7 @@ export const VOID_NODE_ENGINE = '>=24.21.0';
 
 test('maintained dependency catalog audits the foundation dependencies', async () => {
   const { readFileSync } = await import('node:fs');
-  const { collectCatalogDependencyPins } = await import('../scripts/dependency-policy.mjs');
+  const { collectCatalogDependencyPins } = await import('../scripts/build/dependency-policy.mjs');
   const source = readFileSync(new URL('../src/dependencies.ts', import.meta.url), 'utf8');
   const pins = collectCatalogDependencyPins(source);
   for (const name of [

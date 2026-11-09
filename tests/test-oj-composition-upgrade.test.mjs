@@ -223,8 +223,8 @@ test('a customized affected root rejects every source write rather than replacin
 });
 
 test('an owned web configuration refreshes without requiring metadata or CSS changes', async (t) => {
-  const { CapabilityEditor, fingerprint } = await import('../dist/capability-editor.js');
-  const { normalizeOjFoundation } = await import('../dist/platforms/tanstack.js');
+  const { CapabilityEditor, fingerprint } = await import('../dist/composition/editor.js');
+  const { normalizeOjFoundation } = await import('../dist/scaffold/tanstack.js');
   const root = fixture(t);
   const file = 'apps/web/vite.config.ts';
   const current = readFileSync(path.join(root, file), 'utf8');
