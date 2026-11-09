@@ -5,14 +5,17 @@ import { readFileSync } from 'node:fs';
 import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runPlatformCommand } from '../dist/platform-command.js';
-import { readPrivate, writePrivate } from '../dist/platform-state.js';
+import { runPlatformCommand } from '../dist/platform/command.js';
+import { readPrivate, writePrivate } from '../dist/platform/state.js';
 import {
   canonicalCliJson,
   cliPlanSchema,
   cliPreparationSchema,
 } from '../dist/contracts/cli-transport.js';
-import { composeSourceProvenance, launchCompositionSchema } from '../dist/composition.js';
+import {
+  composeSourceProvenance,
+  launchCompositionSchema,
+} from '../dist/composition/composition.js';
 
 const fixture = JSON.parse(
   readFileSync(new URL('./fixtures/deployment-contract/fixtures.json', import.meta.url)),

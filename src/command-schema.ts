@@ -20,6 +20,7 @@ export interface CommandPositional {
 }
 
 export interface CommandDefinition {
+  owner?: 'platform';
   description: string;
   usage: string;
   options: readonly CommandOption[];
@@ -190,6 +191,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Prints the script only; never edits your shell profile or contacts Platform.',
   },
   login: {
+    owner: 'platform',
     description: 'Approve a short-lived CLI session in your browser.',
     usage: 'login [--start|--resume]',
     options: [
@@ -202,6 +204,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Device secrets and API tokens stay in your credential store. Server CLI access must be configured.',
   },
   logout: {
+    owner: 'platform',
     description: 'Revoke this CLI session.',
     usage: 'logout',
     options: PLATFORM_OPTIONS,
@@ -209,6 +212,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Revokes server access before clearing local credentials.',
   },
   whoami: {
+    owner: 'platform',
     description: 'Show the current CLI identity.',
     usage: 'whoami',
     options: [
@@ -221,6 +225,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     examples: ['whoami --json', 'whoami --context --human'],
   },
   projects: {
+    owner: 'platform',
     description: 'List or create Platform projects.',
     usage: 'projects <list|create> [options]',
     options: PROJECT_OPTIONS,
@@ -248,6 +253,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     examples: ['projects list', 'projects create --name "My app"'],
   },
   link: {
+    owner: 'platform',
     description: 'Link this workspace to an existing project.',
     usage: 'link --project <uuid> --team <uuid>',
     options: [
@@ -259,12 +265,14 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Requires current project build access. Existing application identities are preserved.',
   },
   unlink: {
+    owner: 'platform',
     description: 'Remove the local project link.',
     usage: 'unlink',
     options: PLATFORM_OPTIONS,
     examples: ['unlink'],
   },
   deploy: {
+    owner: 'platform',
     description: 'Plan deployment and reserve a candidate from sealed source.',
     usage: 'deploy <plan|prepare|status> [options]',
     options: [
@@ -318,6 +326,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Preparation reserves a candidate; server policy controls build admission. No preview or deployment is activated.',
   },
   env: {
+    owner: 'platform',
     description: 'Manage project configuration and write-only secrets through Platform.',
     usage: 'env <list|import|set> [options]',
     options: ENVIRONMENT_OPTIONS,
@@ -352,6 +361,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Values never appear in output or retry state. Platform enforces project roles and production approvals; saving configuration does not change an existing deployment.',
   },
   staging: {
+    owner: 'platform',
     description: 'Manage persistent staging deployments for the linked project.',
     usage: 'staging <status|deploy> [options]',
     options: STAGING_OPTIONS,
@@ -365,6 +375,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
         examples: ['staging status --json'],
       },
       deploy: {
+        owner: 'platform',
         description: 'Deploy a ready candidate to staging.',
         usage: 'staging deploy --candidate <uuid> [--new]',
         options: STAGING_OPTIONS,
@@ -376,6 +387,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Retried requests retain the same identity and generation. Configuration is frozen for each new staging deployment; production approval stays in Platform.',
   },
   production: {
+    owner: 'platform',
     description: 'Deploy a ready candidate with your current production permissions.',
     usage: 'production <status|deploy> [options]',
     options: PRODUCTION_OPTIONS,
@@ -389,6 +401,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
         examples: ['production status --json'],
       },
       deploy: {
+        owner: 'platform',
         description: 'Request production publication of a ready candidate.',
         usage: 'production deploy --candidate <uuid> --name <slug> [--new]',
         options: PRODUCTION_OPTIONS,
@@ -400,6 +413,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Platform checks current production permissions and freezes configuration. Self-service teams need no second approver; an explicitly required independent review remains enforced.',
   },
   logs: {
+    owner: 'platform',
     description: 'Read redacted runtime logs for the linked project.',
     usage: 'logs [options]',
     positional: { name: 'arguments', min: 0, max: 0 },
@@ -459,6 +473,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Runtime collection is best effort and reports unavailable coverage and dropped events. Retention is seven days; source/build logs remain separate.',
   },
   source: {
+    owner: 'platform',
     description: 'Upload an immutable source checkpoint with resumable chunks.',
     usage: 'source <upload|status> [options]',
     options: [

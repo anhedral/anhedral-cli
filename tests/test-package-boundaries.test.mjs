@@ -11,8 +11,8 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { buildPluginArchive } from '../scripts/package-plugin.mjs';
-import { readStoredArchive } from '../scripts/publish-plugin-source.mjs';
+import { buildPluginArchive } from '../scripts/plugin/package-plugin.mjs';
+import { readStoredArchive } from '../scripts/plugin/publish-plugin-source.mjs';
 import { scanText } from '../scripts/secret-scanner.mjs';
 test('plugin ownership rejects extra files and linked distribution roots without remote connections', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-plugin-boundary-'));

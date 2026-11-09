@@ -32,7 +32,7 @@ test('manual main candidate is verified after quick checks before immutable uplo
   );
   assert.equal(steps[candidate].env.ANHEDRAL_EXPECTED_SOURCE_REVISION, '${{ github.sha }}');
   assert.deepEqual(steps[candidate].run.trim().split('\n'), [
-    'node scripts/create-release-artifact.mjs',
+    'node scripts/release/create-release-artifact.mjs',
     'pnpm release:artifact:verify',
     'pnpm release:artifact:smoke',
   ]);

@@ -15,9 +15,9 @@ import {
   parseInitOptions as parseStandardOptions,
   scaffoldAnhedralStack as scaffoldStandardProject,
 } from '../dist/index.js';
-import { runCapabilityCommand } from '../dist/capability-command.js';
-import { CapabilityEditor } from '../dist/capability-editor.js';
-import { needsFullCI } from '../scripts/ci-scope.mjs';
+import { runCapabilityCommand } from '../dist/composition/command.js';
+import { CapabilityEditor } from '../dist/composition/editor.js';
+import { needsFullCI } from '../scripts/checks/ci-scope.mjs';
 const offline = () => {
   throw Error('External commands forbidden');
 };
@@ -153,7 +153,7 @@ test('init dry-run rejects occupied and symlinked destinations without creating 
 });
 test('shared recipe and generated API/auth changes always retain fast CI checks', () => {
   for (const file of [
-    'src/capability-recipes.ts',
+    'src/composition/recipes.ts',
     'assets/stack/api-index.ts.txt',
     'assets/stack/auth.ts.txt',
   ])

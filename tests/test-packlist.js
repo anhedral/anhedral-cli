@@ -1,4 +1,4 @@
-import { assertPublishedModules } from '../scripts/repository-boundaries.mjs';
+import { assertPublishedModules } from '../scripts/checks/repository-boundaries.mjs';
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -60,12 +60,12 @@ const requiredFiles = new Set([
     'styles.css.txt',
   ].map((name) => `assets/launch/${name}`),
   'dist/launch.js',
-  'dist/platforms/tanstack.js',
+  'dist/scaffold/tanstack.js',
   'docs/capabilities.md',
-  'dist/capability-command.js',
-  'dist/capability-recipes.js',
-  'dist/capability-editor.js',
-  'dist/capability-references.js',
+  'dist/composition/command.js',
+  'dist/composition/recipes.js',
+  'dist/composition/editor.js',
+  'dist/composition/references.js',
   'LICENSE',
   'README.md',
   'assets/patches/braces@3.0.3.patch',

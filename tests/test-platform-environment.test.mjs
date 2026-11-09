@@ -12,9 +12,9 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runEnvironmentCommand, readEnvironmentSecret } from '../dist/platform-environment.js';
-import { runPlatformCommand } from '../dist/platform-command.js';
-import { readPrivate, writePrivate } from '../dist/platform-state.js';
+import { runEnvironmentCommand, readEnvironmentSecret } from '../dist/platform/environment.js';
+import { runPlatformCommand } from '../dist/platform/command.js';
+import { readPrivate, writePrivate } from '../dist/platform/state.js';
 import { validateCommand } from '../dist/cli-arguments.js';
 import { commandHelp } from '../dist/registry/usage.js';
 const context = {

@@ -3,9 +3,9 @@ import test from 'node:test';
 import { mkdtemp, realpath, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runProductionCommand, validateProductionArguments } from '../dist/platform-production.js';
+import { runProductionCommand, validateProductionArguments } from '../dist/platform/production.js';
 import { commandHelp } from '../dist/registry/usage.js';
-import { writePrivate } from '../dist/platform-state.js';
+import { writePrivate } from '../dist/platform/state.js';
 import { validateCommand } from '../dist/cli-arguments.js';
 const context = {
   origin: 'https://platform.anhedral.com',
@@ -198,7 +198,7 @@ test('production status retains explicit policy feedback and validates project i
 
 test('production command authenticates through the CLI router and binds the selected team', async (t) => {
   await fixture(t);
-  const { runPlatformCommand } = await import('../dist/platform-command.js');
+  const { runPlatformCommand } = await import('../dist/platform/command.js');
   await writePrivate(join(process.cwd(), '.anhedral/platform/project.json'), {
     protocol: 1,
     ...context,
@@ -241,7 +241,7 @@ test('production command authenticates through the CLI router and binds the sele
 
 test('deploy preserves bounded compatibility errors from the server instead of requiring another plan', async (t) => {
   await fixture(t);
-  const { runPlatformCommand } = await import('../dist/platform-command.js');
+  const { runPlatformCommand } = await import('../dist/platform/command.js');
   const { canonicalCliJson } = await import('../dist/contracts/cli-transport.js');
   const { createHash } = await import('node:crypto');
   const { readFileSync } = await import('node:fs');
@@ -369,7 +369,7 @@ test('concurrent production commands cannot create competing local deployment id
 
 test('new signed plans render actionable diagnostics and do not retry an incompatible preparation', async (t) => {
   await fixture(t);
-  const { runPlatformCommand } = await import('../dist/platform-command.js');
+  const { runPlatformCommand } = await import('../dist/platform/command.js');
   const { canonicalCliJson } = await import('../dist/contracts/cli-transport.js');
   const { createHash } = await import('node:crypto');
   const { readFileSync } = await import('node:fs');
@@ -487,7 +487,7 @@ test('new signed plans render actionable diagnostics and do not retry an incompa
 
 test('production permission revocation during POST names the deployment policy instead of build access', async (t) => {
   await fixture(t);
-  const { runPlatformCommand } = await import('../dist/platform-command.js');
+  const { runPlatformCommand } = await import('../dist/platform/command.js');
   await writePrivate(join(process.cwd(), '.anhedral/platform/project.json'), {
     protocol: 1,
     ...context,

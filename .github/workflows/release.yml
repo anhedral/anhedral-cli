@@ -65,7 +65,7 @@ jobs:
           persist-credentials: false
           ref: main
       - name: Require standalone public CLI checkout
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         env:
@@ -109,7 +109,7 @@ jobs:
             test "$CALLER_WORKFLOW" = "anhedral/anhedral-cli/.github/workflows/release-on-main.yml@refs/heads/main" || exit 1
             if [ "$CANDIDATE_RUN_ID" != "$CURRENT_RUN_ID" ]; then
               test "$FINALIZE_ONLY" = "true" || exit 1
-              node scripts/release-candidate-run.mjs
+              node scripts/release/release-candidate-run.mjs
             else
               test "$FINALIZE_ONLY" != "true" || exit 1
             fi
@@ -135,11 +135,11 @@ jobs:
         env:
           ANHEDRAL_EXPECTED_INTEGRITY: ${{ inputs.cli_integrity }}
           ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ inputs.plugin_integrity }}
-        run: node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/check-release-secrets.mjs .artifacts/release/metadata.json
+        run: node scripts/release/verify-release-artifact.mjs .artifacts/release/metadata.json && node scripts/release/check-release-secrets.mjs .artifacts/release/metadata.json
 
       - name: Require existing exact publication before finalization
         if: inputs.finalize_only == true
-        run: node scripts/check-release-registry.mjs verify .artifacts/release/metadata.json
+        run: node scripts/release/check-release-registry.mjs verify .artifacts/release/metadata.json
 
       - name: Read release metadata
         id: metadata
@@ -201,7 +201,7 @@ jobs:
           persist-credentials: false
           ref: main
       - name: Require standalone public CLI checkout
-        run: node scripts/standalone-checkout.mjs --ci
+        run: node scripts/checks/standalone-checkout.mjs --ci
 
       - name: Require the prepared main commit
         env:
@@ -234,12 +234,12 @@ jobs:
           ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ needs.verify.outputs.plugin_integrity }}
           ANHEDRAL_EXPECTED_NAME: anhedral
           ANHEDRAL_EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
-        run: node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json
+        run: node scripts/release/verify-release-artifact.mjs .artifacts/release/metadata.json
 
       - name: Check npm registry state
         id: registry
         run: |
-          STATE=$(node scripts/check-release-registry.mjs preflight .artifacts/release/metadata.json)
+          STATE=$(node scripts/release/check-release-registry.mjs preflight .artifacts/release/metadata.json)
           echo "state=$STATE" >> "$GITHUB_OUTPUT"
           echo "Registry state before publish: $STATE" >> "$GITHUB_STEP_SUMMARY"
 
@@ -250,7 +250,7 @@ jobs:
         run: npm publish "./.artifacts/release/$TARBALL" --ignore-scripts --provenance --registry=https://registry.npmjs.org
 
       - name: Verify npm registry integrity
-        run: node scripts/check-release-registry.mjs verify .artifacts/release/metadata.json
+        run: node scripts/release/check-release-registry.mjs verify .artifacts/release/metadata.json
 
       - name: Summarize publication
         run: |
@@ -309,10 +309,10 @@ jobs:
           ANHEDRAL_EXPECTED_PLUGIN_INTEGRITY: ${{ needs.verify.outputs.plugin_integrity }}
           ANHEDRAL_EXPECTED_NAME: anhedral
           ANHEDRAL_EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
-        run: node scripts/verify-release-artifact.mjs .artifacts/release/metadata.json
+        run: node scripts/release/verify-release-artifact.mjs .artifacts/release/metadata.json
 
       - name: Verify the exact artifact is already published
-        run: node scripts/check-release-registry.mjs verify .artifacts/release/metadata.json
+        run: node scripts/release/check-release-registry.mjs verify .artifacts/release/metadata.json
 
       - name: Verify declared version
         env:
@@ -328,7 +328,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_SHA: ${{ inputs.release_sha }}
-        run: node scripts/publish-plugin-source.mjs .artifacts/release/metadata.json
+        run: node scripts/plugin/publish-plugin-source.mjs .artifacts/release/metadata.json
 
       - name: Create or verify tag
         env:
@@ -402,4 +402,4 @@ jobs:
           cmp "$METADATA" "$DOWNLOAD_DIR/metadata.json"
           cmp "$PLUGIN" "$DOWNLOAD_DIR/anhedral-plugin-$VERSION.zip"
           cmp "$PLUGIN_METADATA" "$DOWNLOAD_DIR/plugin-metadata.json"
-          node scripts/verify-release-artifact.mjs "$DOWNLOAD_DIR/metadata.json"
+          node scripts/release/verify-release-artifact.mjs "$DOWNLOAD_DIR/metadata.json"

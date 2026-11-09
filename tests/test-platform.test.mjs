@@ -3,9 +3,9 @@ import test from 'node:test';
 import { realpath, mkdtemp, writeFile, mkdir, symlink, stat, rm, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { runPlatformCommand } from '../dist/platform-command.js';
-import { platformOrigin, readPrivate, writePrivate } from '../dist/platform-state.js';
-import { packageSource } from '../dist/platform-source.js';
+import { runPlatformCommand } from '../dist/platform/command.js';
+import { platformOrigin, readPrivate, writePrivate } from '../dist/platform/state.js';
+import { packageSource } from '../dist/platform/source.js';
 import { unpackSource } from '../dist/contracts/source-bundle.js';
 test('CLI login stores device and access secrets without output and rejects redirects/origin changes', async () => {
   let state = null;

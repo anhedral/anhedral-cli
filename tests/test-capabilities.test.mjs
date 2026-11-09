@@ -12,8 +12,8 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { CAPABILITY_IDS } from '../dist/capability-catalog.js';
-import { runCapabilityCommand } from '../dist/capability-command.js';
+import { CAPABILITY_IDS } from '../dist/composition/catalog.js';
+import { runCapabilityCommand } from '../dist/composition/command.js';
 import {
   parseInitOptions as parseStandardOptions,
   scaffoldAnhedralStack as scaffoldStandardProject,

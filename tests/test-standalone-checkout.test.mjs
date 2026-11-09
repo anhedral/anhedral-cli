@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { parse } from 'yaml';
-import { assertStandaloneCheckout } from '../scripts/standalone-checkout.mjs';
-import { validateWorkflowPolicy } from '../scripts/check-release-policy.mjs';
+import { assertStandaloneCheckout } from '../scripts/checks/standalone-checkout.mjs';
+import { validateWorkflowPolicy } from '../scripts/release/check-release-policy.mjs';
 
 function fixture(run) {
   const directory = mkdtempSync(path.join(tmpdir(), 'anhedral-standalone-'));

@@ -15,12 +15,15 @@ test('candidate build coordinates the marketplace pointer without publishing a t
   const version = '0.18.0';
   try {
     write('package.json', JSON.stringify({ type: 'module' }));
-    write('scripts/prepare-cli.mjs', readFileSync('scripts/prepare-cli.mjs'));
-    write('scripts/repository-boundaries.mjs', 'export function checkRepositoryBoundary() {}\n');
+    write('scripts/build/prepare-cli.mjs', readFileSync('scripts/build/prepare-cli.mjs'));
+    write(
+      'scripts/checks/repository-boundaries.mjs',
+      'export function checkRepositoryBoundary() {}\n',
+    );
     write('dist/bin.js', '#!/usr/bin/env node\n');
     write('dist/version.js', `export const GENERATOR_VERSION = '${version}';`);
     write(
-      'dist/capability-catalog.js',
+      'dist/composition/catalog.js',
       `export const ANHEDRAL_STACK = {id:'anhedral-stack',name:'Anhedral Stack',additions:{backend:{},r2:{},stripe:{}}};`,
     );
     write('plugin/references/native-ui.md', 'retired');
@@ -57,7 +60,9 @@ test('candidate build coordinates the marketplace pointer without publishing a t
     write('LICENSE', 'fixture license');
     for (const name of ['software-factory', 'stack-standard', 'ui', 'capabilities'])
       write(`docs/${name}.md`, 'fixture guide\n');
-    execFileSync(process.execPath, [path.join(root, 'scripts/prepare-cli.mjs')], { cwd: root });
+    execFileSync(process.execPath, [path.join(root, 'scripts/build/prepare-cli.mjs')], {
+      cwd: root,
+    });
     const marketplace = JSON.parse(
       readFileSync(path.join(root, '.agents/plugins/marketplace.json')),
     );

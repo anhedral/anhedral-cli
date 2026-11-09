@@ -6,14 +6,14 @@ import test from 'node:test';
 import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runPlatformCommand } from '../dist/platform-command.js';
+import { runPlatformCommand } from '../dist/platform/command.js';
 import {
   platformOrigin,
   readPrivate,
   writePrivate,
   runCredentialProcess,
   secretStore,
-} from '../dist/platform-state.js';
+} from '../dist/platform/state.js';
 
 const origin = 'https://platform.example';
 const principalId = 'a0b9d370-073d-4cf3-ab6c-4aaa03726b91';

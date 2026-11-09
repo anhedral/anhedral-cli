@@ -24,7 +24,10 @@ test('ordinary tests and release validation compile and type-check the CLI once'
     const expanded = commands(name);
     assert.equal(expanded.filter((command) => command === 'tsc').length, 1, name);
     assert.equal(expanded.filter((command) => command === 'tsc --noEmit').length, 0, name);
-    assert.ok(expanded.indexOf('tsc') < expanded.indexOf('node scripts/prepare-cli.mjs'), name);
+    assert.ok(
+      expanded.indexOf('tsc') < expanded.indexOf('node scripts/build/prepare-cli.mjs'),
+      name,
+    );
   }
   assert.deepEqual(commands('typecheck'), ['tsc --noEmit']);
   assert.ok(commands('lint').includes('tsc --noEmit'));
@@ -35,8 +38,8 @@ test('release validation retains every standalone lint and release check', () =>
   for (const command of commands('lint').filter((command) => command !== 'tsc --noEmit'))
     assert.ok(expanded.includes(command), `Release validation omitted ${command}`);
   for (const command of [
-    'node scripts/check-security-policy.mjs',
-    'node scripts/audit-osv.mjs',
+    'node scripts/security/check-security-policy.mjs',
+    'node scripts/security/audit-osv.mjs',
     scripts['test:unit'],
     'node tests/test-braces-install.mjs',
     'node tests/test-forge-install.mjs',
@@ -50,7 +53,7 @@ test('package checks and artifact creation cannot trigger another lifecycle buil
   for (const relative of [
     'tests/test-packed-cli.js',
     'tests/test-packlist.js',
-    'scripts/create-release-artifact.mjs',
+    'scripts/release/create-release-artifact.mjs',
   ]) {
     const source = readFileSync(new URL(`../${relative}`, import.meta.url), 'utf8');
     assert.match(source, /'pack',[\s\S]{0,100}'--ignore-scripts'/, relative);
