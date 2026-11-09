@@ -1,0 +1,3 @@
+interface:
+  display_name: "Web Design"
+  short_description: "Design web UI with shadcn defaults or your chosen library"

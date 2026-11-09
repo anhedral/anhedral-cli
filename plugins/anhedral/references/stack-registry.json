@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "anhedral-stack",
+  "name": "Anhedral Stack",
+  "foundation": {
+    "id": "tanstack-start",
+    "name": "TanStack Start + shadcn",
+    "targets": [
+      "apps/web/package.json",
+      "apps/web/src/router.tsx",
+      "apps/web/src/server.ts",
+      "apps/web/src/routes/__root.tsx",
+      "apps/web/src/routes/index.tsx"
+    ]
+  },
+  "additions": {
+    "backend": {
+      "name": "Backend",
+      "description": "API, database and authentication together.",
+      "requires": [],
+      "targets": [
+        "apps/api/package.json",
+        "apps/api/wrangler.jsonc",
+        "apps/api/src/index.ts",
+        "apps/api/src/environment.ts",
+        "apps/api/src/capabilities.ts",
+        "apps/api/src/custom-environment.ts",
+        "packages/db/package.json",
+        "packages/db/src/index.ts",
+        "packages/db/src/schema.ts",
+        "apps/api/src/auth.ts",
+        "apps/api/src/auth-features.ts",
+        "apps/api/src/security.ts",
+        "apps/api/src/auth-platform.ts",
+        "apps/api/src/features/auth.ts",
+        "apps/web/src/lib/auth-client.ts"
+      ]
+    },
+    "r2": {
+      "name": "Private storage",
+      "description": "Authenticated, owner-scoped object storage.",
+      "requires": [
+        "backend"
+      ],
+      "targets": [
+        "apps/api/src/features/storage.ts"
+      ]
+    },
+    "stripe": {
+      "name": "Payments and subscriptions",
+      "description": "Stripe subscription and entitlement source.",
+      "requires": [
+        "backend"
+      ],
+      "targets": [
+        "apps/api/src/features/stripe.ts",
+        "apps/api/src/features/entitlements.ts",
+        "apps/api/src/entitlement-guard.ts",
+        "apps/api/src/billing-mode.ts",
+        "apps/api/src/billing-providers.ts",
+        "packages/db/src/billing-schema.ts"
+      ]
+    }
+  },
+  "cliVersion": "0.22.1"
+}
