@@ -1,6 +1,6 @@
 {
   "name": "anhedral",
-  "version": "0.22.0",
+  "version": "0.22.1",
   "description": "The open-source Anhedral API client for building, configuring and deploying apps, with editable source generation.",
   "type": "module",
   "exports": {
