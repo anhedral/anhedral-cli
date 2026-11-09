@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "anhedral",
-  "version": "0.22.0",
+  "version": "0.22.1",
   "description": "Build and manage apps on Anhedral through the Anhedral CLI with Codex or Claude Code.",
   "author": {
     "name": "Anhedral",
