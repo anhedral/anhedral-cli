@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
 import { environmentNameSchema } from "./environment-transport.ts";
 
+export const ENVIRONMENT_FILE_MAX_BYTES = 65536;
+export class EnvironmentFileError extends Error {}
+
 /** Literal dotenv parsing only. Never evaluate a shell, interpolate variables,
  * or include input values in errors. The same parser serves browser and CLI. */
 export function parseEnvironmentFile(input: string): { name: string; value: string }[] {
-  if (input.includes("\0")) throw new Error("Environment files cannot contain NUL bytes.");
-  if (new TextEncoder().encode(input).length > 65536)
-    throw new Error("Environment files support at most 64 KiB.");
+  if (input.includes("\0"))
+    throw new EnvironmentFileError("Environment files cannot contain NUL bytes.");
+  if (new TextEncoder().encode(input).length > ENVIRONMENT_FILE_MAX_BYTES)
+    throw new EnvironmentFileError("Environment files support at most 64 KiB.");
   const text = input.replace(/^\uFEFF/, "").replaceAll("\r\n", "\n");
   const entries: { name: string; value: string }[] = [];
   const names = new Set<string>();
   let position = 0,
     line = 1;
   const fail = (message: string): never => {
-    throw new Error(`Line ${line}: ${message}`);
+    throw new EnvironmentFileError(`Line ${line}: ${message}`);
   };
   const space = () => {
     while (text[position] === " " || text[position] === "\t" || text[position] === "\r") position++;
@@ -91,7 +95,8 @@ export function parseEnvironmentFile(input: string): { name: string; value: stri
       line++;
     }
   }
-  if (!entries.length) throw new Error("The environment file contains no variables.");
+  if (!entries.length)
+    throw new EnvironmentFileError("The environment file contains no variables.");
   return entries;
 }
 

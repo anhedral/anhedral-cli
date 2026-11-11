@@ -220,6 +220,10 @@ routing require `deploy plan --manifest <file> --new`. Plan/source expiry and
 revocation fail closed. State under `.anhedral/platform/deployment.json` contains
 no credentials and cannot select a network origin or change the signed-in identity.
 
+The CLI imports the reviewed portable environment parser from Platform. File, stdin
+and parser size limits share its exported constant; typed parser errors retain the
+same value-free validation messages.
+
 `env list` returns names, types, environments and versions. `env import --environment
 staging|production --file <path>` reads a private dotenv file; `--stdin` accepts a
 pipe. `env set <NAME>` reads one literal value from a file or pipe. Values are

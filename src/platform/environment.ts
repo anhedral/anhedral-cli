@@ -4,7 +4,11 @@ import { dirname, join, resolve } from 'node:path';
 import { z } from 'zod';
 import { commandArgumentError, commandArguments } from '../cli-arguments.js';
 import { createReporter, type OutputOptions } from '../cli-output.js';
-import { inferredEnvironmentKind, parseEnvironmentFile } from '../contracts/environment-file.js';
+import {
+  ENVIRONMENT_FILE_MAX_BYTES,
+  inferredEnvironmentKind,
+  parseEnvironmentFile,
+} from '../contracts/environment-file.js';
 import {
   environmentImportReceiptSchema,
   environmentImportSchema,
@@ -56,21 +60,22 @@ export function readEnvironmentSecret(file: string): Uint8Array {
     const info = fstatSync(descriptor);
     if (
       !info.isFile() ||
-      info.size > 65536 ||
+      info.size > ENVIRONMENT_FILE_MAX_BYTES ||
       (process.platform !== 'win32' &&
         (info.uid !== process.getuid?.() || (info.mode & 0o077) !== 0))
     )
       throw platformFailure(
         'Environment input must be your regular owner-only file (mode 0600), at most 64 KiB.',
       );
-    const data = Buffer.alloc(65537);
+    const data = Buffer.alloc(ENVIRONMENT_FILE_MAX_BYTES + 1);
     let length = 0;
     while (length < data.length) {
       const read = readSync(descriptor, data, length, data.length - length, null);
       if (!read) break;
       length += read;
     }
-    if (length > 65536) throw platformFailure('Environment input exceeds 64 KiB.');
+    if (length > ENVIRONMENT_FILE_MAX_BYTES)
+      throw platformFailure('Environment input exceeds 64 KiB.');
     return data.subarray(0, length);
   } finally {
     closeSync(descriptor);
@@ -91,7 +96,8 @@ async function stdinBytes(): Promise<Uint8Array> {
     for await (const item of process.stdin) {
       const bytes = Buffer.from(item);
       length += bytes.length;
-      if (length > 65536) throw platformFailure('Environment input exceeds 64 KiB.');
+      if (length > ENVIRONMENT_FILE_MAX_BYTES)
+        throw platformFailure('Environment input exceeds 64 KiB.');
       chunks.push(bytes);
     }
     return Buffer.concat(chunks);
@@ -178,7 +184,8 @@ export async function runEnvironmentCommand(
     const bytes = options.has('--file')
       ? readEnvironmentSecret(options.value('--file')!)
       : await readInput();
-    if (bytes.length > 65536) throw new Error('Environment input exceeds 64 KiB.');
+    if (bytes.length > ENVIRONMENT_FILE_MAX_BYTES)
+      throw new Error('Environment input exceeds 64 KiB.');
     const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
     entries = operation === 'set' ? [{ name: name!, value: text }] : parseEnvironmentFile(text);
   } catch (error) {
