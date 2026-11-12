@@ -1,5 +1,15 @@
 # Development notes
 
+## 2026-11-11 Environment parser alignment
+
+Starting CLI staging: `360f0b8`. Imported the licensed portable environment parser
+from reviewed Platform main; provenance records the exact owner revision. File,
+stdin and parser admission now share the exported byte limit. Typed parse errors
+preserve value-free messages. Focused environment, deployment and boundary suites
+passed 20 tests; TypeScript compilation, contract snapshots, source hygiene,
+static security, release policy and changed-source formatting passed. No provider
+operations, generated-app builds or publication were performed.
+
 ## 2026-11-08 Public API boundary
 
 Removed internal deployment plan/source exports and synthetic internal plan fixtures

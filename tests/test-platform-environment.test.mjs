@@ -234,3 +234,30 @@ test('new imports accept the monotonic version of a recreated deleted variable',
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('shared environment parser keeps typed errors and rejects oversized UTF-8 before access', async () => {
+  const { ENVIRONMENT_FILE_MAX_BYTES, EnvironmentFileError, parseEnvironmentFile } =
+    await import('../dist/contracts/environment-file.js');
+  assert.throws(() => parseEnvironmentFile(''), EnvironmentFileError);
+  assert.throws(() => parseEnvironmentFile('CUSTOM_SECRET=fixture\0'), EnvironmentFileError);
+  const privateValue = 'é'.repeat(ENVIRONMENT_FILE_MAX_BYTES / 2);
+  assert.throws(
+    () => parseEnvironmentFile(`CUSTOM_SECRET=${privateValue}`),
+    (error) => error instanceof EnvironmentFileError && !error.message.includes(privateValue),
+  );
+  let requests = 0;
+  await assert.rejects(
+    runEnvironmentCommand(
+      ['import', '--environment', 'staging', '--stdin', '--dry-run'],
+      { json: true },
+      context,
+      async () => {
+        requests++;
+        throw Error('must not access Platform');
+      },
+      async () => new TextEncoder().encode(`CUSTOM_SECRET=${privateValue}`),
+    ),
+    /Environment input exceeds 64 KiB/,
+  );
+  assert.equal(requests, 0);
+});
