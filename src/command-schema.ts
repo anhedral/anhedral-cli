@@ -182,6 +182,22 @@ const PROJECT_OPTIONS: readonly CommandOption[] = [
   },
 ];
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
+  mobile: {
+    description: 'Inspect existing Expo mobile source without executing it.',
+    usage: 'mobile doctor [--app-dir <directory>]',
+    options: [
+      {
+        flag: '--app-dir',
+        value: 'directory',
+        kind: 'directory',
+        arity: 'required',
+        description: 'App directory inside --cwd (default: apps/mobile).',
+      },
+    ],
+    positional: { name: 'operation', min: 1, max: 1, choices: ['doctor'] },
+    examples: ['mobile doctor --json', 'mobile doctor --app-dir . --json'],
+    note: 'Offline source inspection only. Does not generate source, execute config, install packages, contact Expo, or activate hosting. Incomplete or blocked reports exit with status 1.',
+  },
   completion: {
     description: 'Print an offline shell completion script.',
     usage: 'completion <bash|zsh>',

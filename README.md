@@ -9,6 +9,10 @@ The plugin guides an agent through CLI commands so you can describe what you wan
 
 ## Start
 
+For an existing Expo app, `anhedral mobile doctor --app-dir . --json` provides an
+offline source feasibility report. It does not run config, install packages, or
+activate mobile hosting. See [mobile inspection](docs/capabilities.md#source-protection).
+
 ```sh
 anhedral init my-app
 cd my-app

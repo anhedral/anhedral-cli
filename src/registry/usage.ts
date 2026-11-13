@@ -33,6 +33,9 @@ export const STANDARD_USAGE = `Anhedral CLI — source generation and optional P
 
 Usage: anhedral <command> [options]
 
+Inspect mobile source:
+  mobile doctor Inspect Expo feasibility without executing project code.
+
 Start a project:
   init          Create the Anhedral Stack with web UI.
   add           Add backend, private storage or payments.

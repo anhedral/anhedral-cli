@@ -31,6 +31,8 @@
     "dependency-patches",
     "index",
     "launch",
+    "mobile/command",
+    "mobile/doctor",
     "platform/auth",
     "platform/command",
     "platform/credential-helper",

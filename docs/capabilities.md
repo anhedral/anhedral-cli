@@ -21,6 +21,17 @@ anhedral stack status --json
 
 ## Source protection
 
+`anhedral mobile doctor --json` inspects existing Expo source under `apps/mobile`;
+use `--app-dir .` when `--cwd` selects the app itself. It reads only bounded static
+package/app/build JSON, never executes app config or project scripts, and performs
+no network requests or writes. The initial feasibility profile targets SDK 58,
+Expo Router and development-client plus fixed simulator/APK review profiles.
+Dynamic config, inherited profiles, platform client overrides and custom build
+workflows remain unverified. Blocked/incomplete
+reports exit with status 1; `source-ready` is declaration evidence only, not a
+successful native build, authenticated app, provider access or hosted admission.
+Mobile generation and managed execution remain unavailable pending those proofs.
+
 Adding a capability also upgrades a canonical earlier TanStack Start foundation to the pinned OJ launchers and runtime helpers in the same source transaction, including when that capability is already installed. The exact earlier canonical document also receives the OJ-compatible side-effect CSS import; safe customized documents stay untouched, while edited documents retaining the earlier stylesheet URL import require reconciliation. Customized launchers or generated configuration require reconciliation before any writes. Additions never reinitialize an application. They plan all selected changes before writing, reject collisions and preserve unrelated JSON/JSONC settings. Composition adapters are fingerprinted in `anhedral.json`; modified adapters require reconciliation instead of silent replacement. Add product routes in `apps/api/src/index.ts`, custom types in `custom-environment.ts`, and auth method configuration in `auth-features.ts`/`auth.ts`.
 
 Journaled transactions preserve recovery evidence and refuse ambiguous recreated files. Dependency installation follows source commit; a post-commit install failure keeps source for repair/retry. Reviewed dependency patches precede the frozen install. `--skip-install` writes source only. `--dry-run` performs no writes or network requests. Repeating an addition preserves source; normal installation may still retry dependencies.

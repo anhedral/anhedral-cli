@@ -7,12 +7,14 @@ import { createReporter, type OutputOptions } from './cli-output.js';
 import { scaffoldLaunchProject, parseAnhedralStackOptions } from './launch.js';
 import { completionScript } from './completion.js';
 import { commandArguments } from './cli-arguments.js';
+import { runMobileCommand } from './mobile/command.js';
 
 export async function runCommand(
   command: string,
   args: string[],
   output: OutputOptions,
 ): Promise<void> {
+  if (command === 'mobile') return runMobileCommand(args, output);
   if (command === 'completion') {
     const parsed = commandArguments(command, args);
     const shell = parsed.positional[0] as 'bash' | 'zsh';
