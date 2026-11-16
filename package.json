@@ -109,14 +109,14 @@
   "packageManager": "pnpm@10.34.5",
   "devDependencies": {
     "@types/node": "20.19.43",
-    "hono": "4.13.13",
-    "prettier": "3.9.10",
-    "typescript": "5.9.3"
+    "hono": "4.13.18",
+    "prettier": "3.10.1",
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "jsonc-parser": "3.3.1",
     "yaml": "2.9.1",
-    "zod": "4.6.6",
+    "zod": "4.6.7",
     "ignore": "7.0.14"
   }
 }
