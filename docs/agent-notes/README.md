@@ -1,5 +1,9 @@
 # Development notes
 
+2026-11-15: Updated CLI dependencies and TypeScript compiler; retained Node 20 types
+for the supported minimum runtime. Generated dependency compositions, shipped patches
+and runtime admission remain independently reviewed. No npm/plugin publication.
+
 ## 2026-11-11 Environment parser alignment
 
 Starting CLI staging: `360f0b8`. Imported the licensed portable environment parser
