@@ -243,7 +243,7 @@
         "credentials": ["STRIPE_SECRET_KEY"]
       }
     },
-    "expected": "stripe (integration)\nWeb payments and subscriptions\nFiles: packages/billing\nRequires: hono\naccess: Use your account.\ncredentials: STRIPE_SECRET_KEY\nNext: Inspect anhedral add stripe --dry-run in your project."
+    "expected": "stripe (integration)\nWeb payments and subscriptions\nFiles: packages/billing\nRequires: hono\naccess: Use your account.\ncredentials: STRIPE_SECRET_KEY\nNext: Inspect anhedral add payments --dry-run in your project."
   },
   {
     "name": "doctor checks",

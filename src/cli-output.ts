@@ -65,7 +65,7 @@ export function formatResult(_command: string, value: unknown): string {
   if (data.stack === 'anhedral-stack' && !data.generated)
     return `Foundation preview for ${data.root}.\nStack: Anhedral Stack.\nNo files were written or resources provisioned.`;
   if (data.stack === 'anhedral-stack' && data.generated)
-    return `Created ${data.root}.\nStack: Anhedral Stack.\n${data.dependenciesInstalled ? 'Run pnpm dev' : 'Run pnpm install, then pnpm dev'} in the project directory.\nAdd services when needed: anhedral add backend, then anhedral add r2 or anhedral add stripe.\nReview README.md for configuration and deployment.`;
+    return `Created ${data.root}.\nStack: Anhedral Stack.\n${data.dependenciesInstalled ? 'Run pnpm dev' : 'Run pnpm install, then pnpm dev'} in the project directory.\nAdd services when needed: anhedral add backend, then anhedral add storage or anhedral add payments.\nReview README.md for configuration and deployment.`;
   return (
     `${data.generated ? 'Created' : 'Foundation preview for'} ${data.root}.\nComponents: ${data.products.join(', ')}.\n` +
     (data.generated

@@ -7,6 +7,15 @@ The open-source CLI for building and managing apps through the **Anhedral API**.
 
 The plugin guides an agent through CLI commands so you can describe what you want to build in conversation. Platform enforces account, project and deployment permissions. The CLI also generates the **Anhedral Stack** as editable source, starting with web UI and adding backend, storage and payments when needed. Local source generation requires no account.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/anhedral/anhedral-cli/staging/docs/assets/anhedral-stack.png">
+  <img src="https://raw.githubusercontent.com/anhedral/anhedral-cli/staging/docs/assets/anhedral-stack-light.png" alt="Client options include a web app created with anhedral init my-app and cross-platform apps built separately with Expo + Anhedral UI. Optionally run anhedral add backend for an API, authentication and a database. After that, run anhedral add storage for private files, anhedral add payments for subscriptions, or both.">
+</picture>
+
+The upcoming `anhedral add cross-platform` command will add an Expo client with Anhedral UI.
+
+Browse the cumulative source snapshots in order: [web foundation](https://github.com/anhedral/anhedral-cli/tree/staging/examples/01-init), [add backend](https://github.com/anhedral/anhedral-cli/tree/staging/examples/02-backend), [add storage](https://github.com/anhedral/anhedral-cli/tree/staging/examples/03-storage), and [add payments](https://github.com/anhedral/anhedral-cli/tree/staging/examples/04-payments). Each folder contains the same app immediately after the listed command, generated with `--skip-install`. R2 and Stripe can each be added independently once the backend is present.
+
 ## Start
 
 ```sh
@@ -15,18 +24,18 @@ cd my-app
 pnpm dev
 ```
 
-Init creates `apps/web` and shared tooling with OJ and TanStack Start server rendering/server functions and editable shadcn starter components. It does not add an API, database, authentication, storage or payments. Preview with `anhedral init my-app --dry-run --json`; use `--skip-install --no-git` for offline source generation.
+Init creates `apps/web` and shared tooling with OJ and TanStack Start server rendering/server functions and editable ShadCN starter components. It does not add an API, database, authentication, storage or payments. Preview with `anhedral init my-app --dry-run --json`; use `--skip-install --no-git` for offline source generation.
 
 ## Add services
 
 ```sh
 anhedral add backend --dry-run --json
 anhedral add backend
-anhedral add r2
-anhedral add stripe
+anhedral add storage
+anhedral add payments
 ```
 
-`backend` adds Hono, Better Auth and Drizzle/D1 together in one source transaction. `r2` adds private storage; `stripe` adds subscriptions. Both require the backend. Include missing prerequisites explicitly with `anhedral add r2 stripe --with-dependencies`.
+`backend` adds Hono, Better Auth and Drizzle/D1 together in one source transaction. `storage` adds private storage; `payments` adds subscriptions. Both require the backend. Include missing prerequisites explicitly with `anhedral add storage payments --with-dependencies`.
 
 After adding backend, configure `apps/api/.dev.vars` from its example, review the initial SQL and apply it deliberately with `pnpm db:migrate --local`. The OJ development server then runs the web and auxiliary API Workers with local resources. Authentication methods start disabled and need explicit configuration. After adding Stripe, run `pnpm db:generate`, review the billing SQL and migrate before testing webhooks. Builds/startup never migrate databases or activate providers.
 
@@ -38,7 +47,7 @@ Update your agent plugin through its host and select the matching published CLI 
 
 ## Web UI
 
-Init includes shadcn Button, Input and Label source with standard `components.json` configuration. Use upstream shadcn directly for more components, or replace the UI with any library. There is no Anhedral UI catalog or CLI wrapper.
+Init includes ShadCN Button, Input and Label source with standard `components.json` configuration. Use upstream ShadCN directly for more components, or replace the UI with any library. There is no Anhedral UI catalog or CLI wrapper.
 
 ```sh
 cd apps/web

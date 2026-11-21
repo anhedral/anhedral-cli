@@ -515,7 +515,11 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       },
     ],
     positional: { name: 'capabilities', min: 1, max: 50, kind: 'capability' },
-    examples: ['add backend', 'add r2', 'add r2 stripe --with-dependencies --dry-run --json'],
+    examples: [
+      'add backend',
+      'add storage',
+      'add storage payments --with-dependencies --dry-run --json',
+    ],
     note: 'Adds source and local configuration only. Existing edits are preserved. No provisioning, credential installation, migration or deployment.',
   },
   stack: {

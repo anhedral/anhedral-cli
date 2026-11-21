@@ -138,15 +138,15 @@ test('generated source records composition transactionally without changing iden
     const auth = readFileSync('apps/api/src/auth.ts', 'utf8');
     assert.match(auth, /PUBLIC_APP_URL/);
     assert.match(readFileSync('apps/api/src/auth-features.ts', 'utf8'), /emailPassword: false/);
-    await invoke(['r2']);
+    await invoke(['storage']);
     assert.equal(readFileSync('apps/api/src/auth.ts', 'utf8'), auth);
     const repeated = readFileSync(file, 'utf8');
-    await invoke(['r2']);
+    await invoke(['storage']);
     assert.equal(readFileSync(file, 'utf8'), repeated);
     const invalid = JSON.parse(repeated);
     invalid.composition.identity = 'platform-application-services-v1';
     writeFileSync(file, JSON.stringify(invalid));
-    await assert.rejects(invoke(['stripe']), (error) =>
+    await assert.rejects(invoke(['payments']), (error) =>
       error.issues?.some((issue) => issue.code === 'invalid_value' && issue.path[0] === 'identity'),
     );
     assert.equal(readFileSync(file, 'utf8'), JSON.stringify(invalid));

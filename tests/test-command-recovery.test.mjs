@@ -78,7 +78,7 @@ for (const recreate of [false, true])
       const original = JSON.parse(readFileSync(path.join(root, 'anhedral.json'), 'utf8'));
       const args = [
         'add',
-        'stripe',
+        'payments',
         '--with-dependencies',
         '--skip-install',
         '--cwd',
