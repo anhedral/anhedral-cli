@@ -10,7 +10,7 @@ Build an app one addition at a time. Generated applications are editable source.
   <img src="https://raw.githubusercontent.com/anhedral/anhedral-cli/staging/docs/assets/anhedral-stack-light.png" alt="The CLI creates a TanStack Start web app. The optional backend supports private file storage and subscription payments. An Expo client with Anhedral UI is upcoming.">
 </picture>
 
-**Upcoming** — `anhedral add cross-platform` will add an Expo client with Anhedral UI.
+**Upcoming** — `pnpm dlx anhedral@latest add cross-platform` will add an Expo client with Anhedral UI.
 
 ## How to use
 
@@ -29,7 +29,14 @@ pnpm dlx anhedral@latest add backend
 pnpm dlx anhedral@latest stack list
 ```
 
-In the published 0.22.1 CLI, use `add r2` for storage and `add stripe` for payments. Use `--dry-run` to preview an addition. Compare the [example snapshots](https://github.com/anhedral/anhedral-cli/tree/staging/examples) or follow the [service setup guide](docs/capabilities.md) to configure providers and apply migrations.
+For the storage and payments additions shown above, the published 0.22.1 CLI uses these commands:
+
+```sh
+pnpm dlx anhedral@latest add r2
+pnpm dlx anhedral@latest add stripe
+```
+
+Use `--dry-run` to preview an addition. Compare the [example snapshots](https://github.com/anhedral/anhedral-cli/tree/staging/examples) or follow the [service setup guide](docs/capabilities.md) to configure providers and apply migrations.
 
 Use the CLI directly or through the Codex and Claude Code plugin. To host on Anhedral, sign in, link a project, upload source, and deploy. [Platform workflow](docs/software-factory.md) · [Stack reference](docs/stack-standard.md)
 
