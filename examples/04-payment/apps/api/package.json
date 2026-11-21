@@ -11,7 +11,7 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
-    "hono": "4.13.13",
+    "hono": "4.13.18",
     "@workspace/db": "workspace:*",
     "zod": "4.6.6",
     "better-auth": "1.7.7",

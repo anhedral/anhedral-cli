@@ -6,7 +6,7 @@
   },
   "setup": {
     "schemaVersion": 1,
-    "cliVersion": "0.22.1",
+    "cliVersion": "0.23.0",
     "stack": "anhedral-stack",
     "resourcesProvisioned": false
   },
@@ -19,13 +19,13 @@
   "composition": {
     "contractVersion": 2,
     "foundation": "tanstack-start",
-    "generatorVersion": "0.22.1",
+    "generatorVersion": "0.23.0",
     "identity": "better-auth-d1-v1",
     "capabilities": {
-      "hono": "0.22.1",
-      "database-auth": "0.22.1",
-      "r2": "0.22.1",
-      "stripe": "0.22.1"
+      "hono": "0.23.0",
+      "database-auth": "0.23.0",
+      "r2": "0.23.0",
+      "stripe": "0.23.0"
     }
   },
   "capabilities": {
