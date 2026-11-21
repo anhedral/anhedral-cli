@@ -1,7 +1,9 @@
 import { type MiddlewareHandler } from 'hono';
 import { z } from 'zod';
+
 import { billingProviders } from './billing-providers';
 import type { AppEnv } from './environment';
+
 const policy = z.enum(['stripe', 'revenuecat', 'either']);
 function selectedProviders(env: AppEnv['Bindings']) {
   const selected = policy.parse(env.BILLING_PROVIDER);

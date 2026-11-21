@@ -1,59 +1,40 @@
 # example-app
 
-Anhedral Stack: web UI powered by OJ and TanStack Start server rendering/server functions
-and editable shadcn components.
-Only the web application is created initially. No backend or provider is provisioned.
+A TanStack Start web app with editable ShadCN components.
 
-## Develop
+## Run locally
 
-Use the Node/pnpm versions in package.json. Run pnpm install if generation skipped
-installation, then pnpm dev and open http://localhost:3000. Run pnpm check and
-pnpm audit:deps before deployment. Editable routes live in apps/web/src/routes.
-Use cd apps/web && pnpm dlx shadcn@4.22.1 add card for more shadcn components.
-Shadcn is the default, not a restriction: use any UI library and preserve local edits.
-Keep LICENSE.shadcn with the copied starter components.
+Use the Node.js and pnpm versions declared in `package.json`. If you skipped installation during setup, run `pnpm install` first.
 
-## Add services progressively
+```sh
+pnpm dev
+```
 
-Run anhedral add backend to add Hono, Drizzle/D1 and Better Auth together.
-Then run anhedral add storage for private storage, or anhedral add payment for payments.
-Missing prerequisites stop before writes; --with-dependencies opts into them.
-The public additions are backend, storage and payment; this application is web-only.
+Open http://localhost:3000. Edit `apps/web/src/routes/index.tsx` for the home page and `apps/web/src/routes/__root.tsx` for the shared layout. UI components live in `apps/web/src/components/ui`. You can use any UI library.
 
-After adding backend, copy apps/api/.dev.vars.example to apps/api/.dev.vars.
-Set PUBLIC_APP_URL=http://localhost:3000 and generate BETTER_AUTH_SECRET with
-`node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
-Auth methods start disabled. Deliberately enable chosen methods in
-apps/api/src/auth-features.ts after configuring email/credentials and policies.
-Run pnpm db:migrate --local explicitly to initialize the isolated local D1 database,
-then pnpm dev. OJ runs the web and auxiliary API Workers with shared local
-persistence. Remote bindings are disabled for local development.
+## Check your changes
 
-R2 routes enforce authenticated owner access. Stripe adds schema and source only:
-run pnpm db:generate, review the SQL, then deliberately apply the local migration
-before exercising subscription/webhook flows. Configure Stripe test credentials,
-allowed prices and signed webhooks; activation and live payments are separate.
+```sh
+pnpm check       # Lint, typecheck, test, and build
+pnpm audit:deps  # Audit installed dependencies
+```
+
+## Add services
+
+Run the backend command first, then add storage or payment as needed.
+
+```sh
+pnpm dlx anhedral@latest add backend  # Hono, Better Auth, and Drizzle/D1
+pnpm dlx anhedral@latest add storage  # Private files on R2
+pnpm dlx anhedral@latest add payment  # Stripe subscriptions
+```
+
+After adding a service, follow the environment and migration instructions before running it locally. [Service setup](https://github.com/anhedral/anhedral-cli/blob/v0.24.1/docs/capabilities.md#local-setup-and-validation)
 
 ## Update the stack
-
-From the project directory, preview a release before applying it:
 
 ```sh
 pnpm dlx anhedral@latest stack update --dry-run --human
 ```
 
-Review the diff and run the version-pinned apply command printed by the CLI.
-Then run `pnpm install` and `pnpm check`. The updater refreshes CLI-managed
-adapters for installed features. Your routes, UI and migrations belong to you.
-
-## Ownership and deployment
-
-Hono owns data, identity and private storage. Web server functions call its scoped
-service binding, never import another application's source or provider credentials.
-Custom API routes belong in apps/api/src/index.ts; schema/migrations in packages/db.
-Composition adapters are fingerprinted and customized files are never overwritten.
-
-Builds/startup never migrate databases. Provision D1/R2 only when selected and
-configure environment-specific resources/secrets separately. pnpm build emits web
-Worker artifacts under apps/web/dist and selected API artifacts under apps/api/dist. Anhedral Platform admission
-requires its separately reviewed Anhedral Stack runtime/artifact; generation is not activation.
+Review the diff and run the version-pinned apply command it prints. Then run `pnpm install` and `pnpm check`.

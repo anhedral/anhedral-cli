@@ -32,9 +32,7 @@ function fixture(t, backend = false) {
 }
 function previousRoot(root) {
   const file = path.join(root, 'apps/web/src/routes/__root.tsx');
-  const old = readFileSync(file, 'utf8')
-    .replace("import '../styles.css';", "import styles from '../styles.css?url';")
-    .replace('    ],\n  }),', "    ],\n    links: [{ rel: 'stylesheet', href: styles }],\n  }),");
+  const old = readFileSync(new URL('./fixtures/legacy-root.tsx.txt', import.meta.url), 'utf8');
   assert.equal(digest(old), '21af7892e39130c9ec3d7ffb583b3f5d24bee771440ca253d8d7b8ce41be9801');
   writeFileSync(file, old);
 }

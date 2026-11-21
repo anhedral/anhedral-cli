@@ -1,7 +1,9 @@
 import { Hono } from 'hono';
+
 import { createAuth, authConfiguration } from '../auth';
-import { requireSession } from '../security';
 import type { AppEnv } from '../environment';
+import { requireSession } from '../security';
+
 export const authRoutes = new Hono<AppEnv>();
 authRoutes.on(['GET', 'POST'], '/auth/*', (c) => {
   if (!authConfiguration.safeParse(c.env).success)
