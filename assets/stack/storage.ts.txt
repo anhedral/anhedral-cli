@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
-import { requireSession } from '../security';
+
 import type { AppEnv } from '../environment';
+import { requireSession } from '../security';
+
 export const storageRoutes = new Hono<AppEnv>();
 storageRoutes.use('/files/*', requireSession);
 storageRoutes.use('/files/:name', async (c, next) => {

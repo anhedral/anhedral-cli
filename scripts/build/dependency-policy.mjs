@@ -2,10 +2,10 @@ import ts from 'typescript';
 
 const dependencyGroups = new Set(['dependencies', 'devDependencies', 'optionalDependencies']);
 const managedDependencyGroups = new Set([...dependencyGroups, 'overrides']);
+// Arguments that the generator copies into dependencies and devDependencies.
 const recipeArguments = new Map([
-  ['sharedPackage', 3],
-  ['worker', 4],
-  ['packageSource', 2],
+  ['project', [4, 5]],
+  ['dependency', [2]],
 ]);
 
 /** Detect literal dependency values outside the one reviewed version catalog. */
@@ -37,8 +37,9 @@ export function findUncataloguedDependencyPins(source, filename) {
       const recipeMap =
         ts.isCallExpression(parent) &&
         ts.isIdentifier(parent.expression) &&
-        recipeArguments.get(parent.expression.text) !== undefined &&
-        parent.arguments[recipeArguments.get(parent.expression.text)] === node;
+        recipeArguments
+          .get(parent.expression.text)
+          ?.some((index) => parent.arguments[index] === node);
       if (propertyMap || assignmentMap || recipeMap) inspectMap(node);
     }
     ts.forEachChild(node, visit);

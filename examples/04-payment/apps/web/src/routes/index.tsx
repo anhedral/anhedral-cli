@@ -1,6 +1,7 @@
-import { starterTitle } from '../starter';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
+
+import { starterTitle } from '../starter';
 import { Button } from '@/components/ui/button';
 
 const applicationStatus = createServerFn({ method: 'GET' }).handler(async ({ context }) => {

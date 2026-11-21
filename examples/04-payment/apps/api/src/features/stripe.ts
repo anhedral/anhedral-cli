@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
-import { z } from 'zod';
 import Stripe from 'stripe';
-import { requireSession } from '../security';
+import { z } from 'zod';
+
 import { billingEnvironment } from '../billing-mode';
 import type { AppEnv } from '../environment';
+import { requireSession } from '../security';
+
 export const stripeRoutes = new Hono<AppEnv>();
 const client = (key: string) =>
   new Stripe(key, {

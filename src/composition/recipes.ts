@@ -1,14 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { CapabilityEditor } from './editor.js';
-import { CAPABILITY_DEPENDENCIES as P } from '../dependencies.js';
-import { STACK_DEPENDENCIES as D } from '../dependencies.js';
+import { CAPABILITY_DEPENDENCIES, STACK_DEPENDENCIES } from '../dependencies.js';
 import { resourceName } from '../render.js';
+import { launchTemplate, stackTemplate, workerConfig } from '../scaffold/files.js';
 import { composeTanstack, addTanstackAuth } from '../scaffold/tanstack.js';
-import { WEB_API_PROXY } from '../api-proxy.js';
 import type { Capability } from './catalog.js';
+import { CapabilityEditor } from './editor.js';
 
-const template = (name: string) =>
-  readFileSync(new URL(`../../assets/stack/${name}`, import.meta.url), 'utf8');
 const json = (value: unknown) => JSON.stringify(value, null, 2) + '\n';
 function dependency(e: CapabilityEditor, app: string, dependencies: Record<string, string>) {
   e.merge(`${app}/package.json`, 'dependencies', dependencies);
@@ -30,7 +26,7 @@ function project(
       type: 'module',
       scripts,
       dependencies,
-      devDependencies: { typescript: D.typescript, ...dev },
+      devDependencies: { typescript: STACK_DEPENDENCIES.typescript, ...dev },
     }),
   );
 }
@@ -67,7 +63,7 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         'node --import tsx --test tests/*.test.mjs',
       );
     if (!manifest.devDependencies?.tsx && !manifest.dependencies?.tsx)
-      e.set('apps/api/package.json', ['devDependencies', 'tsx'], P.tsx);
+      e.set('apps/api/package.json', ['devDependencies', 'tsx'], CAPABILITY_DEPENDENCIES.tsx);
   }
   switch (id) {
     case 'hono': {
@@ -83,25 +79,18 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           typecheck: 'wrangler types && tsc --noEmit',
           lint: 'eslint . --max-warnings 0',
         },
-        { hono: D.hono },
+        { hono: STACK_DEPENDENCIES.hono },
         {
-          tsx: P.tsx,
-          wrangler: D.wrangler,
-          '@types/node': D['@types/node'],
-          eslint: D.eslint,
+          tsx: CAPABILITY_DEPENDENCIES.tsx,
+          wrangler: STACK_DEPENDENCIES.wrangler,
+          '@types/node': STACK_DEPENDENCIES['@types/node'],
+          eslint: STACK_DEPENDENCIES.eslint,
           '@workspace/eslint-config': 'workspace:*',
         },
       );
       e.create(
         'apps/api/wrangler.jsonc',
-        json({
-          $schema: 'node_modules/wrangler/config-schema.json',
-          name: resourceName(name, 'api'),
-          main: 'src/index.ts',
-          compatibility_date: '2026-10-05',
-          compatibility_flags: ['nodejs_compat'],
-          observability: { enabled: true },
-        }),
+        json(workerConfig(resourceName(name, 'api'), 'src/index.ts', '2026-10-05')),
       );
       e.create(
         'apps/api/tsconfig.json',
@@ -119,12 +108,9 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           include: ['src/**/*.ts', 'worker-configuration.d.ts'],
         }),
       );
-      e.create(
-        'apps/api/eslint.config.mjs',
-        "import { config } from '@workspace/eslint-config/base';\nexport default [...config, {ignores:['dist/**','.wrangler/**','worker-configuration.d.ts']}];\n",
-      );
-      e.create('apps/api/tests/backend.test.mjs', template('backend.test.mjs.txt'));
-      e.create('apps/api/src/index.ts', template('api-index.ts.txt'));
+      e.create('apps/api/eslint.config.mjs', stackTemplate('api-eslint.config.mjs.txt'));
+      e.create('apps/api/tests/backend.test.mjs', stackTemplate('backend.test.mjs.txt'));
+      e.create('apps/api/src/index.ts', stackTemplate('api-index.ts.txt'));
       e.create(
         'apps/api/src/custom-environment.ts',
         'export type CustomBindings = Record<never, never>;\nexport type CustomVariables = Record<never, never>;\n',
@@ -145,16 +131,7 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         ['devDependencies', 'wrangler'],
         e.json('apps/web/package.json').devDependencies.wrangler,
       );
-      e.create(
-        'apps/web/src/lib/api-proxy.ts',
-        WEB_API_PROXY.replace(
-          "'idempotency-key'",
-          "'idempotency-key', 'stripe-signature', 'last-event-id'",
-        ).replace(
-          'AbortSignal.timeout(15000)',
-          "AbortSignal.timeout(request.headers.get('accept')?.includes('text/event-stream') ? 35000 : 15000)",
-        ),
-      );
+      e.create('apps/web/src/lib/api-proxy.ts', stackTemplate('api-proxy.ts.txt'));
       break;
     }
     case 'database-auth': {
@@ -168,11 +145,11 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           'db:generate': 'drizzle-kit generate',
           'db:migrate': 'node src/migrate.mjs',
         },
-        { 'drizzle-orm': D['drizzle-orm'] },
+        { 'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'] },
         {
-          'drizzle-kit': D['drizzle-kit'],
-          '@types/node': D['@types/node'],
-          eslint: D.eslint,
+          'drizzle-kit': STACK_DEPENDENCIES['drizzle-kit'],
+          '@types/node': STACK_DEPENDENCIES['@types/node'],
+          eslint: STACK_DEPENDENCIES.eslint,
           '@workspace/eslint-config': 'workspace:*',
         },
       );
@@ -199,22 +176,16 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         'packages/db/eslint.config.mjs',
         "import { config } from '@workspace/eslint-config/base';\nexport default config;\n",
       );
+      e.create('packages/db/src/index.ts', stackTemplate('db-index.ts.txt'));
+      e.create('packages/db/src/schema.ts', stackTemplate('auth-schema.ts.txt'));
+      e.create('packages/db/drizzle/0000_better_auth.sql', stackTemplate('auth-migration.sql.txt'));
       e.create(
-        'packages/db/src/index.ts',
-        "import { drizzle } from 'drizzle-orm/d1';\nimport * as schema from './schema';\nexport function createDatabase(binding: Parameters<typeof drizzle>[0]) { return drizzle(binding, { schema }); }\n",
+        'packages/db/drizzle/meta/0000_snapshot.json',
+        stackTemplate('auth-snapshot.json.txt'),
       );
-      e.create('packages/db/src/schema.ts', template('auth-schema.ts.txt'));
-      e.create('packages/db/drizzle/0000_better_auth.sql', template('auth-migration.sql.txt'));
-      e.create('packages/db/drizzle/meta/0000_snapshot.json', template('auth-snapshot.json.txt'));
-      e.create('packages/db/drizzle/meta/_journal.json', template('auth-journal.json.txt'));
-      e.create(
-        'packages/db/drizzle.config.ts',
-        "import { defineConfig } from 'drizzle-kit';\nexport default defineConfig({dialect:'sqlite', schema:'./src/schema.ts', out:'./drizzle'});\n",
-      );
-      e.create(
-        'packages/db/src/migrate.mjs',
-        "import { spawnSync } from 'node:child_process';\nimport { fileURLToPath } from 'node:url';\nconst args = process.argv.slice(2);\nif(args.length > 1 || args.some((v)=> !['--local','--remote'].includes(v))) throw Error('Use --local or explicitly --remote.');\nif(!process.env.npm_execpath) throw Error('Run through pnpm db:migrate.');\nconst cwd=fileURLToPath(new URL('../../../apps/api/',import.meta.url));\nconst result=spawnSync(process.execPath,[process.env.npm_execpath,'exec','wrangler','d1','migrations','apply','DB',args[0] ?? '--local'],{cwd,stdio:'inherit',shell:false});\nif(result.error)throw result.error;\nprocess.exitCode=result.status ?? 1;\n",
-      );
+      e.create('packages/db/drizzle/meta/_journal.json', stackTemplate('auth-journal.json.txt'));
+      e.create('packages/db/drizzle.config.ts', stackTemplate('drizzle.config.ts.txt'));
+      e.create('packages/db/src/migrate.mjs', stackTemplate('db-migrate.mjs.txt'));
       apiConfig(e, 'd1_databases', [
         {
           binding: 'DB',
@@ -225,15 +196,15 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
       ]);
       dependency(e, 'apps/api', {
         '@workspace/db': 'workspace:*',
-        zod: D.zod,
-        'better-auth': P['better-auth'],
-        '@better-auth/drizzle-adapter': P['@better-auth/drizzle-adapter'],
+        zod: STACK_DEPENDENCIES.zod,
+        'better-auth': CAPABILITY_DEPENDENCIES['better-auth'],
+        '@better-auth/drizzle-adapter': CAPABILITY_DEPENDENCIES['@better-auth/drizzle-adapter'],
       });
-      dependency(e, 'apps/web', { 'better-auth': P['better-auth'] });
-      e.create('apps/api/src/auth.ts', template('auth.ts.txt'));
-      e.create('apps/api/src/auth-features.ts', template('auth-features.ts.txt'));
-      e.create('apps/api/src/security.ts', template('security.ts.txt'));
-      e.create('apps/api/src/features/auth.ts', template('auth-routes.ts.txt'));
+      dependency(e, 'apps/web', { 'better-auth': CAPABILITY_DEPENDENCIES['better-auth'] });
+      e.create('apps/api/src/auth.ts', stackTemplate('auth.ts.txt'));
+      e.create('apps/api/src/auth-features.ts', stackTemplate('auth-features.ts.txt'));
+      e.create('apps/api/src/security.ts', stackTemplate('security.ts.txt'));
+      e.create('apps/api/src/features/auth.ts', stackTemplate('auth-routes.ts.txt'));
       addTanstackAuth(e);
       e.merge('package.json', 'scripts', {
         'db:generate': 'pnpm --dir packages/db db:generate',
@@ -246,22 +217,19 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
       break;
     }
     case 'r2':
-      e.create('apps/api/tests/storage.test.mjs', template('storage.test.mjs.txt'));
-      e.create(
-        'apps/web/src/routes/storage.tsx',
-        readFileSync(new URL('../../assets/launch/storage-page.tsx.txt', import.meta.url), 'utf8'),
-      );
+      e.create('apps/api/tests/storage.test.mjs', stackTemplate('storage.test.mjs.txt'));
+      e.create('apps/web/src/routes/storage.tsx', launchTemplate('storage-page.tsx.txt'));
       apiConfig(e, 'r2_buckets', [{ binding: 'FILES', bucket_name: resourceName(name, 'files') }]);
-      e.create('apps/api/src/features/storage.ts', template('storage.ts.txt'));
+      e.create('apps/api/src/features/storage.ts', stackTemplate('storage.ts.txt'));
       break;
     case 'stripe':
-      e.create('apps/api/tests/payment.test.mjs', template('payment.test.mjs.txt'));
-      dependency(e, 'apps/api', { stripe: P.stripe });
-      e.create('apps/api/src/features/stripe.ts', template('stripe.ts.txt'));
-      e.create('apps/api/src/billing-mode.ts', template('billing-mode.ts.txt'));
-      e.create('apps/api/src/features/entitlements.ts', template('entitlements.ts.txt'));
-      e.create('apps/api/src/entitlement-guard.ts', template('entitlement-guard.ts.txt'));
-      e.create('packages/db/src/billing-schema.ts', template('billing-schema.ts.txt'));
+      e.create('apps/api/tests/payment.test.mjs', stackTemplate('payment.test.mjs.txt'));
+      dependency(e, 'apps/api', { stripe: CAPABILITY_DEPENDENCIES.stripe });
+      e.create('apps/api/src/features/stripe.ts', stackTemplate('stripe.ts.txt'));
+      e.create('apps/api/src/billing-mode.ts', stackTemplate('billing-mode.ts.txt'));
+      e.create('apps/api/src/features/entitlements.ts', stackTemplate('entitlements.ts.txt'));
+      e.create('apps/api/src/entitlement-guard.ts', stackTemplate('entitlement-guard.ts.txt'));
+      e.create('packages/db/src/billing-schema.ts', stackTemplate('billing-schema.ts.txt'));
       schemaExport(e, 'billing-schema');
       break;
   }
@@ -293,10 +261,7 @@ export function composeCapabilities(
   if (installed.includes('database-auth'))
     e.owned('apps/api/src/auth-platform.ts', 'export const platformAuthPlugins = () => [];\n');
   if (installed.includes('stripe'))
-    e.owned(
-      'apps/api/src/billing-providers.ts',
-      "import type {AppEnv} from './environment';\nimport {stripeEntitled} from './features/stripe';\nexport const billingProviders:Record<string,(env:AppEnv['Bindings'],userId:string)=>Promise<boolean>>={stripe:stripeEntitled};\n",
-    );
+    e.owned('apps/api/src/billing-providers.ts', stackTemplate('billing-providers.ts.txt'));
 
   const bindings = [
     'PUBLIC_APP_URL?: string',
@@ -315,7 +280,12 @@ export function composeCapabilities(
     );
   e.owned(
     'apps/api/src/environment.ts',
-    `import type { CustomBindings, CustomVariables } from './custom-environment';\nexport type AppEnv = { Bindings: CustomBindings & {${bindings.join(';\n')}}; Variables: CustomVariables & {userId:string;fileKey:string} };\n`,
+    `import type { CustomBindings, CustomVariables } from './custom-environment';\nexport type AppEnv = {
+  Bindings: CustomBindings & {
+${bindings.map((binding) => `    ${binding};`).join('\n')}
+  };
+  Variables: CustomVariables & { userId: string; fileKey: string };
+};\n`,
   );
   if (operation === 'update') return;
   appendExample(

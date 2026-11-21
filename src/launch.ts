@@ -1,30 +1,30 @@
-import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, rmdirSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, rmdirSync } from 'node:fs';
 import path from 'node:path';
-import { scaffoldTanstack } from './scaffold/tanstack.js';
-import { bootstrapWorkspace, assertWorkspaceRuntime } from './scaffold/bootstrap.js';
-import { scaffoldStyling } from './scaffold/styling.js';
-import { json, put, sharedPackage } from './scaffold/files.js';
-import { CapabilityEditor } from './composition/editor.js';
-import { addCapabilityRecipe, composeCapabilities } from './composition/recipes.js';
+
+import { CliArgumentError, commandArguments } from './cli-arguments.js';
+import { printProgress, printResult, type OutputOptions } from './cli-output.js';
+import type { CommandRunner } from './command-types.js';
 import { launchCompositionSchema } from './composition/composition.js';
-import type { Capability } from './composition/catalog.js';
-import { runStagedTransaction } from './transactions/transaction.js';
-import { configureDependencyPatches, writeDependencyAudit } from './dependency-patches.js';
-import { setPnpmPolicy } from './pnpm-policy.js';
-import { GENERATOR_VERSION } from './version.js';
+import { CapabilityEditor } from './composition/editor.js';
+import { composeCapabilities } from './composition/recipes.js';
 import {
   PACKAGE_MANAGER,
   SECURITY_OVERRIDES,
   STACK_DEPENDENCIES,
   WORKSPACE_NODE_ENGINE,
 } from './dependencies.js';
-import { execFile, appendGitignore } from './util.js';
-import { printProgress, printResult, type OutputOptions } from './cli-output.js';
-import { CliArgumentError, commandArguments } from './cli-arguments.js';
+import { configureDependencyPatches, writeDependencyAudit } from './dependency-patches.js';
+import { setPnpmPolicy } from './pnpm-policy.js';
 import { packageNameFromText } from './render.js';
-import type { CommandRunner } from './command-types.js';
+import { bootstrapWorkspace, assertWorkspaceRuntime } from './scaffold/bootstrap.js';
+import { json, launchTemplate, put } from './scaffold/files.js';
+import { scaffoldStyling } from './scaffold/styling.js';
+import { scaffoldTanstack } from './scaffold/tanstack.js';
+import { runStagedTransaction } from './transactions/transaction.js';
+import { execFile, appendGitignore } from './util.js';
+import { GENERATOR_VERSION } from './version.js';
 
 export interface LaunchOptions {
   root: string;
@@ -53,7 +53,6 @@ export function parseAnhedralStackOptions(args: readonly string[]): LaunchOption
     initializeGit: parsed.has('--git') || (!parsed.has('--no-git') && hasDirectory),
   };
 }
-const launchCapabilities: Capability[] = [];
 
 function rootFiles(root: string, name: string) {
   json(root, 'package.json', {
@@ -111,7 +110,7 @@ function rootFiles(root: string, name: string) {
       foundation: 'tanstack-start',
       generatorVersion: GENERATOR_VERSION,
       identity: 'none',
-      capabilities: Object.fromEntries(launchCapabilities.map((id) => [id, GENERATOR_VERSION])),
+      capabilities: {},
     }),
   });
   appendGitignore(
@@ -123,101 +122,16 @@ function rootFiles(root: string, name: string) {
   writeDependencyAudit(root);
 }
 
-function documentation(root: string, name: string) {
-  put(
-    root,
-    'README.md',
-    `# ${name}
-
-Anhedral Stack: web UI powered by OJ and TanStack Start server rendering/server functions
-and editable shadcn components.
-Only the web application is created initially. No backend or provider is provisioned.
-
-## Develop
-
-Use the Node/pnpm versions in package.json. Run pnpm install if generation skipped
-installation, then pnpm dev and open http://localhost:3000. Run pnpm check and
-pnpm audit:deps before deployment. Editable routes live in apps/web/src/routes.
-Use cd apps/web && pnpm dlx shadcn@4.22.1 add card for more shadcn components.
-Shadcn is the default, not a restriction: use any UI library and preserve local edits.
-Keep LICENSE.shadcn with the copied starter components.
-
-## Add services progressively
-
-Run anhedral add backend to add Hono, Drizzle/D1 and Better Auth together.
-Then run anhedral add storage for private storage, or anhedral add payment for payments.
-Missing prerequisites stop before writes; --with-dependencies opts into them.
-The public additions are backend, storage and payment; this application is web-only.
-
-After adding backend, copy apps/api/.dev.vars.example to apps/api/.dev.vars.
-Set PUBLIC_APP_URL=http://localhost:3000 and generate BETTER_AUTH_SECRET with
-\`node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"\`.
-Auth methods start disabled. Deliberately enable chosen methods in
-apps/api/src/auth-features.ts after configuring email/credentials and policies.
-Run pnpm db:migrate --local explicitly to initialize the isolated local D1 database,
-then pnpm dev. OJ runs the web and auxiliary API Workers with shared local
-persistence. Remote bindings are disabled for local development.
-
-R2 routes enforce authenticated owner access. Stripe adds schema and source only:
-run pnpm db:generate, review the SQL, then deliberately apply the local migration
-before exercising subscription/webhook flows. Configure Stripe test credentials,
-allowed prices and signed webhooks; activation and live payments are separate.
-
-## Update the stack
-
-From the project directory, preview a release before applying it:
-
-\`\`\`sh
-pnpm dlx anhedral@latest stack update --dry-run --human
-\`\`\`
-
-Review the diff and run the version-pinned apply command printed by the CLI.
-Then run \`pnpm install\` and \`pnpm check\`. The updater refreshes CLI-managed
-adapters for installed features. Your routes, UI and migrations belong to you.
-
-## Ownership and deployment
-
-Hono owns data, identity and private storage. Web server functions call its scoped
-service binding, never import another application's source or provider credentials.
-Custom API routes belong in apps/api/src/index.ts; schema/migrations in packages/db.
-Composition adapters are fingerprinted and customized files are never overwritten.
-
-Builds/startup never migrate databases. Provision D1/R2 only when selected and
-configure environment-specific resources/secrets separately. pnpm build emits web
-Worker artifacts under apps/web/dist and selected API artifacts under apps/api/dist. Anhedral Platform admission
-requires its separately reviewed Anhedral Stack runtime/artifact; generation is not activation.
-`,
-  );
-  put(
-    root,
-    'AGENTS.md',
-    `# Anhedral Stack application
-
-Use the single Anhedral Stack, starting with TanStack Start and source-owned shadcn UI. Add backend for Hono,
-Drizzle/D1 and Better Auth together. Use the storage and payment additions only when required. Mobile,
-extensions and desktop are outside launch scope.
-
-Edit web product routes in apps/web/src/routes, API routes in apps/api/src/index.ts,
-and database schema in packages/db/src. Preserve customized composition adapters,
-semantic UI tokens and attribution. No cross-application source imports.
-Web server functions receive scoped API bindings through request context; keep
-identity, database/storage access and secrets inside Hono. Auth methods require
-explicit activation. Run pnpm check and pnpm audit:deps. Never migrate a configured
-database in builds/tests/startup; apply reviewed SQL deliberately to isolated fixtures.
-`,
-  );
-}
-
 export function launchPlan(options: LaunchOptions) {
   return {
     schemaVersion: 1,
     cliVersion: GENERATOR_VERSION,
     root: options.root,
     name: options.name,
-    products: ['tanstack-start', ...launchCapabilities],
+    products: ['tanstack-start'],
     stack: 'anhedral-stack',
     foundation: 'tanstack-start',
-    capabilities: [...launchCapabilities],
+    capabilities: [],
     targets: ['apps/web'],
     dryRun: options.dryRun,
     resourcesProvisioned: false,
@@ -263,28 +177,27 @@ export async function scaffoldLaunchProject(
       prepare: () => assertEmpty(true),
       build: async (stage) => {
         printProgress('Creating the Anhedral Stack…', display);
-        bootstrapWorkspace(stage, options.name, run);
+        bootstrapWorkspace(stage);
         rootFiles(stage, options.name);
-        sharedPackage(
-          stage,
-          'styling',
-          "export { light, dark, spacing } from './tokens.cjs';\n",
-          {},
-        );
-        scaffoldStyling({ root: stage });
+        scaffoldStyling(stage);
         scaffoldTanstack(stage, options.name);
         const editor = new CapabilityEditor(stage, {});
-        const installed: Capability[] = [];
-        for (const capability of installed) addCapabilityRecipe(editor, capability, options.name);
-        composeCapabilities(editor, installed);
+        composeCapabilities(editor, []);
         editor.set('anhedral.json', ['capabilities'], {
           schemaVersion: 1,
-          installed,
+          installed: [],
           managedFiles: editor.managed,
           resourcesProvisionedByCli: false,
         });
         for (const [file, source] of editor.writes) put(stage, file, source);
-        documentation(stage, options.name);
+        put(
+          stage,
+          'README.md',
+          launchTemplate('README.md.txt')
+            .replace('__CLI_VERSION__', GENERATOR_VERSION)
+            .replace('__APP_NAME__', () => options.name.replace(/[\r\n]+/g, ' ')),
+        );
+        put(stage, 'AGENTS.md', launchTemplate('AGENTS.md.txt'));
         if (!options.skipInstall) {
           printProgress('Resolving Anhedral Stack dependencies…', display);
           run('pnpm', ['install', '--lockfile-only', '--no-frozen-lockfile'], stage);

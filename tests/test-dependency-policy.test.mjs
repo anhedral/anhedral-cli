@@ -8,9 +8,9 @@ test('owned dependency policy catches quoted and unquoted pins, tags and recipe 
     `const manifest = {dependencies: {'@provider/sdk': '^1.0.0'}}`,
     `package.dependencies = {provider: 'latest'}`,
     `const manifest = { pnpm: { overrides: { 'provider@<1.2.3': '1.2.3' } } }`,
-    `sharedPackage(root, 'service', source, {provider: '1.2.3'})`,
-    `worker(root, 'api', config, source, {provider: '1.2.3'})`,
-    `packageSource('service', source, {provider: '1.2.3'})`,
+    `project(editor, 'apps/api', 'api', {}, {provider: '1.2.3'})`,
+    `project(editor, 'apps/api', 'api', {}, {}, {provider: '1.2.3'})`,
+    `dependency(editor, 'apps/api', {provider: '1.2.3'})`,
   ])
     assert.equal(findUncataloguedDependencyPins(source, 'fixture.ts').length, 1, source);
   assert.deepEqual(

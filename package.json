@@ -89,7 +89,9 @@
     "test:patch": "node tests/test-braces-install.mjs && node tests/test-forge-install.mjs",
     "check:boundaries": "node scripts/checks/repository-boundaries.mjs",
     "test:tanstack-runtime": "pnpm build && node scripts/runtime/tanstack-runtime-smoke.mjs",
-    "check:standalone": "node scripts/checks/standalone-checkout.mjs"
+    "check:standalone": "node scripts/checks/standalone-checkout.mjs",
+    "examples:check": "node scripts/checks/generated-examples.mjs",
+    "examples:refresh": "node scripts/checks/generated-examples.mjs --write"
   },
   "keywords": [
     "cli",

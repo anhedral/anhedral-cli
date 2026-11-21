@@ -1,9 +1,10 @@
-import { assertPublishedModules } from '../scripts/checks/repository-boundaries.mjs';
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { assertPublishedModules } from '../scripts/checks/repository-boundaries.mjs';
 import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
 import { parseNpmPackJson } from './support/npm-pack.js';
 
@@ -11,6 +12,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
 const stackFiles = [
+  'assets/stack/base-eslint.js.txt',
+  'assets/stack/shared-eslint.config.mjs.txt',
+  'assets/stack/api-proxy.ts.txt',
+  'assets/stack/api-eslint.config.mjs.txt',
+  'assets/stack/billing-providers.ts.txt',
+  'assets/stack/drizzle.config.ts.txt',
+  'assets/stack/db-migrate.mjs.txt',
+  'assets/stack/db-index.ts.txt',
   'assets/stack/api-index.ts.txt',
   'assets/stack/backend.test.mjs.txt',
   'assets/stack/storage.test.mjs.txt',
@@ -54,7 +63,11 @@ const requiredFiles = new Set([
     'minimal-server.ts.txt',
     'minimal-application.server.ts.txt',
     'request-context.ts.txt',
+    'README.md.txt',
+    'AGENTS.md.txt',
     'router.tsx.txt',
+    'vite.config.ts.txt',
+    'backend-vite.config.ts.txt',
     'root.tsx.txt',
     'home.tsx.txt',
     'storage-page.tsx.txt',
@@ -64,6 +77,7 @@ const requiredFiles = new Set([
     'sign-in.tsx.txt',
     'application.server.ts.txt',
     'styles.css.txt',
+    'styling-tokens.cjs',
   ].map((name) => `assets/launch/${name}`),
   'dist/launch.js',
   'dist/scaffold/tanstack.js',
@@ -197,6 +211,18 @@ try {
   assert.match(readme, /Apache-2\.0/);
   assert.match(readme, /Generated applications are editable source/);
   assert.doesNotMatch(readme, /does not grant permission to install|separate written agreement/i);
+  for (const diagram of ['anhedral-stack.png', 'anhedral-stack-light.png']) {
+    assert.ok(
+      readme.includes(
+        `https://raw.githubusercontent.com/anhedral/anhedral-cli/v${packageJson.version}/docs/assets/${diagram}`,
+      ),
+    );
+  }
+  assert.ok(
+    readme.includes(
+      `https://github.com/anhedral/anhedral-cli/tree/v${packageJson.version}/examples`,
+    ),
+  );
   assertPackedMarkdownLinks('README.md', readme, files);
   assertPackedMarkdownLinks(
     'docs/stack-standard.md',
