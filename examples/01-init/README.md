@@ -29,7 +29,7 @@ pnpm dlx anhedral@latest add storage  # Private files on R2
 pnpm dlx anhedral@latest add payment  # Stripe subscriptions
 ```
 
-After adding a service, follow the environment and migration instructions before running it locally. [Service setup](https://github.com/anhedral/anhedral-cli/blob/v0.24.0/docs/capabilities.md#local-setup-and-validation)
+After adding a service, follow the environment and migration instructions before running it locally. [Service setup](https://github.com/anhedral/anhedral-cli/blob/v0.24.1/docs/capabilities.md#local-setup-and-validation)
 
 ## Update the stack
 
