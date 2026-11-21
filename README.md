@@ -10,26 +10,48 @@ Build an app one addition at a time. Generated applications are editable source.
   <img src="https://raw.githubusercontent.com/anhedral/anhedral-cli/staging/docs/assets/anhedral-stack-light.png" alt="The CLI creates a TanStack Start web app. The optional backend supports private file storage and subscription payments. An Expo client with Anhedral UI is upcoming.">
 </picture>
 
-**Upcoming** — `anhedral add cross-platform` will add an Expo client with Anhedral UI.
+**Upcoming** — `pnpm dlx anhedral@latest add cross-platform` will add an Expo client with Anhedral UI.
 
 ## How to use
 
-Create and run a web app locally without an account.
+Start with the web app and stop at the stage you need. These commands use the published CLI. Storage and payments each require the backend and can be added independently.
 
 ```sh
+# Create the web app
 pnpm dlx anhedral@latest init my-app
 cd my-app
-pnpm dev
-```
 
-From the project directory, add a backend and list the available additions.
-
-```sh
+# Add an API, authentication, and a database
 pnpm dlx anhedral@latest add backend
-pnpm dlx anhedral@latest stack list
+
+# Add private file storage
+pnpm dlx anhedral@latest add r2
+
+# Add subscription payments
+pnpm dlx anhedral@latest add stripe
 ```
 
-In the published 0.22.1 CLI, use `add r2` for storage and `add stripe` for payments. Use `--dry-run` to preview an addition. Compare the [example snapshots](https://github.com/anhedral/anhedral-cli/tree/staging/examples) or follow the [service setup guide](docs/capabilities.md) to configure providers and apply migrations.
+Run `pnpm dev` in the project directory to start the app. If you added services, configure them first. [Service setup](docs/capabilities.md) · [Source snapshot for each stage](https://github.com/anhedral/anhedral-cli/tree/staging/examples)
+
+The diagram uses the names on `main`, `add storage` and `add payments`. The published 0.22.1 commands are `add r2` and `add stripe`, respectively.
+
+### Command reference
+
+Use `pnpm dlx anhedral@latest <command>`. For arguments and flags, run `pnpm dlx anhedral@latest help <command>`.
+
+| Task | Commands |
+| --- | --- |
+| Generate source | `init`, `add` |
+| Inspect or update the stack | `stack list`, `stack status`, `stack doctor`, `stack update` |
+| Manage your session | `login`, `whoami`, `logout` |
+| Connect a project | `projects list`, `projects create`, `link`, `unlink` |
+| Upload source | `source upload`, `source status` |
+| Configure environment variables | `env list`, `env set`, `env import` |
+| Prepare a deployment | `deploy plan`, `deploy prepare`, `deploy status` |
+| Deploy to staging | `staging deploy`, `staging status` |
+| Publish to production | `production deploy`, `production status` |
+| Read runtime logs | `logs` |
+| Get help and shell completions | `help`, `--version`, `completion bash`, `completion zsh` |
 
 Use the CLI directly or through the Codex and Claude Code plugin. To host on Anhedral, sign in, link a project, upload source, and deploy. [Platform workflow](docs/software-factory.md) · [Stack reference](docs/stack-standard.md)
 

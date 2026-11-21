@@ -32,7 +32,10 @@ export function renderStack(light = false) {
     ${icons.map((logo, i) => `<image href="${logo}" x="${22 + i * 39}" y="13" width="30" height="30"/>`).join('')}
     <text x="22" y="73" font-size="24" font-weight="600">${title}</text>
     <text x="22" y="99" font-size="17" fill="${muted}">${detail}</text>
-    <text x="22" y="132" font-family="Menlo,Consolas,monospace" font-size="16">${command}</text>
+    <text font-family="Menlo,Consolas,monospace" font-size="15">
+      <tspan x="22" y="122">pnpm dlx anhedral@latest \\</tspan>
+      <tspan x="40" y="141">${command}</tspan>
+    </text>
   </g>`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" fill="${ink}">
@@ -49,11 +52,11 @@ export function renderStack(light = false) {
     <path d="M742 305V222Q742 214 750 214H770" marker-end="url(#arrow)"/>
     <path d="M742 305V388Q742 396 750 396H770" marker-end="url(#arrow)"/>
   </g>
-${card(44, 139, [logos['tanstack.com'], glyph('shadcnui')], 'Web app', 'TanStack Start + ShadCN', 'anhedral init my-app')}
-${card(44, 321, [logos['expo.dev'], brandMark], 'Cross Platform Apps', 'Expo + Anhedral UI', 'anhedral add cross-platform')}
-${card(408, 230, [logos['hono.dev'], glyph('betterauth'), logos['orm.drizzle.team'], glyph('d1')], 'Backend', 'Hono · Better Auth · Drizzle / D1', 'anhedral add backend')}
-${card(772, 139, [logos['cloudflare.com'], glyph('r2')], 'File storage', 'Private files on Cloudflare R2', 'anhedral add storage')}
-${card(772, 321, [logos['stripe.com'], logos['revenuecat.com']], 'Payments', 'Stripe + RevenueCat', 'anhedral add payments')}
+${card(44, 139, [logos['tanstack.com'], glyph('shadcnui')], 'Web app', 'TanStack Start + ShadCN', 'init my-app')}
+${card(44, 321, [logos['expo.dev'], brandMark], 'Cross Platform Apps', 'Expo + Anhedral UI', 'add cross-platform')}
+${card(408, 230, [logos['hono.dev'], glyph('betterauth'), logos['orm.drizzle.team'], glyph('d1')], 'Backend', 'Hono · Better Auth · Drizzle / D1', 'add backend')}
+${card(772, 139, [logos['cloudflare.com'], glyph('r2')], 'File storage', 'Private files on Cloudflare R2', 'add storage')}
+${card(772, 321, [logos['stripe.com'], logos['revenuecat.com']], 'Payments', 'Stripe + RevenueCat', 'add payments')}
   </g>
 </svg>\n`;
 }
