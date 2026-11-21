@@ -468,7 +468,7 @@ function validatePluginRelease(root, version) {
     stack.items !== undefined ||
     Object.keys(stack.additions ?? {})
       .sort()
-      .join(',') !== 'backend,r2,stripe'
+      .join(',') !== 'backend,payments,storage'
   )
     failures.push('Plugin, registry and CLI versions must match');
   if (manifest.extensions['com.openai'].interface.shortDescription.length > 30)

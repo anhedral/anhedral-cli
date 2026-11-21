@@ -98,7 +98,7 @@ function assertOj(root) {
   assert.equal(metadata.composition.generatorVersion, GENERATOR_VERSION);
   assert.match(readFileSync(path.join(root, '.gitignore'), 'utf8'), /\.oj-cache\//);
 }
-for (const addition of ['backend', 'r2', 'stripe'])
+for (const addition of ['backend', 'storage', 'payments'])
   test(`adding ${addition} upgrades a canonical 0.18 foundation to OJ in the same transaction`, (t) => {
     const root = fixture(t, addition !== 'backend');
     previousFoundation(root);
@@ -268,7 +268,7 @@ function previousBackendEntry(root) {
   writeFileSync(path.join(root, 'anhedral.json'), JSON.stringify(metadata, null, 2) + '\n');
   return file;
 }
-for (const addition of ['backend', 'r2'])
+for (const addition of ['backend', 'storage'])
   test(`shipped backend entry preserves Start context when adding ${addition}`, (t) => {
     const root = fixture(t, true);
     const file = previousBackendEntry(root);
@@ -289,7 +289,7 @@ test('edited previous backend entry remains protected from a new capability comp
     readFileSync(path.join(root, file), 'utf8') + '\n// Customer adapter\n',
   );
   const before = snapshot(root);
-  const result = run(root, ['add', 'r2']);
+  const result = run(root, ['add', 'storage']);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Preserve edited generated source/);
   assert.deepEqual(snapshot(root), before);

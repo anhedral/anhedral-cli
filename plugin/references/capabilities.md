@@ -7,15 +7,15 @@ anhedral init my-app
 cd my-app
 anhedral add backend --dry-run --json
 anhedral add backend
-anhedral add r2 stripe
+anhedral add storage payments
 anhedral stack status --json
 ```
 
-| Selection | Source added                                                            | Requires                      |
-| --------- | ----------------------------------------------------------------------- | ----------------------------- |
-| `backend` | Hono API, Drizzle/D1, Better Auth and web sign-in starter               | Anhedral Stack web foundation |
-| `r2`      | Private storage binding and authenticated owner-scoped file routes      | `backend`                     |
-| `stripe`  | Subscription Checkout, signed webhooks and canonical entitlement checks | `backend`                     |
+| Selection  | Source added                                                      | Requires                      |
+| ---------- | ----------------------------------------------------------------- | ----------------------------- |
+| `backend`  | Hono API, Drizzle/D1, Better Auth and web sign-in starter         | Anhedral Stack web foundation |
+| `storage`  | Cloudflare R2 binding and authenticated owner-scoped file routes  | `backend`                     |
+| `payments` | Stripe Checkout, signed webhooks and canonical entitlement checks | `backend`                     |
 
 `backend` is one public selection; its provenance records the concrete Hono and database/auth capabilities. Use `--with-dependencies` to include missing prerequisites in the same planned source transaction. `stack list` describes this stack's additions. `status`/`doctor` check source completeness, not live service activation.
 

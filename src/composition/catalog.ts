@@ -108,13 +108,13 @@ export const ANHEDRAL_STACK = {
       requires: [] as string[],
       targets: [...CAPABILITIES.hono.targets, ...CAPABILITIES['database-auth'].targets],
     },
-    r2: {
+    storage: {
       name: 'Private storage',
       description: 'Authenticated, owner-scoped object storage.',
       requires: ['backend'],
       targets: [...CAPABILITIES.r2.targets],
     },
-    stripe: {
+    payments: {
       name: 'Payments and subscriptions',
       description: 'Stripe subscription and entitlement source.',
       requires: ['backend'],

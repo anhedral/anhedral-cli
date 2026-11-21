@@ -163,7 +163,7 @@ export function loadPluginRelease(metadataPath) {
     stack.items !== undefined ||
     Object.keys(stack.additions ?? {})
       .sort()
-      .join(',') !== 'backend,r2,stripe'
+      .join(',') !== 'backend,payments,storage'
   )
     throw new Error('Plugin archive release identity mismatch.');
   if (files.some((file) => file.name.startsWith('runtime/')))
