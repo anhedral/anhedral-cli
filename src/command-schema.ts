@@ -518,7 +518,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     examples: [
       'add backend',
       'add storage',
-      'add storage payments --with-dependencies --dry-run --json',
+      'add storage payment --with-dependencies --dry-run --json',
     ],
     note: 'Adds source and local configuration only. Existing edits are preserved. No provisioning, credential installation, migration or deployment.',
   },

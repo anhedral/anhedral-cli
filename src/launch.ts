@@ -139,9 +139,9 @@ Keep LICENSE.shadcn with the copied starter components.
 ## Add services progressively
 
 Run anhedral add backend to add Hono, Drizzle/D1 and Better Auth together.
-Then run anhedral add storage for private storage, or anhedral add payments for payments.
+Then run anhedral add storage for private storage, or anhedral add payment for payments.
 Missing prerequisites stop before writes; --with-dependencies opts into them.
-The public additions are backend, storage and payments; this application is web-only.
+The public additions are backend, storage and payment; this application is web-only.
 
 After adding backend, copy apps/api/.dev.vars.example to apps/api/.dev.vars.
 Set PUBLIC_APP_URL=http://localhost:3000 and generate BETTER_AUTH_SECRET with
@@ -176,7 +176,7 @@ requires its separately reviewed Anhedral Stack runtime/artifact; generation is 
     `# Anhedral Stack application
 
 Use the single Anhedral Stack, starting with TanStack Start and source-owned shadcn UI. Add backend for Hono,
-Drizzle/D1 and Better Auth together. Add storage and payments only when required. Mobile,
+Drizzle/D1 and Better Auth together. Use the storage and payment additions only when required. Mobile,
 extensions and desktop are outside launch scope.
 
 Edit web product routes in apps/web/src/routes, API routes in apps/api/src/index.ts,

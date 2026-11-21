@@ -24,7 +24,7 @@ test('candidate build coordinates the marketplace pointer without publishing a t
     write('dist/version.js', `export const GENERATOR_VERSION = '${version}';`);
     write(
       'dist/composition/catalog.js',
-      `export const ANHEDRAL_STACK = {id:'anhedral-stack',name:'Anhedral Stack',additions:{backend:{},storage:{},payments:{}}};`,
+      `export const ANHEDRAL_STACK = {id:'anhedral-stack',name:'Anhedral Stack',additions:{backend:{},storage:{},payment:{}}};`,
     );
     write('plugin/references/native-ui.md', 'retired');
     write('plugin/references/anhedral-stack.md', 'retired');
@@ -90,7 +90,7 @@ test('candidate build coordinates the marketplace pointer without publishing a t
     );
     assert.equal(registry.id, 'anhedral-stack');
     assert.equal(registry.cliVersion, version);
-    assert.deepEqual(Object.keys(registry.additions).sort(), ['backend', 'payments', 'storage']);
+    assert.deepEqual(Object.keys(registry.additions).sort(), ['backend', 'payment', 'storage']);
     assert.equal(registry.items, undefined);
     for (const name of ['native-ui.md', 'anhedral-stack.md'])
       assert.equal(existsSync(path.join(root, 'plugin/references', name)), false);

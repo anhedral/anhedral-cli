@@ -1,7 +1,7 @@
 # Anhedral Stack application
 
 Use the single Anhedral Stack, starting with TanStack Start and source-owned shadcn UI. Add backend for Hono,
-Drizzle/D1 and Better Auth together. Add storage and payments only when required. Mobile,
+Drizzle/D1 and Better Auth together. Use the storage and payment additions only when required. Mobile,
 extensions and desktop are outside launch scope.
 
 Edit web product routes in apps/web/src/routes, API routes in apps/api/src/index.ts,

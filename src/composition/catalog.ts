@@ -114,7 +114,7 @@ export const ANHEDRAL_STACK = {
       requires: ['backend'],
       targets: [...CAPABILITIES.r2.targets],
     },
-    payments: {
+    payment: {
       name: 'Payments and subscriptions',
       description: 'Stripe subscription and entitlement source.',
       requires: ['backend'],

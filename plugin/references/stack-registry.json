@@ -46,7 +46,7 @@
         "apps/api/src/features/storage.ts"
       ]
     },
-    "payments": {
+    "payment": {
       "name": "Payments and subscriptions",
       "description": "Stripe subscription and entitlement source.",
       "requires": [
