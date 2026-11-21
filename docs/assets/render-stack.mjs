@@ -10,7 +10,6 @@ const { logos, glyphs } = JSON.parse(readFileSync(new URL('stack-logos.json', ro
 export const stackSize = { width: 1120, height: 500 };
 
 export function renderStack(light = false) {
-  const background = light ? '#fafafa' : '#1c1c1b';
   const surface = light ? '#ffffff' : '#252524';
   const border = light ? '#d6d6d4' : '#464644';
   const ink = light ? '#171717' : '#fafafa';
@@ -40,7 +39,6 @@ export function renderStack(light = false) {
   <title id="title">Anhedral Stack</title>
   <desc id="desc">The CLI creates the web client. The cross-platform client uses Expo + Anhedral UI. Add backend for an API, authentication and a database. Storage and payments can then be added independently or together.</desc>
   <defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L6 4L1 7" stroke="${line}" stroke-width="1.3" fill="none"/></marker></defs>
-  <rect width="${width}" height="${height}" fill="${background}"/>
   <image href="data:image/svg+xml;base64,${wordmark}" x="44" y="30" width="248" height="32"/>
   <text x="308" y="61" font-size="30" fill="${muted}">Stack</text>
   <text x="45" y="96" font-size="19" fill="${muted}">Build a web app with the CLI or a cross-platform app with Expo.</text>
