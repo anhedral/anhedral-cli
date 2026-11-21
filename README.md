@@ -17,20 +17,19 @@ Build an app one addition at a time. Generated applications are editable source.
 Create and run a web app locally without an account.
 
 ```sh
-anhedral init my-app
+pnpm dlx anhedral@latest init my-app
 cd my-app
 pnpm dev
 ```
 
-From the project directory, add the services you need.
+From the project directory, add a backend and list the available additions.
 
 ```sh
-anhedral add backend   # Hono API, Better Auth, Drizzle + D1
-anhedral add storage   # Private files on Cloudflare R2
-anhedral add payments  # Subscriptions with Stripe
+pnpm dlx anhedral@latest add backend
+pnpm dlx anhedral@latest stack list
 ```
 
-Use `--dry-run` to preview an addition. Compare the [example snapshots](https://github.com/anhedral/anhedral-cli/tree/staging/examples) or follow the [service setup guide](docs/capabilities.md) to configure providers and apply migrations.
+In the published 0.22.1 CLI, use `add r2` for storage and `add stripe` for payments. Use `--dry-run` to preview an addition. Compare the [example snapshots](https://github.com/anhedral/anhedral-cli/tree/staging/examples) or follow the [service setup guide](docs/capabilities.md) to configure providers and apply migrations.
 
 Use the CLI directly or through the Codex and Claude Code plugin. To host on Anhedral, sign in, link a project, upload source, and deploy. [Platform workflow](docs/software-factory.md) · [Stack reference](docs/stack-standard.md)
 
