@@ -54,6 +54,7 @@ def reviewed_checksum_fingerprints(revision):
         'examples/02-backend/anhedral.json': ('7a657ef07b251c2f8ede786c6a532c9cd3453e11', 43),
         'examples/03-storage/anhedral.json': ('f6d8280f2ffea7af3a44f6d91c6be0be3f1ec254', 45),
         'examples/04-payments/anhedral.json': ('18f0b9f67ea18f72ffd7905a72cdcb4eea07b315', 47),
+        'examples/04-payment/anhedral.json': ('18f0b9f67ea18f72ffd7905a72cdcb4eea07b315', 47),
     }
     history = git('log', '--full-history', '-m', '--raw', '--no-renames', '--no-abbrev',
                   '--format=%H', revision, '--', *manifests).decode().splitlines()

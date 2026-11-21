@@ -65,7 +65,7 @@ export function readState(e: CapabilityEditor) {
 const publicGroups: Record<PublicStackAddition, readonly Capability[]> = {
   backend: ['hono', 'database-auth'],
   storage: ['r2'],
-  payments: ['stripe'],
+  payment: ['stripe'],
 };
 function publicScopeError(command: 'add' | 'stack' = 'add') {
   return commandArgumentError(
@@ -165,14 +165,24 @@ export async function runCapabilityCommand(
 ) {
   const parsed = commandArguments(command, args);
   if (command === 'add') {
-    const unsupported = parsed.positional.filter(
-      (id) => !PUBLIC_STACK_ADDITIONS.includes(id as PublicStackAddition),
-    );
-    if (unsupported.length)
-      throw commandArgumentError(
-        'add',
-        'Choose backend, storage or payments for the Anhedral Stack.',
-      );
+    const replacements = new Map([
+      ['r2', 'storage'],
+      ['stripe', 'payment'],
+      ['payments', 'payment'],
+    ]);
+    for (const id of parsed.positional) {
+      const replacement = replacements.get(id);
+      if (replacement)
+        throw commandArgumentError(
+          'add',
+          `Use anhedral add ${replacement} instead of anhedral add ${id}.`,
+        );
+      if (!PUBLIC_STACK_ADDITIONS.includes(id as PublicStackAddition))
+        throw commandArgumentError(
+          'add',
+          `Choose an Anhedral Stack addition: ${PUBLIC_STACK_ADDITIONS.join(', ')}.`,
+        );
+    }
   }
   let result: Record<string, unknown>;
   if (command === 'stack') {
@@ -219,7 +229,7 @@ export async function runCapabilityCommand(
       !parsed.has('--with-dependencies') &&
       !parsed.positional.includes('backend') &&
       !(state.installed.includes('hono') && state.installed.includes('database-auth')) &&
-      parsed.positional.some((id) => id === 'storage' || id === 'payments')
+      parsed.positional.some((id) => id === 'storage' || id === 'payment')
     )
       throw commandArgumentError(
         'add',

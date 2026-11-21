@@ -72,11 +72,11 @@ function runInstalledScaffold(installRoot) {
   );
   assert.equal(stack.stack.name, 'Anhedral Stack');
   assert.equal(stack.stack.id, 'anhedral-stack');
-  assert.deepEqual(Object.keys(stack.stack.additions), ['backend', 'storage', 'payments']);
+  assert.deepEqual(Object.keys(stack.stack.additions), ['backend', 'storage', 'payment']);
   const addition = JSON.parse(
     run(
       binPath,
-      ['add', 'payments', '--with-dependencies', '--skip-install', '--json', '--cwd', projectRoot],
+      ['add', 'payment', '--with-dependencies', '--skip-install', '--json', '--cwd', projectRoot],
       installRoot,
     ).stdout,
   );

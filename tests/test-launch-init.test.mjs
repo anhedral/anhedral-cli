@@ -105,7 +105,7 @@ test('backend is one atomic addition, with storage and Stripe independently prog
   );
   result = run(['add', 'storage', '--skip-install', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
-  result = run(['add', 'payments', '--skip-install', '--json'], root);
+  result = run(['add', 'payment', '--skip-install', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   assert.ok(existsSync(path.join(root, 'apps/api/src/features/storage.ts')));
   assert.ok(existsSync(path.join(root, 'apps/api/src/features/stripe.ts')));
@@ -117,7 +117,7 @@ test('missing backend stops before storage writes, while explicit dependency exp
   const root = generate('prerequisites');
   assert.notEqual(run(['add', 'storage', '--skip-install', '--json'], root).status, 0);
   assert.equal(existsSync(path.join(root, 'apps/api')), false);
-  const result = run(['add', 'payments', '--with-dependencies', '--skip-install', '--json'], root);
+  const result = run(['add', 'payment', '--with-dependencies', '--skip-install', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(json(path.join(root, 'anhedral.json')).capabilities.installed, [
     'hono',

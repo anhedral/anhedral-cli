@@ -85,7 +85,7 @@ export const STACK_DEPENDENCIES = {
   // renovate: datasource=npm depName=drizzle-kit
   'drizzle-kit': '0.31.11',
   // renovate: datasource=npm depName=hono
-  hono: '4.13.13',
+  hono: '4.13.18',
   // renovate: datasource=npm depName=@hono/zod-openapi
   '@hono/zod-openapi': '1.6.3',
   // renovate: datasource=npm depName=fallow

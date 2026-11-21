@@ -56,7 +56,7 @@ test('backend and payment additions preserve unrelated root tasks', async () => 
     const turbo = JSON.parse(readFileSync(file));
     turbo.tasks.custom = { cache: false };
     writeFileSync(file, JSON.stringify(turbo));
-    await add(app, ['payments']);
+    await add(app, ['payment']);
     const after = JSON.parse(readFileSync(file));
     assert.deepEqual(after.tasks.custom, { cache: false });
     assert.deepEqual(after.tasks['db:migrate'], { cache: false });

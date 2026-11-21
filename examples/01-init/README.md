@@ -16,9 +16,9 @@ Keep LICENSE.shadcn with the copied starter components.
 ## Add services progressively
 
 Run anhedral add backend to add Hono, Drizzle/D1 and Better Auth together.
-Then run anhedral add storage for private storage, or anhedral add payments for payments.
+Then run anhedral add storage for private storage, or anhedral add payment for payments.
 Missing prerequisites stop before writes; --with-dependencies opts into them.
-The public additions are backend, storage and payments; this application is web-only.
+The public additions are backend, storage and payment; this application is web-only.
 
 After adding backend, copy apps/api/.dev.vars.example to apps/api/.dev.vars.
 Set PUBLIC_APP_URL=http://localhost:3000 and generate BETTER_AUTH_SECRET with
