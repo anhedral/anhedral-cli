@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 const root = new URL('./', import.meta.url);
-const { logos } = JSON.parse(readFileSync(new URL('stack-logos.json', root), 'utf8'));
+const { logos, glyphs } = JSON.parse(readFileSync(new URL('stack-logos.json', root), 'utf8'));
 export const stackSize = { width: 1120, height: 500 };
 
 export function renderStack(light = false) {
@@ -22,13 +22,18 @@ export function renderStack(light = false) {
   );
   const wordmark = Buffer.from(wordmarkSvg).toString('base64');
   const { width, height } = stackSize;
-  const card = (x, y, logo, title, detail, command, titleSize = 25) => `
+  const svgImage = (svg) => `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  const glyph = (key) => svgImage(glyphs[key].replace('<svg ', `<svg fill="${ink}" `).replaceAll('currentColor', ink));
+  const brandMark = svgImage(readFileSync(new URL(
+    `../../plugin/assets/anhedral-mark${light ? '' : '-dark'}.svg`, root,
+  ), 'utf8'));
+  const card = (x, y, icons, title, detail, command) => `
   <g transform="translate(${x} ${y})">
     <rect width="304" height="150" rx="10" fill="${surface}" stroke="${border}"/>
-    <image href="${logo}" x="20" y="19" width="36" height="36"/>
-    <text x="68" y="46" font-size="${titleSize}" font-weight="600">${title}</text>
-    <text x="22" y="83" font-size="17" fill="${muted}">${detail}</text>
-${command ? `    <text x="22" y="126" font-family="Menlo,Consolas,monospace" font-size="16">${command}</text>` : ''}
+    ${icons.map((logo, i) => `<image href="${logo}" x="${22 + i * 39}" y="13" width="30" height="30"/>`).join('')}
+    <text x="22" y="73" font-size="24" font-weight="600">${title}</text>
+    <text x="22" y="99" font-size="17" fill="${muted}">${detail}</text>
+    <text x="22" y="132" font-family="Menlo,Consolas,monospace" font-size="16">${command}</text>
   </g>`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" fill="${ink}">
@@ -46,11 +51,11 @@ ${command ? `    <text x="22" y="126" font-family="Menlo,Consolas,monospace" fon
     <path d="M742 305V222Q742 214 750 214H770" marker-end="url(#arrow)"/>
     <path d="M742 305V388Q742 396 750 396H770" marker-end="url(#arrow)"/>
   </g>
-${card(44, 139, logos['tanstack.com'], 'Web app', 'TanStack Start + ShadCN', 'anhedral init my-app')}
-${card(44, 321, logos['expo.dev'], 'Cross Platform Apps', 'Expo + Anhedral UI', 'anhedral add cross-platform', 22)}
-${card(408, 230, logos['hono.dev'], 'Backend', 'Hono · Better Auth · Drizzle / D1', 'anhedral add backend')}
-${card(772, 139, logos['cloudflare.com'], 'File storage', 'Private files on Cloudflare R2', 'anhedral add storage')}
-${card(772, 321, logos['stripe.com'], 'Payments', 'Subscriptions with Stripe', 'anhedral add payments')}
+${card(44, 139, [logos['tanstack.com'], glyph('shadcnui')], 'Web app', 'TanStack Start + ShadCN', 'anhedral init my-app')}
+${card(44, 321, [logos['expo.dev'], brandMark], 'Cross Platform Apps', 'Expo + Anhedral UI', 'anhedral add cross-platform')}
+${card(408, 230, [logos['hono.dev'], glyph('betterauth'), logos['orm.drizzle.team'], glyph('d1')], 'Backend', 'Hono · Better Auth · Drizzle / D1', 'anhedral add backend')}
+${card(772, 139, [logos['cloudflare.com'], glyph('r2')], 'File storage', 'Private files on Cloudflare R2', 'anhedral add storage')}
+${card(772, 321, [logos['stripe.com']], 'Payments', 'Subscriptions with Stripe', 'anhedral add payments')}
 </svg>\n`;
 }
 
