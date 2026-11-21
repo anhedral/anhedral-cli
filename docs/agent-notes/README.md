@@ -1,5 +1,8 @@
 # Development notes
 
+2026-11-21 — The generated examples check runs the four progressive CLI stages and verifies their source formatting and snapshot contents. See the [contributor guide](../../.github/CONTRIBUTING.md).
+
+
 0.24.0 includes the source upload protections, dependency fixes, managed stack updates, and progressive examples from PR #164. Windows uploads require WSL. Private environment input files inside a project must use an always-excluded path.
 
 2026-11-21: Restricted environment file inputs and anchored source-upload traversal at open directories. Ten focused tests passed on macOS and Linux. Native Windows uploads require WSL.

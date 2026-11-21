@@ -6,7 +6,12 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ command }) => ({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
-    cloudflare({ viteEnvironment: { name: 'ssr' }, auxiliaryWorkers: command === 'serve' ? [{ configPath: '../api/wrangler.jsonc' }] : [], persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) }, remoteBindings: false }),
+    cloudflare({
+      viteEnvironment: { name: 'ssr' },
+      auxiliaryWorkers: command === 'serve' ? [{ configPath: '../api/wrangler.jsonc' }] : [],
+      persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) },
+      remoteBindings: false,
+    }),
     tanstackStart({ server: { entry: './server.ts' } }),
     react(),
   ],

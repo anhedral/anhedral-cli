@@ -1,1 +1,1 @@
-export const starterTitle = "example-app";
+export const starterTitle = 'example-app';

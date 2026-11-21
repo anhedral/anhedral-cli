@@ -88,7 +88,10 @@ export function scaffoldTanstack(root: string, name: string): void {
     root,
     `${app}/eslint.config.mjs`,
     `import { config } from '@workspace/eslint-config/react-internal';
-export default [...config, { ignores: ['dist/**', '.wrangler/**', 'src/routeTree.gen.ts', 'worker-configuration.d.ts'] }];
+export default [
+  ...config,
+  { ignores: ['dist/**', '.wrangler/**', 'src/routeTree.gen.ts', 'worker-configuration.d.ts'] },
+];
 `,
   );
   json(root, `${app}/components.json`, {
@@ -111,7 +114,9 @@ export default [...config, { ignores: ['dist/**', '.wrangler/**', 'src/routeTree
     `${app}/src/lib/utils.ts`,
     `import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
+export function cn(...values: ClassValue[]) {
+  return twMerge(clsx(values));
+}
 `,
   );
   for (const component of ['button', 'input', 'label'])
@@ -131,7 +136,7 @@ export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
     `${app}/postcss.config.mjs`,
     "export default { plugins: { '@tailwindcss/postcss': {} } };\n",
   );
-  put(root, `${app}/src/starter.ts`, `export const starterTitle = ${JSON.stringify(name)};\n`);
+  put(root, `${app}/src/starter.ts`, `export const starterTitle = '${name}';\n`);
   const files = {
     'tests/application.test.mjs': 'application.test.mjs.txt',
     'src/router.tsx': 'router.tsx.txt',
@@ -176,21 +181,7 @@ const ojFiles = {
   'scripts/OJ.LICENSE': 'oj/OJ.LICENSE',
 } as const;
 function tanstackViteConfiguration(installed: readonly Capability[]) {
-  const backend = installed.includes('hono');
-  return `import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
-import { cloudflare } from '@cloudflare/vite-plugin';
-import { tanstackStart } from '@tanstack/react-start/plugin/vite';
-import react from '@vitejs/plugin-react';
-export default defineConfig(${backend ? '({ command }) => (' : ''}{
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  plugins: [
-    cloudflare({ viteEnvironment: { name: 'ssr' }, ${backend ? "auxiliaryWorkers: command === 'serve' ? [{ configPath: '../api/wrangler.jsonc' }] : [], persistState: { path: fileURLToPath(new URL('../api/.wrangler/state', import.meta.url)) }, " : ''}remoteBindings: false }),
-    tanstackStart({ server: { entry: './server.ts' } }),
-    react(),
-  ],
-}${backend ? ')' : ''});
-`;
+  return template(installed.includes('hono') ? 'backend-vite.config.ts.txt' : 'vite.config.ts.txt');
 }
 
 /** One-time source upgrade, planned in the same bounded overlay as each addition. */

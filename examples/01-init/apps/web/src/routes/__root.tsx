@@ -13,14 +13,45 @@ export const Route = createRootRoute({
     ],
   }),
   component: Root,
-  notFoundComponent: () => <section className="stack"><h1>Page not found</h1><Link to="/">Return home</Link></section>,
-  errorComponent: ({ reset }) => <section className="stack"><h1>Unable to load this page</h1><button type="button" onClick={reset}>Try again</button></section>,
+  notFoundComponent: () => (
+    <section className="stack">
+      <h1>Page not found</h1>
+      <Link to="/">Return home</Link>
+    </section>
+  ),
+  errorComponent: ({ reset }) => (
+    <section className="stack">
+      <h1>Unable to load this page</h1>
+      <button type="button" onClick={reset}>
+        Try again
+      </button>
+    </section>
+  ),
 });
 
 function Root() {
-  return <Document><main><nav aria-label="Main"><Link to="/">Home</Link></nav><Outlet /></main></Document>;
+  return (
+    <Document>
+      <main>
+        <nav aria-label="Main">
+          <Link to="/">Home</Link>
+        </nav>
+        <Outlet />
+      </main>
+    </Document>
+  );
 }
 
 function Document({ children }: { children: ReactNode }) {
-  return <html lang="en"><head><HeadContent /></head><body>{children}<Scripts /></body></html>;
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
 }

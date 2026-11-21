@@ -11,6 +11,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
 const stackFiles = [
+  'assets/stack/base-eslint.js.txt',
+  'assets/stack/shared-eslint.config.mjs.txt',
+  'assets/stack/api-proxy.ts.txt',
+  'assets/stack/api-eslint.config.mjs.txt',
+  'assets/stack/billing-providers.ts.txt',
+  'assets/stack/drizzle.config.ts.txt',
+  'assets/stack/db-migrate.mjs.txt',
+  'assets/stack/db-index.ts.txt',
   'assets/stack/api-index.ts.txt',
   'assets/stack/backend.test.mjs.txt',
   'assets/stack/storage.test.mjs.txt',
@@ -55,6 +63,8 @@ const requiredFiles = new Set([
     'minimal-application.server.ts.txt',
     'request-context.ts.txt',
     'router.tsx.txt',
+    'vite.config.ts.txt',
+    'backend-vite.config.ts.txt',
     'root.tsx.txt',
     'home.tsx.txt',
     'storage-page.tsx.txt',

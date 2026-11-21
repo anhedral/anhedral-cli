@@ -3,8 +3,10 @@ import { test } from 'node:test';
 import ts from 'typescript';
 import { createServer } from 'node:http';
 import { gzipSync } from 'node:zlib';
-import { WEB_API_PROXY } from '../dist/api-proxy.js';
-const javascript = ts.transpileModule(WEB_API_PROXY, {
+import { readFileSync } from 'node:fs';
+
+const source = readFileSync(new URL('../assets/stack/api-proxy.ts.txt', import.meta.url), 'utf8');
+const javascript = ts.transpileModule(source, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
 }).outputText;
 const { proxyApi } = await import(

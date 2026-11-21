@@ -83,6 +83,9 @@ jobs:
       - name: Compile CLI
         if: steps.scope.outputs.full == 'true'
         run: pnpm build
+      - name: Check generated source and example snapshots
+        if: steps.scope.outputs.full == 'true'
+        run: pnpm examples:check
       - name: Fast source checks
         if: steps.scope.outputs.full == 'true'
         run: pnpm format:check && pnpm check:hygiene && pnpm check:security && pnpm check:release-policy

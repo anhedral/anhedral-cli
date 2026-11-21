@@ -2,7 +2,7 @@ import { supportsWorkspaceRuntime } from '../runtime-policy.js';
 import { execFile } from '../util.js';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import type { CommandRunner } from '../command-types.js';
-import { json, put } from './files.js';
+import { json, put, stackTemplate } from './files.js';
 
 export function assertWorkspaceRuntime(run: CommandRunner, version = process.versions.node): void {
   if (run === execFile && !supportsWorkspaceRuntime(version))
@@ -39,10 +39,6 @@ export function bootstrapWorkspace(root: string, name: string, run: CommandRunne
       '@typescript-eslint/eslint-plugin': STACK_DEPENDENCIES['@typescript-eslint/eslint-plugin'],
     },
   });
-  put(
-    root,
-    'packages/eslint-config/base.js',
-    "import parser from '@typescript-eslint/parser';\nimport plugin from '@typescript-eslint/eslint-plugin';\nexport const config = [{ ignores: ['dist/**', '.output/**', '.wrangler/**', 'worker-configuration.d.ts'] }, { files: ['**/*.{ts,tsx,cts,mts}'], languageOptions: { parser, parserOptions: { ecmaFeatures: { jsx: true } } }, plugins: { '@typescript-eslint': plugin }, rules: { ...plugin.configs.recommended.rules, 'no-undef': 'off', 'no-unused-vars': 'off', '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }] } }];\n",
-  );
+  put(root, 'packages/eslint-config/base.js', stackTemplate('base-eslint.js.txt'));
   put(root, 'packages/eslint-config/react-internal.js', "export { config } from './base.js';\n");
 }

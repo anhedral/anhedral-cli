@@ -1,7 +1,6 @@
 {
   "runtimeDependencies": ["ignore", "jsonc-parser", "yaml", "zod"],
   "modules": [
-    "api-proxy",
     "bin",
     "bounded-file",
     "cli-arguments",

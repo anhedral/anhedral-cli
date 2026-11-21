@@ -20,7 +20,13 @@ test('reviewable local migrations support idempotent signed webhook delivery', a
   const cli = join(dirname(require.resolve('drizzle-kit/api')), 'bin.cjs');
   execFileSync(
     process.execPath,
-    [cli, 'generate', '--dialect=sqlite', '--schema=' + fileURLToPath(new URL('src/schema.ts', root)), '--out=./drizzle'],
+    [
+      cli,
+      'generate',
+      '--dialect=sqlite',
+      '--schema=' + fileURLToPath(new URL('src/schema.ts', root)),
+      '--out=./drizzle',
+    ],
     { cwd: work, stdio: 'pipe' },
   );
   const db = new DatabaseSync(':memory:');

@@ -1,7 +1,12 @@
 import { STACK_DEPENDENCIES, WORKER_DEV_PORTS } from '../dependencies.js';
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
 import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import { writeFile } from '../util.js';
+export function stackTemplate(name: string): string {
+  return readFileSync(new URL(`../../assets/stack/${name}`, import.meta.url), 'utf8');
+}
+
 export type Json = Record<string, unknown>;
 export interface PackageManifest extends Json {
   name?: string;
@@ -98,11 +103,7 @@ export function worker(
     },
     include: ['src/**/*.ts', 'worker-configuration.d.ts'],
   });
-  put(
-    root,
-    `apps/${app}/eslint.config.mjs`,
-    'import { config } from "@workspace/eslint-config/base";\nexport default [...config, { ignores: ["dist/**", ".wrangler/**", "worker-configuration.d.ts"] }, { files: ["**/*.ts"], rules: { "no-undef": "off", "no-unused-vars": "off" } }];\n',
-  );
+  put(root, `apps/${app}/eslint.config.mjs`, stackTemplate('shared-eslint.config.mjs.txt'));
   put(root, `apps/${app}/src/index.ts`, source);
 }
 export function sharedPackage(
@@ -140,10 +141,6 @@ export function sharedPackage(
     },
     include: ['src/**/*.ts'],
   });
-  put(
-    root,
-    `packages/${name}/eslint.config.mjs`,
-    'import { config } from "@workspace/eslint-config/base";\nexport default [...config, { ignores: ["dist/**", ".wrangler/**", "worker-configuration.d.ts"] }, { files: ["**/*.ts"], rules: { "no-undef": "off", "no-unused-vars": "off" } }];\n',
-  );
+  put(root, `packages/${name}/eslint.config.mjs`, stackTemplate('shared-eslint.config.mjs.txt'));
   put(root, `packages/${name}/src/index.ts`, source);
 }
