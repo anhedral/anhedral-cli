@@ -55,7 +55,7 @@ ${card(44, 139, [logos['tanstack.com'], glyph('shadcnui')], 'Web app', 'TanStack
 ${card(44, 321, [logos['expo.dev'], brandMark], 'Cross Platform Apps', 'Expo + Anhedral UI', 'anhedral add cross-platform')}
 ${card(408, 230, [logos['hono.dev'], glyph('betterauth'), logos['orm.drizzle.team'], glyph('d1')], 'Backend', 'Hono · Better Auth · Drizzle / D1', 'anhedral add backend')}
 ${card(772, 139, [logos['cloudflare.com'], glyph('r2')], 'File storage', 'Private files on Cloudflare R2', 'anhedral add storage')}
-${card(772, 321, [logos['stripe.com']], 'Payments', 'Subscriptions with Stripe', 'anhedral add payments')}
+${card(772, 321, [logos['stripe.com'], logos['revenuecat.com']], 'Payments', 'Stripe + RevenueCat (upcoming)', 'anhedral add payments')}
 </svg>\n`;
 }
 
