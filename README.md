@@ -14,7 +14,7 @@ Build an app one addition at a time. Generated applications are editable source.
 
 ## How to use
 
-Start with the web app and stop at the stage you need. These commands use the new addition names. Storage and payments each require the backend and can be added independently.
+Start with the web app and stop at the stage you need. Storage and payments each require the backend and can be added independently.
 
 ```sh
 # Create the web app
@@ -33,7 +33,7 @@ pnpm dlx anhedral@latest add payment
 
 Run `pnpm dev` in the project directory to start the app. If you added services, configure them first. [Service setup](docs/capabilities.md) · [Source snapshot for each stage](https://github.com/anhedral/anhedral-cli/tree/staging/examples)
 
-If `@latest` resolves to 0.22.1, use `add r2` for storage and `add stripe` for payment. Existing projects keep their R2 and Stripe configuration.
+Upgrading from 0.22.1? Replace `add r2` with `add storage` and `add stripe` with `add payment`. Existing projects keep their R2 and Stripe configuration.
 
 ### Command reference
 

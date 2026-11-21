@@ -1,5 +1,7 @@
 # Development notes
 
+2026-11-20: CLI and plugin 0.23.0 rename the storage and payment additions. Projects retain R2 and Stripe provider identifiers. The release audit required the backend generator to use the same audited Hono 4.13.18 pin as the CLI workspace.
+
 2026-11-15: Updated CLI dependencies and TypeScript compiler; retained Node 20 types
 for the supported minimum runtime. Generated dependency compositions, shipped patches
 and runtime admission remain independently reviewed. No npm/plugin publication.
