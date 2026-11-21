@@ -6,8 +6,8 @@
 Build an app one addition at a time. Generated applications are editable source. Start with a TanStack Start web app and ShadCN components. Add a backend when you need an API, authentication, or a database. Then choose storage, payments, or both.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/anhedral/anhedral-cli/v0.24.0/docs/assets/anhedral-stack.png">
-  <img src="https://raw.githubusercontent.com/anhedral/anhedral-cli/v0.24.0/docs/assets/anhedral-stack-light.png" alt="The CLI creates a TanStack Start web app. The optional backend supports private file storage and subscription payments. An Expo client with Anhedral UI is upcoming.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/anhedral/anhedral-cli/v0.24.1/docs/assets/anhedral-stack.png">
+  <img src="https://raw.githubusercontent.com/anhedral/anhedral-cli/v0.24.1/docs/assets/anhedral-stack-light.png" alt="The CLI creates a TanStack Start web app. The optional backend supports private file storage and subscription payments. An Expo client with Anhedral UI is upcoming.">
 </picture>
 
 **Upcoming** — `pnpm dlx anhedral@latest add cross-platform` will add an Expo client with Anhedral UI.
@@ -31,7 +31,7 @@ pnpm dlx anhedral@latest add storage
 pnpm dlx anhedral@latest add payment
 ```
 
-Run `pnpm dev` in the project directory to start the app. If you added services, configure them first. [Service setup](docs/capabilities.md) · [Source snapshot for each stage](https://github.com/anhedral/anhedral-cli/tree/v0.24.0/examples)
+Run `pnpm dev` in the project directory to start the app. If you added services, configure them first. [Service setup](docs/capabilities.md) · [Source snapshot for each stage](https://github.com/anhedral/anhedral-cli/tree/v0.24.1/examples)
 
 Upgrading from 0.22.1? Replace `add r2` with `add storage` and `add stripe` with `add payment`. Existing projects keep their R2 and Stripe configuration.
 

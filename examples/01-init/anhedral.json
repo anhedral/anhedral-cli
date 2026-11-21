@@ -6,7 +6,7 @@
   },
   "setup": {
     "schemaVersion": 1,
-    "cliVersion": "0.24.0",
+    "cliVersion": "0.24.1",
     "stack": "anhedral-stack",
     "resourcesProvisioned": false
   },
@@ -19,7 +19,7 @@
   "composition": {
     "contractVersion": 2,
     "foundation": "tanstack-start",
-    "generatorVersion": "0.24.0",
+    "generatorVersion": "0.24.1",
     "identity": "none",
     "capabilities": {}
   },
