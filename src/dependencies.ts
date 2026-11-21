@@ -96,8 +96,6 @@ export const STACK_DEPENDENCIES = {
   stripe: '23.0.0',
 } as const;
 
-export const WORKER_DEV_PORTS = { api: { http: 8787, inspector: 9231 } } as const;
-
 // Backend, storage and payments extend the same Anhedral Stack foundation.
 export const CAPABILITY_DEPENDENCIES = {
   tsx: '4.23.15',

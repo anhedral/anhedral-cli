@@ -39,7 +39,7 @@ with revision, checks, failures and remaining gaps. Keep raw reports in ignored
 `.artifacts/`. Historical notes are not current instructions.
 
 Canonical docs live in `docs/`; `pnpm build` refreshes bundled plugin references.
-Current generated app guidance lives in `src/launch.ts`. OJ runs development and builds for the single TanStack Start foundation. Preserve shipped
+Current generated app guidance lives in `assets/launch/README.md.txt` and `assets/launch/AGENTS.md.txt`. OJ runs development and builds for the single TanStack Start foundation. Preserve shipped
 reference paths, source-generation safety, dependency patch gates, UI provenance,
 licenses and exact-artifact packaging. A build does not publish npm or update an
 installed plugin. See [Contributing](https://github.com/anhedral/anhedral-cli/blob/main/.github/CONTRIBUTING.md)

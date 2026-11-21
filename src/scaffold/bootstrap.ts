@@ -1,18 +1,15 @@
+import type { CommandRunner } from '../command-types.js';
+import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { supportsWorkspaceRuntime } from '../runtime-policy.js';
 import { execFile } from '../util.js';
-import { STACK_DEPENDENCIES } from '../dependencies.js';
-import type { CommandRunner } from '../command-types.js';
 import { json, put, stackTemplate } from './files.js';
 
 export function assertWorkspaceRuntime(run: CommandRunner, version = process.versions.node): void {
   if (run === execFile && !supportsWorkspaceRuntime(version))
     throw new Error('Generated workspaces require Node.js 22.13+ on the 22.x line or Node.js 24+.');
 }
-/** No downloaded template, disposable Next app or initialization-time cloud operation. */
-export function bootstrapWorkspace(root: string, name: string, run: CommandRunner): void {
-  assertWorkspaceRuntime(run);
-  json(root, 'package.json', { name, private: true });
-  put(root, 'pnpm-workspace.yaml', 'packages:\n  - apps/*\n  - packages/*\n');
+
+export function bootstrapWorkspace(root: string): void {
   json(root, 'packages/typescript-config/package.json', {
     name: '@workspace/typescript-config',
     private: true,

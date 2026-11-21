@@ -48,7 +48,7 @@ try {
       expected.add(destination);
       const source = readFileSync(file);
       if (
-        /\.(?:[cm]?[jt]sx?)$/.test(file) &&
+        /\.(?:[cm]?[jt]sx?|css)$/.test(file) &&
         !(await check(source.toString('utf8'), { ...config, filepath: file }))
       ) {
         errors.push('Unformatted generator output: ' + destination);

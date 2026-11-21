@@ -1,13 +1,11 @@
-import { secureWorkspacePolicy } from '../pnpm-policy.js';
 import { readFileSync } from 'node:fs';
-import { ANHEDRAL_STACK_DEPENDENCIES, WEB_DEPENDENCIES } from '../dependencies.js';
-import { CapabilityEditor, fingerprint } from '../composition/editor.js';
-import type { Capability } from '../composition/catalog.js';
-import { resourceName } from '../render.js';
-import { json, put, workerConfig } from './files.js';
 
-const template = (name: string) =>
-  readFileSync(new URL(`../../assets/launch/${name}`, import.meta.url), 'utf8');
+import type { Capability } from '../composition/catalog.js';
+import { CapabilityEditor, fingerprint } from '../composition/editor.js';
+import { ANHEDRAL_STACK_DEPENDENCIES, WEB_DEPENDENCIES } from '../dependencies.js';
+import { secureWorkspacePolicy } from '../pnpm-policy.js';
+import { resourceName } from '../render.js';
+import { json, launchTemplate, put, workerConfig } from './files.js';
 
 /** The launch foundation is a web service; Hono owns application services and data. */
 export function scaffoldTanstack(root: string, name: string): void {
@@ -21,10 +19,7 @@ export function scaffoldTanstack(root: string, name: string): void {
     type: 'module',
     scripts: {
       test: 'node --experimental-strip-types --test tests/*.test.mjs',
-      dev: 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000',
-      build: 'node ../../scripts/oj.mjs build .',
-      preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
-      deploy: 'wrangler deploy --config dist/ssr/wrangler.json',
+      ...ojScripts,
       typecheck: 'wrangler types && tsr generate && tsc --noEmit',
       lint: 'eslint . --max-warnings 0',
     },
@@ -56,9 +51,7 @@ export function scaffoldTanstack(root: string, name: string): void {
     },
   });
   json(root, `${app}/wrangler.jsonc`, {
-    ...workerConfig(resourceName(name, 'web')),
-    main: 'src/server.ts',
-    compatibility_date: '2026-11-02',
+    ...workerConfig(resourceName(name, 'web'), 'src/server.ts', '2026-11-02'),
     services: [],
   });
   json(root, `${app}/tsconfig.json`, {
@@ -136,7 +129,11 @@ export function cn(...values: ClassValue[]) {
     `${app}/postcss.config.mjs`,
     "export default { plugins: { '@tailwindcss/postcss': {} } };\n",
   );
-  put(root, `${app}/src/starter.ts`, `export const starterTitle = '${name}';\n`);
+  put(
+    root,
+    `${app}/src/starter.ts`,
+    `export const starterTitle = ${/^[a-z0-9._-]+$/.test(name) ? `'${name}'` : JSON.stringify(name)};\n`,
+  );
   const files = {
     'tests/application.test.mjs': 'application.test.mjs.txt',
     'src/router.tsx': 'router.tsx.txt',
@@ -146,11 +143,7 @@ export function cn(...values: ClassValue[]) {
     'src/styles.css': 'styles.css.txt',
   };
   for (const [destination, source] of Object.entries(files))
-    put(
-      root,
-      `${app}/${destination}`,
-      template(source).replaceAll('__APPLICATION_NAME__', JSON.stringify(name)),
-    );
+    put(root, `${app}/${destination}`, launchTemplate(source));
   put(root, `${app}/public/robots.txt`, 'User-agent: *\nAllow: /\n');
   put(
     root,
@@ -181,7 +174,9 @@ const ojFiles = {
   'scripts/OJ.LICENSE': 'oj/OJ.LICENSE',
 } as const;
 function tanstackViteConfiguration(installed: readonly Capability[]) {
-  return template(installed.includes('hono') ? 'backend-vite.config.ts.txt' : 'vite.config.ts.txt');
+  return launchTemplate(
+    installed.includes('hono') ? 'backend-vite.config.ts.txt' : 'vite.config.ts.txt',
+  );
 }
 
 /** One-time source upgrade, planned in the same bounded overlay as each addition. */
@@ -222,7 +217,7 @@ export function normalizeOjFoundation(
       '703adff2e57adfbbdb7fa90b4dadffde8617c86cc31a185943931ef7c623eca7' &&
     e.managed[serverEntry] === fingerprint(currentEntry)
   ) {
-    e.owned(serverEntry, template('server.ts.txt'));
+    e.owned(serverEntry, launchTemplate('server.ts.txt'));
     changed = true;
   }
   const rootRoute = 'apps/web/src/routes/__root.tsx';
@@ -232,7 +227,7 @@ export function normalizeOjFoundation(
     rootSource !== null &&
     fingerprint(rootSource) === '21af7892e39130c9ec3d7ffb583b3f5d24bee771440ca253d8d7b8ce41be9801'
   ) {
-    e.writes.set(rootRoute, template('root.tsx.txt'));
+    e.writes.set(rootRoute, launchTemplate('root.tsx.txt'));
     changed = true;
   } else if (rootSource !== null && /\bfrom\s*(['"])\.\.\/styles\.css\?url\1/.test(rootSource))
     throw Error(
@@ -245,7 +240,7 @@ export function normalizeOjFoundation(
     }
   }
   for (const [destination, asset] of Object.entries(ojFiles)) {
-    const desired = template(asset);
+    const desired = launchTemplate(asset);
     if (e.read(destination) !== desired) {
       e.owned(destination, desired);
       changed = true;
@@ -288,10 +283,13 @@ export function composeTanstack(
   normalizeOjFoundation(e, installed, refreshConfiguration);
   const backend = installed.includes('hono');
   const auth = installed.includes('database-auth');
-  e.owned('apps/web/src/server.ts', template(backend ? 'server.ts.txt' : 'minimal-server.ts.txt'));
+  e.owned(
+    'apps/web/src/server.ts',
+    launchTemplate(backend ? 'server.ts.txt' : 'minimal-server.ts.txt'),
+  );
   e.owned(
     'apps/web/src/lib/application.server.ts',
-    template(backend ? 'application.server.ts.txt' : 'minimal-application.server.ts.txt')
+    launchTemplate(backend ? 'application.server.ts.txt' : 'minimal-application.server.ts.txt')
       .replaceAll('__AUTHENTICATION__', String(auth))
       .replaceAll('__STORAGE__', String(installed.includes('r2')))
       .replaceAll('__PAYMENT__', String(installed.includes('stripe'))),
@@ -302,6 +300,6 @@ export function composeTanstack(
 /** Install account source only when the backend authentication capability is added. */
 export function addTanstackAuth(e: CapabilityEditor): void {
   assertTanstack(e);
-  e.create('apps/web/src/lib/auth-client.ts', template('auth-client.ts.txt'));
-  e.create('apps/web/src/routes/sign-in.tsx', template('sign-in.tsx.txt'));
+  e.create('apps/web/src/lib/auth-client.ts', launchTemplate('auth-client.ts.txt'));
+  e.create('apps/web/src/routes/sign-in.tsx', launchTemplate('sign-in.tsx.txt'));
 }

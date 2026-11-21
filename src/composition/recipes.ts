@@ -1,11 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { stackTemplate } from '../scaffold/files.js';
-import { CapabilityEditor } from './editor.js';
-import { CAPABILITY_DEPENDENCIES as P } from '../dependencies.js';
-import { STACK_DEPENDENCIES as D } from '../dependencies.js';
+import { CAPABILITY_DEPENDENCIES, STACK_DEPENDENCIES } from '../dependencies.js';
 import { resourceName } from '../render.js';
+import { launchTemplate, stackTemplate, workerConfig } from '../scaffold/files.js';
 import { composeTanstack, addTanstackAuth } from '../scaffold/tanstack.js';
 import type { Capability } from './catalog.js';
+import { CapabilityEditor } from './editor.js';
 
 const json = (value: unknown) => JSON.stringify(value, null, 2) + '\n';
 function dependency(e: CapabilityEditor, app: string, dependencies: Record<string, string>) {
@@ -28,7 +26,7 @@ function project(
       type: 'module',
       scripts,
       dependencies,
-      devDependencies: { typescript: D.typescript, ...dev },
+      devDependencies: { typescript: STACK_DEPENDENCIES.typescript, ...dev },
     }),
   );
 }
@@ -65,7 +63,7 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         'node --import tsx --test tests/*.test.mjs',
       );
     if (!manifest.devDependencies?.tsx && !manifest.dependencies?.tsx)
-      e.set('apps/api/package.json', ['devDependencies', 'tsx'], P.tsx);
+      e.set('apps/api/package.json', ['devDependencies', 'tsx'], CAPABILITY_DEPENDENCIES.tsx);
   }
   switch (id) {
     case 'hono': {
@@ -81,25 +79,18 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           typecheck: 'wrangler types && tsc --noEmit',
           lint: 'eslint . --max-warnings 0',
         },
-        { hono: D.hono },
+        { hono: STACK_DEPENDENCIES.hono },
         {
-          tsx: P.tsx,
-          wrangler: D.wrangler,
-          '@types/node': D['@types/node'],
-          eslint: D.eslint,
+          tsx: CAPABILITY_DEPENDENCIES.tsx,
+          wrangler: STACK_DEPENDENCIES.wrangler,
+          '@types/node': STACK_DEPENDENCIES['@types/node'],
+          eslint: STACK_DEPENDENCIES.eslint,
           '@workspace/eslint-config': 'workspace:*',
         },
       );
       e.create(
         'apps/api/wrangler.jsonc',
-        json({
-          $schema: 'node_modules/wrangler/config-schema.json',
-          name: resourceName(name, 'api'),
-          main: 'src/index.ts',
-          compatibility_date: '2026-10-05',
-          compatibility_flags: ['nodejs_compat'],
-          observability: { enabled: true },
-        }),
+        json(workerConfig(resourceName(name, 'api'), 'src/index.ts', '2026-10-05')),
       );
       e.create(
         'apps/api/tsconfig.json',
@@ -154,11 +145,11 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           'db:generate': 'drizzle-kit generate',
           'db:migrate': 'node src/migrate.mjs',
         },
-        { 'drizzle-orm': D['drizzle-orm'] },
+        { 'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'] },
         {
-          'drizzle-kit': D['drizzle-kit'],
-          '@types/node': D['@types/node'],
-          eslint: D.eslint,
+          'drizzle-kit': STACK_DEPENDENCIES['drizzle-kit'],
+          '@types/node': STACK_DEPENDENCIES['@types/node'],
+          eslint: STACK_DEPENDENCIES.eslint,
           '@workspace/eslint-config': 'workspace:*',
         },
       );
@@ -205,11 +196,11 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
       ]);
       dependency(e, 'apps/api', {
         '@workspace/db': 'workspace:*',
-        zod: D.zod,
-        'better-auth': P['better-auth'],
-        '@better-auth/drizzle-adapter': P['@better-auth/drizzle-adapter'],
+        zod: STACK_DEPENDENCIES.zod,
+        'better-auth': CAPABILITY_DEPENDENCIES['better-auth'],
+        '@better-auth/drizzle-adapter': CAPABILITY_DEPENDENCIES['@better-auth/drizzle-adapter'],
       });
-      dependency(e, 'apps/web', { 'better-auth': P['better-auth'] });
+      dependency(e, 'apps/web', { 'better-auth': CAPABILITY_DEPENDENCIES['better-auth'] });
       e.create('apps/api/src/auth.ts', stackTemplate('auth.ts.txt'));
       e.create('apps/api/src/auth-features.ts', stackTemplate('auth-features.ts.txt'));
       e.create('apps/api/src/security.ts', stackTemplate('security.ts.txt'));
@@ -227,16 +218,13 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
     }
     case 'r2':
       e.create('apps/api/tests/storage.test.mjs', stackTemplate('storage.test.mjs.txt'));
-      e.create(
-        'apps/web/src/routes/storage.tsx',
-        readFileSync(new URL('../../assets/launch/storage-page.tsx.txt', import.meta.url), 'utf8'),
-      );
+      e.create('apps/web/src/routes/storage.tsx', launchTemplate('storage-page.tsx.txt'));
       apiConfig(e, 'r2_buckets', [{ binding: 'FILES', bucket_name: resourceName(name, 'files') }]);
       e.create('apps/api/src/features/storage.ts', stackTemplate('storage.ts.txt'));
       break;
     case 'stripe':
       e.create('apps/api/tests/payment.test.mjs', stackTemplate('payment.test.mjs.txt'));
-      dependency(e, 'apps/api', { stripe: P.stripe });
+      dependency(e, 'apps/api', { stripe: CAPABILITY_DEPENDENCIES.stripe });
       e.create('apps/api/src/features/stripe.ts', stackTemplate('stripe.ts.txt'));
       e.create('apps/api/src/billing-mode.ts', stackTemplate('billing-mode.ts.txt'));
       e.create('apps/api/src/features/entitlements.ts', stackTemplate('entitlements.ts.txt'));
