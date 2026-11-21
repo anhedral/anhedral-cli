@@ -23,7 +23,13 @@ const portable = new Set([
   'production-transport',
   'runtime-logs-transport',
 ]);
-const clientShared = new Set(['cli-arguments', 'cli-output', 'cli-errors', 'command-schema']);
+const clientShared = new Set([
+  'bounded-file',
+  'cli-arguments',
+  'cli-output',
+  'cli-errors',
+  'command-schema',
+]);
 export function moduleReferences(file, source) {
   const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
   const references = [];

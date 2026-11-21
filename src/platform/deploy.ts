@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { constants } from 'node:fs';
+import { readBoundedFile } from '../bounded-file.js';
 import { join, resolve } from 'node:path';
 import { z } from 'zod';
 import { commandArgumentError } from '../cli-arguments.js';
@@ -87,24 +87,15 @@ export async function runDeploy({
       throw platformFailure('The saved source upload is not sealed.');
     const file = options.value('--manifest');
     if (!file) throw commandArgumentError(command, 'Use deploy plan --manifest <file>.');
-    const handle = await import('node:fs/promises').then((fs) =>
-      fs.open(resolve(file), constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK),
-    );
+    const source = readBoundedFile(resolve(file), 32768);
     let manifest: unknown;
     try {
-      const info = await handle.stat();
-      if (!info.isFile() || info.size > 32768)
-        throw platformFailure('Deployment manifest exceeds its limit.');
-      try {
-        manifest = JSON.parse(await handle.readFile('utf8'));
-      } catch {
-        throw commandArgumentError(
-          command,
-          'The deployment manifest is not valid JSON. Review it before retrying.',
-        );
-      }
-    } finally {
-      await handle.close();
+      manifest = JSON.parse(source.toString('utf8'));
+    } catch {
+      throw commandArgumentError(
+        command,
+        'The deployment manifest is not valid JSON. Review it before retrying.',
+      );
     }
     const checkedManifest = deploymentManifestSchema.safeParse(manifest);
     if (!checkedManifest.success)

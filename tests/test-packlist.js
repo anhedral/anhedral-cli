@@ -12,6 +12,10 @@ const repoRoot = path.resolve(__dirname, '..');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
 const stackFiles = [
   'assets/stack/api-index.ts.txt',
+  'assets/stack/backend.test.mjs.txt',
+  'assets/stack/storage.test.mjs.txt',
+  'assets/stack/payment.test.mjs.txt',
+
   'assets/stack/auth-features.ts.txt',
   'assets/stack/auth-journal.json.txt',
   'assets/stack/auth-migration.sql.txt',
@@ -53,6 +57,8 @@ const requiredFiles = new Set([
     'router.tsx.txt',
     'root.tsx.txt',
     'home.tsx.txt',
+    'storage-page.tsx.txt',
+    'application.test.mjs.txt',
     'server.ts.txt',
     'auth-client.ts.txt',
     'sign-in.tsx.txt',

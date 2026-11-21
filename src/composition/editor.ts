@@ -13,6 +13,7 @@ export class CapabilityEditor {
   constructor(
     readonly root: string,
     readonly managed: Record<string, string>,
+    private readonly operation: 'add' | 'update' = 'add',
   ) {}
   private file(relative: string) {
     if (
@@ -83,16 +84,25 @@ export class CapabilityEditor {
   }
   owned(relative: string, source: string) {
     const current = this.read(relative);
+    const desiredDigest = fingerprint(source);
+    // The recorded digest is the common baseline for release and local edits.
+    if (this.operation === 'update' && current !== null) {
+      if (current === source) {
+        this.managed[relative] = desiredDigest;
+        return;
+      }
+      if (this.managed[relative] === desiredDigest) return;
+    }
     if (
       current !== null &&
       !this.writes.has(relative) &&
       this.managed[relative] !== fingerprint(current)
     )
       throw Error(
-        `Preserve edited generated source: ${relative}. Reconcile it before adding capabilities. No files were changed.`,
+        `Preserve edited generated source: ${relative}. Reconcile it before applying stack changes. No files were changed.`,
       );
     this.writes.set(relative, source);
-    this.managed[relative] = fingerprint(source);
+    this.managed[relative] = desiredDigest;
   }
   set(relative: string, keys: (string | number)[], value: unknown) {
     const source = this.read(relative);
