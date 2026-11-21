@@ -107,9 +107,10 @@ Use the host's configured marketplace: Codex refreshes its marketplace with
 and reload/restart the host when required before relying on its new guidance.
 Run `stack update --dry-run --json`, inspect the bounded file diffs and conflicts,
 then apply `stack update --expect-plan <planId> --json`. The plan binds source
-preimages, target generator and resolved release artifact. Changed plans and
-customized generated files stop the update; authored routes and assets remain
-owned by the application. This operation uses the existing journaled transaction
+preimages, target generator and resolved release artifact. A stale plan requires
+a new preview. Fingerprinted adapters retain local edits when their release
+baseline is unchanged. Divergent edits to the same adapter require reconciliation.
+The application owns its routes and assets. This operation uses the existing journaled transaction
 without installing dependencies or running project scripts. Resolve source
 conflicts before another preview, then install dependencies and run application
 checks/build separately. It never changes authentication or deployment authority.
@@ -175,8 +176,13 @@ responses. `source status` reads its server receipt. Changed source requires an
 explicit `source upload --new`; an expired request also requires a new request.
 The client honors nested `.gitignore`, excludes generated output and secret paths,
 rejects symlinks and recognized credential material, and hashes every bounded
-chunk plus the complete archive and canonical source inventory. The generated
-`apps/web/src/routeTree.gen.ts` is excluded because the router regenerates it during
+chunk plus the complete archive and canonical source inventory.
+
+Source packaging holds directory handles throughout traversal. It requires Linux
+with procfs or a macOS filesystem supporting volume file IDs. Run the CLI in WSL
+for Windows source uploads.
+
+The generated `apps/web/src/routeTree.gen.ts` is excluded because the router regenerates it during
 checks/builds; authored routes, router configuration and server source remain
 included. Credential scanning is deliberately conservative; inspect source before uploading.
 
@@ -230,7 +236,10 @@ pipe. `env set <NAME>` reads one literal value from a file or pipe. Values are
 never arguments, output or retry-state contents. Non-public names default to
 secrets; `--type config` is explicit readable configuration. Public-prefixed
 secrets, reserved names, duplicate names and oversized input fail before upload.
-Files require owner-only permissions and a regular non-symlink final file;
+Use stdin, an owner-only file outside the project, or an input under the
+project’s always-excluded `.anhedral/` directory. Project `.env*` and `.dev.vars*`
+filenames are also excluded. A project-specific gitignore rule alone is insufficient.
+Files must have a single hard link and a regular non-symlink final component;
 ancestor checks reject observed symlinks but are not an atomic directory lock.
 Use `--dry-run` without authentication for names/types only. Actual imports bind
 API origin, principal, team, project and environment, require `--replace` for

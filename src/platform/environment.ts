@@ -1,6 +1,14 @@
 import { randomUUID } from 'node:crypto';
-import { closeSync, constants, fstatSync, lstatSync, openSync, readSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import {
+  closeSync,
+  constants,
+  existsSync,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readSync,
+} from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 import { z } from 'zod';
 import { commandArgumentError, commandArguments } from '../cli-arguments.js';
 import { createReporter, type OutputOptions } from '../cli-output.js';
@@ -46,10 +54,20 @@ const planSchema = z
 
 export function readEnvironmentSecret(file: string): Uint8Array {
   const path = resolve(file);
+  const cwd = lstatSync('.');
+  let excluded = /^(?:\.env|\.dev\.vars)/i.test(basename(path));
   for (let parent = dirname(path); ; parent = dirname(parent)) {
     const info = lstatSync(parent);
     if (!info.isDirectory() || info.isSymbolicLink())
       throw platformFailure('Environment input has a symlinked or invalid directory.');
+    if (
+      !excluded &&
+      ((info.dev === cwd.dev && info.ino === cwd.ino) || existsSync(join(parent, 'anhedral.json')))
+    )
+      throw platformFailure(
+        'Environment input inside a project must use an excluded .env file or .anhedral directory. Use --stdin or a private file outside the project.',
+      );
+    if (basename(parent).toLowerCase() === '.anhedral') excluded = true;
     if (dirname(parent) === parent) break;
   }
   const descriptor = openSync(
@@ -60,6 +78,7 @@ export function readEnvironmentSecret(file: string): Uint8Array {
     const info = fstatSync(descriptor);
     if (
       !info.isFile() ||
+      info.nlink !== 1 ||
       info.size > ENVIRONMENT_FILE_MAX_BYTES ||
       (process.platform !== 'win32' &&
         (info.uid !== process.getuid?.() || (info.mode & 0o077) !== 0))

@@ -1,9 +1,21 @@
-import { closeSync, constants, fstatSync, lstatSync, openSync, readSync } from 'node:fs';
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readSync,
+  type Stats,
+} from 'node:fs';
 
 export const MAX_PROJECT_JSON_BYTES = 2 * 1024 * 1024;
 
 /** Reject devices, links and oversized or growing files before parsing local input. */
-export function readBoundedFile(filePath: string, maximumBytes: number): Buffer {
+export function readBoundedFile(
+  filePath: string,
+  maximumBytes: number,
+  validate?: (opened: Stats) => void,
+): Buffer {
   const stat = lstatSync(filePath);
   if (!stat.isFile() || stat.isSymbolicLink())
     throw new Error(`Input file must be a regular file: ${filePath}`);
@@ -14,6 +26,7 @@ export function readBoundedFile(filePath: string, maximumBytes: number): Buffer 
   try {
     const opened = fstatSync(descriptor);
     if (!opened.isFile()) throw new Error(`Input file must be a regular file: ${filePath}`);
+    validate?.(opened);
     if (opened.size > maximumBytes) throw new Error(`Input file exceeds size limit: ${filePath}`);
     const chunks: Buffer[] = [];
     let total = 0;

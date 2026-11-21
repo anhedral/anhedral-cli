@@ -1,3 +1,4 @@
+import { secureWorkspacePolicy } from '../pnpm-policy.js';
 import { readFileSync } from 'node:fs';
 import { ANHEDRAL_STACK_DEPENDENCIES, WEB_DEPENDENCIES } from '../dependencies.js';
 import { CapabilityEditor, fingerprint } from '../composition/editor.js';
@@ -19,6 +20,7 @@ export function scaffoldTanstack(root: string, name: string): void {
     version: '0.1.0',
     type: 'module',
     scripts: {
+      test: 'node --experimental-strip-types --test tests/*.test.mjs',
       dev: 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000',
       build: 'node ../../scripts/oj.mjs build .',
       preview: 'wrangler dev --config dist/ssr/wrangler.json --port 3000',
@@ -131,6 +133,7 @@ export function cn(...values: ClassValue[]) { return twMerge(clsx(values)); }
   );
   put(root, `${app}/src/starter.ts`, `export const starterTitle = ${JSON.stringify(name)};\n`);
   const files = {
+    'tests/application.test.mjs': 'application.test.mjs.txt',
     'src/router.tsx': 'router.tsx.txt',
     'src/lib/request-context.ts': 'request-context.ts.txt',
     'src/routes/__root.tsx': 'root.tsx.txt',
@@ -212,7 +215,12 @@ export function normalizeOjFoundation(
         `Preserve customized web launcher scripts.${name}. Reconcile it with the pinned OJ runtime before adding capabilities. No files were changed.`,
       );
   }
-  let changed = false;
+  const workspace = 'pnpm-workspace.yaml';
+  const previousPolicy = e.read(workspace);
+  if (previousPolicy === null) throw Error('Missing pnpm workspace configuration.');
+  const policy = secureWorkspacePolicy(previousPolicy);
+  let changed = policy !== previousPolicy;
+  if (changed) e.writes.set(workspace, policy);
   const serverEntry = 'apps/web/src/server.ts';
   const currentEntry = e.read(serverEntry);
   // Repair only the exact shipped adapter whose default-entry shim drops Start context in OJ.
@@ -280,17 +288,22 @@ export function normalizeOjFoundation(
 }
 
 /** Fingerprinted composition adapters; application routes stay source-owned. */
-export function composeTanstack(e: CapabilityEditor, installed: readonly Capability[]): void {
+export function composeTanstack(
+  e: CapabilityEditor,
+  installed: readonly Capability[],
+  refreshConfiguration = false,
+): void {
   assertTanstack(e);
-  normalizeOjFoundation(e, installed);
+  normalizeOjFoundation(e, installed, refreshConfiguration);
   const backend = installed.includes('hono');
   const auth = installed.includes('database-auth');
   e.owned('apps/web/src/server.ts', template(backend ? 'server.ts.txt' : 'minimal-server.ts.txt'));
   e.owned(
     'apps/web/src/lib/application.server.ts',
-    template(
-      backend ? 'application.server.ts.txt' : 'minimal-application.server.ts.txt',
-    ).replaceAll('__AUTHENTICATION__', String(auth)),
+    template(backend ? 'application.server.ts.txt' : 'minimal-application.server.ts.txt')
+      .replaceAll('__AUTHENTICATION__', String(auth))
+      .replaceAll('__STORAGE__', String(installed.includes('r2')))
+      .replaceAll('__PAYMENT__', String(installed.includes('stripe'))),
   );
   e.owned('apps/web/vite.config.ts', tanstackViteConfiguration(installed));
 }

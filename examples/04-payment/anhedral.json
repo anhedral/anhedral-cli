@@ -6,7 +6,7 @@
   },
   "setup": {
     "schemaVersion": 1,
-    "cliVersion": "0.22.1",
+    "cliVersion": "0.23.0",
     "stack": "anhedral-stack",
     "resourcesProvisioned": false
   },
@@ -19,13 +19,13 @@
   "composition": {
     "contractVersion": 2,
     "foundation": "tanstack-start",
-    "generatorVersion": "0.22.1",
+    "generatorVersion": "0.23.0",
     "identity": "better-auth-d1-v1",
     "capabilities": {
-      "hono": "0.22.1",
-      "database-auth": "0.22.1",
-      "r2": "0.22.1",
-      "stripe": "0.22.1"
+      "hono": "0.23.0",
+      "database-auth": "0.23.0",
+      "r2": "0.23.0",
+      "stripe": "0.23.0"
     }
   },
   "capabilities": {
@@ -42,7 +42,7 @@
       "scripts/OJ.LICENSE": "3cc3fc954c836676b3e485b8af1f9870b8d50b3e3ec4b94b81f5f2ef012cf535",
       "apps/web/vite.config.ts": "cafb432a286428a058a8877cde1bcb5fa044d0a2e7383e448ca9168a5d95c434",
       "apps/web/src/server.ts": "01f22866283c9f89682a1bda8b93350cbef2928a3056e3caa50767520cb93f92",
-      "apps/web/src/lib/application.server.ts": "3dc7ea08c32b5e64491909021ab51a2b0525ca3c30df8f48a12ef2cd02bc7e9c",
+      "apps/web/src/lib/application.server.ts": "ab4d1b62e03672048c97e70d019cbded2e2fb0c41f9391b02cc26701c39a76c8",
       "apps/api/src/capabilities.ts": "4144a216b06cf38a94c38694eba1e2e1a369372d99ee6dccff3b9242daccf0c2",
       "apps/api/src/auth-platform.ts": "775f399c49f5d1227775d6feb1cc4bafea95ef2c7b38e207b5bdce628c26dc16",
       "apps/api/src/environment.ts": "8fe9f26537d2d87ac0f9aab66f8a51089518acf864aaf8c608887d439478d481",

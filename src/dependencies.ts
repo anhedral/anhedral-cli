@@ -100,9 +100,19 @@ export const WORKER_DEV_PORTS = { api: { http: 8787, inspector: 9231 } } as cons
 
 // Backend, storage and payments extend the same Anhedral Stack foundation.
 export const CAPABILITY_DEPENDENCIES = {
+  tsx: '4.23.15',
   // renovate: datasource=npm depName=better-auth
   'better-auth': '1.7.7',
   // renovate: datasource=npm depName=@better-auth/drizzle-adapter
   '@better-auth/drizzle-adapter': '1.7.7',
   stripe: '23.0.0',
+} as const;
+
+// renovate: datasource=npm depName=esbuild
+const DRIZZLE_ESBUILD_VERSION = '0.28.2';
+// renovate: datasource=npm depName=minimatch
+const ESLINT_MINIMATCH_VERSION = '11.0.1';
+export const SECURITY_OVERRIDES = {
+  'esbuild@0.18.20': DRIZZLE_ESBUILD_VERSION,
+  'minimatch@10.2.6': ESLINT_MINIMATCH_VERSION,
 } as const;

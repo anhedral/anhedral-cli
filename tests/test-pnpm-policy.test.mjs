@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { setPnpmPolicy } from '../dist/pnpm-policy.js';
+import { secureWorkspacePolicy, setPnpmPolicy } from '../dist/pnpm-policy.js';
 
 function fixture(t, source) {
   const root = mkdtempSync(path.join(os.tmpdir(), 'anhedral-pnpm-policy-'));
@@ -27,4 +27,16 @@ test('owned policy keys replace quoted/multiline/JSON keys and preserve unrelate
     setPnpmPolicy(f.root, policy);
     assert.equal(f.read(), first);
   }
+});
+
+test('security overrides preserve existing settings, are idempotent and refuse conflicts', () => {
+  const yaml = '# keep formatting\npackages: ["apps/*"]\n';
+  const updated = secureWorkspacePolicy(yaml);
+  assert.ok(updated.startsWith(yaml));
+  assert.equal(secureWorkspacePolicy(updated), updated);
+  assert.match(secureWorkspacePolicy(yaml + 'overrides: {example: 1.2.3}\n'), /example: 1.2.3/);
+  assert.throws(
+    () => secureWorkspacePolicy(yaml + 'overrides: {"esbuild@0.18.20": "0.18.20"}\n'),
+    /conflicting/,
+  );
 });

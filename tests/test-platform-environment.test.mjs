@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   mkdtemp,
+  mkdir,
+  link,
   realpath,
   writeFile,
   chmod,
@@ -260,4 +262,34 @@ test('shared environment parser keeps typed errors and rejects oversized UTF-8 b
     /Environment input exceeds 64 KiB/,
   );
   assert.equal(requests, 0);
+});
+
+test('file input is limited to external or unconditionally excluded project paths', async (t) => {
+  const root = await directory();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const project = join(root, 'project');
+  await mkdir(join(project, '.anhedral'), { recursive: true });
+  await writeFile(join(project, 'anhedral.json'), '{}');
+  const value = 'private fixture';
+  for (const location of [
+    join(root, 'external'),
+    join(project, '.env.local'),
+    join(project, '.anhedral', 'input'),
+  ]) {
+    await writeFile(location, value, { mode: 0o600 });
+    assert.equal(Buffer.from(readEnvironmentSecret(location)).toString(), value);
+  }
+  const local = join(project, 'settings.txt');
+  await writeFile(local, value, { mode: 0o600 });
+  await writeFile(join(project, '.gitignore'), 'settings.txt\n');
+  for (const command of [['set', 'SETTING'], ['import']])
+    await assert.rejects(
+      runEnvironmentCommand(
+        [...command, '--environment', 'staging', '--file', local, '--dry-run'],
+        { json: true },
+      ),
+      /inside a project/,
+    );
+  await link(local, join(root, 'linked-input'));
+  assert.throws(() => readEnvironmentSecret(join(root, 'linked-input')));
 });

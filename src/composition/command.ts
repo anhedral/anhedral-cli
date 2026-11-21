@@ -24,7 +24,7 @@ import { put } from '../scaffold/files.js';
 import { execFile } from '../util.js';
 import { capabilityReferences } from './references.js';
 import { configureDependencyPatches } from '../dependency-patches.js';
-import { composeSourceProvenance } from './composition.js';
+import { composeSourceProvenance, newerSourceMessage } from './composition.js';
 import type { CommandRunner } from '../command-types.js';
 export function projectRoot(cwd: string, allowRecovery = false) {
   let root = realpathSync(cwd);
@@ -245,6 +245,8 @@ export async function runCapabilityCommand(
     );
     const installed = [...state.installed, ...additions];
     const beforeConfiguration = e.json('anhedral.json');
+    const newer = newerSourceMessage(beforeConfiguration.composition?.generatorVersion);
+    if (newer) throw commandArgumentError('add', newer);
     const metadataChanged =
       beforeConfiguration.setup?.cliVersion !== GENERATOR_VERSION ||
       beforeConfiguration.composition?.generatorVersion !== GENERATOR_VERSION;
@@ -337,7 +339,7 @@ export async function runCapabilityCommand(
   }
   const format = () => {
     if (command === 'add')
-      return `${parsed.has('--dry-run') ? 'Plan' : 'Source additions'}: ${(result.added as string[]).join(', ') || 'already installed'}\n${(result.files as string[]).map((file) => '  ' + file).join('\n')}\nReview capability configuration and migrations before deployment. No resources were provisioned.`;
+      return `${parsed.has('--dry-run') ? 'Plan' : 'Source additions'}: ${(result.added as string[]).join(', ') || 'already installed'}\n${(result.files as string[]).map((file) => '  ' + file).join('\n')}\nReview capability configuration and migrations before deployment. No resources were provisioned.${!parsed.has('--dry-run') && parsed.positional.includes('payment') ? '\nRun pnpm db:generate, review the billing SQL, then run pnpm db:migrate --local before testing webhooks.' : ''}`;
     else {
       const rows =
         parsed.positional[0] === 'list'

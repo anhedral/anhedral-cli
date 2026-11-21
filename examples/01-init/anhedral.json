@@ -6,7 +6,7 @@
   },
   "setup": {
     "schemaVersion": 1,
-    "cliVersion": "0.22.1",
+    "cliVersion": "0.23.0",
     "stack": "anhedral-stack",
     "resourcesProvisioned": false
   },
@@ -19,7 +19,7 @@
   "composition": {
     "contractVersion": 2,
     "foundation": "tanstack-start",
-    "generatorVersion": "0.22.1",
+    "generatorVersion": "0.23.0",
     "identity": "none",
     "capabilities": {}
   },
@@ -32,7 +32,7 @@
       "scripts/OJ.LICENSE": "3cc3fc954c836676b3e485b8af1f9870b8d50b3e3ec4b94b81f5f2ef012cf535",
       "apps/web/vite.config.ts": "fdf315b0a7854e9e945fa7e0f6013e9d9a4be3e719c6ddbab2e736775f60203b",
       "apps/web/src/server.ts": "0bb1d6fe2f8f3ddf21da2ba54ff8e54b6308b8999e29231d14eb4b8b1d34da01",
-      "apps/web/src/lib/application.server.ts": "f0f97f5ddb95b8738f9c6a9b5d207b2ccf6e0eeb5e92426c0d1b94e774cd8bd9"
+      "apps/web/src/lib/application.server.ts": "b3ec144d8b91074d039f939c070fcde0a2cbc9951c25352bbb808883065987bc"
     },
     "resourcesProvisionedByCli": false
   }

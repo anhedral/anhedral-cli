@@ -1,5 +1,11 @@
 # Development notes
 
+2026-11-21: Restricted environment file inputs and anchored source-upload traversal at open directories. Ten focused tests passed on macOS and Linux. Native Windows uploads require WSL.
+
+2026-11-21: Stack updates now refresh fingerprinted composition adapters and print the version-pinned apply command. Additions reject newer source versions before changing project files.
+
+2026-11-21: Reviewed the CLI and progressive examples at `143a0c7`. Generated tooling resolved advisory-affected esbuild and minimatch versions. The updated generator scopes overrides to those versions. The runtime smoke now checks the generated lockfile and local feature tests. Private state, source ignore rules and deploy manifests use bounded descriptor reads.
+
 2026-11-20: CLI and plugin 0.23.0 rename the storage and payment additions. Projects retain R2 and Stripe provider identifiers. The release audit required the backend generator to use the same audited Hono 4.13.18 pin as the CLI workspace.
 
 2026-11-15: Updated CLI dependencies and TypeScript compiler; retained Node 20 types

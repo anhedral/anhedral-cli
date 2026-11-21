@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { lstat, mkdir, open, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, open, rename, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { readBoundedFile } from '../bounded-file.js';
 import { CliArgumentError } from '../cli-arguments.js';
 import { CliFailure } from '../cli-errors.js';
 import { trustedLinuxCredentialHelper } from './credential-helper.js';
@@ -78,7 +79,15 @@ export async function readPrivate(path: string): Promise<unknown | null> {
     (process.platform !== 'win32' && ((info.mode & 0o077) !== 0 || info.uid !== process.getuid?.()))
   )
     throw platformFailure('State file must be owned by you with mode 0600.');
-  const text = await readFile(path, 'utf8');
+  const text = readBoundedFile(path, 65536, (opened) => {
+    if (
+      opened.dev !== info.dev ||
+      opened.ino !== info.ino ||
+      (process.platform !== 'win32' &&
+        ((opened.mode & 0o077) !== 0 || opened.uid !== process.getuid?.()))
+    )
+      throw platformFailure('State file changed or has unsafe permissions.');
+  }).toString('utf8');
   try {
     return JSON.parse(text);
   } catch {

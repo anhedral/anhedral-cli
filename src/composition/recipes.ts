@@ -58,6 +58,17 @@ function schemaExport(e: CapabilityEditor, module: string) {
   e.writes.set(file, source + `\nexport * from './${module}';\n`);
 }
 export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: string) {
+  if (id === 'r2' || id === 'stripe') {
+    const manifest = e.json('apps/api/package.json');
+    if (!manifest.scripts?.test)
+      e.set(
+        'apps/api/package.json',
+        ['scripts', 'test'],
+        'node --import tsx --test tests/*.test.mjs',
+      );
+    if (!manifest.devDependencies?.tsx && !manifest.dependencies?.tsx)
+      e.set('apps/api/package.json', ['devDependencies', 'tsx'], P.tsx);
+  }
   switch (id) {
     case 'hono': {
       project(
@@ -65,6 +76,7 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         'apps/api',
         '@workspace/api',
         {
+          test: 'node --import tsx --test tests/*.test.mjs',
           dev: 'wrangler dev --port 8787 --inspector-port 9231',
           build: 'wrangler deploy --dry-run --outdir dist',
           deploy: 'wrangler deploy',
@@ -73,6 +85,7 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         },
         { hono: D.hono },
         {
+          tsx: P.tsx,
           wrangler: D.wrangler,
           '@types/node': D['@types/node'],
           eslint: D.eslint,
@@ -110,6 +123,7 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         'apps/api/eslint.config.mjs',
         "import { config } from '@workspace/eslint-config/base';\nexport default [...config, {ignores:['dist/**','.wrangler/**','worker-configuration.d.ts']}];\n",
       );
+      e.create('apps/api/tests/backend.test.mjs', template('backend.test.mjs.txt'));
       e.create('apps/api/src/index.ts', template('api-index.ts.txt'));
       e.create(
         'apps/api/src/custom-environment.ts',
@@ -232,10 +246,16 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
       break;
     }
     case 'r2':
+      e.create('apps/api/tests/storage.test.mjs', template('storage.test.mjs.txt'));
+      e.create(
+        'apps/web/src/routes/storage.tsx',
+        readFileSync(new URL('../../assets/launch/storage-page.tsx.txt', import.meta.url), 'utf8'),
+      );
       apiConfig(e, 'r2_buckets', [{ binding: 'FILES', bucket_name: resourceName(name, 'files') }]);
       e.create('apps/api/src/features/storage.ts', template('storage.ts.txt'));
       break;
     case 'stripe':
+      e.create('apps/api/tests/payment.test.mjs', template('payment.test.mjs.txt'));
       dependency(e, 'apps/api', { stripe: P.stripe });
       e.create('apps/api/src/features/stripe.ts', template('stripe.ts.txt'));
       e.create('apps/api/src/billing-mode.ts', template('billing-mode.ts.txt'));
@@ -247,8 +267,12 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
   }
 }
 
-export function composeCapabilities(e: CapabilityEditor, installed: Capability[]) {
-  composeTanstack(e, installed);
+export function composeCapabilities(
+  e: CapabilityEditor,
+  installed: Capability[],
+  operation: 'compose' | 'update' = 'compose',
+) {
+  composeTanstack(e, installed, operation === 'update');
   if (!installed.includes('hono')) return;
   const features: [Capability, string, string][] = [
     ['database-auth', 'authRoutes', 'auth'],
@@ -293,6 +317,7 @@ export function composeCapabilities(e: CapabilityEditor, installed: Capability[]
     'apps/api/src/environment.ts',
     `import type { CustomBindings, CustomVariables } from './custom-environment';\nexport type AppEnv = { Bindings: CustomBindings & {${bindings.join(';\n')}}; Variables: CustomVariables & {userId:string;fileKey:string} };\n`,
   );
+  if (operation === 'update') return;
   appendExample(
     e,
     'apps/api/.dev.vars.example',
