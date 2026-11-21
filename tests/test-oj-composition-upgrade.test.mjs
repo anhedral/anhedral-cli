@@ -98,7 +98,7 @@ function assertOj(root) {
   assert.equal(metadata.composition.generatorVersion, GENERATOR_VERSION);
   assert.match(readFileSync(path.join(root, '.gitignore'), 'utf8'), /\.oj-cache\//);
 }
-for (const addition of ['backend', 'storage', 'payments'])
+for (const addition of ['backend', 'storage', 'payment'])
   test(`adding ${addition} upgrades a canonical 0.18 foundation to OJ in the same transaction`, (t) => {
     const root = fixture(t, addition !== 'backend');
     previousFoundation(root);

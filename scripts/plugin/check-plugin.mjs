@@ -20,7 +20,7 @@ if (
   stack.items ||
   Object.keys(stack.additions ?? {})
     .sort()
-    .join(',') !== 'backend,payments,storage'
+    .join(',') !== 'backend,payment,storage'
 )
   throw Error('Plugin must describe the single Anhedral Stack and its supported additions.');
 buildPluginArchive(root);

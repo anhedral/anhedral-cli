@@ -64,7 +64,7 @@
     <text x="22" y="99" font-size="17" fill="#565654">Stripe + RevenueCat</text>
     <text font-family="Menlo,Consolas,monospace" font-size="15">
       <tspan x="22" y="122">pnpm dlx anhedral@latest \</tspan>
-      <tspan x="40" y="141">add payments</tspan>
+      <tspan x="40" y="141">add payment</tspan>
     </text>
   </g>
   </g>

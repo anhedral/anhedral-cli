@@ -355,7 +355,7 @@ try {
   await run(process.execPath, [
     path.join(repository, 'dist/bin.js'),
     'add',
-    'payments',
+    'payment',
     '--cwd',
     app,
     '--json',
