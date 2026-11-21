@@ -47,6 +47,27 @@ def check_file(commit, name):
         reject('database dump or private key: ' + ascii(name))
 
 
+def reviewed_checksum_fingerprints(revision):
+    # Generated auth-platform.ts checksums. Merge and squash commits change
+    # Gitleaks commit fingerprints even when these reviewed blobs are identical.
+    manifests = {
+        'examples/02-backend/anhedral.json': ('7a657ef07b251c2f8ede786c6a532c9cd3453e11', 43),
+        'examples/03-storage/anhedral.json': ('f6d8280f2ffea7af3a44f6d91c6be0be3f1ec254', 45),
+        'examples/04-payments/anhedral.json': ('18f0b9f67ea18f72ffd7905a72cdcb4eea07b315', 47),
+    }
+    history = git('log', '--full-history', '-m', '--raw', '--no-renames', '--no-abbrev',
+                  '--format=%H', revision, '--', *manifests).decode().splitlines()
+    commit = None
+    for row in history:
+        if re.fullmatch('[a-f0-9]{40}', row):
+            commit = row
+        elif row.startswith(':'):
+            metadata, name = row.split('\t', 1)
+            blob, line = manifests[name]
+            if commit and metadata.split()[3] == blob:
+                yield f'{commit}:{name}:generic-api-key:{line}'
+
+
 def main():
     base = os.environ.get('SECRET_SCAN_BASE', '')
     if base and base != '0' * 40:
@@ -71,9 +92,12 @@ def main():
     with tempfile.TemporaryDirectory() as directory:
         config = pathlib.Path(directory) / 'gitleaks.toml'
         config.write_text('[extend]\nuseDefault = true\n')
+        baseline = pathlib.Path(directory) / 'reviewed-fingerprints'
+        baseline.write_text(pathlib.Path('.github/secret-safety-baseline.txt').read_text()
+                            + '\n' + '\n'.join(reviewed_checksum_fingerprints(revision)) + '\n')
         result = subprocess.run([
             os.environ.get('GITLEAKS_BINARY', 'gitleaks'), 'git',
-            '--config', str(config), '--gitleaks-ignore-path', '.github/secret-safety-baseline.txt',
+            '--config', str(config), '--gitleaks-ignore-path', str(baseline),
             '--ignore-gitleaks-allow', '--redact=100', '--no-banner', '--no-color',
             '--log-opts=-m ' + revision, '.'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if result.returncode:
