@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@import '@workspace/styling/globals.css';
+@theme inline {
+  --color-background: hsl(var(--background)); --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary)); --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary)); --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted)); --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border)); --color-input: hsl(var(--input)); --color-ring: hsl(var(--ring));
+  --color-destructive: hsl(var(--destructive)); --radius-md: var(--radius); --radius-lg: calc(var(--radius) + 2px);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); font-family: Arial, Helvetica, sans-serif; }
+main { max-width: 64rem; margin: 0 auto; padding: 4rem 1.5rem; }
+nav { display: flex; gap: 1rem; margin-bottom: 3rem; }
+.stack, form { display: grid; gap: 1rem; }
+form { width: 100%; max-width: 26rem; }
+h1 { font-size: 2rem; font-weight: 600; line-height: 1.2; letter-spacing: -.025em; }
+a { color: inherit; }
+.muted { color: hsl(var(--muted-foreground)); }

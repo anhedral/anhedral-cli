@@ -61,9 +61,9 @@ test('prerequisites fail before writes; explicitly requested dependency expansio
   const { root, app } = await fixture();
   try {
     const before = snapshot(app);
-    await assert.rejects(add(app, ['stripe']), /require backend/);
+    await assert.rejects(add(app, ['payments']), /require backend/);
     assert.deepEqual(snapshot(app), before);
-    await add(app, ['stripe', '--with-dependencies']);
+    await add(app, ['payments', '--with-dependencies']);
     const state = JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities;
     assert.deepEqual(state.installed, ['hono', 'database-auth', 'stripe']);
     assert.equal(existsSync(path.join(app, 'apps/mobile')), false);
@@ -83,7 +83,7 @@ test('prerequisites fail before writes; explicitly requested dependency expansio
 test('all three additions compose offline and repeat additions preserve customer source', async () => {
   const { root, app } = await fixture();
   try {
-    await add(app, ['backend', 'r2', 'stripe']);
+    await add(app, ['backend', 'storage', 'payments']);
     const installed = JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities
       .installed;
     assert.deepEqual(new Set(installed), new Set(CAPABILITY_IDS));
@@ -92,7 +92,7 @@ test('all three additions compose offline and repeat additions preserve customer
     const file = path.join(app, 'apps/api/src/index.ts');
     writeFileSync(file, readFileSync(file, 'utf8') + '\n// Customer routes\n');
     const before = snapshot(app);
-    await add(app, ['backend', 'r2', 'stripe']);
+    await add(app, ['backend', 'storage', 'payments']);
     assert.deepEqual(snapshot(app), before);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -111,14 +111,14 @@ test('JSONC comments, custom scripts and application source survive sequential a
     const value = JSON.parse(readFileSync(pkg));
     value.scripts.custom = 'echo custom';
     writeFileSync(pkg, JSON.stringify(value, null, 2) + '\n');
-    await add(app, ['r2']);
+    await add(app, ['storage']);
     assert.match(readFileSync(index, 'utf8'), /owned application behavior/);
     assert.match(readFileSync(config, 'utf8'), /custom operational note/);
     assert.equal(JSON.parse(readFileSync(pkg)).scripts.custom, 'echo custom');
     const owned = path.join(app, 'apps/api/src/capabilities.ts');
     writeFileSync(owned, readFileSync(owned, 'utf8') + '// edited composition\n');
     const before = snapshot(app);
-    await assert.rejects(add(app, ['stripe']), /Preserve edited generated source/);
+    await assert.rejects(add(app, ['payments']), /Preserve edited generated source/);
     assert.deepEqual(snapshot(app), before);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -147,7 +147,7 @@ test('single-stack recipe dry-run is network-free, includes all files and does n
     await inside(app, () =>
       runCapabilityCommand(
         'add',
-        ['backend', 'r2', 'stripe', '--with-dependencies', '--dry-run'],
+        ['backend', 'storage', 'payments', '--with-dependencies', '--dry-run'],
         {
           json: true,
           io: {

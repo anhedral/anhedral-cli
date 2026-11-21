@@ -36,7 +36,7 @@
         "apps/web/src/lib/auth-client.ts"
       ]
     },
-    "r2": {
+    "storage": {
       "name": "Private storage",
       "description": "Authenticated, owner-scoped object storage.",
       "requires": [
@@ -46,7 +46,7 @@
         "apps/api/src/features/storage.ts"
       ]
     },
-    "stripe": {
+    "payments": {
       "name": "Payments and subscriptions",
       "description": "Stripe subscription and entitlement source.",
       "requires": [

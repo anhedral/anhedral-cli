@@ -1,0 +1,4 @@
+# Copy selected values to the local environment. Never commit secrets.
+PUBLIC_APP_URL=
+BETTER_AUTH_SECRET=
+AUTH_TRUSTED_ORIGINS=

@@ -64,8 +64,8 @@ export function readState(e: CapabilityEditor) {
 }
 const publicGroups: Record<PublicStackAddition, readonly Capability[]> = {
   backend: ['hono', 'database-auth'],
-  r2: ['r2'],
-  stripe: ['stripe'],
+  storage: ['r2'],
+  payments: ['stripe'],
 };
 function publicScopeError(command: 'add' | 'stack' = 'add') {
   return commandArgumentError(
@@ -169,7 +169,10 @@ export async function runCapabilityCommand(
       (id) => !PUBLIC_STACK_ADDITIONS.includes(id as PublicStackAddition),
     );
     if (unsupported.length)
-      throw commandArgumentError('add', 'Choose backend, r2 or stripe for the Anhedral Stack.');
+      throw commandArgumentError(
+        'add',
+        'Choose backend, storage or payments for the Anhedral Stack.',
+      );
   }
   let result: Record<string, unknown>;
   if (command === 'stack') {
@@ -216,16 +219,14 @@ export async function runCapabilityCommand(
       !parsed.has('--with-dependencies') &&
       !parsed.positional.includes('backend') &&
       !(state.installed.includes('hono') && state.installed.includes('database-auth')) &&
-      parsed.positional.some((id) => id === 'r2' || id === 'stripe')
+      parsed.positional.some((id) => id === 'storage' || id === 'payments')
     )
       throw commandArgumentError(
         'add',
         'Private storage and payments require backend. Run anhedral add backend first, or explicitly use --with-dependencies.',
       );
     const requested = [
-      ...new Set(
-        parsed.positional.flatMap((id) => (id === 'backend' ? ['hono', 'database-auth'] : [id])),
-      ),
+      ...new Set(parsed.positional.flatMap((id) => publicGroups[id as PublicStackAddition])),
     ];
     const additions = capabilityOrder(
       requested,
@@ -266,9 +267,9 @@ export async function runCapabilityCommand(
         publicGroups[id].some((capability) => additions.includes(capability)),
       ),
       alreadyInstalled: parsed.positional.filter((id) =>
-        id === 'backend'
-          ? state.installed.includes('hono') && state.installed.includes('database-auth')
-          : state.installed.includes(id as Capability),
+        publicGroups[id as PublicStackAddition].every((capability) =>
+          state.installed.includes(capability),
+        ),
       ),
       installed: PUBLIC_STACK_ADDITIONS.filter((id) =>
         publicGroups[id].every((capability) => installed.includes(capability)),

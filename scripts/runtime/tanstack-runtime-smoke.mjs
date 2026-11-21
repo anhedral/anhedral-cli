@@ -211,7 +211,7 @@ try {
 
   phase = 'progressive-source-additions';
   console.log('TanStack proof: add the backend and private storage progressively.');
-  for (const capability of ['backend', 'r2']) {
+  for (const capability of ['backend', 'storage']) {
     await run(process.execPath, [
       path.join(repository, 'dist/bin.js'),
       'add',
@@ -355,7 +355,7 @@ try {
   await run(process.execPath, [
     path.join(repository, 'dist/bin.js'),
     'add',
-    'stripe',
+    'payments',
     '--cwd',
     app,
     '--json',
