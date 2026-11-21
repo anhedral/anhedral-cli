@@ -32,10 +32,7 @@ export function renderStack(light = false) {
     ${icons.map((logo, i) => `<image href="${logo}" x="${22 + i * 39}" y="13" width="30" height="30"/>`).join('')}
     <text x="22" y="73" font-size="24" font-weight="600">${title}</text>
     <text x="22" y="99" font-size="17" fill="${muted}">${detail}</text>
-    <text font-family="Menlo,Consolas,monospace" font-size="15">
-      <tspan x="22" y="122">pnpm dlx anhedral@latest \\</tspan>
-      <tspan x="40" y="141">${command}</tspan>
-    </text>
+    <text x="22" y="132" font-family="Menlo,Consolas,monospace" font-size="16">anhedral ${command}</text>
   </g>`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" fill="${ink}">
