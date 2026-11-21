@@ -1,5 +1,8 @@
 # Anhedral CLI
 
+> [!WARNING]
+> **Under heavy construction.** CLI commands and generated app code may change.
+
 Build an app one addition at a time. Generated applications are editable source. Start with a TanStack Start web app and ShadCN components. Add a backend when you need an API, authentication, or a database. Then choose storage, payments, or both.
 
 <picture>
