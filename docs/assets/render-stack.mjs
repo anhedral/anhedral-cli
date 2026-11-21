@@ -7,7 +7,7 @@ import path from 'node:path';
 
 const root = new URL('./', import.meta.url);
 const { logos, glyphs } = JSON.parse(readFileSync(new URL('stack-logos.json', root), 'utf8'));
-export const stackSize = { width: 1120, height: 500 };
+export const stackSize = { width: 1120, height: 454 };
 
 export function renderStack(light = false) {
   const surface = light ? '#ffffff' : '#252524';
@@ -41,7 +41,7 @@ export function renderStack(light = false) {
   <defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L6 4L1 7" stroke="${line}" stroke-width="1.3" fill="none"/></marker></defs>
   <image href="data:image/svg+xml;base64,${wordmark}" x="44" y="30" width="248" height="32"/>
   <text x="308" y="61" font-size="30" fill="${muted}">Stack</text>
-  <text x="45" y="96" font-size="19" fill="${muted}">Build a web app with the CLI or a cross-platform app with Expo.</text>
+  <g transform="translate(0 -46)">
   <g fill="none" stroke="${line}" stroke-width="1.6" stroke-linejoin="round">
     <path d="M348 214H370Q378 214 378 222V388Q378 396 370 396H348"/>
     <path d="M378 305H406" marker-end="url(#arrow)"/>
@@ -54,6 +54,7 @@ ${card(44, 321, [logos['expo.dev'], brandMark], 'Cross Platform Apps', 'Expo + A
 ${card(408, 230, [logos['hono.dev'], glyph('betterauth'), logos['orm.drizzle.team'], glyph('d1')], 'Backend', 'Hono · Better Auth · Drizzle / D1', 'anhedral add backend')}
 ${card(772, 139, [logos['cloudflare.com'], glyph('r2')], 'File storage', 'Private files on Cloudflare R2', 'anhedral add storage')}
 ${card(772, 321, [logos['stripe.com'], logos['revenuecat.com']], 'Payments', 'Stripe + RevenueCat', 'anhedral add payments')}
+  </g>
 </svg>\n`;
 }
 
