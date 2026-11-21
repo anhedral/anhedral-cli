@@ -1,5 +1,7 @@
 import { z } from 'zod';
+
 import type { AppEnv } from './environment';
+
 const environment = z.enum(['sandbox', 'live']);
 export function billingEnvironment(env: AppEnv['Bindings']) {
   return environment.parse(env.BILLING_ENVIRONMENT || 'sandbox');

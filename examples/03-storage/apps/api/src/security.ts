@@ -1,6 +1,8 @@
 import type { MiddlewareHandler } from 'hono';
+
 import { createAuth, authConfiguration } from './auth';
 import type { AppEnv } from './environment';
+
 const bearer = (headers: Headers) => (headers.get('authorization') ?? '').startsWith('Bearer ');
 function sessionHeaders(request: Request) {
   const headers = new Headers(request.headers);

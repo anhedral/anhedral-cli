@@ -1,6 +1,8 @@
-import { starterTitle } from '../starter';
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+
+import { starterTitle } from '../starter';
+
 import '../styles.css';
 
 export const Route = createRootRoute({

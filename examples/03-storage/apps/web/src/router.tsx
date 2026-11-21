@@ -1,7 +1,8 @@
-import type {} from '@tanstack/react-start';
 import { createRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
+import type {} from '@tanstack/react-start';
+
 import type { ApplicationContext } from './lib/request-context';
+import { routeTree } from './routeTree.gen';
 
 export function getRouter() {
   return createRouter({ routeTree, scrollRestoration: true });

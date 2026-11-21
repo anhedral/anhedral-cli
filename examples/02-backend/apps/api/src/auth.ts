@@ -1,11 +1,12 @@
-import { z } from 'zod';
-import { betterAuth } from 'better-auth/minimal';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
-import { platformAuthPlugins } from './auth-platform';
-import { bearer } from 'better-auth/plugins/bearer';
 import { createDatabase } from '@workspace/db';
 import * as schema from '@workspace/db/schema';
+import { betterAuth } from 'better-auth/minimal';
+import { bearer } from 'better-auth/plugins/bearer';
+import { z } from 'zod';
+
 import { authFeatures } from './auth-features';
+import { platformAuthPlugins } from './auth-platform';
 import type { AppEnv } from './environment';
 
 export const authConfiguration = z.object({
