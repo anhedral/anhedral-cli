@@ -1,11 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { realpath, mkdtemp, writeFile, mkdir, symlink, stat, rm, readFile } from 'node:fs/promises';
+import {
+  realpath,
+  mkdtemp,
+  writeFile,
+  mkdir,
+  symlink,
+  stat,
+  rm,
+  readFile,
+  open,
+  rename,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { runPlatformCommand } from '../dist/platform/command.js';
 import { platformOrigin, readPrivate, writePrivate } from '../dist/platform/state.js';
-import { packageSource } from '../dist/platform/source.js';
+import { anchoredDirectory, packageSource } from '../dist/platform/source.js';
 import { unpackSource } from '../dist/contracts/source-bundle.js';
 test('CLI login stores device and access secrets without output and rejects redirects/origin changes', async () => {
   let state = null;
@@ -149,3 +160,23 @@ test('private state rejects insecure files and symlinks; source excludes secrets
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test(
+  'an open source directory retains its identity across a local rename',
+  { skip: !['linux', 'darwin'].includes(process.platform) },
+  async (t) => {
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'anhedral-directory-')));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    const before = join(root, 'before');
+    await mkdir(before);
+    await writeFile(join(before, 'file.txt'), 'original');
+    const handle = await open(before, 'r');
+    try {
+      const anchored = await anchoredDirectory(handle);
+      await rename(before, join(root, 'after'));
+      assert.equal(await readFile(join(anchored, 'file.txt'), 'utf8'), 'original');
+    } finally {
+      await handle.close();
+    }
+  },
+);

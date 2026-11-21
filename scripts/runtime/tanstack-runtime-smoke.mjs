@@ -366,6 +366,13 @@ try {
     /(?:^|\n)\s*(?:STRIPE_[A-Z_]*|BILLING_ENVIRONMENT)\s*=/,
     'The proof must not configure Stripe credentials or payment activation.',
   );
+  phase = 'generated-dependency-audit';
+  await run(process.execPath, [
+    path.join(repository, 'scripts/security/audit-osv.mjs'),
+    path.join(app, 'pnpm-lock.yaml'),
+  ]);
+  await run('pnpm', ['audit:deps']);
+  await run('pnpm', ['test']);
   phase = 'stripe-migration-generation';
   const migrationDirectory = path.join(app, 'packages/db/drizzle');
   const priorMigrations = new Set(await readdir(migrationDirectory));

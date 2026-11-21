@@ -34,6 +34,18 @@ run pnpm db:generate, review the SQL, then deliberately apply the local migratio
 before exercising subscription/webhook flows. Configure Stripe test credentials,
 allowed prices and signed webhooks; activation and live payments are separate.
 
+## Update the stack
+
+From the project directory, preview a release before applying it:
+
+```sh
+pnpm dlx anhedral@latest stack update --dry-run --human
+```
+
+Review the diff and run the version-pinned apply command printed by the CLI.
+Then run `pnpm install` and `pnpm check`. The updater refreshes CLI-managed
+adapters for installed features. Your routes, UI and migrations belong to you.
+
 ## Ownership and deployment
 
 Hono owns data, identity and private storage. Web server functions call its scoped

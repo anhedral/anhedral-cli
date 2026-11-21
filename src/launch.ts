@@ -14,7 +14,12 @@ import { runStagedTransaction } from './transactions/transaction.js';
 import { configureDependencyPatches, writeDependencyAudit } from './dependency-patches.js';
 import { setPnpmPolicy } from './pnpm-policy.js';
 import { GENERATOR_VERSION } from './version.js';
-import { PACKAGE_MANAGER, STACK_DEPENDENCIES, WORKSPACE_NODE_ENGINE } from './dependencies.js';
+import {
+  PACKAGE_MANAGER,
+  SECURITY_OVERRIDES,
+  STACK_DEPENDENCIES,
+  WORKSPACE_NODE_ENGINE,
+} from './dependencies.js';
 import { execFile, appendGitignore } from './util.js';
 import { printProgress, printResult, type OutputOptions } from './cli-output.js';
 import { CliArgumentError, commandArguments } from './cli-arguments.js';
@@ -83,6 +88,7 @@ function rootFiles(root: string, name: string) {
   setPnpmPolicy(root, {
     packages: ['apps/*', 'packages/*'],
     sharedWorkspaceLockfile: true,
+    overrides: SECURITY_OVERRIDES,
     allowBuilds: { esbuild: true, workerd: true },
   });
   json(root, 'anhedral.json', {
@@ -156,6 +162,18 @@ R2 routes enforce authenticated owner access. Stripe adds schema and source only
 run pnpm db:generate, review the SQL, then deliberately apply the local migration
 before exercising subscription/webhook flows. Configure Stripe test credentials,
 allowed prices and signed webhooks; activation and live payments are separate.
+
+## Update the stack
+
+From the project directory, preview a release before applying it:
+
+\`\`\`sh
+pnpm dlx anhedral@latest stack update --dry-run --human
+\`\`\`
+
+Review the diff and run the version-pinned apply command printed by the CLI.
+Then run \`pnpm install\` and \`pnpm check\`. The updater refreshes CLI-managed
+adapters for installed features. Your routes, UI and migrations belong to you.
 
 ## Ownership and deployment
 

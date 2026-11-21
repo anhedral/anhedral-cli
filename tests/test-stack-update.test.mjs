@@ -500,3 +500,54 @@ for (const escaped of [false, true])
       assert.deepEqual(snapshot(root), before);
     }
   });
+
+test('update refreshes tracked adapters and preserves authored routes and edited adapter conflicts', (t) => {
+  const root = fixture(t);
+  const adapter = 'apps/web/src/lib/application.server.ts';
+  const earlier = read(root, adapter) + '\n// Earlier generated adapter\n';
+  writeFileSync(path.join(root, adapter), earlier);
+  const configuration = json(root, 'anhedral.json');
+  configuration.capabilities.managedFiles[adapter] = digest(earlier);
+  writeJson(root, 'anhedral.json', configuration);
+  const route = read(root, 'apps/web/src/routes/customer.tsx');
+  const plan = JSON.parse(run(root, ['--dry-run']).stdout);
+  assert.ok(plan.changes.some((entry) => entry.path === adapter));
+  assert.ok(plan.nextAction.includes('--offline --expect-plan ' + plan.planId));
+  writeFileSync(path.join(root, adapter), earlier + '// Local changes\n');
+  const before = snapshot(root);
+  assert.notEqual(run(root, ['--expect-plan', plan.planId]).status, 0);
+  assert.deepEqual(snapshot(root), before);
+  writeFileSync(path.join(root, adapter), earlier);
+  assert.equal(run(root, ['--expect-plan', plan.planId]).status, 0);
+  assert.equal(read(root, 'apps/web/src/routes/customer.tsx'), route);
+  assert.deepEqual(JSON.parse(run(root, ['--dry-run']).stdout).changes, []);
+});
+
+test('add refuses a newer project before any source changes', (t) => {
+  const root = fixture(t);
+  const configuration = json(root, 'anhedral.json');
+  configuration.composition.generatorVersion = '999.1.0';
+  writeJson(root, 'anhedral.json', configuration);
+  const before = snapshot(root);
+  const result = spawnSync(process.execPath, [executable, 'add', 'backend', '--skip-install'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr + result.stdout, /newer CLI/);
+  assert.deepEqual(snapshot(root), before);
+});
+
+test('an unrelated release preserves local edits to an unchanged managed adapter', (t) => {
+  const root = fixture(t);
+  const adapter = 'apps/web/src/lib/application.server.ts';
+  const edited = read(root, adapter) + '\n// App-specific diagnostics\n';
+  writeFileSync(path.join(root, adapter), edited);
+  const plan = JSON.parse(run(root, ['--dry-run']).stdout);
+  assert.deepEqual(plan.conflicts, []);
+  assert.ok(plan.changes.length);
+  assert.ok(!plan.changes.some((change) => change.path === adapter));
+  assert.equal(run(root, ['--expect-plan', plan.planId]).status, 0);
+  assert.equal(read(root, adapter), edited);
+  assert.notEqual(json(root, 'anhedral.json').capabilities.managedFiles[adapter], digest(edited));
+});

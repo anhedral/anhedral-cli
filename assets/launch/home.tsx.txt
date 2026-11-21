@@ -16,5 +16,27 @@ export const Route = createFileRoute('/')({
 function Home() {
   const router = useRouter();
   const status = Route.useLoaderData();
-  return <section className="stack"><h1>{starterTitle}</h1><p>Your web application is ready to build.</p><p data-rendering="server">Rendered on the server. {status.api === null ? 'Backend not added' : status.api ? 'API: connected' : 'API: unavailable'}.</p>{status.authentication && <a href="/sign-in">Your account</a>}<Button onClick={() => void router.invalidate()}>Check connection</Button></section>;
+  return (
+    <section className="stack">
+      <h1>{starterTitle}</h1>
+      <p>
+        Edit <code>apps/web/src/routes/index.tsx</code> to change this page.
+      </p>
+      <p data-rendering="server">
+        Rendered on the server.{' '}
+        {status.api === null
+          ? 'Backend not added'
+          : status.api
+            ? 'API: connected'
+            : 'API: unavailable'}
+        .
+      </p>
+      {status.authentication && <a href="/sign-in">Your account</a>}
+      {status.storage && <a href="/storage">Private files</a>}
+      {status.payment && <a href="/api/billing/status">Check subscription status</a>}
+      {status.api !== null && (
+        <Button onClick={() => void router.invalidate()}>Check connection</Button>
+      )}
+    </section>
+  );
 }

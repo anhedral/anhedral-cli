@@ -21,6 +21,12 @@ Use `add storage` in place of `add r2`, and `add payment` in place of `add strip
 
 `backend` is one public selection; its provenance records the concrete Hono and database/auth capabilities. Use `--with-dependencies` to include missing prerequisites in the same planned source transaction. `stack list` describes this stack's additions. `status`/`doctor` check source completeness, not live service activation.
 
+## Updating an existing app
+
+Run `pnpm dlx anhedral@latest stack update --dry-run --human` from the project. Review the diff, then run the version-pinned apply command in the preview. It checks that the plan still matches. After applying, run `pnpm install` and `pnpm check`. Use `--offline` for a local source update with deployment provenance pending.
+
+Updates refresh the managed web and API adapters for the installed additions. Product routes, feature implementations and migrations stay application-owned. The updater preserves local adapter edits when the release still supplies the same baseline. If both changed differently, the preview identifies the conflicting file before any writes.
+
 ## Source protection
 
 Adding a capability also upgrades a canonical earlier TanStack Start foundation to the pinned OJ launchers and runtime helpers in the same source transaction, including when that capability is already installed. The exact earlier canonical document also receives the OJ-compatible side-effect CSS import; safe customized documents stay untouched, while edited documents retaining the earlier stylesheet URL import require reconciliation. Customized launchers or generated configuration require reconciliation before any writes. Additions never reinitialize an application. They plan all selected changes before writing, reject collisions and preserve unrelated JSON/JSONC settings. Composition adapters are fingerprinted in `anhedral.json`; modified adapters require reconciliation instead of silent replacement. Add product routes in `apps/api/src/index.ts`, custom types in `custom-environment.ts`, and auth method configuration in `auth-features.ts`/`auth.ts`.
@@ -42,5 +48,7 @@ Stripe adds source/schema, not a live payment service. Generate and review its b
 ## Source and hosting contracts
 
 `anhedral.json` records nonsecret generator/capability versions and identity. Source provenance never grants hosting authority. The public deployment manifest uses runtime profile `anhedral-stack` for the web foundation and selected backend/R2/Stripe composition. Artifact identity, resource provisioning, secrets, migrations, runtime checks and production approval remain server-owned. See [the workflow](software-factory.md#platform-cli-access-and-source-upload).
+
+The starter includes local tests for each installed addition. Storage tests use ephemeral Worker bindings. Payment tests generate and apply SQL only to a disposable fixture and sign webhook events locally. The workspace scopes security overrides to the affected transitive dependency versions.
 
 Run `pnpm check` and `pnpm audit:deps` in generated applications. Framework/runtime, provider and browser acceptance are distinct; source installation alone establishes none of them.
