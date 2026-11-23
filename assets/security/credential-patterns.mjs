@@ -1,6 +1,8 @@
 // Shared high-confidence credential checks for release artifacts and source uploads.
 // This is defense in depth; the service independently validates untrusted uploads.
 export const CREDENTIAL_PATTERNS = Object.freeze([
+  { id: 'report-mcp-token', pattern: /\bamcp_[a-f0-9]{64}\b/g },
+  { id: 'chatgpt-link-credential', pattern: /\bag[acr]_[A-Za-z0-9_-]{43}/g },
   { id: 'cli-session-token', pattern: /\bacl_[a-f0-9]{64}\b/g },
   {
     id: 'device-code',

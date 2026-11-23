@@ -168,7 +168,7 @@ lock after confirming no project operation is running; preserve the request jour
 
 `link --project <uuid> --team <uuid>` checks current build authority and saves an
 origin/principal-bound link under ignored `.anhedral/platform/`. `unlink` removes
-that local link. `source upload --dry-run` inspects packaging; `source upload`
+that local link. Source packaging checks for Anhedral session, MCP and ChatGPT linking credentials. `source upload --dry-run` inspects packaging; `source upload`
 resumes the same immutable source request after interruption, including lost
 responses. `source status` reads its server receipt. Changed source requires an
 explicit `source upload --new`; an expired request also requires a new request.
