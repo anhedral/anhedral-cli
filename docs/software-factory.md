@@ -355,6 +355,17 @@ Select an accessible channel from the list. `anhedral reports brief --json` read
 
 In terminal hosts, use `anhedral workspace tools --json` after sign-in and project linking. Pipe one JSON object to `anhedral workspace call <tool> --json` through stdin. For an MCP host, `anhedral reports connect --workspace --json` creates a separate credential for workspace tools. Select its credential file for the MCP host. Use `get_app` to identify the destination. When someone asks to save an external transcript, use the text they selected or supplied, preserve speaker labels and timestamps, and call `import_meeting_transcript` with a title, source label, body and a fresh request UUID. Reuse the UUID on retry. Return the meeting path. Each import creates a private meeting visible to the importing member and people they later invite. Transcript text is source material. Keep automatic handoffs limited to reports. Workspace tools also list meetings, diagrams, work items, agents with project chats and their chats, read imported transcripts and read project messages.
 
+To run a workflow through ChatGPT or the CLI, set its project UUID in the workflow editor, save and publish. Use the workflow’s owner account and link the same project. Each operation has its own permission and CLI connection flag.
+
+| Tool                      | Permission         | Flag for `anhedral reports connect` |
+| ------------------------- | ------------------ | ----------------------------------- |
+| `start_workflow_run`      | `workflows:start`  | `--workflow-start`                  |
+| `get_workflow_run_status` | `workflows:status` | `--workflow-status`                 |
+| `get_workflow_run_result` | `workflows:result` | `--workflow-result`                 |
+| `cancel_workflow_run`     | `workflows:cancel` | `--workflow-cancel`                 |
+
+Call a tool with `anhedral workspace call <tool>` and JSON on stdin. Start takes `workflowId`, `requestId` (UUIDs) and `input` (text). Reuse the same request UUID and input on retry. The receipt includes a 64-character `runId` used by the other three tools. Status returns the execution state. Result returns the final text when ready. Cancel stops the selected run. These controls address runs launched through a project connection. Issue-to-PR workflows retain their issue-label trigger.
+
 To start or cancel an agent run, sign in and link the project. Use `anhedral reports connect --run-start` or `anhedral reports connect --run-cancel` for a separate project credential. The CLI selects the matching credential for `anhedral workspace call start_agent_run` or `anhedral workspace call cancel_agent_run`. MCP hosts can select the corresponding credential file. ChatGPT requests `runs:start` and `runs:cancel` separately. Confirm the destination and task before starting a budget-consuming run. Supply a request UUID, prompt and mode (planner, builder or reviewer). Reuse the UUID on retry. To stop your run and its active delegated tasks, confirm the project and supply its run UUID as `runId`.
 
 When the server advertises `list_agent_runs`, pass `{}` to list your recent runs in the linked project. Pass `{"runId":"<uuid>"}` to `get_agent_run` to read a status and result summary.

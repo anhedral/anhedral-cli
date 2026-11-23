@@ -470,28 +470,35 @@ test('reports connect keeps the scoped token private and submit authenticates be
     const [actions] = await capture(() => run(['connect', '--workspace-actions']));
     assert.notEqual(actions.credentialPath, workspace.credentialPath);
     assert.deepEqual(connectBodies, [{}, { workspace: true }, { workspace: true, actions: true }]);
-    const callRun = (scope) =>
+    const callRun = (toolName) =>
       runPlatformCommand(
         'workspace',
-        ['call', scope + '_agent_run'],
+        ['call', toolName],
         { json: true },
         {
           ...deps,
           readInput: async () => Buffer.from('{}'),
           fetch: async (url, opts) => {
             if (url.endsWith('/actor')) return deps.fetch(url, opts);
-            assert.ok(url.endsWith('/workspace/tools/' + scope + '_agent_run'));
+            assert.ok(url.endsWith('/workspace/tools/' + toolName));
             assert.equal(opts.headers.authorization, 'Bearer ' + token);
             return response({ runId: otherId });
           },
         },
       );
-    for (const action of ['start', 'cancel']) {
-      await assert.rejects(callRun(action), new RegExp('--run-' + action));
-      const [scopeConnection] = await capture(() => run(['connect', '--run-' + action]));
-      assert.notEqual(scopeConnection.credentialPath, actions.credentialPath);
-      assert.deepEqual(connectBodies.at(-1), { runScope: 'runs:' + action });
-      assert.deepEqual(await capture(() => callRun(action)), [{ runId: otherId }]);
+    for (const [flag, scope, name] of [
+      ['--run-start', 'runs:start', 'start_agent_run'],
+      ['--run-cancel', 'runs:cancel', 'cancel_agent_run'],
+      ['--workflow-start', 'workflows:start', 'start_workflow_run'],
+      ['--workflow-status', 'workflows:status', 'get_workflow_run_status'],
+      ['--workflow-result', 'workflows:result', 'get_workflow_run_result'],
+      ['--workflow-cancel', 'workflows:cancel', 'cancel_workflow_run'],
+    ]) {
+      await assert.rejects(callRun(name), new RegExp(flag));
+      const [connection] = await capture(() => run(['connect', flag]));
+      assert.notEqual(connection.credentialPath, actions.credentialPath);
+      assert.deepEqual(connectBodies.at(-1), { runScope: scope });
+      assert.deepEqual(await capture(() => callRun(name)), [{ runId: otherId }]);
     }
     assert.ok(!JSON.stringify(connection).includes(token));
     assert.equal((await readPrivate(connection.credentialPath)).token, token);

@@ -206,16 +206,48 @@ const INIT_OPTIONS: readonly CommandOption[] = [
   { flag: '--dry-run', description: 'Preview the foundation without writes or network.' },
 ];
 
-const WORKSPACE_CONNECTION_OPTIONS: readonly CommandOption[] = [
-  ...PLATFORM_OPTIONS,
+export const runPermissions = [
   {
     flag: '--run-start',
-    description: 'Grant permission to start agent runs in the linked project.',
+    scope: 'runs:start',
+    tool: 'start_agent_run',
+    description: 'Start agent runs in the linked project.',
   },
   {
     flag: '--run-cancel',
-    description: 'Grant permission to cancel your agent runs in the linked project.',
+    scope: 'runs:cancel',
+    tool: 'cancel_agent_run',
+    description: 'Cancel your agent runs in the linked project.',
   },
+  {
+    flag: '--workflow-start',
+    scope: 'workflows:start',
+    tool: 'start_workflow_run',
+    description: 'Start a published project workflow.',
+  },
+  {
+    flag: '--workflow-status',
+    scope: 'workflows:status',
+    tool: 'get_workflow_run_status',
+    description: 'Read project workflow run status.',
+  },
+  {
+    flag: '--workflow-result',
+    scope: 'workflows:result',
+    tool: 'get_workflow_run_result',
+    description: 'Read project workflow run output.',
+  },
+  {
+    flag: '--workflow-cancel',
+    scope: 'workflows:cancel',
+    tool: 'cancel_workflow_run',
+    description: 'Cancel a project workflow run.',
+  },
+] as const;
+
+const WORKSPACE_CONNECTION_OPTIONS: readonly CommandOption[] = [
+  ...PLATFORM_OPTIONS,
+  ...runPermissions.map(({ flag, description }) => ({ flag, description })),
   {
     flag: '--workspace-actions',
     description: 'Include posting project messages and creating work items in the MCP connection.',
@@ -300,7 +332,8 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     children: {
       connect: {
         description: 'Save a project-scoped MCP credential in your private user directory.',
-        usage: 'reports connect [--workspace | --workspace-actions | --run-start | --run-cancel]',
+        usage:
+          'reports connect [--workspace | --workspace-actions | --run-start | --run-cancel | --workflow-start | --workflow-status | --workflow-result | --workflow-cancel]',
         options: WORKSPACE_CONNECTION_OPTIONS,
         examples: [],
       },

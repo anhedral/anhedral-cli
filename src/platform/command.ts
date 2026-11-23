@@ -1,3 +1,4 @@
+import { runPermissions } from '../command-schema.js';
 import { homedir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { unlink } from 'node:fs/promises';
@@ -104,16 +105,11 @@ async function runPlatformOperation(
     options.positional.length
   )
     throw commandArgumentError(command, 'Unexpected positional arguments.');
-  const runScope = options.has('--run-start')
-    ? 'runs:start'
-    : options.has('--run-cancel')
-      ? 'runs:cancel'
-      : undefined;
+  const selected = runPermissions.filter(({ flag }) => options.has(flag));
+  const runScope = selected[0]?.scope;
   if (
-    runScope &&
-    (options.has('--workspace') ||
-      options.has('--workspace-actions') ||
-      (options.has('--run-start') && options.has('--run-cancel')))
+    selected.length > 1 ||
+    (runScope && (options.has('--workspace') || options.has('--workspace-actions')))
   )
     throw commandArgumentError(command, 'Select one run permission per connection.');
   if (
@@ -408,12 +404,7 @@ async function runPlatformOperation(
         if (!/^[a-z_]{1,64}$/.test(name))
           throw commandArgumentError(command, 'Choose a tool listed by workspace tools.');
         let toolToken = token;
-        const permission =
-          name === 'start_agent_run'
-            ? 'runs:start'
-            : name === 'cancel_agent_run'
-              ? 'runs:cancel'
-              : undefined;
+        const permission = runPermissions.find((p) => p.tool === name);
         if (permission) {
           const saved = z
             .object({
@@ -422,12 +413,10 @@ async function runPlatformOperation(
               teamId: z.literal(link.teamId),
               token: z.string().regex(/^amcp_[a-f0-9]{64}$/),
             })
-            .safeParse(await readPrivate(credentialFile(permission)));
+            .safeParse(await readPrivate(credentialFile(permission.scope)));
           if (!saved.success)
             throw platformFailure(
-              'Connect this project with anhedral reports connect --run-' +
-                permission.split(':')[1] +
-                ' first.',
+              'Connect this project with anhedral reports connect ' + permission.flag + ' first.',
             );
           toolToken = saved.data.token;
         }
