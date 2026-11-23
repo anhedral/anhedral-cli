@@ -3,7 +3,7 @@ import { format } from 'prettier';
 const directory = new URL('../../assets/stack/', import.meta.url);
 let failed = false;
 for (const name of readdirSync(directory)) {
-  if (!/\.(?:tsx?|js|json|css)\.txt$/.test(name)) continue;
+  if (!/\.(?:tsx?|m?js|json|css)\.txt$/.test(name)) continue;
   const file = new URL(name, directory);
   const current = readFileSync(file, 'utf8');
   const expected = await format(current, {

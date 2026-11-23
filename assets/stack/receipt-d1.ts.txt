@@ -1,0 +1,8 @@
+import type { AppEnv } from './environment';
+export async function recordReceipt(env: AppEnv['Bindings'], eventId: string) {
+  await env.DB.prepare(
+    'INSERT OR IGNORE INTO billing_receipt(provider,event_id,received_at) VALUES (?,?,?)',
+  )
+    .bind('stripe', eventId, Date.now())
+    .run();
+}

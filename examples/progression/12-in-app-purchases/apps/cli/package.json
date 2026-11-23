@@ -1,0 +1,26 @@
+{
+  "name": "@workspace/cli",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "example-app": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit && esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --external:commander --outfile=dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "dev": "pnpm run build && node dist/index.js"
+  },
+  "dependencies": {
+    "commander": "15.1.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/node": "22.20.5",
+    "@workspace/api-client": "workspace:*",
+    "esbuild": "0.28.2"
+  }
+}

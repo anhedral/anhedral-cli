@@ -1,5 +1,19 @@
 # Development notes
 
+2026-11-22 — Workspace tools support private meeting transcript imports and project reads after sign-in. The CLI and MCP use the same Platform tool handlers. See [workspace access](../software-factory.md#authenticated-reports-and-handoffs).
+
+2026-11-22 — Project reports use a scoped MCP connection and opt-in Codex, Claude Code and Pi handoff adapters. See [authenticated handoffs](../software-factory.md#authenticated-reports-and-handoffs).
+
+2026-11-22 — New database and auth additions use Neon Postgres. Client sync uses account-scoped hibernating WebSockets. Local examples cover standalone Electron and full composition. See [stack additions](../capabilities.md).
+
+2026-11-22 — Electron is the default for new desktop apps. Earlier Tauri projects retain their source checks and Rust lockfile updates. See [desktop setup](../capabilities.md#client-and-cloud-setup).
+
+2026-11-22 — Existing projects can preview compatible dependency pins and lockfiles and apply the reviewed plan in one local transaction. See [updating an existing app](../capabilities.md#updating-an-existing-app).
+
+2026-11-22 — Init and add select compatible stable registry versions, preserve existing pins and support explicit catalog baselines for offline fixtures. See [dependency selection](../capabilities.md).
+
+2026-11-22 — Blank Turborepo initialization, independent client and backend recipes, Cloudflare Worker integration and v2 source recognition. See [stack additions](../capabilities.md) for configuration and runtime boundaries.
+
 2026-11-21 — The generated examples check runs the four progressive CLI stages and verifies their source formatting and snapshot contents. The generated project README and agent instructions live in `assets/launch/`. See the [contributor guide](../../.github/CONTRIBUTING.md).
 
 0.24.0 includes the source upload protections, dependency fixes, managed stack updates, and progressive examples from PR #164. Windows uploads require WSL. Private environment input files inside a project must use an always-excluded path.

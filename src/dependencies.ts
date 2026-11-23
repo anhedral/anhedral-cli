@@ -1,4 +1,4 @@
-// Exact versions owned by registry recipes, generators and provider tooling.
+// Exact catalog baselines for generation, registry compatibility ranges and reproducible fixtures.
 export interface DependencyGroup {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -62,6 +62,12 @@ export const WORKSPACE_NODE_ENGINE = '^22.13.0 || >=24.0.0';
 export const PACKAGE_MANAGER = 'pnpm@10.34.5';
 
 export const STACK_DEPENDENCIES = {
+  // renovate: datasource=npm depName=postgres
+  postgres: '4.1.1',
+  // renovate: datasource=npm depName=@electric-sql/pglite
+  '@electric-sql/pglite': '0.5.17',
+  // renovate: datasource=npm depName=@electric-sql/pglite-socket
+  '@electric-sql/pglite-socket': '0.2.20',
   // renovate: datasource=npm depName=zod
   zod: '4.6.6',
   // renovate: datasource=npm depName=@typescript-eslint/parser
@@ -114,3 +120,60 @@ export const SECURITY_OVERRIDES = {
   'esbuild@0.18.20': DRIZZLE_ESBUILD_VERSION,
   'minimatch@10.2.6': ESLINT_MINIMATCH_VERSION,
 } as const;
+
+// renovate: datasource=npm depName=@types/node
+export const ELECTRON_NODE_TYPES = '24.19.2';
+
+// Published client versions. Expo and React Native follow the stable Expo template.
+export const CLIENT_DEPENDENCIES = {
+  // renovate: datasource=npm depName=esbuild
+  esbuild: '0.28.2',
+  // renovate: datasource=npm depName=commander
+  commander: '15.1.0',
+  // renovate: datasource=npm depName=@types/node
+  '@types/node': '22.20.5',
+  // renovate: datasource=npm depName=expo
+  expo: '58.0.26',
+  // renovate: datasource=npm depName=react
+  react: '19.3.0',
+  // renovate: datasource=npm depName=react-native
+  'react-native': '0.88.1',
+  // renovate: datasource=npm depName=@types/react
+  '@types/react': '19.3.0',
+  // renovate: datasource=npm depName=electron
+  electron: '45.4.1',
+  // renovate: datasource=npm depName=electron-vite
+  'electron-vite': '6.0.0',
+  // renovate: datasource=npm depName=@electron/packager
+  '@electron/packager': '20.3.0',
+  // Existing Tauri workspaces still resolve their installed CLI and crates.
+  // renovate: datasource=npm depName=@tauri-apps/cli
+  '@tauri-apps/cli': '2.12.6',
+  // renovate: datasource=npm depName=wxt
+  wxt: '0.21.5',
+  // renovate: datasource=npm depName=react-native-purchases
+  'react-native-purchases': '11.0.4',
+  // renovate: datasource=npm depName=expo-secure-store
+  'expo-secure-store': '58.0.3',
+  // renovate: datasource=npm depName=@cloudflare/realtimekit-react
+  '@cloudflare/realtimekit-react': '2.0.0',
+  // renovate: datasource=npm depName=@cloudflare/realtimekit-react-ui
+  '@cloudflare/realtimekit-react-ui': '2.1.0',
+  // renovate: datasource=npm depName=@cloudflare/realtimekit-react-native
+  '@cloudflare/realtimekit-react-native': '2.0.0',
+  // renovate: datasource=npm depName=@cloudflare/react-native-webrtc
+  '@cloudflare/react-native-webrtc': '137.0.1',
+  // renovate: datasource=npm depName=@expo/config-plugins
+  '@expo/config-plugins': '58.0.13',
+} as const;
+
+/** Version ranges supported by the generated source. The resolved manifest always uses exact pins. */
+export function templateDependencyRange(name: string, baseline: string): string {
+  // Our flat config supports the maintained successor to the deprecated ESLint 9 line.
+  if (name === 'eslint') return '^' + baseline + ' || 10.x';
+  return '^' + baseline;
+}
+
+// Published web UI releases missing their RealtimeKit core peer declaration.
+// The native and web build verifies the public meeting type of each reviewed pair.
+export const RTC_UI_CORE: Record<string, string> = { '2.1.0': '2.0.0' };

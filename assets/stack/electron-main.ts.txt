@@ -1,0 +1,59 @@
+import { app, BrowserWindow, net, protocol, session } from 'electron';
+import path from 'node:path';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+
+const host = '__DESKTOP_HOST__';
+const appUrl = 'app://' + host;
+const devUrl = 'http://127.0.0.1:1420';
+const renderer = fileURLToPath(new URL('../renderer/', import.meta.url));
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app',
+    privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true },
+  },
+]);
+
+function openWindow() {
+  const window = new BrowserWindow({
+    webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
+  });
+  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  window.webContents.on('will-navigate', (event) => event.preventDefault());
+  const development = !app.isPackaged && process.env.ELECTRON_RENDERER_URL === devUrl;
+  return window.loadURL(development ? devUrl : appUrl + '/index.html');
+}
+
+app.whenReady().then(async () => {
+  protocol.handle('app', (request) => {
+    const url = new URL(request.url);
+    if (url.host !== host || request.method !== 'GET') return new Response(null, { status: 404 });
+    let file;
+    try {
+      file = path.resolve(renderer, '.' + decodeURIComponent(url.pathname));
+    } catch {
+      return new Response(null, { status: 400 });
+    }
+    const relative = path.relative(renderer, file);
+    if (
+      !relative ||
+      relative === '..' ||
+      relative.startsWith('..' + path.sep) ||
+      path.isAbsolute(relative)
+    )
+      return new Response(null, { status: 404 });
+    return net.fetch(pathToFileURL(file).href);
+  });
+  session.defaultSession.setPermissionRequestHandler((_contents, _permission, allow) =>
+    allow(false),
+  );
+  session.defaultSession.setPermissionCheckHandler(() => false);
+  await openWindow();
+  app.on('activate', () => {
+    if (!BrowserWindow.getAllWindows().length) void openWindow();
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});

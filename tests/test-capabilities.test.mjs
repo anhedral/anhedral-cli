@@ -26,10 +26,11 @@ async function fixture() {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-add-'));
   const app = path.join(root, 'app');
   await scaffoldStandardProject(
-    parseStandardOptions([app, '--skip-install', '--no-git']),
+    parseStandardOptions([app, '--skip-install', '--catalog-pins', '--no-git']),
     offline,
     { quiet: true },
   );
+  await add(app, ['web']);
   return { root, app };
 }
 function snapshot(root) {
@@ -54,18 +55,23 @@ async function inside(root, fn) {
 }
 const add = (app, args, runner = offline) =>
   inside(app, () =>
-    runCapabilityCommand('add', [...args, '--skip-install'], { quiet: true }, runner),
+    runCapabilityCommand(
+      'add',
+      [...args, '--skip-install', '--catalog-pins'],
+      { quiet: true },
+      runner,
+    ),
   );
 
 test('prerequisites fail before writes; explicitly requested dependency expansion follows the core order', async () => {
   const { root, app } = await fixture();
   try {
     const before = snapshot(app);
-    await assert.rejects(add(app, ['payment']), /require backend/);
+    await assert.rejects(add(app, ['payment']), /requires auth/);
     assert.deepEqual(snapshot(app), before);
     await add(app, ['payment', '--with-dependencies']);
     const state = JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities;
-    assert.deepEqual(state.installed, ['hono', 'database-auth', 'stripe']);
+    assert.deepEqual(state.installed, ['web', 'hono', 'db', 'database-auth', 'stripe']);
     assert.equal(existsSync(path.join(app, 'apps/mobile')), false);
     assert.match(
       readFileSync(path.join(app, 'apps/web/src/lib/api-proxy.ts'), 'utf8'),
@@ -86,7 +92,10 @@ test('all three additions compose offline and repeat additions preserve customer
     await add(app, ['backend', 'storage', 'payment']);
     const installed = JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities
       .installed;
-    assert.deepEqual(new Set(installed), new Set(CAPABILITY_IDS));
+    assert.deepEqual(
+      new Set(installed),
+      new Set(['web', 'hono', 'db', 'database-auth', 'r2', 'stripe']),
+    );
     for (const name of ['mobile', 'extension', 'desktop'])
       assert.equal(existsSync(path.join(app, 'apps', name)), false);
     const file = path.join(app, 'apps/api/src/index.ts');
@@ -167,7 +176,7 @@ test('single-stack recipe dry-run is network-free, includes all files and does n
     );
     const plan = JSON.parse(stdout);
     assert.equal(plan.sourceInstalled, false);
-    assert.ok(plan.added.includes('backend'));
+    assert.ok(plan.added.includes('auth'));
     assert.ok(plan.files.includes('apps/api/src/auth.ts'));
     assert.equal(plan.activation, 'not verified');
     assert.deepEqual(snapshot(app), before);
@@ -199,7 +208,7 @@ test('dependency install failure retains the committed source with a recoverable
   try {
     await assert.rejects(
       inside(app, () =>
-        runCapabilityCommand('add', ['backend'], { quiet: true }, () => {
+        runCapabilityCommand('add', ['backend', '--catalog-pins'], { quiet: true }, () => {
           throw Error('fixture install failure');
         }),
       ),
@@ -208,12 +217,12 @@ test('dependency install failure retains the committed source with a recoverable
     assert.ok(existsSync(path.join(app, 'apps/api/src/index.ts')));
     assert.deepEqual(
       JSON.parse(readFileSync(path.join(app, 'anhedral.json'))).capabilities.installed,
-      ['hono', 'database-auth'],
+      ['web', 'hono', 'db', 'database-auth'],
     );
     const source = snapshot(path.join(app, 'apps/api'));
     const calls = [];
     await inside(app, () =>
-      runCapabilityCommand('add', ['backend'], { quiet: true }, (_cmd, args) => {
+      runCapabilityCommand('add', ['backend', '--catalog-pins'], { quiet: true }, (_cmd, args) => {
         calls.push(args);
         writeFileSync(path.join(app, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
       }),

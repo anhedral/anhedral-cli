@@ -100,23 +100,16 @@ export function readEnvironmentSecret(file: string): Uint8Array {
     closeSync(descriptor);
   }
 }
-async function stdinBytes(): Promise<Uint8Array> {
-  if (process.stdin.isTTY)
-    throw platformFailure(
-      'Pipe a value or dotenv contents to --stdin; interactive secret entry is not supported.',
-    );
+export async function stdinBytes(maxBytes = ENVIRONMENT_FILE_MAX_BYTES): Promise<Uint8Array> {
+  if (process.stdin.isTTY) throw platformFailure('Pipe input through stdin.');
   const chunks: Buffer[] = [];
   let length = 0;
-  const timeout = setTimeout(
-    () => process.stdin.destroy(new Error('Environment input timed out.')),
-    30000,
-  );
+  const timeout = setTimeout(() => process.stdin.destroy(new Error('Input timed out.')), 30000);
   try {
     for await (const item of process.stdin) {
       const bytes = Buffer.from(item);
       length += bytes.length;
-      if (length > ENVIRONMENT_FILE_MAX_BYTES)
-        throw platformFailure('Environment input exceeds 64 KiB.');
+      if (length > maxBytes) throw platformFailure(`Input exceeds ${maxBytes / 1024} KiB.`);
       chunks.push(bytes);
     }
     return Buffer.concat(chunks);

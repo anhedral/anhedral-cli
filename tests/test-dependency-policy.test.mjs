@@ -92,6 +92,15 @@ test('maintained dependency catalog audits the foundation dependencies', async (
     'pnpm',
     'stripe',
     '@better-auth/drizzle-adapter',
+    'expo',
+    'wxt',
+    'electron',
+    'electron-vite',
+    '@electron/packager',
+    '@tauri-apps/cli',
+    'commander',
+    'react-native-purchases',
+    '@cloudflare/realtimekit-react-native',
   ])
     assert.ok(
       pins.some((pin) => pin.name === name),
@@ -100,12 +109,9 @@ test('maintained dependency catalog audits the foundation dependencies', async (
   for (const name of [
     'next',
     '@opennextjs/cloudflare',
-    'expo',
-    'wxt',
     'vinext',
     'void',
     'vercel',
-    'electron',
     '@neondatabase/serverless',
   ])
     assert.ok(!pins.some((pin) => pin.name === name), name);

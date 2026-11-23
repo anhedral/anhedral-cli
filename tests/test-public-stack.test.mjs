@@ -26,8 +26,10 @@ const run = (args, cwd = scratch) =>
 const read = (root, file) => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
 function generate(name) {
   const root = path.join(scratch, name);
-  const result = run(['init', root, '--skip-install', '--no-git', '--json']);
+  const result = run(['init', root, '--skip-install', '--catalog-pins', '--no-git', '--json']);
   assert.equal(result.status, 0, result.stderr);
+  const web = run(['add', 'web', '--skip-install', '--catalog-pins'], root);
+  assert.equal(web.status, 0, web.stderr);
   return root;
 }
 function fingerprint(root) {
@@ -45,15 +47,30 @@ function fingerprint(root) {
 }
 test.after(() => rmSync(scratch, { recursive: true, force: true }));
 
-test('public discovery exposes one Anhedral Stack with only three additions', () => {
+test('public discovery exposes one Anhedral Stack with the progressive additions', () => {
   const result = run(['stack', 'list', '--json']);
   assert.equal(result.status, 0, result.stderr);
   const value = JSON.parse(result.stdout);
   assert.equal(value.stack.name, 'Anhedral Stack');
   assert.equal(value.stack.id, 'anhedral-stack');
-  assert.deepEqual(Object.keys(value.stack.additions), ['backend', 'storage', 'payment']);
+  assert.deepEqual(Object.keys(value.stack.additions), [
+    'web',
+    'mobile',
+    'desktop',
+    'web-extension',
+    'cli',
+    'api',
+    'db',
+    'auth',
+    'backend',
+    'storage',
+    'payment',
+    'in-app-purchases',
+    'client-sync',
+    'rtc',
+  ]);
   assert.equal(value.capabilities, undefined);
-  assert.doesNotMatch(result.stdout, /expo|revenuecat|native-ui|next-opennext|side-panel|gpui/);
+  assert.doesNotMatch(result.stdout, /native-ui|next-opennext|side-panel|gpui/);
   const human = run(['stack', 'list']);
   assert.equal(human.status, 0, human.stderr);
   assert.match(human.stdout, /Anhedral Stack/);
@@ -67,7 +84,7 @@ test('provider IDs in an existing project resolve to the public addition names',
   const plan = JSON.parse(result.stdout);
   assert.deepEqual(plan.alreadyInstalled, ['storage', 'payment']);
   assert.deepEqual(plan.added, []);
-  assert.deepEqual(plan.installed, ['backend', 'storage', 'payment']);
+  assert.deepEqual(plan.installed, ['web', 'api', 'db', 'auth', 'storage', 'payment']);
 });
 
 test('retired addition names direct callers to their replacement before opening a project', () => {
@@ -97,14 +114,13 @@ test('unsupported executable add commands fail before reading or recovering tran
     'native-ui',
     'revenuecat',
     'realtime',
-    'rtc',
     'ai',
     'wxt',
     'side-panel',
     'gpui',
     'next',
   ]) {
-    const result = run(['add', addition, '--skip-install', '--json'], root);
+    const result = run(['add', addition, '--skip-install', '--catalog-pins', '--json'], root);
     assert.equal(result.status, 1, addition);
     assert.match(JSON.parse(result.stderr).error, /Anhedral Stack/);
     assert.equal(fingerprint(root), before, addition);
@@ -119,7 +135,7 @@ test('public add refuses legacy Next source before recovering pending transactio
   writeFileSync(path.join(fresh, 'apps/web/package.json'), JSON.stringify(rootManifest));
   writeFileSync(path.join(root, '.anhedral-journal.json'), 'preserve pending legacy material');
   const before = fingerprint(root);
-  const result = run(['add', 'backend', '--skip-install', '--json'], root);
+  const result = run(['add', 'backend', '--skip-install', '--catalog-pins', '--json'], root);
   assert.equal(result.status, 1, result.stderr);
   assert.match(JSON.parse(result.stderr).error, /Anhedral Stack/);
   assert.equal(fingerprint(root), before);
@@ -130,33 +146,46 @@ test('public state reports backend as one atomic addition and R2/Stripe as indep
   let result = run(['stack', 'status', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(
-    JSON.parse(result.stdout).additions.map((item) => [item.id, item.sourceState]),
+    JSON.parse(result.stdout)
+      .additions.filter((item) => ['api', 'db', 'auth', 'storage', 'payment'].includes(item.id))
+      .map((item) => [item.id, item.sourceState]),
     [
-      ['backend', 'available'],
+      ['api', 'available'],
+      ['db', 'locked'],
+      ['auth', 'locked'],
       ['storage', 'locked'],
       ['payment', 'locked'],
     ],
   );
   const before = fingerprint(root);
-  result = run(['add', 'storage', '--skip-install', '--json'], root);
+  result = run(['add', 'storage', '--skip-install', '--catalog-pins', '--json'], root);
   assert.equal(result.status, 1);
   assert.equal(fingerprint(root), before);
-  result = run(['add', 'backend', '--skip-install', '--json'], root);
+  result = run(['add', 'backend', '--skip-install', '--catalog-pins', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).added, ['backend']);
-  assert.deepEqual(read(root, 'anhedral.json').capabilities.installed, ['hono', 'database-auth']);
+  assert.deepEqual(JSON.parse(result.stdout).added, ['api', 'db', 'auth']);
+  assert.deepEqual(read(root, 'anhedral.json').capabilities.installed, [
+    'web',
+    'hono',
+    'db',
+    'database-auth',
+  ]);
   result = run(['stack', 'doctor', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(
-    JSON.parse(result.stdout).additions.map((item) => [item.id, item.sourceState]),
+    JSON.parse(result.stdout)
+      .additions.filter((item) => ['api', 'db', 'auth', 'storage', 'payment'].includes(item.id))
+      .map((item) => [item.id, item.sourceState]),
     [
-      ['backend', 'installed'],
+      ['api', 'installed'],
+      ['db', 'installed'],
+      ['auth', 'installed'],
       ['storage', 'available'],
       ['payment', 'available'],
     ],
   );
   assert.equal(existsSync(path.join(root, 'apps/api/src/features/storage.ts')), false);
-  result = run(['add', 'storage', 'payment', '--skip-install', '--json'], root);
+  result = run(['add', 'storage', 'payment', '--skip-install', '--catalog-pins', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout).added, ['storage', 'payment']);
   assert.equal(run(['stack', 'doctor'], root).status, 0);
@@ -164,11 +193,16 @@ test('public state reports backend as one atomic addition and R2/Stripe as indep
 
 test('public dependency expansion is explicit and completion/help expose no retired source choices', () => {
   const root = generate('dependencies');
-  const result = run(['add', 'payment', '--with-dependencies', '--skip-install', '--json'], root);
+  const result = run(
+    ['add', 'payment', '--with-dependencies', '--skip-install', '--catalog-pins', '--json'],
+    root,
+  );
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).added, ['backend', 'payment']);
+  assert.deepEqual(JSON.parse(result.stdout).added, ['api', 'db', 'auth', 'payment']);
   assert.deepEqual(read(root, 'anhedral.json').capabilities.installed, [
+    'web',
     'hono',
+    'db',
     'database-auth',
     'stripe',
   ]);
@@ -192,7 +226,7 @@ test('public dry-run plans all three additions without recovering or writing sou
   const result = run(['add', 'backend', 'storage', 'payment', '--dry-run', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   const plan = JSON.parse(result.stdout);
-  assert.deepEqual(plan.added, ['backend', 'storage', 'payment']);
+  assert.deepEqual(plan.added, ['api', 'db', 'auth', 'storage', 'payment']);
   assert.ok(plan.files.includes('apps/api/src/features/auth.ts'));
   assert.ok(plan.files.includes('apps/api/src/features/storage.ts'));
   assert.ok(plan.files.includes('apps/api/src/features/stripe.ts'));

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "schemaVersion": 1,
+    "id": "dbc7ed9e-9166-4efc-b9b3-31c7d019930f"
+  },
+  "setup": {
+    "schemaVersion": 1,
+    "cliVersion": "0.24.1",
+    "stack": "anhedral-stack",
+    "resourcesProvisioned": false
+  },
+  "standard": {
+    "schemaVersion": 1,
+    "standard": "anhedral-stack",
+    "hosting": "cloudflare",
+    "resourcesProvisioned": false
+  },
+  "capabilities": {
+    "schemaVersion": 1,
+    "installed": [
+      "web",
+      "hono",
+      "db",
+      "database-auth",
+      "r2",
+      "stripe",
+      "mobile",
+      "in-app-purchases",
+      "client-sync",
+      "cli",
+      "web-extension",
+      "desktop"
+    ],
+    "managedFiles": {
+      "scripts/oj.mjs": "c502246346857a32bf9d94377d1dcd9bec731379836187bbb2c6e9775f50b9e6",
+      "scripts/oj-runtime.json": "0c13ec9404f87ca8c6b825bb9d65760f5a47f130e9b2c984ecfde9aba9350045",
+      "scripts/OJ.LICENSE": "3cc3fc954c836676b3e485b8af1f9870b8d50b3e3ec4b94b81f5f2ef012cf535",
+      "apps/web/vite.config.ts": "c0d0e1bd991bc9d660ae0cc99a42e5e7ff35b9e1d3e7543e1fd328b9352eb995",
+      "apps/web/src/server.ts": "01f22866283c9f89682a1bda8b93350cbef2928a3056e3caa50767520cb93f92",
+      "apps/web/src/lib/application.server.ts": "ab4d1b62e03672048c97e70d019cbded2e2fb0c41f9391b02cc26701c39a76c8",
+      "apps/api/src/capabilities.ts": "9a92cfa783a78938cde9d00a970f49e7f6290be4218cf8e590306bff4b977c9d",
+      "apps/api/src/environment.ts": "1eea796c892e83cdc95af4c1e35729a73ee7a6601955486ec79d3cede0b10349",
+      "apps/api/src/auth-platform.ts": "775f399c49f5d1227775d6feb1cc4bafea95ef2c7b38e207b5bdce628c26dc16",
+      "apps/api/src/sync-worker.ts": "068779bc46a36f9d710a1166e1f4c74c6b6d4cc5095e1918a833d5916014f527",
+      "apps/api/src/features/client-sync.ts": "ce9a26eacbe9c4edc5a2bd5ba11d46cd6e7b7b5d7296e00b4229792dd7dfc668",
+      "packages/api-client/sync.js": "885cc8676dfd265d5b78b60063909311f9592812d665e90fce5a4cc8af421dcb",
+      "packages/api-client/sync.d.ts": "3a4e8ee978dc265b71ae030bfd7a9fce6843b2c974764655d95f7b51e4bf5182",
+      "apps/mobile/src/sync.js": "49783e785b6802a62a2b5b012eb62446595bfe388f31209d6f265a9df4124049",
+      "apps/web/src/sync.js": "5af2b9b14c7e255ae2d874e1bf3b5a56bd836f3c6463190ffe164e4d4fdbead9",
+      "apps/desktop/ui/sync.js": "5af2b9b14c7e255ae2d874e1bf3b5a56bd836f3c6463190ffe164e4d4fdbead9",
+      "apps/web-extension/src/sync.js": "5af2b9b14c7e255ae2d874e1bf3b5a56bd836f3c6463190ffe164e4d4fdbead9",
+      "apps/api/src/features/file-events.ts": "adcfa68ec12ae4fde9b435818831cb2a5a0ce676034cbe166fc3754bab5c3d4f",
+      "apps/api/src/billing-providers.ts": "f3476339f4d2cf145698a4379d0543fd4380450bfa7a014ba22d4427d891023e"
+    },
+    "resourcesProvisionedByCli": false
+  },
+  "composition": {
+    "contractVersion": 3,
+    "foundation": "turborepo",
+    "generatorVersion": "0.24.1",
+    "identity": "better-auth-neon-v1",
+    "capabilities": {
+      "web": "0.24.1",
+      "hono": "0.24.1",
+      "db": "0.24.1",
+      "database-auth": "0.24.1",
+      "r2": "0.24.1",
+      "stripe": "0.24.1",
+      "mobile": "0.24.1",
+      "in-app-purchases": "0.24.1",
+      "client-sync": "0.24.1",
+      "cli": "0.24.1",
+      "web-extension": "0.24.1",
+      "desktop": "0.24.1"
+    }
+  }
+}

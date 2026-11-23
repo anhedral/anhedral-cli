@@ -1,0 +1,6 @@
+{
+  "name": "anhedral-handoffs-local",
+  "plugins": [
+    {"name":"anhedral-handoffs","source":{"source":"local","path":"./codex"},"policy":{"installation":"AVAILABLE"},"category":"Developer Tools"}
+  ]
+}

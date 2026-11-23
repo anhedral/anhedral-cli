@@ -34,16 +34,18 @@ export const STANDARD_USAGE = `Anhedral CLI — source generation and optional P
 Usage: anhedral <command> [options]
 
 Start a project:
-  init          Create the Anhedral Stack with web UI.
-  add           Add backend, private storage or payments.
+  init          Create a blank Turborepo workspace.
+  add           Add clients, API, database, auth or cloud services.
 
-Inspect source and UI:
+Inspect source:
   stack         Inspect, update or diagnose the Anhedral Stack.
-  ui            Initialize, add, list, diff or check UI components.
 
 Optional Platform access:
   login/logout  Approve or revoke a CLI session.
   whoami        Inspect the current identity and optional local context.
+  messages      Read or post to project channels.
+  workspace     Discover project tools and call them with JSON on stdin.
+  reports       Submit handoffs, connect MCP or deliver decision events.
   projects      List or create Platform projects.
   link/unlink   Select an existing project or remove its local link.
   source        Upload source or inspect its receipt.
@@ -53,7 +55,6 @@ Optional Platform access:
   production    Publish ready candidates with current project permissions.
   logs          Read redacted runtime logs for a linked project.
 
-Shell setup:
   completion    Print Bash or zsh completion without editing profiles.
 
 Examples:

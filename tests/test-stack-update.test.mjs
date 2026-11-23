@@ -14,7 +14,8 @@ import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { parse } from 'yaml';
+import { parse, stringify } from 'yaml';
+import * as catalog from '../dist/dependencies.js';
 import { GENERATOR_VERSION } from '../dist/version.js';
 import { planStackUpdate, runStackUpdate, updateDiff } from '../dist/composition/update.js';
 import { ArtifactUnavailableError, resolvePublishedCliArtifact } from '../dist/release-artifact.js';
@@ -48,11 +49,24 @@ function fixture(t) {
   const root = path.join(base, 'project');
   const initialized = spawnSync(
     process.execPath,
-    [executable, 'init', root, '--skip-install', '--no-git', '--json'],
+    [executable, 'init', root, '--skip-install', '--catalog-pins', '--no-git', '--json'],
     { encoding: 'utf8', timeout: 30000 },
   );
   assert.equal(initialized.status, 0, initialized.stderr);
+  const web = spawnSync(
+    process.execPath,
+    [executable, 'add', 'web', '--skip-install', '--catalog-pins'],
+    {
+      cwd: root,
+      encoding: 'utf8',
+    },
+  );
+  assert.equal(web.status, 0, web.stderr);
   const configuration = json(root, 'anhedral.json');
+  configuration.composition.foundation = 'tanstack-start';
+  configuration.composition.contractVersion = 2;
+  configuration.capabilities.installed = [];
+  configuration.composition.capabilities = {};
   configuration.setup.cliVersion = '0.18.0';
   configuration.composition.generatorVersion = '0.18.0';
   for (const file of ['scripts/oj.mjs', 'scripts/oj-runtime.json', 'scripts/OJ.LICENSE']) {
@@ -115,7 +129,34 @@ async function publishedArtifact() {
     },
   });
 }
-async function online(root, args, artifact) {
+function registry(name) {
+  const versions = [
+    catalog.WEB_DEPENDENCIES.dependencies,
+    catalog.WEB_DEPENDENCIES.devDependencies,
+    catalog.STACK_DEPENDENCIES,
+    catalog.CLIENT_DEPENDENCIES,
+    catalog.ANHEDRAL_STACK_DEPENDENCIES,
+    { pnpm: catalog.PACKAGE_MANAGER.slice(5), '@types/node': catalog.ELECTRON_NODE_TYPES },
+  ].flatMap((group) => (group[name] ? [group[name]] : []));
+  assert.ok(versions.length, 'Unexpected lookup: ' + name);
+  return versions.map((version) => ({ version }));
+}
+function lockWorkspace(command, args, stage) {
+  assert.equal(command, 'pnpm');
+  for (const option of ['--lockfile-only', '--ignore-scripts', '--ignore-pnpmfile'])
+    assert.ok(args.includes(option));
+  const importers = {};
+  for (const file of readdirSync(stage, { recursive: true }).sort()) {
+    if (path.basename(file) !== 'package.json') continue;
+    const { dependencies = {}, devDependencies = {} } = json(stage, file);
+    importers[path.dirname(file)] = { dependencies, devDependencies };
+  }
+  writeFileSync(
+    path.join(stage, 'pnpm-lock.yaml'),
+    stringify({ lockfileVersion: '9.0', importers }),
+  );
+}
+async function online(root, args, artifact, overrides = {}) {
   let output = '';
   const previous = process.cwd();
   process.chdir(root);
@@ -136,7 +177,7 @@ async function online(root, args, artifact) {
           stderrTTY: false,
         },
       },
-      { resolveArtifact: async () => artifact },
+      { resolveArtifact: async () => artifact, registry, run: lockWorkspace, ...overrides },
     );
     return JSON.parse(output);
   } finally {
@@ -212,7 +253,7 @@ test('online update derives a protected web-only manifest from a verified publis
   assert.equal(manifest.intent.visibility, 'protected');
   assert.equal(manifest.intent.environment, 'preview');
   assert.deepEqual((await online(root, [], artifact)).changes, []);
-  assert.throws(() => planStackUpdate(root, { ...artifact }), /verified published artifact/);
+  await assert.rejects(planStackUpdate(root, { ...artifact }), /verified published artifact/);
 });
 
 test('stale plan, customized launcher and customized pnpm policy preserve every source byte', (t) => {
@@ -252,7 +293,7 @@ test('symlinked owned configuration is rejected without touching external files'
 
 test('editor detects post-plan changes and update transactions reject recovery under the lock', async (t) => {
   const root = fixture(t);
-  const { editor } = planStackUpdate(root);
+  const { editor } = await planStackUpdate(root);
   const pkg = json(root, 'apps/web/package.json');
   pkg.scripts.dev = 'node changed-after-plan.mjs';
   writeJson(root, 'apps/web/package.json', pkg);
@@ -292,6 +333,13 @@ test('newer source is never downgraded and private changed configuration is neve
   assert.equal(result.stdout.includes('private-config-value-never-print'), false);
   assert.match(result.stdout, /SENSITIVE_PREVIEW/);
   assert.deepEqual(JSON.parse(result.stdout).changes, []);
+  delete pkg[['PRIVATE', 'API', 'KEY'].join('_')];
+  pkg.DATABASE_URL =
+    'postgresql://fixture:' + 'private-config-value-never-print' + '@example.invalid/local';
+  writeFileSync(path.join(root, 'apps/web/package.json'), JSON.stringify(pkg));
+  const database = run(root, ['--dry-run']);
+  assert.match(database.stdout, /SENSITIVE_PREVIEW/);
+  assert.equal(database.stdout.includes('private-config-value-never-print'), false);
 });
 
 test('preview replacement hunks reproduce exact bytes including insertion and trailing newlines', (t) => {
@@ -529,10 +577,14 @@ test('add refuses a newer project before any source changes', (t) => {
   configuration.composition.generatorVersion = '999.1.0';
   writeJson(root, 'anhedral.json', configuration);
   const before = snapshot(root);
-  const result = spawnSync(process.execPath, [executable, 'add', 'backend', '--skip-install'], {
-    cwd: root,
-    encoding: 'utf8',
-  });
+  const result = spawnSync(
+    process.execPath,
+    [executable, 'add', 'backend', '--skip-install', '--catalog-pins'],
+    {
+      cwd: root,
+      encoding: 'utf8',
+    },
+  );
   assert.notEqual(result.status, 0);
   assert.match(result.stderr + result.stdout, /newer CLI/);
   assert.deepEqual(snapshot(root), before);
@@ -550,4 +602,221 @@ test('an unrelated release preserves local edits to an unchanged managed adapter
   assert.equal(run(root, ['--expect-plan', plan.planId]).status, 0);
   assert.equal(read(root, adapter), edited);
   assert.notEqual(json(root, 'anhedral.json').capabilities.managedFiles[adapter], digest(edited));
+});
+
+function progressive(t, addition) {
+  const base = mkdtempSync(path.join(tmpdir(), 'anhedral-update-pins-'));
+  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const root = path.join(base, 'project');
+  for (const args of [
+    ['init', root, '--no-git'],
+    ['--cwd', root, 'add', addition],
+  ]) {
+    const result = spawnSync(
+      process.execPath,
+      [executable, ...args, '--catalog-pins', '--skip-install', '--json'],
+      { encoding: 'utf8' },
+    );
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+  }
+  return root;
+}
+
+test('progressive update reviews managed pins and the shared lock, preserves custom packages and fences apply', async (t) => {
+  const root = progressive(t, 'cli');
+  let newer = '15.3.0';
+  const resolver = {
+    registry: async (name) =>
+      name === 'commander'
+        ? [
+            { version: newer },
+            { version: '15.99.0-rc.1' },
+            { version: '15.98.0', deprecated: 'retired' },
+            { version: '15.97.0', engines: { node: '>=300' } },
+            { version: '16.0.0' },
+            ...registry(name),
+          ]
+        : registry(name),
+  };
+  const file = 'apps/cli/package.json';
+  const custom = 'packages/custom/package.json';
+  mkdirSync(path.dirname(path.join(root, custom)), { recursive: true });
+  writeJson(root, custom, { name: '@company/custom', version: '1.0.0', private: true });
+  const original = json(root, file);
+  original.dependencies['@company/custom'] = 'workspace:*';
+  original.devDependencies.typescript = '^5.9.3';
+  original.scripts.test = 'node --test';
+  writeJson(root, file, original);
+  writeFileSync(path.join(root, 'pnpm-lock.yaml'), "lockfileVersion: '9.0'\nimporters: {}\n");
+  const before = snapshot(root);
+  const update = (...args) => online(root, args, undefined, resolver);
+  const plan = await update('--dry-run');
+  assert.deepEqual(snapshot(root), before);
+  assert.equal(plan.dependencyResolution, 'registry');
+  assert.deepEqual(
+    plan.pins.find((row) => row.name === 'commander'),
+    {
+      file,
+      section: 'dependencies',
+      name: 'commander',
+      current: original.dependencies.commander,
+      proposed: newer,
+    },
+  );
+  assert.ok(plan.pins.some((row) => row.name === 'pnpm' && row.current === row.proposed));
+  assert.ok(!plan.pins.some((row) => row.name === 'typescript' || row.name === '@company/custom'));
+  assert.equal(plan.lockfiles[0].status, 'updated');
+  newer = '15.4.0';
+  await assert.rejects(
+    update('--expect-plan', plan.planId),
+    (error) => error.code === 'UPDATE_PLAN_CHANGED',
+  );
+  assert.deepEqual(snapshot(root), before);
+  newer = '15.3.0';
+  const originalCustom = read(root, custom);
+  writeFileSync(path.join(root, custom), originalCustom + '\n');
+  await assert.rejects(
+    update('--expect-plan', plan.planId),
+    (error) => error.code === 'UPDATE_PLAN_CHANGED',
+  );
+  writeFileSync(path.join(root, custom), originalCustom);
+  const applied = await update('--expect-plan', plan.planId);
+  assert.equal(applied.applied, true);
+  assert.equal(digest(read(root, 'pnpm-lock.yaml')), plan.lockfiles[0].afterDigest);
+  assert.deepEqual(json(root, file), {
+    ...original,
+    dependencies: { ...original.dependencies, commander: newer },
+  });
+  const lock = parse(read(root, 'pnpm-lock.yaml'));
+  assert.ok(lock.importers['packages/custom']);
+  assert.equal(lock.importers['apps/cli'].dependencies.commander, newer);
+  assert.deepEqual((await update('--dry-run')).changes, []);
+  assert.ok(!existsSync(path.join(root, 'node_modules')));
+});
+
+test('failed lockfile generation leaves pending source upgrades and dependency pins untouched', async (t) => {
+  const root = fixture(t);
+  const artifact = await publishedArtifact();
+  const before = snapshot(root);
+  await assert.rejects(
+    online(root, [], artifact, {
+      run() {
+        throw Error('Package manager resolution failed');
+      },
+    }),
+    /Package manager resolution failed/,
+  );
+  assert.deepEqual(snapshot(root), before);
+});
+
+test('Electron desktop update changes the npm runtime pin and preserves the authored renderer', async (t) => {
+  const root = progressive(t, 'desktop');
+  const file = 'apps/desktop/ui/main.tsx';
+  const renderer = 'export const title = "My desktop app";\n';
+  writeFileSync(path.join(root, file), renderer);
+  const options = {
+    registry: async (name) =>
+      name === 'electron'
+        ? [
+            { version: '45.91.0-rc.1' },
+            { version: '45.90.0', dependencies: { '@types/node': '^24.9.0' } },
+            ...registry(name),
+          ]
+        : registry(name),
+    crates: async () => assert.fail('Electron projects do not resolve crates'),
+  };
+  const plan = await online(root, ['--dry-run'], undefined, options);
+  const pin = plan.pins.find((row) => row.name === 'electron');
+  assert.equal(pin.current, catalog.CLIENT_DEPENDENCIES.electron);
+  assert.equal(pin.proposed, '45.90.0');
+  assert.deepEqual(
+    plan.lockfiles.map((lock) => lock.path),
+    ['pnpm-lock.yaml'],
+  );
+  await online(root, ['--expect-plan', plan.planId], undefined, options);
+  assert.equal(json(root, 'apps/desktop/package.json').devDependencies.electron, '45.90.0');
+  assert.equal(read(root, file), renderer);
+});
+
+test('existing Tauri desktop update keeps authored crate features and applies the Rust lock atomically with pnpm', async (t) => {
+  const root = progressive(t, 'desktop');
+  const file = 'apps/desktop/src-tauri/Cargo.toml';
+  const rustLock = 'apps/desktop/src-tauri/Cargo.lock';
+  // Model the previous release, including its native source and own manifest.
+  rmSync(path.join(root, 'apps/desktop'), { recursive: true });
+  mkdirSync(path.join(root, 'apps/desktop/src-tauri/src'), { recursive: true });
+  mkdirSync(path.join(root, 'apps/desktop/ui'));
+  writeJson(root, 'apps/desktop/package.json', {
+    name: '@workspace/desktop',
+    private: true,
+    devDependencies: { '@tauri-apps/cli': '2.12.6', vite: '8.3.5' },
+  });
+  writeJson(root, 'apps/desktop/src-tauri/tauri.conf.json', { productName: 'project' });
+  writeFileSync(path.join(root, 'apps/desktop/src-tauri/src/main.rs'), 'fn main() {}');
+  writeFileSync(path.join(root, 'apps/desktop/ui/index.html'), '<main>Custom desktop</main>');
+  const doctor = spawnSync(
+    process.execPath,
+    [executable, '--cwd', root, 'stack', 'doctor', '--json'],
+    { encoding: 'utf8' },
+  );
+  assert.equal(doctor.status, 1); // Cargo.toml is still missing.
+  assert.deepEqual(
+    JSON.parse(doctor.stdout).additions.find((item) => item.id === 'desktop').missingFiles,
+    [file],
+  );
+  const source =
+    '[build-dependencies]\ntauri-build = "=2.7.6"\n[dependencies]\ntauri = { version = "=2.12.7", features = ["tray-icon"] }\n';
+  writeFileSync(path.join(root, file), source);
+  const before = snapshot(root);
+  const wanted = source.replace('=2.12.7', '=2.12.8').replace('=2.7.6', '=2.7.7');
+  let failCargo = false;
+  const dependencies = {
+    crates: async (name) => [{ version: name === 'tauri' ? '2.12.8' : '2.7.7' }],
+    run(command, args, stage) {
+      if (command === 'pnpm') return lockWorkspace(command, args, stage);
+      assert.equal(command, 'cargo');
+      assert.deepEqual(args, ['update', '--workspace', '--manifest-path', file]);
+      assert.equal(read(stage, file), wanted);
+      if (failCargo) throw Error('Cargo could not resolve this workspace');
+      writeFileSync(path.join(stage, rustLock), 'version = 4\n');
+    },
+  };
+  const update = (...args) => online(root, args, undefined, dependencies);
+  const plan = await update('--dry-run');
+  assert.ok(plan.pins.some((pin) => pin.name === '@tauri-apps/cli'));
+  assert.ok(!plan.pins.some((pin) => pin.name === 'electron'));
+  assert.equal(
+    plan.pins.filter((row) => row.file === file && row.current !== row.proposed).length,
+    2,
+  );
+  assert.deepEqual(
+    plan.lockfiles.map((lock) => [lock.path, lock.status]),
+    [
+      [rustLock, 'created'],
+      ['pnpm-lock.yaml', 'created'],
+    ],
+  );
+  assert.deepEqual(snapshot(root), before);
+  failCargo = true;
+  await assert.rejects(update('--expect-plan', plan.planId), /Cargo could not resolve/);
+  assert.deepEqual(snapshot(root), before);
+  failCargo = false;
+  await update('--expect-plan', plan.planId);
+  assert.equal(read(root, file), wanted);
+  assert.equal(read(root, rustLock), 'version = 4\n');
+  assert.deepEqual((await update('--dry-run')).changes, []);
+});
+
+test('a custom pnpm hook cannot be executed or silently omitted from a reviewed lockfile', async (t) => {
+  const root = progressive(t, 'cli');
+  writeFileSync(path.join(root, '.pnpmfile.cjs'), "throw Error('ran project hook');\n");
+  const before = snapshot(root);
+  await assert.rejects(
+    online(root, ['--dry-run']),
+    /pnpm hook that can change the dependency graph/,
+  );
+  assert.deepEqual(snapshot(root), before);
+  writeFileSync(path.join(root, '.npmrc'), 'ignore-pnpmfile=true\n');
+  const preview = await online(root, ['--dry-run']);
+  assert.equal(preview.lockfiles[0].status, 'created');
 });

@@ -1,4 +1,6 @@
 import { readBoundedFile, MAX_PROJECT_JSON_BYTES } from '../bounded-file.js';
+import semver from 'semver';
+import { templateDependencyRange } from '../dependencies.js';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync } from 'node:fs';
 import path from 'node:path';
@@ -15,7 +17,7 @@ export class CapabilityEditor {
     readonly managed: Record<string, string>,
     private readonly operation: 'add' | 'update' = 'add',
   ) {}
-  private file(relative: string) {
+  file(relative: string) {
     if (
       !relative ||
       path.isAbsolute(relative) ||
@@ -38,7 +40,14 @@ export class CapabilityEditor {
     const file = this.file(relative);
     if (this.writes.has(relative)) return this.writes.get(relative)!;
     if (!this.before.has(relative)) {
-      const value = existsSync(file) ? readBoundedFile(file, MAX_PROJECT_JSON_BYTES) : null;
+      const value = existsSync(file)
+        ? readBoundedFile(
+            file,
+            relative === 'pnpm-lock.yaml' || path.posix.basename(relative) === 'Cargo.lock'
+              ? 16 * 1024 * 1024
+              : MAX_PROJECT_JSON_BYTES,
+          )
+        : null;
       this.before.set(relative, value?.toString('utf8') ?? null);
     }
     return this.before.get(relative)!;
@@ -121,6 +130,17 @@ export class CapabilityEditor {
     if (!current || typeof current !== 'object' || Array.isArray(current))
       throw Error(`Expected ${section} object in ${relative}.`);
     for (const [key, value] of Object.entries(values)) {
+      // A later recipe can request a dependency the consumer already pinned.
+      if (
+        relative.endsWith('/package.json') &&
+        ['dependencies', 'devDependencies'].includes(section) &&
+        typeof value === 'string' &&
+        semver.valid(value) &&
+        typeof current[key] === 'string' &&
+        semver.valid(current[key]) &&
+        semver.satisfies(current[key], templateDependencyRange(key, value))
+      )
+        continue;
       if (Object.hasOwn(current, key) && JSON.stringify(current[key]) !== JSON.stringify(value))
         throw Error(
           `Configuration conflict: ${relative} ${section}.${key}. Preserve and reconcile the existing value.`,
@@ -132,10 +152,17 @@ export class CapabilityEditor {
     for (const [relative, before] of this.before) {
       const file = this.file(relative);
       const current = existsSync(file)
-        ? readBoundedFile(file, MAX_PROJECT_JSON_BYTES).toString('utf8')
+        ? readBoundedFile(
+            file,
+            relative === 'pnpm-lock.yaml' || path.posix.basename(relative) === 'Cargo.lock'
+              ? 16 * 1024 * 1024
+              : MAX_PROJECT_JSON_BYTES,
+          ).toString('utf8')
         : null;
       if (before !== current)
-        throw Error(`Source changed during addition: ${relative}. Retry after reviewing it.`);
+        throw Error(
+          `Source changed during ${this.operation}: ${relative}. Retry after reviewing it.`,
+        );
     }
   }
 }

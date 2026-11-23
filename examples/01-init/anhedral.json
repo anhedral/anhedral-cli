@@ -16,24 +16,17 @@
     "hosting": "cloudflare",
     "resourcesProvisioned": false
   },
-  "composition": {
-    "contractVersion": 2,
-    "foundation": "tanstack-start",
-    "generatorVersion": "0.24.1",
-    "identity": "none",
-    "capabilities": {}
-  },
   "capabilities": {
     "schemaVersion": 1,
     "installed": [],
-    "managedFiles": {
-      "scripts/oj.mjs": "c502246346857a32bf9d94377d1dcd9bec731379836187bbb2c6e9775f50b9e6",
-      "scripts/oj-runtime.json": "0c13ec9404f87ca8c6b825bb9d65760f5a47f130e9b2c984ecfde9aba9350045",
-      "scripts/OJ.LICENSE": "3cc3fc954c836676b3e485b8af1f9870b8d50b3e3ec4b94b81f5f2ef012cf535",
-      "apps/web/vite.config.ts": "fdf315b0a7854e9e945fa7e0f6013e9d9a4be3e719c6ddbab2e736775f60203b",
-      "apps/web/src/server.ts": "0bb1d6fe2f8f3ddf21da2ba54ff8e54b6308b8999e29231d14eb4b8b1d34da01",
-      "apps/web/src/lib/application.server.ts": "b3ec144d8b91074d039f939c070fcde0a2cbc9951c25352bbb808883065987bc"
-    },
+    "managedFiles": {},
     "resourcesProvisionedByCli": false
+  },
+  "composition": {
+    "contractVersion": 3,
+    "foundation": "turborepo",
+    "generatorVersion": "0.24.1",
+    "identity": "none",
+    "capabilities": {}
   }
 }

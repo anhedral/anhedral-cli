@@ -342,3 +342,138 @@ test('unlink without a saved link is a no-op without creating local state', asyn
     assert.equal(result.status, 'unlinked');
     assert.deepEqual(await readdir(root), []);
   }));
+
+test('messages use the linked team and project and carry the supplied retry and thread IDs', async () =>
+  fixture(async (root) => {
+    const projectId = crypto.randomUUID(),
+      channel = crypto.randomUUID(),
+      thread = crypto.randomUUID(),
+      requestId = crypto.randomUUID(),
+      id = crypto.randomUUID();
+    await writePrivate(join(root, '.anhedral/platform/project.json'), {
+      protocol: 1,
+      projectId,
+      teamId,
+      principalId,
+      name: 'App',
+      origin,
+    });
+    const deps = {
+      store: { read: async () => credential },
+      readInput: async () => Buffer.from('  Done\n'),
+      fetch: async (url, opts) => {
+        if (url.endsWith('/actor'))
+          return response({ protocol: 1, principalId, name: 'Member', teamId });
+        assert.equal(url, origin + '/api/cli/v1/projects/' + projectId + '/messages/' + channel);
+        assert.equal(opts.headers['x-anhedral-team'], teamId);
+        assert.equal(opts.headers.authorization, 'Bearer ' + credential.token);
+        assert.equal(opts.method, 'POST');
+        assert.deepEqual(JSON.parse(opts.body), { body: 'Done', requestId, parentId: thread });
+        return response({ id }, 201);
+      },
+    };
+    const run = (args) => runPlatformCommand('messages', args, { json: true }, deps);
+    await assert.rejects(run(['post', '--channel', channel]), /--request-id/);
+    await assert.rejects(run(['post', '--before', thread]), /options/);
+    const [result] = await capture(() =>
+      run(['post', '--channel', channel, '--thread', thread, '--request-id', requestId]),
+    );
+    assert.deepEqual(result, { id });
+  }));
+
+test('reports connect keeps the scoped token private and submit authenticates before reading stdin', async () =>
+  fixture(async (root) => {
+    const projectId = crypto.randomUUID();
+    await writePrivate(join(root, '.anhedral/platform/project.json'), {
+      protocol: 1,
+      projectId,
+      teamId,
+      principalId,
+      name: 'App',
+      origin,
+    });
+    const token = 'amcp_' + 'b'.repeat(64);
+    const report = {
+      eventId: crypto.randomUUID(),
+      channelId: crypto.randomUUID(),
+      kind: 'result',
+      summary: 'Test completed',
+      harness: 'pi',
+      runId: 'fixture',
+      evidence: [],
+    };
+    const connectBodies = [];
+    let inputReads = 0;
+    const deps = {
+      userDirectory: root,
+      store: { read: async () => credential },
+      readInput: async () => {
+        inputReads++;
+        return Buffer.from(JSON.stringify(report));
+      },
+      fetch: async (url, opts) => {
+        if (url.endsWith('/actor'))
+          return response({ protocol: 1, principalId, name: 'Member', teamId });
+        assert.equal(opts.headers['x-anhedral-team'], teamId);
+        assert.equal(opts.headers.authorization, 'Bearer ' + credential.token);
+        const base = origin + '/api/cli/v1/projects/' + projectId + '/reports';
+        if (url === base + '/connect') {
+          connectBodies.push(JSON.parse(opts.body));
+          return response({ token, expiresAt: credential.expiresAt });
+        }
+        assert.equal(url, base);
+        assert.deepEqual(JSON.parse(opts.body), report);
+        return response({ id: otherId }, 201);
+      },
+    };
+    const run = (args, d = deps) => runPlatformCommand('reports', args, { json: true }, d);
+    const workspaceInput = {
+      requestId: crypto.randomUUID(),
+      title: 'Review',
+      source: 'ChatGPT',
+      body: 'Meeting text.',
+    };
+    let workspaceReads = 0;
+    const tool = (overrides = {}) =>
+      runPlatformCommand(
+        'workspace',
+        ['call', 'import_meeting_transcript'],
+        { json: true },
+        {
+          ...deps,
+          readInput: async () => {
+            workspaceReads++;
+            return Buffer.from(JSON.stringify(workspaceInput));
+          },
+          fetch: async (url, opts) => {
+            if (url.endsWith('/actor')) return deps.fetch(url, opts);
+            assert.equal(
+              url,
+              origin +
+                '/api/cli/v1/projects/' +
+                projectId +
+                '/workspace/tools/import_meeting_transcript',
+            );
+            assert.deepEqual(JSON.parse(opts.body), workspaceInput);
+            assert.equal(opts.headers['x-anhedral-team'], teamId);
+            return response({ meetingId: workspaceInput.requestId });
+          },
+          ...overrides,
+        },
+      );
+    await assert.rejects(tool({ store: { read: async () => null } }), /Log in/);
+    assert.equal(workspaceReads, 0);
+    assert.deepEqual(await capture(() => tool()), [{ meetingId: workspaceInput.requestId }]);
+    const [connection] = await capture(() => run(['connect']));
+    const [workspace] = await capture(() => run(['connect', '--workspace']));
+    assert.notEqual(workspace.credentialPath, connection.credentialPath);
+    const [actions] = await capture(() => run(['connect', '--workspace-actions']));
+    assert.notEqual(actions.credentialPath, workspace.credentialPath);
+    assert.deepEqual(connectBodies, [{}, { workspace: true }, { workspace: true, actions: true }]);
+    assert.ok(!JSON.stringify(connection).includes(token));
+    assert.equal((await readPrivate(connection.credentialPath)).token, token);
+    assert.equal((await stat(connection.credentialPath)).mode & 0o077, 0);
+    await assert.rejects(run(['submit'], { ...deps, store: { read: async () => null } }), /Log in/);
+    assert.equal(inputReads, 0);
+    assert.deepEqual(await capture(() => run(['submit'])), [{ id: otherId }]);
+  }));

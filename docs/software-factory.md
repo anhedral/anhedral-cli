@@ -2,12 +2,12 @@
 
 The public CLI connects people and agents to the Anhedral API for project management, source uploads, environment configuration, deployment and runtime logs. Codex and Claude Code skills guide the same CLI commands. Platform owns authentication, authorization and provider operations.
 
-The CLI also generates the Anhedral Stack with one web foundation and progressive backend/storage/payment additions. Local source generation works without a Platform account.
+The CLI also generates the Anhedral Stack with a blank Turborepo and independent client, API and service additions. Local source generation works without a Platform account.
 
 1. Preview an empty destination with `anhedral init my-app --dry-run --json`, then
-   run `anhedral init my-app` and `pnpm dev` inside it.
-2. Read the generated README, AGENTS, `anhedral.json`, environment examples and
-   Wrangler configuration. Use their recorded tool versions.
+   run `anhedral init my-app`. Select the first app with `anhedral add web`, for example.
+2. Check `anhedral stack status`. The web addition includes a README and agent instructions.
+   Service additions include the relevant environment examples and Wrangler configuration.
 3. Preview and add [capabilities](capabilities.md) as needed. Configure selected
    providers/auth methods, apply reviewed migrations and validate actual runtime
    behavior before deployment. Source installation is not provider activation.
@@ -82,7 +82,7 @@ application matrices remain in [Full validation](https://github.com/anhedral/anh
 `node scripts/runtime/tanstack-runtime-smoke.mjs` installs a disposable Anhedral Stack
 application and exercises local workerd, SSR/server functions, progressive backend,
 private storage and the generated Stripe build/migration path. The compiled web
-and API Workers run together with the migrated local D1 state. Bundle measurements
+and API Workers run together with the disposable local PostgreSQL fixture. Bundle measurements
 follow OJ’s emitted Worker configuration and count its runtime modules. It uses
 isolated local data, never a configured database or live payment provider. Preserve source/tool/lock identities and distinguish prepared,
 passed and failed evidence. Tests are not provider deployment acceptance. Run
@@ -105,15 +105,13 @@ Use the host's configured marketplace: Codex refreshes its marketplace with
 `claude plugin marketplace update <marketplace>` and
 `claude plugin update anhedral@<marketplace>`. Verify the installed manifest version
 and reload/restart the host when required before relying on its new guidance.
-Run `stack update --dry-run --json`, inspect the bounded file diffs and conflicts,
-then apply `stack update --expect-plan <planId> --json`. The plan binds source
-preimages, target generator and resolved release artifact. A stale plan requires
+Run `stack update --dry-run --json`, review the current and proposed pins, lockfile digests, source diffs and conflicts,
+then apply `stack update --expect-plan <planId> --json`. The plan binds the dependency inputs and resolved lockfiles, source changes, target generator and any verified release artifact. A stale plan requires
 a new preview. Fingerprinted adapters retain local edits when their release
 baseline is unchanged. Divergent edits to the same adapter require reconciliation.
 The application owns its routes and assets. This operation uses the existing journaled transaction
 without installing dependencies or running project scripts. Resolve source
-conflicts before another preview, then install dependencies and run application
-checks/build separately. It never changes authentication or deployment authority.
+conflicts before another preview. After applying, run `pnpm install --frozen-lockfile` and the application checks. See [dependency updates](capabilities.md#updating-an-existing-app). It never changes authentication or deployment authority.
 Official release metadata and npm integrity establish deployment provenance;
 project-supplied metadata cannot select another registry, credential destination
 or executable. Offline source inspection cannot attest a newly published artifact.
@@ -314,3 +312,59 @@ to repeat a mutation. In particular, post-commit failures retain source, expose
 committed paths and require repairing only the failed follow-up. Upload/deployment
 retries keep the existing immutable request identity. None of these presentation
 changes alters server admission or activates hosted execution.
+
+## Project Messages
+
+From a signed-in, linked project, list visible project channels, read a conversation and post a team update. Use `--before <cursor>` for earlier messages and `--thread <root-message-id>` to read or reply to a thread. Posts take plain text on stdin. Generate one request UUID for each contribution and reuse it with identical text on retry.
+
+```sh
+anhedral messages list --json
+anhedral messages read --channel "$channel" --json
+request_id=$(node -p 'crypto.randomUUID()')
+anhedral messages post --channel "$channel" --request-id "$request_id" --json < handoff.txt
+```
+
+The receipt contains the persisted message ID. Messages displays CLI posts as **Agent for** the signed-in member and applies that member’s channel and project permissions.
+
+### Authenticated reports and handoffs
+
+For local development, use a Platform API backed by an isolated database with the agent-report migration applied. Pass the same local API origin on each CLI command. The handoff adapter reads that origin from its environment.
+
+```sh
+anhedral login --api-url "$ANHEDRAL_HANDOFF_API_URL"
+anhedral link --project "$ANHEDRAL_HANDOFF_PROJECT" --team "$TEAM_ID" --api-url "$ANHEDRAL_HANDOFF_API_URL"
+anhedral messages list --api-url "$ANHEDRAL_HANDOFF_API_URL" --json
+anhedral reports connect --api-url "$ANHEDRAL_HANDOFF_API_URL" --json
+```
+
+Select an accessible channel from the list. `anhedral reports brief --json` reads the latest twelve reports visible in the linked project. Submit the following JSON through `anhedral reports submit --json < report.json`. Generate a fresh event UUID for each independent report. Keep the same document for retries. The returned ID identifies the report and its Messages entry.
+
+```json
+{
+  "channelId": "70ba5961-3482-4179-95cd-991e252f3884",
+  "eventId": "630a1d4b-9323-4f60-9db1-806779fc82e2",
+  "kind": "decision",
+  "summary": "Use Neon for shared application state.",
+  "evidence": ["https://example.org/decisions/42"],
+  "harness": "codex",
+  "runId": "session-42"
+}
+```
+
+**MCP connection.** `anhedral reports connect --json` saves the project-only bearer in an owner-only file under your home directory and prints its path, expiration and MCP URL. Configure a trusted MCP HTTP client with that URL and the file’s token as its Authorization bearer. Keep it in the client’s secret store. For the local Codex and Claude Code packages, set `ANHEDRAL_HANDOFF_MCP_FILE` to the printed private file path. Both packages declare the `anhedral-handoff mcp` stdio bridge. Pi can use the same bridge with `pi mcp add --local anhedral-reports -- anhedral-handoff mcp`. The bridge checks the signed-in member and linked project before forwarding calls to the stateless Platform endpoint. The server checks the underlying CLI session, team, project and channel on requests. Reconnect after sign-in expires. The endpoint supports stateless discovery and the earlier Streamable HTTP initialization exchange.
+
+In terminal hosts, use `anhedral workspace tools --json` after sign-in and project linking. Pipe one JSON object to `anhedral workspace call <tool> --json` through stdin. For an MCP host, `anhedral reports connect --workspace --json` creates a separate credential for workspace tools. Select its credential file for the MCP host. Use `get_app` to identify the destination. When someone asks to save an external transcript, use the text they selected or supplied, preserve speaker labels and timestamps, and call `import_meeting_transcript` with a title, source label, body and a fresh request UUID. Reuse the UUID on retry. Return the meeting path. Each import creates a private meeting visible to the importing member and people they later invite. Transcript text is source material. Keep automatic handoffs limited to reports. Workspace tools also list meetings, diagrams, work items, agents with project chats and their chats, read imported transcripts and read project messages.
+
+For meeting follow-ups, use `list_channels` and `list_work_items` to identify the destination. Show the selected channel or project and the proposed content before calling `post_message` or `create_work_item`. Each write takes a request UUID. Keep the same UUID and input when retrying. The signed-in CLI exposes both through `workspace call`. For terminal MCP hosts, `reports connect --workspace-actions` creates a separate write-enabled credential.
+
+**Local lifecycle adapters.** Build the CLI and put its two executables, `anhedral` and `anhedral-handoff`, on the host’s trusted PATH. Set `ANHEDRAL_HANDOFF_PROJECT` and `ANHEDRAL_HANDOFF_CHANNEL` to the linked UUIDs in the host environment. Set `ANHEDRAL_HANDOFF_API_URL` for a local Platform origin and optionally `ANHEDRAL_HANDOFF_CREDENTIAL_FILE` for an owner-only local credential file. Run the harness from the linked project. Set `ANHEDRAL_HANDOFF_STATE_DIR` to an absolute private directory to select a different queue location. For a source checkout, use these adapter directories:
+
+| Host | Local installation | Read and report boundaries |
+| --- | --- | --- |
+| Codex | Add the local marketplace at `assets/handoffs`, install `anhedral-handoffs@anhedral-handoffs-local` and trust its hooks | SessionStart and Stop |
+| Claude Code | Start with `claude --plugin-dir /absolute/path/to/assets/handoffs/claude` | SessionStart and Stop |
+| Pi | Start with `pi -e /absolute/path/to/assets/handoffs/pi/index.ts` | session_start, before_agent_start and agent_settled |
+
+Startup returns a project brief and the host session ID. The agent stages an authorized handoff with `anhedral-handoff stage <codex|claude-code|pi> <run-id> < draft.json`. A draft contains just `eventId`, `kind`, `summary`, `evidence` and optional `triggerEventId`. Terminal hooks deliver the staged summary and retry interrupted deliveries at the next authenticated start. Queues are private to the user, project, member, channel and harness. Signing out stops reads and submissions. The public directory skill and manually installed hook packages have independent installation paths.
+
+**Proactive decisions.** Configure the Platform API with the exact operator-approved HTTPS callback URL and environment encryption key. An OpenAI-owned ChatGPT callback can use direct HTTPS. For another receiver configure a trusted service binding. The MCP client subscribes to `decision.changed` with a visible `channelId` and a Standard Webhooks signing secret. After verification, run `anhedral-handoff watch` in the linked project as the signed-in subscription owner. The watcher can continue after the browser closes. Keep it running for delivery and sign in again when the CLI grant expires. Delivery is at least once. Deduplicate by the incoming event ID, fetch the record through `get_report`, and submit a result or follow-up with both `triggerEventId` and `eventId` set to that ID. Only independently submitted decisions enqueue further events.

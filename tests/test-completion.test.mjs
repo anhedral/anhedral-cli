@@ -69,7 +69,22 @@ test(
 );
 test('Bash completes capabilities and avoids consumed names', { skip: !hasBash }, () => {
   assert.deepEqual(run('bash', ['anhedral', 'add', 'back']), ['backend']);
-  assert.deepEqual(run('bash', ['anhedral', 'add', '']), ['backend', 'storage', 'payment']);
+  assert.deepEqual(run('bash', ['anhedral', 'add', '']), [
+    'web',
+    'mobile',
+    'desktop',
+    'web-extension',
+    'cli',
+    'api',
+    'db',
+    'auth',
+    'backend',
+    'storage',
+    'payment',
+    'in-app-purchases',
+    'client-sync',
+    'rtc',
+  ]);
   assert.deepEqual(run('bash', ['anhedral', 'add', 'backend', 'back']), []);
   assert.ok(!run('bash', ['anhedral', '']).includes('ui'));
   assert.deepEqual(run('bash', ['anhedral', 'completion', 'z']), ['zsh']);

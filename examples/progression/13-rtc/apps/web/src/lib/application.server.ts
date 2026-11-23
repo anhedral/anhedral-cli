@@ -1,0 +1,25 @@
+import type { ApplicationContext } from './request-context';
+
+async function backendConnected(api: ApplicationContext['api']): Promise<boolean> {
+  if (!api) return false;
+  try {
+    const request = new Request('https://api.internal/api/health', {
+      signal: AbortSignal.timeout(5000),
+    });
+    const response = await api.fetch(request);
+    if (!response.ok) return false;
+    const body: unknown = await response.json();
+    return typeof body === 'object' && body !== null && Reflect.get(body, 'ok') === true;
+  } catch {
+    return false;
+  }
+}
+
+export async function readApplicationStatus(context: ApplicationContext) {
+  return {
+    api: await backendConnected(context.api),
+    authentication: true,
+    storage: true,
+    payment: true,
+  };
+}

@@ -1,3 +1,4 @@
+import type { CapabilityEditor } from '../composition/editor.js';
 import type { CommandRunner } from '../command-types.js';
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { supportsWorkspaceRuntime } from '../runtime-policy.js';
@@ -9,21 +10,7 @@ export function assertWorkspaceRuntime(run: CommandRunner, version = process.ver
     throw new Error('Generated workspaces require Node.js 22.13+ on the 22.x line or Node.js 24+.');
 }
 
-export function bootstrapWorkspace(root: string): void {
-  json(root, 'packages/typescript-config/package.json', {
-    name: '@workspace/typescript-config',
-    private: true,
-    exports: { './base.json': './base.json' },
-  });
-  json(root, 'packages/typescript-config/base.json', {
-    compilerOptions: {
-      strict: true,
-      skipLibCheck: true,
-      target: 'ES2022',
-      module: 'ESNext',
-      moduleResolution: 'Bundler',
-    },
-  });
+export function bootstrapWorkspace(root: CapabilityEditor): void {
   json(root, 'packages/eslint-config/package.json', {
     name: '@workspace/eslint-config',
     private: true,

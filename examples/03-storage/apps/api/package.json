@@ -21,9 +21,11 @@
   "devDependencies": {
     "typescript": "5.9.3",
     "tsx": "4.23.15",
-    "wrangler": "4.156.1",
+    "wrangler": "4.151.0",
     "@types/node": "22.20.5",
     "eslint": "9.39.5",
-    "@workspace/eslint-config": "workspace:*"
+    "@workspace/eslint-config": "workspace:*",
+    "@electric-sql/pglite": "0.5.17",
+    "@electric-sql/pglite-socket": "0.2.20"
   }
 }

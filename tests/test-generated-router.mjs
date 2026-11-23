@@ -6,7 +6,12 @@ import { spawnSyncPortable } from '../scripts/spawn-command.mjs';
 if (!process.argv[2]) throw Error('Pass an installed generated Anhedral Stack workspace.');
 const root = path.resolve(process.argv[2]);
 const metadata = JSON.parse(readFileSync(path.join(root, 'anhedral.json'), 'utf8'));
-assert.equal(metadata.composition.foundation, 'tanstack-start');
+if (metadata.composition.contractVersion === 3) {
+  assert.equal(metadata.composition.foundation, 'turborepo');
+  assert.ok(metadata.capabilities.installed.includes('web'));
+} else {
+  assert.equal(metadata.composition.foundation, 'tanstack-start');
+}
 const web = path.join(root, 'apps/web');
 assert.ok(
   existsSync(path.join(web, 'node_modules/typescript')),

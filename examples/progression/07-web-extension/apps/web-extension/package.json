@@ -1,0 +1,17 @@
+{
+  "name": "@workspace/web-extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip"
+  },
+  "devDependencies": {
+    "wxt": "0.21.5"
+  },
+  "dependencies": {
+    "@workspace/api-client": "workspace:*"
+  }
+}

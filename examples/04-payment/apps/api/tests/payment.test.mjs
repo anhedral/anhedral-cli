@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DatabaseSync } from 'node:sqlite';
+import { startPostgres } from './postgres.mjs';
 import test from 'node:test';
 import app from '../src/index.ts';
 
@@ -23,20 +23,19 @@ test('reviewable local migrations support idempotent signed webhook delivery', a
     [
       cli,
       'generate',
-      '--dialect=sqlite',
+      '--dialect=postgresql',
       '--schema=' + fileURLToPath(new URL('src/schema.ts', root)),
       '--out=./drizzle',
     ],
     { cwd: work, stdio: 'pipe' },
   );
-  const db = new DatabaseSync(':memory:');
-  t.after(() => db.close());
+  const fixture = await startPostgres();
+  t.after(() => fixture.close());
+  const db = fixture.db;
   for (const file of (await readdir(migrations)).filter((name) => name.endsWith('.sql')).sort())
-    db.exec(await readFile(join(migrations, file), 'utf8'));
+    await db.exec(await readFile(join(migrations, file), 'utf8'));
   const env = {
-    DB: {
-      prepare: (sql) => ({ bind: (...params) => ({ run: () => db.prepare(sql).run(...params) }) }),
-    },
+    DATABASE_URL: fixture.url,
     STRIPE_SECRET_KEY: 'sk_test_' + randomUUID(),
     STRIPE_WEBHOOK_SECRET: randomUUID(),
   };
@@ -57,5 +56,8 @@ test('reviewable local migrations support idempotent signed webhook delivery', a
     );
     assert.equal(result.status, 200);
   }
-  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM billing_receipt').get().count, 1);
+  assert.equal(
+    Number((await db.query('SELECT COUNT(*) AS count FROM billing_receipt')).rows[0].count),
+    1,
+  );
 });

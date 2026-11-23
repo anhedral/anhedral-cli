@@ -1,0 +1,15 @@
+{
+  "name": "@workspace/eslint-config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.js",
+    "./react-internal": "./react-internal.js"
+  },
+  "dependencies": {
+    "typescript": "5.9.3",
+    "eslint": "9.39.5",
+    "@typescript-eslint/parser": "8.71.2",
+    "@typescript-eslint/eslint-plugin": "8.71.2"
+  }
+}

@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import test from 'node:test';
 import { getPlatformProxy } from 'wrangler';
+import { startPostgres } from './postgres.mjs';
+import { withDatabase } from '@workspace/db';
 import { betterAuth } from 'better-auth/minimal';
 import { createAuth } from '../src/auth.ts';
 import app from '../src/index.ts';
@@ -11,17 +13,28 @@ test('private file round trip and upload size boundary', async (t) => {
   const proxy = await getPlatformProxy({ persist: false, remoteBindings: false, envFiles: [] });
   t.after(() => proxy.dispose());
   const origin = 'http://localhost';
-  const env = { ...proxy.env, PUBLIC_APP_URL: origin, BETTER_AUTH_SECRET: randomUUID() };
-  const sql = await readFile(
-    new URL('../../../packages/db/drizzle/0000_better_auth.sql', import.meta.url),
-    'utf8',
-  );
-  for (const statement of sql.split('--> statement-breakpoint'))
-    await env.DB.prepare(statement.trim()).run();
-  const auth = betterAuth({ ...createAuth(env).options, emailAndPassword: { enabled: true } });
-  const signup = await auth.api.signUpEmail({
-    body: { name: 'Example', email: 'example@example.com', password: randomUUID() },
-    asResponse: true,
+  const fixture = await startPostgres();
+  t.after(() => fixture.close());
+  const env = {
+    ...proxy.env,
+    DATABASE_URL: fixture.url,
+    PUBLIC_APP_URL: origin,
+    BETTER_AUTH_SECRET: randomUUID(),
+  };
+  const directory = new URL('../../../packages/db/drizzle/', import.meta.url);
+  for (const name of (await readdir(directory)).filter((file) => file.endsWith('.sql')).sort()) {
+    const sql = await readFile(new URL(name, directory), 'utf8');
+    await fixture.db.exec(sql);
+  }
+  const signup = await withDatabase(fixture.url, async (db) => {
+    const auth = betterAuth({
+      ...createAuth(env, db).options,
+      emailAndPassword: { enabled: true },
+    });
+    return auth.api.signUpEmail({
+      body: { name: 'Example', email: 'example@example.com', password: randomUUID() },
+      asResponse: true,
+    });
   });
   assert.equal(signup.status, 200);
   const cookie = signup.headers

@@ -1,8 +1,13 @@
+import { GENERATOR_VERSION } from '../version.js';
+import { bootstrapWorkspace } from '../scaffold/bootstrap.js';
 import { CAPABILITY_DEPENDENCIES, STACK_DEPENDENCIES } from '../dependencies.js';
+import { addClient, connectClients, addCloudFeature, composeSync } from './clients.js';
+import { scaffoldStyling } from '../scaffold/styling.js';
+import { scaffoldTanstack } from '../scaffold/tanstack.js';
 import { resourceName } from '../render.js';
 import { launchTemplate, stackTemplate, workerConfig } from '../scaffold/files.js';
 import { composeTanstack, addTanstackAuth } from '../scaffold/tanstack.js';
-import type { Capability } from './catalog.js';
+import { usesD1, type Capability } from './catalog.js';
 import { CapabilityEditor } from './editor.js';
 
 const json = (value: unknown) => JSON.stringify(value, null, 2) + '\n';
@@ -54,7 +59,17 @@ function schemaExport(e: CapabilityEditor, module: string) {
   e.writes.set(file, source + `\nexport * from './${module}';\n`);
 }
 export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: string) {
+  const d1 = usesD1(e);
+  const dbTemplate = (file: string) => stackTemplate((d1 ? '' : 'pg-') + file);
   if (id === 'r2' || id === 'stripe') {
+    if (!d1) {
+      if (e.read('apps/api/tests/postgres.mjs') === null)
+        e.create('apps/api/tests/postgres.mjs', stackTemplate('postgres-fixture.mjs.txt'));
+      e.merge('apps/api/package.json', 'devDependencies', {
+        '@electric-sql/pglite': STACK_DEPENDENCIES['@electric-sql/pglite'],
+        '@electric-sql/pglite-socket': STACK_DEPENDENCIES['@electric-sql/pglite-socket'],
+      });
+    }
     const manifest = e.json('apps/api/package.json');
     if (!manifest.scripts?.test)
       e.set(
@@ -66,6 +81,31 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
       e.set('apps/api/package.json', ['devDependencies', 'tsx'], CAPABILITY_DEPENDENCIES.tsx);
   }
   switch (id) {
+    case 'web':
+      scaffoldStyling(e);
+      scaffoldTanstack(e, name);
+      for (const file of ['README.md', 'AGENTS.md']) {
+        if (e.read(file) === null)
+          e.create(
+            file,
+            launchTemplate(file + '.txt')
+              .replaceAll('__APP_NAME__', name)
+              .replaceAll('__CLI_VERSION__', GENERATOR_VERSION),
+          );
+      }
+      e.merge('package.json', 'scripts', { dev: 'pnpm --filter @workspace/web dev' });
+      break;
+    case 'mobile':
+    case 'desktop':
+    case 'web-extension':
+    case 'cli':
+      addClient(e, id, name);
+      break;
+    case 'client-sync':
+    case 'rtc':
+    case 'in-app-purchases':
+      addCloudFeature(e, id);
+      break;
     case 'hono': {
       project(
         e,
@@ -115,26 +155,9 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         'apps/api/src/custom-environment.ts',
         'export type CustomBindings = Record<never, never>;\nexport type CustomVariables = Record<never, never>;\n',
       );
-      const web = 'apps/web/wrangler.jsonc';
-      const services = e.json(web).services ?? [];
-      if (!Array.isArray(services) || services.some((s) => s.binding === 'ANHEDRAL_API'))
-        throw Error('Existing ANHEDRAL_API binding must be reconciled first.');
-      if (e.json(web).services)
-        e.set(web, ['services', -1], {
-          binding: 'ANHEDRAL_API',
-          service: resourceName(name, 'api'),
-        });
-      else
-        e.set(web, ['services'], [{ binding: 'ANHEDRAL_API', service: resourceName(name, 'api') }]);
-      e.set(
-        'apps/api/package.json',
-        ['devDependencies', 'wrangler'],
-        e.json('apps/web/package.json').devDependencies.wrangler,
-      );
-      e.create('apps/web/src/lib/api-proxy.ts', stackTemplate('api-proxy.ts.txt'));
       break;
     }
-    case 'database-auth': {
+    case 'db': {
       project(
         e,
         'packages/db',
@@ -145,7 +168,10 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
           'db:generate': 'drizzle-kit generate',
           'db:migrate': 'node src/migrate.mjs',
         },
-        { 'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'] },
+        {
+          'drizzle-orm': STACK_DEPENDENCIES['drizzle-orm'],
+          ...(!d1 && { postgres: STACK_DEPENDENCIES.postgres }),
+        },
         {
           'drizzle-kit': STACK_DEPENDENCIES['drizzle-kit'],
           '@types/node': STACK_DEPENDENCIES['@types/node'],
@@ -176,36 +202,20 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
         'packages/db/eslint.config.mjs',
         "import { config } from '@workspace/eslint-config/base';\nexport default config;\n",
       );
-      e.create('packages/db/src/index.ts', stackTemplate('db-index.ts.txt'));
-      e.create('packages/db/src/schema.ts', stackTemplate('auth-schema.ts.txt'));
-      e.create('packages/db/drizzle/0000_better_auth.sql', stackTemplate('auth-migration.sql.txt'));
-      e.create(
-        'packages/db/drizzle/meta/0000_snapshot.json',
-        stackTemplate('auth-snapshot.json.txt'),
-      );
-      e.create('packages/db/drizzle/meta/_journal.json', stackTemplate('auth-journal.json.txt'));
-      e.create('packages/db/drizzle.config.ts', stackTemplate('drizzle.config.ts.txt'));
-      e.create('packages/db/src/migrate.mjs', stackTemplate('db-migrate.mjs.txt'));
-      apiConfig(e, 'd1_databases', [
-        {
-          binding: 'DB',
-          database_name: resourceName(name, 'db'),
-          database_id: '00000000-0000-0000-0000-000000000000',
-          migrations_dir: '../../packages/db/drizzle',
-        },
-      ]);
-      dependency(e, 'apps/api', {
-        '@workspace/db': 'workspace:*',
-        zod: STACK_DEPENDENCIES.zod,
-        'better-auth': CAPABILITY_DEPENDENCIES['better-auth'],
-        '@better-auth/drizzle-adapter': CAPABILITY_DEPENDENCIES['@better-auth/drizzle-adapter'],
-      });
-      dependency(e, 'apps/web', { 'better-auth': CAPABILITY_DEPENDENCIES['better-auth'] });
-      e.create('apps/api/src/auth.ts', stackTemplate('auth.ts.txt'));
-      e.create('apps/api/src/auth-features.ts', stackTemplate('auth-features.ts.txt'));
-      e.create('apps/api/src/security.ts', stackTemplate('security.ts.txt'));
-      e.create('apps/api/src/features/auth.ts', stackTemplate('auth-routes.ts.txt'));
-      addTanstackAuth(e);
+      e.create('packages/db/src/index.ts', dbTemplate('db-index.ts.txt'));
+      e.create('packages/db/src/schema.ts', 'export {};\n');
+      e.create('packages/db/drizzle.config.ts', dbTemplate('drizzle.config.ts.txt'));
+      e.create('packages/db/src/migrate.mjs', dbTemplate('db-migrate.mjs.txt'));
+      if (d1)
+        apiConfig(e, 'd1_databases', [
+          {
+            binding: 'DB',
+            database_name: resourceName(name, 'db'),
+            database_id: '00000000-0000-0000-0000-000000000000',
+            migrations_dir: '../../packages/db/drizzle',
+          },
+        ]);
+      dependency(e, 'apps/api', { '@workspace/db': 'workspace:*' });
       e.merge('package.json', 'scripts', {
         'db:generate': 'pnpm --dir packages/db db:generate',
         'db:migrate': 'pnpm --dir packages/db db:migrate',
@@ -216,20 +226,46 @@ export function addCapabilityRecipe(e: CapabilityEditor, id: Capability, name: s
       });
       break;
     }
+    case 'database-auth': {
+      e.create('packages/db/src/auth-schema.ts', dbTemplate('auth-schema.ts.txt'));
+      const pristine =
+        e.read('packages/db/src/schema.ts') === 'export {};\n' &&
+        e.read('packages/db/drizzle/meta/_journal.json') === null;
+      schemaExport(e, 'auth-schema');
+      if (pristine) {
+        e.create('packages/db/drizzle/0000_better_auth.sql', dbTemplate('auth-migration.sql.txt'));
+        e.create(
+          'packages/db/drizzle/meta/0000_snapshot.json',
+          dbTemplate('auth-snapshot.json.txt'),
+        );
+        e.create('packages/db/drizzle/meta/_journal.json', dbTemplate('auth-journal.json.txt'));
+      }
+      dependency(e, 'apps/api', {
+        zod: STACK_DEPENDENCIES.zod,
+        'better-auth': CAPABILITY_DEPENDENCIES['better-auth'],
+        '@better-auth/drizzle-adapter': CAPABILITY_DEPENDENCIES['@better-auth/drizzle-adapter'],
+      });
+      e.create('apps/api/src/auth.ts', dbTemplate('auth.ts.txt'));
+      e.create('apps/api/src/auth-features.ts', stackTemplate('auth-features.ts.txt'));
+      e.create('apps/api/src/security.ts', dbTemplate('security.ts.txt'));
+      e.create('apps/api/src/features/auth.ts', dbTemplate('auth-routes.ts.txt'));
+      break;
+    }
     case 'r2':
-      e.create('apps/api/tests/storage.test.mjs', stackTemplate('storage.test.mjs.txt'));
-      e.create('apps/web/src/routes/storage.tsx', launchTemplate('storage-page.tsx.txt'));
+      e.create('apps/api/tests/storage.test.mjs', dbTemplate('storage.test.mjs.txt'));
       apiConfig(e, 'r2_buckets', [{ binding: 'FILES', bucket_name: resourceName(name, 'files') }]);
       e.create('apps/api/src/features/storage.ts', stackTemplate('storage.ts.txt'));
       break;
     case 'stripe':
-      e.create('apps/api/tests/payment.test.mjs', stackTemplate('payment.test.mjs.txt'));
+      e.create(
+        'apps/api/src/receipt.ts',
+        stackTemplate(d1 ? 'receipt-d1.ts.txt' : 'receipt-pg.ts.txt'),
+      );
+      e.create('apps/api/tests/payment.test.mjs', dbTemplate('payment.test.mjs.txt'));
       dependency(e, 'apps/api', { stripe: CAPABILITY_DEPENDENCIES.stripe });
       e.create('apps/api/src/features/stripe.ts', stackTemplate('stripe.ts.txt'));
       e.create('apps/api/src/billing-mode.ts', stackTemplate('billing-mode.ts.txt'));
-      e.create('apps/api/src/features/entitlements.ts', stackTemplate('entitlements.ts.txt'));
-      e.create('apps/api/src/entitlement-guard.ts', stackTemplate('entitlement-guard.ts.txt'));
-      e.create('packages/db/src/billing-schema.ts', stackTemplate('billing-schema.ts.txt'));
+      e.create('packages/db/src/billing-schema.ts', dbTemplate('billing-schema.ts.txt'));
       schemaExport(e, 'billing-schema');
       break;
   }
@@ -239,15 +275,55 @@ export function composeCapabilities(
   e: CapabilityEditor,
   installed: Capability[],
   operation: 'compose' | 'update' = 'compose',
+  previous: Capability[] = installed,
 ) {
-  composeTanstack(e, installed, operation === 'update');
+  const joined = (...ids: Capability[]) =>
+    ids.every((id) => installed.includes(id)) && ids.some((id) => !previous.includes(id));
+  if (joined('web', 'hono')) {
+    const web = 'apps/web/wrangler.jsonc';
+    const services = e.json(web).services ?? [];
+    if (!Array.isArray(services) || services.some((s) => s.binding === 'ANHEDRAL_API'))
+      throw Error('Existing ANHEDRAL_API binding must be reconciled first.');
+    e.set(
+      web,
+      ['services'],
+      [...services, { binding: 'ANHEDRAL_API', service: e.json('apps/api/wrangler.jsonc').name }],
+    );
+    e.create('apps/web/src/lib/api-proxy.ts', stackTemplate('api-proxy.ts.txt'));
+  }
+  if (joined('web', 'database-auth')) {
+    dependency(e, 'apps/web', { 'better-auth': CAPABILITY_DEPENDENCIES['better-auth'] });
+    addTanstackAuth(e);
+  }
+  if (joined('web', 'r2'))
+    e.create('apps/web/src/routes/storage.tsx', launchTemplate('storage-page.tsx.txt'));
+  if (installed.includes('web')) composeTanstack(e, installed, operation === 'update');
+  connectClients(e, installed, previous);
+  if (installed.includes('client-sync')) composeSync(e, installed, operation);
+  const billing = installed.includes('stripe') || installed.includes('in-app-purchases');
+  if (billing && !previous.includes('stripe') && !previous.includes('in-app-purchases')) {
+    e.create('apps/api/src/features/entitlements.ts', stackTemplate('entitlements.ts.txt'));
+    e.create('apps/api/src/entitlement-guard.ts', stackTemplate('entitlement-guard.ts.txt'));
+  }
   if (!installed.includes('hono')) return;
   const features: [Capability, string, string][] = [
     ['database-auth', 'authRoutes', 'auth'],
     ['r2', 'storageRoutes', 'storage'],
     ['stripe', 'stripeRoutes', 'stripe'],
-    ['stripe', 'entitlementRoutes', 'entitlements'],
+    [
+      installed.includes('stripe') ? 'stripe' : 'in-app-purchases',
+      'entitlementRoutes',
+      'entitlements',
+    ],
+    ['rtc', 'rtcRoutes', 'rtc'],
+    ['client-sync', 'syncRoutes', 'client-sync'],
   ];
+  const external = installed.some((id) =>
+    ['cli', 'mobile', 'desktop', 'web-extension'].includes(id),
+  );
+  const fileSync = installed.includes('client-sync') && installed.includes('r2');
+  if (fileSync)
+    e.owned('apps/api/src/features/file-events.ts', stackTemplate('file-events.ts.txt'));
   const chosen = features.filter(([id]) => installed.includes(id));
   e.owned(
     'apps/api/src/capabilities.ts',
@@ -255,20 +331,35 @@ export function composeCapabilities(
       chosen
         .map(([, symbol, file]) => `import { ${symbol} } from './features/${file}';\n`)
         .join('') +
+      (external ? "import { clientOrigins } from './client-origins';\n" : '') +
+      (fileSync ? "import { notifyFileChange } from './features/file-events';\n" : '') +
       'export const capabilities = new Hono<AppEnv>();\n' +
+      (external ? "capabilities.use('*', clientOrigins);\n" : '') +
+      (fileSync ? "capabilities.use('/files/:name', notifyFileChange);\n" : '') +
       chosen.map(([, symbol]) => `capabilities.route('/', ${symbol});\n`).join(''),
   );
   if (installed.includes('database-auth'))
     e.owned('apps/api/src/auth-platform.ts', 'export const platformAuthPlugins = () => [];\n');
-  if (installed.includes('stripe'))
-    e.owned('apps/api/src/billing-providers.ts', stackTemplate('billing-providers.ts.txt'));
+  if (billing) {
+    let providers = stackTemplate('billing-providers.ts.txt');
+    if (!installed.includes('stripe'))
+      providers = providers
+        .replace("import { stripeEntitled } from './features/stripe';\n", '')
+        .replace('  stripe: stripeEntitled,\n', '');
+    if (installed.includes('in-app-purchases'))
+      providers =
+        "import { revenuecatEntitled } from './features/revenuecat';\n" +
+        providers.replace('= {\n', '= {\n  revenuecat: revenuecatEntitled,\n');
+    e.owned('apps/api/src/billing-providers.ts', providers);
+  }
 
-  const bindings = [
-    'PUBLIC_APP_URL?: string',
-    'BETTER_AUTH_SECRET?: string',
-    'AUTH_TRUSTED_ORIGINS?: string',
-  ];
-  if (installed.includes('database-auth')) bindings.push('DB: D1Database');
+  const bindings = installed.includes('database-auth')
+    ? ['PUBLIC_APP_URL?: string', 'BETTER_AUTH_SECRET?: string', 'AUTH_TRUSTED_ORIGINS?: string']
+    : [];
+  if (external && !installed.includes('database-auth'))
+    bindings.push('AUTH_TRUSTED_ORIGINS?: string');
+  if (installed.includes('db'))
+    bindings.push(usesD1(e) ? 'DB: D1Database' : 'DATABASE_URL: string');
   if (installed.includes('r2')) bindings.push('FILES: R2Bucket');
   if (installed.includes('stripe'))
     bindings.push(
@@ -276,24 +367,37 @@ export function composeCapabilities(
       'STRIPE_WEBHOOK_SECRET?: string',
       'STRIPE_PRICE_ID?: string',
       'BILLING_ENVIRONMENT?: string',
-      'BILLING_PROVIDER?: string',
     );
+  if (billing) bindings.push('BILLING_PROVIDER?: string');
+  if (installed.includes('in-app-purchases'))
+    bindings.push('REVENUECAT_SECRET_KEY?: string', 'REVENUECAT_ENTITLEMENT?: string');
+  if (installed.includes('rtc'))
+    bindings.push(
+      'RTC_ACCOUNT_ID?: string',
+      'RTC_APP_ID?: string',
+      'RTC_API_TOKEN?: string',
+      'RTC_PRESET?: string',
+    );
+  if (installed.includes('client-sync'))
+    bindings.push('CLIENT_SYNC: DurableObjectNamespace', 'SYNC_API_ORIGIN?: string');
   e.owned(
     'apps/api/src/environment.ts',
     `import type { CustomBindings, CustomVariables } from './custom-environment';\nexport type AppEnv = {
-  Bindings: CustomBindings & {
-${bindings.map((binding) => `    ${binding};`).join('\n')}
-  };
+  Bindings: CustomBindings${bindings.length ? ' & {\n' + bindings.map((binding) => `    ${binding};`).join('\n') + '\n  }' : ''};
   Variables: CustomVariables & { userId: string; fileKey: string };
 };\n`,
   );
-  if (operation === 'update') return;
+  if (operation === 'update') {
+    if (installed.includes('client-sync'))
+      appendExample(e, 'apps/api/.dev.vars.example', ['SYNC_API_ORIGIN']);
+    return;
+  }
   appendExample(
     e,
     'apps/api/.dev.vars.example',
     bindings
       .filter((binding) => binding.includes('string'))
-      .map((binding) => binding.split('?')[0]),
+      .map((binding) => binding.split(/[?:]/)[0]),
   );
 }
 
@@ -307,4 +411,20 @@ function appendExample(e: CapabilityEditor, file: string, keys: string[]) {
   const value = source.trimEnd() + '\n' + additions.map((key) => key + '=').join('\n') + '\n';
   if (current === null) e.create(file, value);
   else e.writes.set(file, value);
+}
+
+export function installRecipes(
+  e: CapabilityEditor,
+  name: string,
+  previous: Capability[],
+  additions: Capability[],
+  installed: Capability[],
+) {
+  if (
+    !previous.some((id) => id === 'web' || id === 'hono') &&
+    additions.some((id) => id === 'web' || id === 'hono')
+  )
+    bootstrapWorkspace(e);
+  for (const id of additions) addCapabilityRecipe(e, id, name);
+  if (additions.length) composeCapabilities(e, installed, 'compose', previous);
 }

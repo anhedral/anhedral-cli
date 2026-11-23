@@ -1,14 +1,19 @@
 import { sourceCompositionSchema } from '../contracts/deployment.js';
 import { z } from 'zod';
 import { GENERATOR_VERSION } from '../version.js';
-import type { Capability } from './catalog.js';
+import { CAPABILITY_IDS, type Capability } from './catalog.js';
 
-// Narrow the shared source contract for the launch generator; runtime admission remains server-owned.
-export const launchCompositionSchema = sourceCompositionSchema.safeExtend({
-  contractVersion: z.literal(2),
-  foundation: z.literal('tanstack-start'),
+// Source capability schemas evolve independently of reviewed hosted runtime contracts.
+const progressiveCompositionSchema = sourceCompositionSchema.extend({
+  contractVersion: z.literal(3),
+  foundation: z.literal('turborepo'),
+  identity: z.enum(['none', 'better-auth-d1-v1', 'better-auth-neon-v1']),
+  capabilities: z.partialRecord(z.enum(CAPABILITY_IDS), z.string().nullable()),
 });
-const compositionSchema = launchCompositionSchema;
+export const launchCompositionSchema = z.discriminatedUnion('contractVersion', [
+  sourceCompositionSchema,
+  progressiveCompositionSchema,
+]);
 
 export function newerSourceMessage(version: unknown): string | undefined {
   if (typeof version !== 'string') return;
@@ -24,22 +29,53 @@ export function composeSourceProvenance(
   previous: unknown,
   installed: readonly Capability[],
   additions: readonly Capability[],
+  existingD1 = false,
 ) {
-  const old = compositionSchema.parse(previous);
+  const old = launchCompositionSchema.parse(previous);
   if (old && Object.keys(old.capabilities).some((id) => !installed.includes(id as Capability)))
     throw Error('Composition provenance disagrees with installed source; reconcile anhedral.json.');
-  const identity = installed.includes('database-auth') ? 'better-auth-d1-v1' : 'none';
+  const d1 = existingD1 || old.contractVersion === 2 || old.identity === 'better-auth-d1-v1';
+  const identity = installed.includes('database-auth')
+    ? d1
+      ? 'better-auth-d1-v1'
+      : 'better-auth-neon-v1'
+    : 'none';
   if (old && old.identity !== 'none' && old.identity !== identity)
     throw Error('Preserve existing application identity; an explicit adapter is required.');
-  return compositionSchema.parse({
-    contractVersion: 2,
-    foundation: 'tanstack-start',
+  const hostedIds = installed.filter((id) => id !== 'web' && id !== 'db');
+  if (
+    old.contractVersion === 2 &&
+    hostedIds.every((id) => ['hono', 'database-auth', 'r2', 'stripe'].includes(id)) &&
+    installed.includes('hono') === installed.includes('database-auth')
+  )
+    return sourceCompositionSchema.parse({
+      ...old,
+      generatorVersion: GENERATOR_VERSION,
+      identity,
+      capabilities: Object.fromEntries(
+        hostedIds.map((id) => [
+          id,
+          additions.includes(id) ? GENERATOR_VERSION : (Reflect.get(old.capabilities, id) ?? null),
+        ]),
+      ),
+    });
+  return progressiveCompositionSchema.parse({
+    contractVersion: 3,
+    foundation: 'turborepo',
     generatorVersion: GENERATOR_VERSION,
     identity,
     capabilities: Object.fromEntries(
       installed.map((id) => [
         id,
-        additions.includes(id) ? GENERATOR_VERSION : old.capabilities[id],
+        additions.includes(id)
+          ? GENERATOR_VERSION
+          : ((old.capabilities as Partial<Record<Capability, string | null>>)[id] ??
+            (id === 'web'
+              ? old.generatorVersion
+              : id === 'db'
+                ? old.capabilities['database-auth']
+                : null) ??
+            null),
       ]),
     ),
   });
