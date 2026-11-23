@@ -33,11 +33,9 @@ export const STANDARD_USAGE = `Anhedral CLI — source generation and optional P
 
 Usage: anhedral <command> [options]
 
-Start a project:
+Project source:
   init          Create a blank Turborepo workspace.
   add           Add clients, API, database, auth or cloud services.
-
-Inspect source:
   stack         Inspect, update or diagnose the Anhedral Stack.
 
 Optional Platform access:
