@@ -470,6 +470,29 @@ test('reports connect keeps the scoped token private and submit authenticates be
     const [actions] = await capture(() => run(['connect', '--workspace-actions']));
     assert.notEqual(actions.credentialPath, workspace.credentialPath);
     assert.deepEqual(connectBodies, [{}, { workspace: true }, { workspace: true, actions: true }]);
+    const callRun = (scope) =>
+      runPlatformCommand(
+        'workspace',
+        ['call', scope + '_agent_run'],
+        { json: true },
+        {
+          ...deps,
+          readInput: async () => Buffer.from('{}'),
+          fetch: async (url, opts) => {
+            if (url.endsWith('/actor')) return deps.fetch(url, opts);
+            assert.ok(url.endsWith('/workspace/tools/' + scope + '_agent_run'));
+            assert.equal(opts.headers.authorization, 'Bearer ' + token);
+            return response({ runId: otherId });
+          },
+        },
+      );
+    for (const action of ['start', 'cancel']) {
+      await assert.rejects(callRun(action), new RegExp('--run-' + action));
+      const [scopeConnection] = await capture(() => run(['connect', '--run-' + action]));
+      assert.notEqual(scopeConnection.credentialPath, actions.credentialPath);
+      assert.deepEqual(connectBodies.at(-1), { runScope: 'runs:' + action });
+      assert.deepEqual(await capture(() => callRun(action)), [{ runId: otherId }]);
+    }
     assert.ok(!JSON.stringify(connection).includes(token));
     assert.equal((await readPrivate(connection.credentialPath)).token, token);
     assert.equal((await stat(connection.credentialPath)).mode & 0o077, 0);

@@ -108,7 +108,11 @@ export function createPlatformRequest({
                       : command === 'env'
                         ? 'Environment versions or import contents conflict. Review env list and preserve saved retry state before starting a new import.'
                         : command === 'workspace'
-                          ? 'This request ID belongs to different input. Reuse the original input for a retry.'
+                          ? path.endsWith('/cancel_agent_run')
+                            ? 'This run is no longer active or your build access changed.'
+                            : path.endsWith('/start_agent_run')
+                              ? 'The project cannot start this run. Inspect the active run, project budget and original request inputs.'
+                              : 'This request ID belongs to different input. Reuse the original input for a retry.'
                           : command === 'reports' || command === 'messages'
                             ? 'This event ID belongs to different content. Retry the original submission or use a new ID for a distinct contribution.'
                             : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'

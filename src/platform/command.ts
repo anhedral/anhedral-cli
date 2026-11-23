@@ -104,9 +104,21 @@ async function runPlatformOperation(
     options.positional.length
   )
     throw commandArgumentError(command, 'Unexpected positional arguments.');
+  const runScope = options.has('--run-start')
+    ? 'runs:start'
+    : options.has('--run-cancel')
+      ? 'runs:cancel'
+      : undefined;
+  if (
+    runScope &&
+    (options.has('--workspace') ||
+      options.has('--workspace-actions') ||
+      (options.has('--run-start') && options.has('--run-cancel')))
+  )
+    throw commandArgumentError(command, 'Select one run permission per connection.');
   if (
     command === 'reports' &&
-    (options.has('--workspace') || options.has('--workspace-actions')) &&
+    (runScope || options.has('--workspace') || options.has('--workspace-actions')) &&
     options.positional[0] !== 'connect'
   )
     throw commandArgumentError(command, 'Use workspace permission options with reports connect.');
@@ -377,6 +389,16 @@ async function runPlatformOperation(
         JSON.stringify([origin, actor.principalId, link.teamId, link.projectId])
     )
       throw platformFailure('Authenticated handoff context changed.');
+    const credentialFile = (permission?: string) => {
+      const fields = [origin, actor.principalId, link.projectId];
+      if (permission) fields.push(permission);
+      return join(
+        dependencies.userDirectory ?? homedir(),
+        '.anhedral',
+        'mcp',
+        createHash('sha256').update(JSON.stringify(fields)).digest('hex') + '.json',
+      );
+    };
     if (command === 'workspace') {
       const base = '/projects/' + link.projectId + '/workspace/tools';
       if (options.positional[0] === 'tools')
@@ -385,6 +407,30 @@ async function runPlatformOperation(
         const name = options.positional[1];
         if (!/^[a-z_]{1,64}$/.test(name))
           throw commandArgumentError(command, 'Choose a tool listed by workspace tools.');
+        let toolToken = token;
+        const permission =
+          name === 'start_agent_run'
+            ? 'runs:start'
+            : name === 'cancel_agent_run'
+              ? 'runs:cancel'
+              : undefined;
+        if (permission) {
+          const saved = z
+            .object({
+              url: z.literal(origin + '/api/cli/v1/projects/' + link.projectId + '/mcp'),
+              principalId: z.literal(actor.principalId),
+              teamId: z.literal(link.teamId),
+              token: z.string().regex(/^amcp_[a-f0-9]{64}$/),
+            })
+            .safeParse(await readPrivate(credentialFile(permission)));
+          if (!saved.success)
+            throw platformFailure(
+              'Connect this project with anhedral reports connect --run-' +
+                permission.split(':')[1] +
+                ' first.',
+            );
+          toolToken = saved.data.token;
+        }
         const data = dependencies.readInput
           ? await dependencies.readInput()
           : await stdinBytes(1048576);
@@ -394,7 +440,7 @@ async function runPlatformOperation(
         } catch {
           throw commandArgumentError(command, 'Supply tool arguments as a JSON object on stdin.');
         }
-        emit(await request(base + '/' + name, 'POST', input, token, link.teamId));
+        emit(await request(base + '/' + name, 'POST', input, toolToken, link.teamId));
       }
       return;
     }
@@ -408,30 +454,24 @@ async function runPlatformOperation(
           await request(
             base + '/connect',
             'POST',
-            options.has('--workspace-actions')
-              ? { workspace: true, actions: true }
-              : options.has('--workspace')
-                ? { workspace: true }
-                : {},
+            runScope
+              ? { runScope }
+              : options.has('--workspace-actions')
+                ? { workspace: true, actions: true }
+                : options.has('--workspace')
+                  ? { workspace: true }
+                  : {},
             token,
             link.teamId,
           ),
         );
-      const credentialPath = join(
-        dependencies.userDirectory ?? homedir(),
-        '.anhedral',
-        'mcp',
-        createHash('sha256')
-          .update(
-            JSON.stringify(
-              options.has('--workspace-actions')
-                ? [origin, actor.principalId, link.projectId, 'workspace-actions']
-                : options.has('--workspace')
-                  ? [origin, actor.principalId, link.projectId, 'workspace']
-                  : [origin, actor.principalId, link.projectId],
-            ),
-          )
-          .digest('hex') + '.json',
+      const credentialPath = credentialFile(
+        runScope ??
+          (options.has('--workspace-actions')
+            ? 'workspace-actions'
+            : options.has('--workspace')
+              ? 'workspace'
+              : undefined),
       );
       const url = origin + '/api/cli/v1/projects/' + link.projectId + '/mcp';
       await writePrivate(credentialPath, {

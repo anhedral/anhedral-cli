@@ -209,6 +209,14 @@ const INIT_OPTIONS: readonly CommandOption[] = [
 const WORKSPACE_CONNECTION_OPTIONS: readonly CommandOption[] = [
   ...PLATFORM_OPTIONS,
   {
+    flag: '--run-start',
+    description: 'Grant permission to start agent runs in the linked project.',
+  },
+  {
+    flag: '--run-cancel',
+    description: 'Grant permission to cancel your agent runs in the linked project.',
+  },
+  {
     flag: '--workspace-actions',
     description: 'Include posting project messages and creating work items in the MCP connection.',
   },
@@ -292,7 +300,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     children: {
       connect: {
         description: 'Save a project-scoped MCP credential in your private user directory.',
-        usage: 'reports connect [--workspace | --workspace-actions]',
+        usage: 'reports connect [--workspace | --workspace-actions | --run-start | --run-cancel]',
         options: WORKSPACE_CONNECTION_OPTIONS,
         examples: [],
       },
