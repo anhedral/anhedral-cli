@@ -1,22 +1,104 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "anhedral-stack",
   "name": "Anhedral Stack",
   "foundation": {
-    "id": "tanstack-start",
-    "name": "TanStack Start + shadcn",
+    "id": "turborepo",
+    "name": "pnpm + Turborepo",
     "targets": [
-      "apps/web/package.json",
-      "apps/web/src/router.tsx",
-      "apps/web/src/server.ts",
-      "apps/web/src/routes/__root.tsx",
-      "apps/web/src/routes/index.tsx"
+      "package.json",
+      "turbo.json",
+      "pnpm-workspace.yaml"
     ]
   },
   "additions": {
+    "web": {
+      "name": "TanStack Start web app",
+      "requires": [],
+      "targets": [
+        "apps/web/package.json",
+        "apps/web/src/server.ts",
+        "apps/web/src/routes/index.tsx"
+      ]
+    },
+    "mobile": {
+      "name": "Expo mobile app",
+      "requires": [],
+      "targets": [
+        "apps/mobile/package.json",
+        "apps/mobile/App.tsx",
+        "apps/mobile/index.js",
+        "apps/mobile/app.json"
+      ]
+    },
+    "desktop": {
+      "name": "Electron desktop app",
+      "requires": [],
+      "targets": [
+        "apps/desktop/package.json",
+        "apps/desktop/src/main/index.ts",
+        "apps/desktop/ui/index.html",
+        "apps/desktop/ui/main.tsx",
+        "apps/desktop/electron.vite.config.mjs",
+        "apps/desktop/package.mjs",
+        "apps/desktop/tsconfig.json"
+      ]
+    },
+    "web-extension": {
+      "name": "WXT browser extension",
+      "requires": [],
+      "targets": [
+        "apps/web-extension/package.json",
+        "apps/web-extension/entrypoints/popup/index.html"
+      ]
+    },
+    "cli": {
+      "name": "TypeScript Commander CLI",
+      "requires": [],
+      "targets": [
+        "apps/cli/package.json",
+        "apps/cli/src/index.ts",
+        "apps/cli/tsconfig.json"
+      ]
+    },
+    "api": {
+      "name": "Hono backend API",
+      "requires": [],
+      "targets": [
+        "apps/api/package.json",
+        "apps/api/wrangler.jsonc",
+        "apps/api/src/index.ts",
+        "apps/api/src/environment.ts",
+        "apps/api/src/capabilities.ts",
+        "apps/api/src/custom-environment.ts"
+      ]
+    },
+    "db": {
+      "name": "Drizzle ORM and Neon Postgres",
+      "requires": [
+        "api"
+      ],
+      "targets": [
+        "packages/db/package.json",
+        "packages/db/src/index.ts",
+        "packages/db/src/schema.ts"
+      ]
+    },
+    "auth": {
+      "name": "Better Auth",
+      "requires": [
+        "db"
+      ],
+      "targets": [
+        "apps/api/src/auth.ts",
+        "apps/api/src/auth-features.ts",
+        "apps/api/src/security.ts",
+        "apps/api/src/auth-platform.ts",
+        "apps/api/src/features/auth.ts"
+      ]
+    },
     "backend": {
-      "name": "Backend",
-      "description": "API, database and authentication together.",
+      "name": "API, DB and auth",
       "requires": [],
       "targets": [
         "apps/api/package.json",
@@ -32,25 +114,22 @@
         "apps/api/src/auth-features.ts",
         "apps/api/src/security.ts",
         "apps/api/src/auth-platform.ts",
-        "apps/api/src/features/auth.ts",
-        "apps/web/src/lib/auth-client.ts"
+        "apps/api/src/features/auth.ts"
       ]
     },
     "storage": {
-      "name": "Private storage",
-      "description": "Authenticated, owner-scoped object storage.",
+      "name": "Private R2 storage",
       "requires": [
-        "backend"
+        "auth"
       ],
       "targets": [
         "apps/api/src/features/storage.ts"
       ]
     },
     "payment": {
-      "name": "Payments and subscriptions",
-      "description": "Stripe subscription and entitlement source.",
+      "name": "Stripe payments",
       "requires": [
-        "backend"
+        "auth"
       ],
       "targets": [
         "apps/api/src/features/stripe.ts",
@@ -59,6 +138,36 @@
         "apps/api/src/billing-mode.ts",
         "apps/api/src/billing-providers.ts",
         "packages/db/src/billing-schema.ts"
+      ]
+    },
+    "in-app-purchases": {
+      "name": "RevenueCat native subscriptions",
+      "requires": [
+        "mobile",
+        "auth"
+      ],
+      "targets": [
+        "apps/mobile/src/purchases.ts",
+        "apps/api/src/features/revenuecat.ts"
+      ]
+    },
+    "client-sync": {
+      "name": "Per-account realtime events",
+      "requires": [
+        "auth"
+      ],
+      "targets": [
+        "apps/api/src/features/client-sync.ts",
+        "apps/api/src/sync-worker.ts"
+      ]
+    },
+    "rtc": {
+      "name": "Cloudflare RealtimeKit rooms",
+      "requires": [
+        "auth"
+      ],
+      "targets": [
+        "apps/api/src/features/rtc.ts"
       ]
     }
   },

@@ -1,3 +1,4 @@
+import { validStackCatalog } from '../plugin/plugin-package-policy.mjs';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -466,9 +467,7 @@ function validatePluginRelease(root, version) {
     stack.id !== 'anhedral-stack' ||
     stack.name !== 'Anhedral Stack' ||
     stack.items !== undefined ||
-    Object.keys(stack.additions ?? {})
-      .sort()
-      .join(',') !== 'backend,payment,storage'
+    !validStackCatalog(stack)
   )
     failures.push('Plugin, registry and CLI versions must match');
   if (manifest.extensions['com.openai'].interface.shortDescription.length > 30)

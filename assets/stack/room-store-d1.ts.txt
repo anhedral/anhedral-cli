@@ -1,0 +1,13 @@
+import type { AppEnv } from './environment';
+export async function storeMembers(env: AppEnv['Bindings'], roomId: string, members: string[]) {
+  await env.DB.batch(
+    members.map((user) =>
+      env.DB.prepare('INSERT INTO rtc_member (room_id,user_id) VALUES (?,?)').bind(roomId, user),
+    ),
+  );
+}
+export function findMember(env: AppEnv['Bindings'], roomId: string, user: string) {
+  return env.DB.prepare('SELECT 1 FROM rtc_member WHERE room_id=? AND user_id=?')
+    .bind(roomId, user)
+    .first();
+}

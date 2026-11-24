@@ -3,35 +3,33 @@
 > [!WARNING]
 > **Under heavy construction.** CLI commands and generated app code may change.
 
-Build an app one addition at a time. Generated applications are editable source. Start with a TanStack Start web app and ShadCN components. Add a backend when you need an API, authentication, or a database. Then choose storage, payments, or both.
+Start with a blank pnpm/Turborepo workspace and add the clients and services your app needs. Generated applications are editable source.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/anhedral/anhedral-cli/v0.24.1/docs/assets/anhedral-stack.png">
-  <img src="https://raw.githubusercontent.com/anhedral/anhedral-cli/v0.24.1/docs/assets/anhedral-stack-light.png" alt="The CLI creates a TanStack Start web app. The optional backend supports private file storage and subscription payments. An Expo client with Anhedral UI is upcoming.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/anhedral-stack.svg">
+  <img src="docs/assets/anhedral-stack-light.svg" alt="TanStack Start, Expo, Electron and WXT clients share a Hono API with Better Auth and Drizzle on Neon Postgres. R2 stores private files. Durable Objects deliver account events over hibernating WebSockets.">
 </picture>
 
-**Upcoming** — `pnpm dlx anhedral@latest add cross-platform` will add an Expo client with Anhedral UI.
-
-## How to use
-
-Start with the web app and stop at the stage you need. Storage and payments each require the backend and can be added independently.
+## Build a project
 
 ```sh
-# Create the web app
-pnpm dlx anhedral@latest init my-app
+anhedral init my-app
 cd my-app
-
-# Add an API, authentication, and a database
-pnpm dlx anhedral@latest add backend
-
-# Add private file storage
-pnpm dlx anhedral@latest add storage
-
-# Add subscription payments
-pnpm dlx anhedral@latest add payment
+anhedral add web api db auth
+anhedral add mobile desktop web-extension
+anhedral add storage client-sync
+anhedral stack doctor
 ```
 
-Run `pnpm dev` in the project directory to start the app. If you added services, configure them first. [Service setup](docs/capabilities.md) · [Source snapshot for each stage](https://github.com/anhedral/anhedral-cli/tree/v0.24.1/examples)
+Add clients before or after the backend. Once both sides are present, the CLI wires them together. Signed-in clients subscribe to the same account’s events. After a successful mutation, Hono can notify the account’s Durable Object. Connected clients update immediately and refetch current state when they reconnect.
+
+Use `add cli` for a TypeScript Commander executable, `add payment` for Stripe, `add in-app-purchases` for RevenueCat, or `add rtc` for RealtimeKit calls. To generate everything at once, run `anhedral init all my-app`. Preview either path with `--dry-run --json`.
+
+The local checkout includes 14 cumulative snapshots under `examples/progression/`, from blank init through all 13 individual additions. For each command’s prerequisites, integrations and official documentation, see the [stack guide](docs/capabilities.md). Browse the [released examples](https://github.com/anhedral/anhedral-cli/tree/v0.24.1/examples).
+
+Init and add resolve compatible stable dependencies at generation time and write exact pins. Use `--catalog-pins` to reproduce the catalog baseline.
+
+For an existing project, run `anhedral stack update --dry-run --human` to compare installed stack pins with the proposed versions. The printed apply command updates the manifests and lockfiles together. [Updating an existing app](docs/capabilities.md#updating-an-existing-app)
 
 Upgrading from 0.22.1? Replace `add r2` with `add storage` and `add stripe` with `add payment`. Existing projects keep their R2 and Stripe configuration.
 
@@ -45,6 +43,8 @@ Use `pnpm dlx anhedral@latest <command>`. For arguments and flags, run `pnpm dlx
 | Inspect or update the stack | `stack list`, `stack status`, `stack doctor`, `stack update` |
 | Manage your session | `login`, `whoami`, `logout` |
 | Connect a project | `projects list`, `projects create`, `link`, `unlink` |
+| Contribute to project Messages | `messages list`, `messages read`, `messages post` |
+| Share handoffs with agents | `reports brief`, `reports submit`, `reports connect`, `reports dispatch` |
 | Upload source | `source upload`, `source status` |
 | Configure environment variables | `env list`, `env set`, `env import` |
 | Prepare a deployment | `deploy plan`, `deploy prepare`, `deploy status` |

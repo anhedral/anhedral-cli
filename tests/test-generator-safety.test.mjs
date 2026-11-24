@@ -25,7 +25,7 @@ const fixture = async () => {
   const root = mkdtempSync(path.join(tmpdir(), 'anhedral-generator-safety-')),
     app = path.join(root, 'app');
   await scaffoldStandardProject(
-    parseStandardOptions([app, '--skip-install', '--no-git']),
+    parseStandardOptions([app, '--skip-install', '--catalog-pins', '--no-git']),
     offline,
     { quiet: true },
   );
@@ -44,7 +44,7 @@ const add = (app, names) =>
   inside(app, () =>
     runCapabilityCommand(
       'add',
-      [...names, '--with-dependencies', '--skip-install'],
+      [...names, '--with-dependencies', '--skip-install', '--catalog-pins'],
       { quiet: true },
       offline,
     ),
@@ -102,7 +102,7 @@ test('doctor detects missing required source without rejecting consumer edits', 
       assert.equal(result.sourceReady, false);
       assert.ok(
         result.additions
-          .find((c) => c.id === 'backend')
+          .find((c) => c.id === 'auth')
           .missingFiles.includes('apps/api/src/auth-features.ts'),
       );
       assert.equal(process.exitCode, 1);

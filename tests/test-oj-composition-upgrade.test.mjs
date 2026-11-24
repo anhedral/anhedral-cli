@@ -11,12 +11,16 @@ const executable = path.resolve('dist/bin.js');
 const digest = (source) => createHash('sha256').update(source).digest('hex');
 const json = (root, file) => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
 function run(root, args) {
-  return spawnSync(process.execPath, [executable, ...args, '--skip-install', '--json'], {
-    cwd: root,
-    encoding: 'utf8',
-    timeout: 30000,
-    env: { ...process.env, CI: '1' },
-  });
+  return spawnSync(
+    process.execPath,
+    [executable, ...args, '--skip-install', '--catalog-pins', '--json'],
+    {
+      cwd: root,
+      encoding: 'utf8',
+      timeout: 30000,
+      env: { ...process.env, CI: '1' },
+    },
+  );
 }
 function fixture(t, backend = false) {
   const base = mkdtempSync(path.join(tmpdir(), 'anhedral-oj-compose-'));
@@ -24,6 +28,19 @@ function fixture(t, backend = false) {
   const root = path.join(base, 'product');
   const init = run(base, ['init', root, '--no-git']);
   assert.equal(init.status, 0, init.stderr);
+  const web = run(root, ['add', 'web']);
+  assert.equal(web.status, 0, web.stderr);
+  // Recreate the original web foundation before composing any historical services.
+  const manifest = json(root, 'anhedral.json');
+  manifest.composition = {
+    contractVersion: 2,
+    foundation: 'tanstack-start',
+    generatorVersion: GENERATOR_VERSION,
+    identity: 'none',
+    capabilities: {},
+  };
+  manifest.capabilities.installed = [];
+  writeFileSync(path.join(root, 'anhedral.json'), JSON.stringify(manifest, null, 2) + '\n');
   if (backend) {
     const added = run(root, ['add', 'backend']);
     assert.equal(added.status, 0, added.stderr);
@@ -58,7 +75,7 @@ function previousFoundation(root) {
   const metadata = json(root, 'anhedral.json');
   metadata.setup.cliVersion = '0.18.0';
   metadata.composition.generatorVersion = '0.18.0';
-  for (const capability of metadata.capabilities.installed)
+  for (const capability of Object.keys(metadata.composition.capabilities))
     metadata.composition.capabilities[capability] = '0.18.0';
   metadata.capabilities.managedFiles['apps/web/vite.config.ts'] = digest(old);
   for (const file of ['scripts/oj.mjs', 'scripts/oj-runtime.json', 'scripts/OJ.LICENSE']) {

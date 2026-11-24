@@ -62,10 +62,26 @@ export function formatResult(_command: string, value: unknown): string {
     stack?: string;
     dependenciesInstalled?: boolean;
   };
+  if (data.stack === 'anhedral-stack' && data.products?.length) {
+    return (
+      (data.generated ? 'Created full workspace at ' : 'Full workspace preview for ') +
+      data.root +
+      '\nApps: ' +
+      data.products.join(', ') +
+      '\nServices: ' +
+      (value as { capabilities: string[] }).capabilities
+        .filter((id) => !data.products.includes(id))
+        .join(', ') +
+      '\n' +
+      (data.generated
+        ? 'Review local configuration with anhedral stack status.'
+        : 'No files written.')
+    );
+  }
   if (data.stack === 'anhedral-stack' && !data.generated)
     return `Foundation preview for ${data.root}.\nStack: Anhedral Stack.\nNo files were written or resources provisioned.`;
   if (data.stack === 'anhedral-stack' && data.generated)
-    return `Created ${data.root}.\nStack: Anhedral Stack.\n${data.dependenciesInstalled ? 'Run pnpm dev' : 'Run pnpm install, then pnpm dev'} in the project directory.\nEdit apps/web/src/routes/index.tsx to change the home page.\nSee README.md for checks, additions, and updates.`;
+    return `Created ${data.root}.\nWorkspace: pnpm + Turborepo. No applications or services selected.\nNext: anhedral stack list`;
   return (
     `${data.generated ? 'Created' : 'Foundation preview for'} ${data.root}.\nComponents: ${data.products.join(', ')}.\n` +
     (data.generated

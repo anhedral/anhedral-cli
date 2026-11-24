@@ -1,3 +1,5 @@
+import { runPermissions } from '../command-schema.js';
+import { homedir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -8,7 +10,7 @@ import { createReporter, type OutputOptions } from '../cli-output.js';
 import { cliLinkSchema, cliLoginSchema } from '../contracts/cli-transport.js';
 import { runLogin } from './auth.js';
 import { runDeploy } from './deploy.js';
-import { runEnvironmentCommand, validateEnvironmentArguments } from './environment.js';
+import { stdinBytes, runEnvironmentCommand, validateEnvironmentArguments } from './environment.js';
 import { createPlatformRequest } from './http.js';
 import {
   runLogsCommand,
@@ -35,8 +37,10 @@ import { runSourceUpload } from './upload.js';
 const credential = cliLoginSchema.extend({ origin: z.string() });
 const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 interface PlatformDependencies {
+  userDirectory?: string;
   store?: SecretStore;
   fetch?: typeof fetch;
+  readInput?: () => Promise<Uint8Array>;
   sleep?: (ms: number) => Promise<void>;
 }
 
@@ -101,6 +105,19 @@ async function runPlatformOperation(
     options.positional.length
   )
     throw commandArgumentError(command, 'Unexpected positional arguments.');
+  const selected = runPermissions.filter(({ flag }) => options.has(flag));
+  const runScope = selected[0]?.scope;
+  if (
+    selected.length > 1 ||
+    (runScope && (options.has('--workspace') || options.has('--workspace-actions')))
+  )
+    throw commandArgumentError(command, 'Select one run permission per connection.');
+  if (
+    command === 'reports' &&
+    (runScope || options.has('--workspace') || options.has('--workspace-actions')) &&
+    options.positional[0] !== 'connect'
+  )
+    throw commandArgumentError(command, 'Use workspace permission options with reports connect.');
   if (command === 'login' && options.has('--start') && options.has('--resume'))
     throw commandArgumentError(command, 'Choose --start or --resume.');
   if (
@@ -129,6 +146,33 @@ async function runPlatformOperation(
       command,
       'Supply existing project and team UUIDs with --project and --team.',
     );
+  if (command === 'messages') {
+    const [action] = options.positional;
+    const allowed =
+      action === 'post'
+        ? ['--channel', '--thread', '--request-id']
+        : action === 'read'
+          ? ['--channel', '--thread', '--before']
+          : [];
+    if (
+      !['list', 'read', 'post'].includes(action ?? '') ||
+      ['--channel', '--thread', '--before', '--request-id'].some(
+        (flag) => options.has(flag) && !allowed.includes(flag),
+      )
+    )
+      throw commandArgumentError(
+        command,
+        'Choose list, read or post and use options for that operation.',
+      );
+    const required =
+      action === 'post' ? ['--channel', '--request-id'] : action === 'read' ? ['--channel'] : [];
+    for (const flag of [
+      ...required,
+      ...['--thread', '--before'].filter((flag) => options.has(flag)),
+    ])
+      if (!z.uuid().safeParse(options.value(flag)).success)
+        throw commandArgumentError(command, 'Supply a UUID for ' + flag + '.');
+  }
   const projectInput = command === 'projects' ? validateProjects(options) : undefined;
   if (command === 'projects' && projectInput && options.has('--dry-run')) {
     emit({
@@ -329,6 +373,173 @@ async function runPlatformOperation(
       await writePrivate(linkPath, { ...link, origin });
       emit({ ...link, origin });
     });
+    return;
+  }
+  if (command === 'reports' || command === 'workspace') {
+    const link = linkSchema.parse(await readPrivate(linkPath));
+    if (link.origin !== origin || link.principalId !== actor.principalId)
+      throw platformFailure('Link this project to the selected identity and API origin.');
+    if (
+      process.env.ANHEDRAL_REPORT_CONTEXT &&
+      process.env.ANHEDRAL_REPORT_CONTEXT !==
+        JSON.stringify([origin, actor.principalId, link.teamId, link.projectId])
+    )
+      throw platformFailure('Authenticated handoff context changed.');
+    const credentialFile = (permission?: string) => {
+      const fields = [origin, actor.principalId, link.projectId];
+      if (permission) fields.push(permission);
+      return join(
+        dependencies.userDirectory ?? homedir(),
+        '.anhedral',
+        'mcp',
+        createHash('sha256').update(JSON.stringify(fields)).digest('hex') + '.json',
+      );
+    };
+    if (command === 'workspace') {
+      const base = '/projects/' + link.projectId + '/workspace/tools';
+      if (options.positional[0] === 'tools')
+        emit(await request(base, 'GET', undefined, token, link.teamId));
+      else {
+        const name = options.positional[1];
+        if (!/^[a-z_]{1,64}$/.test(name))
+          throw commandArgumentError(command, 'Choose a tool listed by workspace tools.');
+        let toolToken = token;
+        const permission = runPermissions.find(
+          (p) =>
+            p.tool === name ||
+            ('additionalTools' in p && p.additionalTools?.some((tool) => tool === name)),
+        );
+        if (permission) {
+          const saved = z
+            .object({
+              url: z.literal(origin + '/api/cli/v1/projects/' + link.projectId + '/mcp'),
+              principalId: z.literal(actor.principalId),
+              teamId: z.literal(link.teamId),
+              token: z.string().regex(/^amcp_[a-f0-9]{64}$/),
+            })
+            .safeParse(await readPrivate(credentialFile(permission.scope)));
+          if (!saved.success)
+            throw platformFailure(
+              'Connect this project with anhedral reports connect ' + permission.flag + ' first.',
+            );
+          toolToken = saved.data.token;
+        }
+        const data = dependencies.readInput
+          ? await dependencies.readInput()
+          : await stdinBytes(1048576);
+        let input: unknown;
+        try {
+          input = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(data));
+        } catch {
+          throw commandArgumentError(command, 'Supply tool arguments as a JSON object on stdin.');
+        }
+        emit(await request(base + '/' + name, 'POST', input, toolToken, link.teamId));
+      }
+      return;
+    }
+    const base = '/projects/' + link.projectId + '/reports';
+    const [action] = options.positional;
+    if (action === 'brief') emit(await request(base, 'GET', undefined, token, link.teamId));
+    else if (action === 'connect') {
+      const credential = z
+        .object({ token: z.string().regex(/^amcp_[a-f0-9]{64}$/), expiresAt: z.string() })
+        .parse(
+          await request(
+            base + '/connect',
+            'POST',
+            runScope
+              ? { runScope }
+              : options.has('--workspace-actions')
+                ? { workspace: true, actions: true }
+                : options.has('--workspace')
+                  ? { workspace: true }
+                  : {},
+            token,
+            link.teamId,
+          ),
+        );
+      const credentialPath = credentialFile(
+        runScope ??
+          (options.has('--workspace-actions')
+            ? 'workspace-actions'
+            : options.has('--workspace')
+              ? 'workspace'
+              : undefined),
+      );
+      const url = origin + '/api/cli/v1/projects/' + link.projectId + '/mcp';
+      await writePrivate(credentialPath, {
+        url,
+        principalId: actor.principalId,
+        teamId: link.teamId,
+        ...credential,
+      });
+      emit({ url, credentialPath, expiresAt: credential.expiresAt });
+    } else if (action === 'dispatch')
+      emit(await request(base + '/dispatch', 'POST', {}, token, link.teamId));
+    else if (action === 'submit') {
+      const input: unknown = JSON.parse(
+        new TextDecoder('utf-8', { fatal: true }).decode(
+          await (dependencies.readInput ?? stdinBytes)(),
+        ),
+      );
+      emit(await request(base, 'POST', input, token, link.teamId));
+    } else throw commandArgumentError(command, 'Choose brief, submit or dispatch.');
+    return;
+  }
+  if (command === 'messages') {
+    const link = linkSchema.parse(await readPrivate(linkPath));
+    if (link.origin !== origin || link.principalId !== actor.principalId)
+      throw platformFailure('Link this project to the selected API origin and signed-in identity.');
+    const base = '/projects/' + link.projectId + '/messages';
+    const channel = options.value('--channel');
+    const thread = options.value('--thread');
+    if (options.positional[0] === 'list') {
+      emit(
+        z
+          .object({ channels: z.array(z.object({ id: z.uuid(), name: z.string() })) })
+          .parse(await request(base, 'GET', undefined, token, link.teamId)),
+      );
+    } else if (options.positional[0] === 'read') {
+      const query = new URLSearchParams();
+      if (thread) query.set('thread', thread);
+      if (options.has('--before')) query.set('before', options.value('--before')!);
+      emit(
+        z
+          .object({
+            messages: z.array(
+              z.object({
+                id: z.uuid(),
+                authorName: z.string(),
+                body: z.string(),
+                parentId: z.uuid().nullable(),
+              }),
+            ),
+            before: z.uuid().nullable(),
+          })
+          .parse(
+            await request(base + '/' + channel + '?' + query, 'GET', undefined, token, link.teamId),
+          ),
+      );
+    } else {
+      const body = new TextDecoder('utf-8', { fatal: true })
+        .decode(await (dependencies.readInput ?? stdinBytes)())
+        .trim();
+      if (!body || body.length > 10000)
+        throw commandArgumentError(command, 'Supply 1–10000 characters on stdin.');
+      emit(
+        z
+          .object({ id: z.uuid() })
+          .parse(
+            await request(
+              base + '/' + channel,
+              'POST',
+              { body, requestId: options.value('--request-id'), parentId: thread },
+              token,
+              link.teamId,
+            ),
+          ),
+      );
+    }
     return;
   }
   if (['env', 'staging', 'production', 'logs'].includes(command)) {

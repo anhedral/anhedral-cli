@@ -16,22 +16,12 @@
     "hosting": "cloudflare",
     "resourcesProvisioned": false
   },
-  "composition": {
-    "contractVersion": 2,
-    "foundation": "tanstack-start",
-    "generatorVersion": "0.24.1",
-    "identity": "better-auth-d1-v1",
-    "capabilities": {
-      "hono": "0.24.1",
-      "database-auth": "0.24.1",
-      "r2": "0.24.1",
-      "stripe": "0.24.1"
-    }
-  },
   "capabilities": {
     "schemaVersion": 1,
     "installed": [
+      "web",
       "hono",
+      "db",
       "database-auth",
       "r2",
       "stripe"
@@ -45,9 +35,23 @@
       "apps/web/src/lib/application.server.ts": "ab4d1b62e03672048c97e70d019cbded2e2fb0c41f9391b02cc26701c39a76c8",
       "apps/api/src/capabilities.ts": "4144a216b06cf38a94c38694eba1e2e1a369372d99ee6dccff3b9242daccf0c2",
       "apps/api/src/auth-platform.ts": "775f399c49f5d1227775d6feb1cc4bafea95ef2c7b38e207b5bdce628c26dc16",
-      "apps/api/src/environment.ts": "907eeb3916fdb1c28c2d440f0d51898012513553cd68faf3b6acec4e88401f4a",
+      "apps/api/src/environment.ts": "684a901062fb7402a441aec16e7bced5266b6cf6b63e64b6e55322c22f6fbee7",
       "apps/api/src/billing-providers.ts": "d7ff23c5ec783227ba072a760b338a29d8ffe33360dbe980c4281b966598731c"
     },
     "resourcesProvisionedByCli": false
+  },
+  "composition": {
+    "contractVersion": 3,
+    "foundation": "turborepo",
+    "generatorVersion": "0.24.1",
+    "identity": "better-auth-neon-v1",
+    "capabilities": {
+      "web": "0.24.1",
+      "hono": "0.24.1",
+      "db": "0.24.1",
+      "database-auth": "0.24.1",
+      "r2": "0.24.1",
+      "stripe": "0.24.1"
+    }
   }
 }

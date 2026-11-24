@@ -8,7 +8,7 @@ import { resourceName } from '../render.js';
 import { json, launchTemplate, put, workerConfig } from './files.js';
 
 /** The launch foundation is a web service; Hono owns application services and data. */
-export function scaffoldTanstack(root: string, name: string): void {
+export function scaffoldTanstack(root: CapabilityEditor, name: string): void {
   const app = 'apps/web';
   const web = WEB_DEPENDENCIES.dependencies!;
   const dev = WEB_DEPENDENCIES.devDependencies!;

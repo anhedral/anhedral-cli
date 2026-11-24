@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "anhedral-reports": {
+      "command": "anhedral-handoff",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

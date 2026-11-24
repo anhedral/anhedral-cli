@@ -54,7 +54,7 @@ for (const point of ['staging', 'journal', 'installed'])
     const scratch = fixture(),
       root = path.join(scratch, 'app');
     try {
-      const args = ['init', root, '--skip-install', '--no-git', '--json'];
+      const args = ['init', root, '--skip-install', '--catalog-pins', '--no-git', '--json'];
       assert.equal(command(args, crashHook(root, point)).status, 79);
       const before = inventory(root);
       assert.equal(command([...args, '--dry-run']).status, 1);
@@ -74,13 +74,17 @@ for (const recreate of [false, true])
     const scratch = fixture(),
       root = path.join(scratch, 'app');
     try {
-      assert.equal(command(['init', root, '--skip-install', '--no-git']).status, 0);
+      assert.equal(
+        command(['init', root, '--skip-install', '--catalog-pins', '--no-git']).status,
+        0,
+      );
       const original = JSON.parse(readFileSync(path.join(root, 'anhedral.json'), 'utf8'));
       const args = [
         'add',
         'payment',
         '--with-dependencies',
         '--skip-install',
+        '--catalog-pins',
         '--cwd',
         root,
         '--json',
@@ -171,7 +175,10 @@ test('real init refuses malformed recovery metadata and preserves consumer files
     writeFileSync(path.join(root, '.anhedral-journal.json'), '{invalid');
     writeFileSync(path.join(root, 'consumer.txt'), 'preserve');
     const before = inventory(root);
-    assert.equal(command(['init', root, '--skip-install', '--no-git', '--json']).status, 1);
+    assert.equal(
+      command(['init', root, '--skip-install', '--catalog-pins', '--no-git', '--json']).status,
+      1,
+    );
     assert.deepEqual(inventory(root), before);
   } finally {
     rmSync(scratch, { recursive: true, force: true });

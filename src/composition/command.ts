@@ -5,14 +5,18 @@ import { createReporter, type OutputOptions } from '../cli-output.js';
 import {
   ANHEDRAL_STACK,
   PUBLIC_STACK_ADDITIONS,
+  publicGroups,
   type PublicStackAddition,
   CAPABILITIES,
   CAPABILITY_IDS,
   capabilityOrder,
+  installedCapability,
+  publicId,
   type Capability,
 } from './catalog.js';
 import { CapabilityEditor } from './editor.js';
-import { addCapabilityRecipe, composeCapabilities } from './recipes.js';
+import { pinGeneratedDependencies } from '../scaffold/resolve-dependencies.js';
+import { installRecipes } from './recipes.js';
 import { normalizeOjFoundation } from '../scaffold/tanstack.js';
 import { GENERATOR_VERSION } from '../version.js';
 import {
@@ -22,8 +26,8 @@ import {
 } from '../transactions/transaction.js';
 import { put } from '../scaffold/files.js';
 import { execFile } from '../util.js';
-import { capabilityReferences } from './references.js';
 import { configureDependencyPatches } from '../dependency-patches.js';
+import { usesD1 } from './catalog.js';
 import { composeSourceProvenance, newerSourceMessage } from './composition.js';
 import type { CommandRunner } from '../command-types.js';
 export function projectRoot(cwd: string, allowRecovery = false) {
@@ -56,22 +60,18 @@ export function readState(e: CapabilityEditor) {
   )
     throw Error('Invalid capability state; preserve and reconcile anhedral.json.');
   const installed = [...new Set(state.installed)] as Capability[];
+  if (project.composition?.foundation === 'tanstack-start') {
+    if (!installed.includes('web')) installed.push('web');
+    if (installed.includes('database-auth') && !installed.includes('db')) installed.push('db');
+  }
   for (const id of installed)
     for (const parent of CAPABILITIES[id].requires)
       if (!installed.includes(parent))
         throw Error(`Invalid capability state: ${id} requires ${parent}.`);
   return { installed, managedFiles: state.managedFiles as Record<string, string> };
 }
-const publicGroups: Record<PublicStackAddition, readonly Capability[]> = {
-  backend: ['hono', 'database-auth'],
-  storage: ['r2'],
-  payment: ['stripe'],
-};
 function publicScopeError(command: 'add' | 'stack' = 'add') {
-  return commandArgumentError(
-    command,
-    'The CLI edits only the Anhedral Stack: TanStack Start with OJ and shadcn.',
-  );
+  return commandArgumentError(command, 'This command requires an Anhedral Stack workspace.');
 }
 /** Identify the source before any recovery or source mutation. One missing manifest can be an interrupted add. */
 export function assertPublicWorkspace(
@@ -81,42 +81,67 @@ export function assertPublicWorkspace(
 ) {
   const editor = new CapabilityEditor(root, {});
   const recovering = allowRecovery && existsSync(path.join(root, '.anhedral-journal.json'));
-  const hasWeb = existsSync(path.join(root, 'apps/web/package.json'));
-  const hasConfiguration = existsSync(path.join(root, 'anhedral.json'));
-  if (!hasWeb && !hasConfiguration) throw publicScopeError(command);
-  if (hasWeb) {
-    const dependencies = editor.json('apps/web/package.json').dependencies;
-    if (!dependencies?.['@tanstack/react-start'] || dependencies.next)
-      throw publicScopeError(command);
-  } else if (!recovering) throw publicScopeError(command);
-  if (hasConfiguration) {
-    const configuration = editor.json('anhedral.json');
-    const composition = configuration.composition;
+  if (!existsSync(path.join(root, 'anhedral.json'))) {
     if (
-      Array.isArray(configuration.capabilities?.installed) &&
-      configuration.capabilities.installed.some(
-        (id: string) => !['hono', 'database-auth', 'r2', 'stripe'].includes(id),
-      )
+      recovering &&
+      existsSync(path.join(root, 'pnpm-workspace.yaml')) &&
+      (existsSync(path.join(root, 'turbo.json')) ||
+        existsSync(path.join(root, 'apps/web/package.json')))
     )
-      throw publicScopeError(command);
-    if (
-      configuration.setup?.stack !== 'anhedral-stack' ||
-      composition?.contractVersion !== 2 ||
-      composition?.foundation !== 'tanstack-start'
+      return;
+    throw publicScopeError(command);
+  }
+  const project = editor.json('anhedral.json');
+  if (
+    project.capabilities?.installed?.some(
+      (id: unknown) => typeof id !== 'string' || !Object.hasOwn(CAPABILITIES, id),
     )
-      throw publicScopeError(command);
-  } else if (!recovering) throw publicScopeError(command);
+  )
+    throw publicScopeError(command);
+  const legacy =
+    project.composition?.contractVersion === 2 &&
+    project.composition.foundation === 'tanstack-start';
+  const workspace =
+    project.composition?.contractVersion === 3 && project.composition.foundation === 'turborepo';
+  if (project.setup?.stack !== 'anhedral-stack' || (!legacy && !workspace))
+    throw publicScopeError(command);
+  if (
+    (legacy || project.capabilities?.installed?.includes('web')) &&
+    (!recovering || existsSync(path.join(root, 'apps/web/package.json')))
+  ) {
+    const deps = editor.json('apps/web/package.json').dependencies;
+    if (!deps?.['@tanstack/react-start'] || deps.next) throw publicScopeError(command);
+  }
+}
+function connections(installed: Capability[]) {
+  const clients = installed.filter((id) =>
+    ['cli', 'mobile', 'desktop', 'web-extension', 'web'].includes(id),
+  );
+  const services = installed.filter((id) =>
+    ['hono', 'database-auth', 'r2', 'stripe', 'in-app-purchases', 'client-sync', 'rtc'].includes(
+      id,
+    ),
+  );
+  return clients.flatMap((client) =>
+    services
+      .filter((service) => {
+        if (service === 'rtc') return client === 'mobile' || client === 'web';
+        if (service === 'in-app-purchases') return client === 'mobile';
+        return true;
+      })
+      .map((service) => ({ client: publicId(client), service: publicId(service) })),
+  );
 }
 function publicStackState(root: string, state: ReturnType<typeof readState>) {
-  if (state.installed.some((id) => !['hono', 'database-auth', 'r2', 'stripe'].includes(id)))
-    throw publicScopeError('stack');
-  const additions = PUBLIC_STACK_ADDITIONS.map((id) => {
+  const editor = new CapabilityEditor(root, {});
+  const additions = PUBLIC_STACK_ADDITIONS.filter((id) => id !== 'backend').map((id) => {
     const item = ANHEDRAL_STACK.additions[id];
     const group = publicGroups[id];
     const present = group.filter((capability) => state.installed.includes(capability));
     const installed = present.length === group.length;
+    const profile = installed ? installedCapability(editor, group[0]) : item;
     const missingFiles = present.length
-      ? item.targets.filter((file) => !existsSync(path.join(root, file)))
+      ? profile.targets.filter((file) => !existsSync(path.join(root, file)))
       : [];
     const missingPrerequisites = item.requires.filter(
       (required) =>
@@ -126,7 +151,7 @@ function publicStackState(root: string, state: ReturnType<typeof readState>) {
     );
     return {
       id,
-      name: item.name,
+      name: profile.name,
       sourceState: present.length
         ? installed && !missingFiles.length && !missingPrerequisites.length
           ? 'installed'
@@ -151,6 +176,7 @@ function publicStackState(root: string, state: ReturnType<typeof readState>) {
       foundation: { ...ANHEDRAL_STACK.foundation, missingFiles },
     },
     foundationReady,
+    connections: connections(state.installed),
     sourceReady: foundationReady && additions.every((item) => item.sourceState !== 'incomplete'),
     additions,
     runtimeAcceptance: 'not evaluated',
@@ -199,42 +225,29 @@ export async function runCapabilityCommand(
       if (action === 'doctor' && !result.sourceReady) process.exitCode = 1;
     }
   } else {
-    if (!parsed.positional.length || parsed.positional.length > CAPABILITY_IDS.length)
+    if (!parsed.positional.length || parsed.positional.length > PUBLIC_STACK_ADDITIONS.length)
       throw commandArgumentError(
         'add',
         'Choose one or more capabilities from anhedral stack list.',
       );
     const root = projectRoot(process.cwd(), !parsed.has('--dry-run'));
     assertPublicWorkspace(root, !parsed.has('--dry-run'));
-    if (!parsed.has('--dry-run') && existsSync(path.join(root, '.anhedral-journal.json')))
+    if (!parsed.has('--dry-run') && existsSync(path.join(root, '.anhedral-journal.json'))) {
       recoverInterruptedTransaction(root);
+      assertPublicWorkspace(root);
+    }
     const e = new CapabilityEditor(root, {});
     const state = readState(e);
-    {
-      assertPublicWorkspace(root);
-      if (state.installed.some((id) => !['hono', 'database-auth', 'r2', 'stripe'].includes(id)))
-        throw publicScopeError();
-    }
     Object.assign(e.managed, state.managedFiles);
     const manifest = e.json('package.json');
     if (typeof manifest.name !== 'string' || !manifest.name)
       throw Error('The workspace needs a package name.');
     for (const id of state.installed)
-      for (const target of CAPABILITIES[id].targets)
+      for (const target of installedCapability(e, id).targets)
         if (!existsSync(path.join(root, target)))
           throw Error(
             `Installed capability is incomplete: ${id} (${target}). Reconcile its source first.`,
           );
-    if (
-      !parsed.has('--with-dependencies') &&
-      !parsed.positional.includes('backend') &&
-      !(state.installed.includes('hono') && state.installed.includes('database-auth')) &&
-      parsed.positional.some((id) => id === 'storage' || id === 'payment')
-    )
-      throw commandArgumentError(
-        'add',
-        'Private storage and payments require backend. Run anhedral add backend first, or explicitly use --with-dependencies.',
-      );
     const requested = [
       ...new Set(parsed.positional.flatMap((id) => publicGroups[id as PublicStackAddition])),
     ];
@@ -243,25 +256,26 @@ export async function runCapabilityCommand(
       state.installed,
       parsed.has('--with-dependencies'),
     );
-    const installed = [...state.installed, ...additions];
+    const installed = capabilityOrder(
+      CAPABILITY_IDS.filter((id) => state.installed.includes(id) || additions.includes(id)),
+      [],
+      true,
+    );
     const beforeConfiguration = e.json('anhedral.json');
     const newer = newerSourceMessage(beforeConfiguration.composition?.generatorVersion);
     if (newer) throw commandArgumentError('add', newer);
     const metadataChanged =
       beforeConfiguration.setup?.cliVersion !== GENERATOR_VERSION ||
       beforeConfiguration.composition?.generatorVersion !== GENERATOR_VERSION;
-    const foundationChanged = normalizeOjFoundation(e, state.installed, metadataChanged);
+    const foundationChanged =
+      state.installed.includes('web') && normalizeOjFoundation(e, state.installed, metadataChanged);
     const composition = composeSourceProvenance(
       e.json('anhedral.json').composition,
       installed,
       additions,
+      usesD1(e),
     );
-    for (const id of additions) addCapabilityRecipe(e, id, manifest.name);
-    if (additions.length) {
-      for (const [file, source] of Object.entries(capabilityReferences()))
-        if (e.read(file) === null) e.create(file, source);
-      composeCapabilities(e, installed);
-    }
+    installRecipes(e, manifest.name, state.installed, additions, installed);
     if (additions.length || foundationChanged || metadataChanged) {
       e.set('anhedral.json', ['setup', 'cliVersion'], GENERATOR_VERSION);
       e.set('anhedral.json', ['composition'], composition);
@@ -272,23 +286,37 @@ export async function runCapabilityCommand(
         resourcesProvisionedByCli: false,
       });
     }
+    if (!parsed.has('--catalog-pins') && !parsed.has('--dry-run'))
+      await pinGeneratedDependencies(e);
     const files = [...e.writes.keys()];
     const plan = {
       root,
-      added: PUBLIC_STACK_ADDITIONS.filter((id) =>
-        publicGroups[id].some((capability) => additions.includes(capability)),
+      requested: parsed.positional,
+      prerequisites: additions.filter((id) => !requested.includes(id)).map(publicId),
+      connections: connections(installed).filter(
+        (pair) =>
+          !connections(state.installed).some(
+            (old) => old.client === pair.client && old.service === pair.service,
+          ),
+      ),
+      added: PUBLIC_STACK_ADDITIONS.filter(
+        (id) =>
+          id !== 'backend' && publicGroups[id].some((capability) => additions.includes(capability)),
       ),
       alreadyInstalled: parsed.positional.filter((id) =>
         publicGroups[id as PublicStackAddition].every((capability) =>
           state.installed.includes(capability),
         ),
       ),
-      installed: PUBLIC_STACK_ADDITIONS.filter((id) =>
-        publicGroups[id].every((capability) => installed.includes(capability)),
+      installed: PUBLIC_STACK_ADDITIONS.filter(
+        (id) =>
+          id !== 'backend' &&
+          publicGroups[id].every((capability) => installed.includes(capability)),
       ),
       files,
-      configuration: PUBLIC_STACK_ADDITIONS.filter((id) =>
-        publicGroups[id].some((capability) => additions.includes(capability)),
+      configuration: PUBLIC_STACK_ADDITIONS.filter(
+        (id) =>
+          id !== 'backend' && publicGroups[id].some((capability) => additions.includes(capability)),
       ).map((id) => ({
         id,
         requirements: [
@@ -339,7 +367,7 @@ export async function runCapabilityCommand(
   }
   const format = () => {
     if (command === 'add')
-      return `${parsed.has('--dry-run') ? 'Plan' : 'Source additions'}: ${(result.added as string[]).join(', ') || 'already installed'}\n${(result.files as string[]).map((file) => '  ' + file).join('\n')}\nReview capability configuration and migrations before deployment. No resources were provisioned.${!parsed.has('--dry-run') && parsed.positional.includes('payment') ? '\nRun pnpm db:generate, review the billing SQL, then run pnpm db:migrate --local before testing webhooks.' : ''}`;
+      return `${parsed.has('--dry-run') ? 'Plan' : 'Source additions'}: ${(result.added as string[]).join(', ') || 'already installed'}\n${(result.connections as { client: string; service: string }[]).map((pair) => 'Connect ' + pair.client + ' → ' + pair.service + '\n').join('')}${(result.files as string[]).map((file) => '  ' + file).join('\n')}\nReview capability configuration and migrations before deployment. No resources were provisioned.${!parsed.has('--dry-run') && parsed.positional.includes('payment') ? '\nRun pnpm db:generate, review the billing SQL, then run pnpm db:migrate --local before testing webhooks.' : ''}`;
     else {
       const rows =
         parsed.positional[0] === 'list'

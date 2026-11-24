@@ -1,6 +1,6 @@
 # __APP_NAME__
 
-A TanStack Start web app with editable ShadCN components.
+A Turborepo workspace with a TanStack Start web application. Run `anhedral stack status` in this directory to see the installed clients and services.
 
 ## Run locally
 
@@ -21,10 +21,10 @@ pnpm audit:deps  # Audit installed dependencies
 
 ## Add services
 
-Run the backend command first, then add storage or payment as needed.
+Select services individually or use `add backend` for the API, database and authentication together.
 
 ```sh
-pnpm dlx anhedral@latest add backend  # Hono, Better Auth, and Drizzle/D1
+pnpm dlx anhedral@latest add api db auth  # Hono, Drizzle ORM on Neon Postgres and Better Auth
 pnpm dlx anhedral@latest add storage  # Private files on R2
 pnpm dlx anhedral@latest add payment  # Stripe subscriptions
 ```
@@ -37,4 +37,4 @@ After adding a service, follow the environment and migration instructions before
 pnpm dlx anhedral@latest stack update --dry-run --human
 ```
 
-Review the diff and run the version-pinned apply command it prints. Then run `pnpm install` and `pnpm check`.
+Review the current and proposed dependency pins, lockfiles and source changes. Run the apply command printed by the preview, then run `pnpm install --frozen-lockfile` and `pnpm check`.

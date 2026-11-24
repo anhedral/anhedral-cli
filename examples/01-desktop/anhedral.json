@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "schemaVersion": 1,
+    "id": "dbc7ed9e-9166-4efc-b9b3-31c7d019930f"
+  },
+  "setup": {
+    "schemaVersion": 1,
+    "cliVersion": "0.24.1",
+    "stack": "anhedral-stack",
+    "resourcesProvisioned": false
+  },
+  "standard": {
+    "schemaVersion": 1,
+    "standard": "anhedral-stack",
+    "hosting": "cloudflare",
+    "resourcesProvisioned": false
+  },
+  "capabilities": {
+    "schemaVersion": 1,
+    "installed": [
+      "desktop"
+    ],
+    "managedFiles": {},
+    "resourcesProvisionedByCli": false
+  },
+  "composition": {
+    "contractVersion": 3,
+    "foundation": "turborepo",
+    "generatorVersion": "0.24.1",
+    "identity": "none",
+    "capabilities": {
+      "desktop": "0.24.1"
+    }
+  }
+}

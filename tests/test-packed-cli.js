@@ -47,12 +47,14 @@ function runInstalledScaffold(installRoot) {
   const plan = JSON.parse(
     run(binPath, ['init', projectRoot, '--dry-run', '--json'], installRoot).stdout,
   );
-  assert.deepEqual(plan.products, ['tanstack-start']);
+  assert.deepEqual(plan.products, []);
   assert.equal(existsSync(projectRoot), false);
   const created = JSON.parse(
     run(binPath, ['init', projectRoot, '--no-git', '--json'], installRoot).stdout,
   );
   assert.equal(created.generated, true);
+  assert.equal(existsSync(path.join(projectRoot, 'apps')), false);
+  run(binPath, ['add', 'web', '--cwd', projectRoot], installRoot);
   assert.ok(existsSync(path.join(projectRoot, 'pnpm-lock.yaml')));
   assert.ok(
     existsSync(path.join(projectRoot, 'apps/web/node_modules/@tanstack/react-start/package.json')),
@@ -72,7 +74,22 @@ function runInstalledScaffold(installRoot) {
   );
   assert.equal(stack.stack.name, 'Anhedral Stack');
   assert.equal(stack.stack.id, 'anhedral-stack');
-  assert.deepEqual(Object.keys(stack.stack.additions), ['backend', 'storage', 'payment']);
+  assert.deepEqual(Object.keys(stack.stack.additions), [
+    'web',
+    'mobile',
+    'desktop',
+    'web-extension',
+    'cli',
+    'api',
+    'db',
+    'auth',
+    'backend',
+    'storage',
+    'payment',
+    'in-app-purchases',
+    'client-sync',
+    'rtc',
+  ]);
   const addition = JSON.parse(
     run(
       binPath,
@@ -82,7 +99,7 @@ function runInstalledScaffold(installRoot) {
   );
   assert.equal(addition.sourceInstalled, true);
   assert.ok(existsSync(path.join(projectRoot, 'apps/api/src/features/stripe.ts')));
-  assert.ok(existsSync(path.join(projectRoot, 'docs/anhedral/capabilities.md')));
+  assert.ok(existsSync(path.join(projectRoot, 'apps/api/wrangler.jsonc')));
   for (const command of ['inspect', 'ship', 'auth', 'services']) {
     const result = spawnSyncPortable(
       process.execPath,

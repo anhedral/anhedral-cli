@@ -1,0 +1,20 @@
+{
+  "name": "@workspace/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./session": {
+      "types": "./session.d.ts",
+      "default": "./session.js"
+    },
+    "./files": {
+      "types": "./files.d.ts",
+      "default": "./files.js"
+    }
+  }
+}

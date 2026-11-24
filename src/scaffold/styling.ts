@@ -1,10 +1,11 @@
+import type { CapabilityEditor } from '../composition/editor.js';
 import { createRequire } from 'node:module';
 
 import { STACK_DEPENDENCIES } from '../dependencies.js';
 import { json, launchTemplate, put, stackTemplate } from './files.js';
 
 /** Generate CSS from the same tokens the styling package exports. */
-export function scaffoldStyling(root: string): void {
+export function scaffoldStyling(root: CapabilityEditor): void {
   json(root, 'packages/styling/package.json', {
     name: '@workspace/styling',
     private: true,

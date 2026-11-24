@@ -1,0 +1,8 @@
+{
+  "name": "anhedral-handoffs",
+  "version": "0.1.0",
+  "description": "Opt-in authenticated project handoffs",
+  "author": {
+    "name": "Anhedral"
+  }
+}

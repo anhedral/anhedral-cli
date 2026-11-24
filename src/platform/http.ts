@@ -57,10 +57,12 @@ export function createPlatformRequest({
     }
     const data: unknown = await readSourceBounded(
       response.body,
-      /\/projects\/[^/]+\/(environment|staging|production|runtime-logs)(\?|$)/.test(path)
+      /\/projects\/[^/]+\/(environment|staging|production|runtime-logs)(\?|$)/.test(path) ||
+        command === 'projects' ||
+        command === 'reports'
         ? 1024 * 1024
-        : command === 'projects'
-          ? 1024 * 1024
+        : command === 'messages' || command === 'workspace'
+          ? 4 * 1024 * 1024
           : 65536,
     )
       .then((b) => JSON.parse(new TextDecoder().decode(b)))
@@ -105,7 +107,15 @@ export function createPlatformRequest({
                       ? 'Candidate, production configuration, permissions or generation changed. Review production status before retrying.'
                       : command === 'env'
                         ? 'Environment versions or import contents conflict. Review env list and preserve saved retry state before starting a new import.'
-                        : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
+                        : command === 'workspace'
+                          ? path.endsWith('/cancel_agent_run')
+                            ? 'This run is no longer active or your build access changed.'
+                            : path.endsWith('/start_agent_run')
+                              ? 'The project cannot start this run. Inspect the active run, project budget and original request inputs.'
+                              : 'This request ID belongs to different input. Reuse the original input for a retry.'
+                          : command === 'reports' || command === 'messages'
+                            ? 'This event ID belongs to different content. Retry the original submission or use a new ID for a distinct contribution.'
+                            : 'Upload conflicts with saved source. Restore the original files or use source upload --new.'
               : response.status === 403
                 ? command === 'projects'
                   ? 'Current team project access or project creation permission is unavailable.'
@@ -115,7 +125,9 @@ export function createPlatformRequest({
                       ? 'Current project log access is unavailable.'
                       : command === 'production'
                         ? 'Current production permission or team approval policy does not allow this deployment. Review production status and the team policy.'
-                        : 'Current project build access is unavailable.'
+                        : command === 'workspace'
+                          ? 'Access to this project resource is unavailable.'
+                          : 'Current project build access is unavailable.'
                 : `Platform request failed (${response.status}).`),
         response.status === 401
           ? 'auth'

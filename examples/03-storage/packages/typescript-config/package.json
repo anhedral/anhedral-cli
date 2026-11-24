@@ -1,7 +1,0 @@
-{
-  "name": "@workspace/typescript-config",
-  "private": true,
-  "exports": {
-    "./base.json": "./base.json"
-  }
-}

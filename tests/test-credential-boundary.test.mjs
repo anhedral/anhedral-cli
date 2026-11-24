@@ -12,6 +12,11 @@ import { packageSource } from '../dist/platform/source.js';
 import { scanText } from '../scripts/secret-scanner.mjs';
 
 const examples = [
+  ['report-mcp-token', 'Bearer amcp_' + 'a'.repeat(64)],
+  ...['aga_', 'agr_', 'agc_'].map((prefix) => [
+    'chatgpt-link-credential',
+    'Bearer ' + prefix + 'a'.repeat(41) + '-_',
+  ]),
   ['cli-session-token', ['acl_', 'a'.repeat(64)].join('')],
   [
     'device-code',

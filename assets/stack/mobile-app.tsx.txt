@@ -1,0 +1,8 @@
+import { Text, View } from 'react-native';
+export default function App() {
+  return (
+    <View>
+      <Text>__APP_NAME__</Text>
+    </View>
+  );
+}

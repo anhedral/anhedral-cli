@@ -1,0 +1,32 @@
+{
+  "name": "@workspace/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./files": {
+      "types": "./files.d.ts",
+      "default": "./files.js"
+    },
+    "./access": {
+      "types": "./access.d.ts",
+      "default": "./access.js"
+    },
+    "./session": {
+      "types": "./session.d.ts",
+      "default": "./session.js"
+    },
+    "./rtc": {
+      "types": "./rtc.d.ts",
+      "default": "./rtc.js"
+    },
+    "./sync": {
+      "types": "./sync.d.ts",
+      "default": "./sync.js"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { recordReceipt } from '../receipt';
 import { Hono } from 'hono';
 import Stripe from 'stripe';
 import { z } from 'zod';
@@ -78,11 +79,7 @@ stripeRoutes.post('/webhooks/stripe', async (c) => {
   );
   if (!event) return c.json({ error: 'Invalid signature or billing environment' }, 400);
   // Receipts deduplicate delivery, but never grant an entitlement by event order.
-  await c.env.DB.prepare(
-    'INSERT OR IGNORE INTO billing_receipt(provider,event_id,received_at) VALUES (?,?,?)',
-  )
-    .bind('stripe', event.id, Date.now())
-    .run();
+  await recordReceipt(c.env, event.id);
   return c.json({ received: true });
 });
 function activePrice(subscription: Stripe.Subscription, price: string) {
