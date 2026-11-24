@@ -16,10 +16,18 @@ function assertPackageName(value: string): string {
   return value;
 }
 
+function trimPackageSeparators(value: string): string {
+  let start = 0;
+  let end = value.length;
+  while (start < end && '._-'.includes(value[start]!)) start++;
+  while (end > start && '._-'.includes(value[end - 1]!)) end--;
+  return value.slice(start, end);
+}
+
 function compactPackageSegment(value: string, maximumLength: number): string {
   if (value.length <= maximumLength) return value;
   const digest = createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 8);
-  const prefix = value.slice(0, maximumLength - digest.length - 1).replace(/[._-]+$/g, '') || 'app';
+  const prefix = trimPackageSeparators(value.slice(0, maximumLength - digest.length - 1)) || 'app';
   return `${prefix}-${digest}`;
 }
 
@@ -30,8 +38,8 @@ export function packageNameFromText(value: string): string {
     .replace(/\p{Mark}+/gu, '')
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/^[._-]+|[._-]+$/g, '');
+    .replace(/[^a-z0-9._-]+/g, '-');
+  normalized = trimPackageSeparators(normalized);
   if (!normalized) normalized = 'anhedral-app';
   if (RESERVED_PACKAGE_NAMES.has(normalized)) normalized = `anhedral-${normalized}`;
   return assertPackageName(compactPackageSegment(normalized, MAX_PACKAGE_NAME_LENGTH));
@@ -41,9 +49,8 @@ function identifierSegment(value: string): string {
   const segment = value
     .normalize('NFKD')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return segment || 'app';
+    .replace(/[^a-z0-9]+/g, '-');
+  return trimPackageSeparators(segment) || 'app';
 }
 
 /** Keep provider resource names within the shared Workers/R2/Queues naming limits. */

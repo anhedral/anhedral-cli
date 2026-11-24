@@ -51,21 +51,21 @@ def reviewed_checksum_fingerprints(revision):
     # Generated auth-platform.ts checksums. Merge and squash commits change
     # Gitleaks commit fingerprints even when these reviewed blobs are identical.
     manifests = {
-        'examples/02-backend/anhedral.json': ('7a657ef07b251c2f8ede786c6a532c9cd3453e11', 43),
-        'examples/03-storage/anhedral.json': ('f6d8280f2ffea7af3a44f6d91c6be0be3f1ec254', 45),
-        'examples/04-payments/anhedral.json': ('18f0b9f67ea18f72ffd7905a72cdcb4eea07b315', 47),
-        'examples/04-payment/anhedral.json': ('18f0b9f67ea18f72ffd7905a72cdcb4eea07b315', 47),
-        'examples/05-init-all/anhedral.json': ('3e5b577bbd1cb963c87800ceef1c758b77f2c930', 53),
-        'examples/progression/04-auth/anhedral.json': ('e6149e7f24fb0e3822527318124d00365846526a', 36),
-        'examples/progression/05-mobile/anhedral.json': ('890b1bb83a9d7fe35e43e941cd3af1dede33e8c5', 37),
-        'examples/progression/06-desktop/anhedral.json': ('a3c45d54df7acf4049f9b07da2ed94e2af65b8fc', 38),
-        'examples/progression/07-web-extension/anhedral.json': ('310e657ab7d20f7af01a5dcfdb17b87d31702ae9', 39),
-        'examples/progression/08-storage/anhedral.json': ('038364b2ac94ec316ff8203af05e71350b5bcdae', 40),
-        'examples/progression/09-client-sync/anhedral.json': ('a780ee3aebaf424c82a51e12a0cecb59195608b2', 41),
-        'examples/progression/10-cli/anhedral.json': ('50f51e2cd472ef9c1a5812d8a3e1b4dd4ec0871a', 42),
-        'examples/progression/11-payment/anhedral.json': ('a6ee9c728f716ab93fbfaf872e516654055a6d38', 43),
-        'examples/progression/12-in-app-purchases/anhedral.json': ('69bafcbb5a800f41d5647380798d4a26afcf0bd4', 44),
-        'examples/progression/13-rtc/anhedral.json': ('f996d3e0126a88a5c5a9f7d05ca8aade7f8c488b', 45),
+        'examples/02-backend/anhedral.json': (43, {'7a657ef07b251c2f8ede786c6a532c9cd3453e11'}),
+        'examples/03-storage/anhedral.json': (45, {'f6d8280f2ffea7af3a44f6d91c6be0be3f1ec254'}),
+        'examples/04-payments/anhedral.json': (47, {'18f0b9f67ea18f72ffd7905a72cdcb4eea07b315'}),
+        'examples/04-payment/anhedral.json': (47, {'18f0b9f67ea18f72ffd7905a72cdcb4eea07b315'}),
+        'examples/05-init-all/anhedral.json': (53, {'3e5b577bbd1cb963c87800ceef1c758b77f2c930', '5b2ace5422dd50f733307a74d26809881dc852f7'}),
+        'examples/progression/04-auth/anhedral.json': (36, {'e6149e7f24fb0e3822527318124d00365846526a', 'e15e85ee925ab9d568938ca8ced8f0b53b56a9e4'}),
+        'examples/progression/05-mobile/anhedral.json': (37, {'890b1bb83a9d7fe35e43e941cd3af1dede33e8c5', '0ac6d7763287e2cef57d0ea8bfff8b2ab814445b'}),
+        'examples/progression/06-desktop/anhedral.json': (38, {'a3c45d54df7acf4049f9b07da2ed94e2af65b8fc', 'c8fb7f91b079b513599785546f1261dc24491c14'}),
+        'examples/progression/07-web-extension/anhedral.json': (39, {'310e657ab7d20f7af01a5dcfdb17b87d31702ae9', 'c92375563bdc97d31ce40c2f21d21d7cdbee4c0d'}),
+        'examples/progression/08-storage/anhedral.json': (40, {'038364b2ac94ec316ff8203af05e71350b5bcdae', '464e478d64e24c8a0c4b4c7b90676ff28dd01098'}),
+        'examples/progression/09-client-sync/anhedral.json': (41, {'a780ee3aebaf424c82a51e12a0cecb59195608b2', 'f6c4fe58741ef879e693331b1bd6e5c535004c0e'}),
+        'examples/progression/10-cli/anhedral.json': (42, {'50f51e2cd472ef9c1a5812d8a3e1b4dd4ec0871a', 'eb7022d4ebd16bf28be67e0d278dd4db67b22773'}),
+        'examples/progression/11-payment/anhedral.json': (43, {'a6ee9c728f716ab93fbfaf872e516654055a6d38', 'cba232dd481c94f7631f5e9e03433f125873b2a8'}),
+        'examples/progression/12-in-app-purchases/anhedral.json': (44, {'69bafcbb5a800f41d5647380798d4a26afcf0bd4', '81adb7a1476045fc745b6502396982a6658bcb06'}),
+        'examples/progression/13-rtc/anhedral.json': (45, {'f996d3e0126a88a5c5a9f7d05ca8aade7f8c488b', '5b7dfaeaaf1b1d60753c0462d6609a2a01332e66'}),
     }
     history = git('log', '--full-history', '-m', '--raw', '--no-renames', '--no-abbrev',
                   '--format=%H', revision, '--', *manifests).decode().splitlines()
@@ -75,8 +75,8 @@ def reviewed_checksum_fingerprints(revision):
             commit = row
         elif row.startswith(':'):
             metadata, name = row.split('\t', 1)
-            blob, line = manifests[name]
-            if commit and metadata.split()[3] == blob:
+            line, reviewed_blobs = manifests[name]
+            if commit and metadata.split()[3] in reviewed_blobs:
                 yield f'{commit}:{name}:generic-api-key:{line}'
 
 
