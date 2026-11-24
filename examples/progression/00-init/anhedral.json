@@ -6,7 +6,7 @@
   },
   "setup": {
     "schemaVersion": 1,
-    "cliVersion": "0.24.1",
+    "cliVersion": "0.25.0",
     "stack": "anhedral-stack",
     "resourcesProvisioned": false
   },
@@ -25,7 +25,7 @@
   "composition": {
     "contractVersion": 3,
     "foundation": "turborepo",
-    "generatorVersion": "0.24.1",
+    "generatorVersion": "0.25.0",
     "identity": "none",
     "capabilities": {}
   }
