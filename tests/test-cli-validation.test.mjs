@@ -3,6 +3,13 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { packageNameFromText, resourceName } from '../dist/render.js';
+
+assert.equal(packageNameFromText('._-'.repeat(5000)), 'anhedral-app');
+assert.equal(packageNameFromText('---A._B--C___'), 'a._b--c');
+assert.equal(resourceName('alpha', '--B__C--'), 'alpha-b-c');
+assert.equal(resourceName('alpha', '...'), 'alpha-app');
+
 const root = mkdtempSync(path.join(tmpdir(), 'anhedral-cli-validation-'));
 const cli = path.resolve('dist/bin.js');
 const run = (...args) =>
