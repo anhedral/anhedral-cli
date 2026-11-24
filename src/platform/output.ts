@@ -6,6 +6,37 @@ export function visible(value: unknown): string {
 
 export function formatPlatformResult(command: string, result: unknown): string {
   const data = result as Record<string, unknown>;
+  if (command === 'workspace') {
+    if (Array.isArray(data.tools))
+      return data.tools
+        .map((tool) => visible(tool.name) + '  ' + visible(tool.description))
+        .join('\n');
+    if (typeof data.workItemId === 'string') return 'Work item created: ' + visible(data.path);
+    if (typeof data.messageId === 'string')
+      return 'Message ' + visible(data.messageId) + ' posted to channel ' + visible(data.channelId);
+    if (typeof data.meetingId === 'string') return 'Meeting saved: ' + visible(data.path);
+    if (typeof data.source === 'string' && typeof data.body === 'string')
+      return [visible(data.source), '', ...data.body.split(/\r?\n/).map(visible)].join('\n');
+    return visible(JSON.stringify(result));
+  }
+  if (command === 'reports') return visible(JSON.stringify(result));
+  if (command === 'messages') {
+    if (Array.isArray(data.channels))
+      return (
+        data.channels.map((c) => visible(c.id) + ' ' + visible(c.name)).join('\n') ||
+        'No visible project channels.'
+      );
+    if (Array.isArray(data.messages))
+      return (
+        [
+          ...data.messages.map(
+            (m) => visible(m.id) + ' ' + visible(m.authorName) + ': ' + visible(m.body),
+          ),
+          ...(data.before ? ['Earlier messages: --before ' + visible(data.before)] : []),
+        ].join('\n') || 'No messages.'
+      );
+    return 'Posted message ' + visible(data.id) + '.';
+  }
   if (data.status === 'authorization_required')
     return `Approve CLI access at ${visible(data.verificationUrl)}\nConfirm code ${visible(data.userCode)}.\nNext: ${visible(data.nextAction)}`;
   if (data.status === 'authenticated')

@@ -1,5 +1,6 @@
 import { chmodSync, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual, stripVTControlCharacters } from 'node:util';
 import { deploymentManifestSchema } from '../contracts/deployment.js';
 import {
@@ -15,9 +16,12 @@ import { createReporter, type OutputOptions } from '../cli-output.js';
 import { assertPublicWorkspace, projectRoot, readState } from './command.js';
 import { CapabilityEditor, fingerprint } from './editor.js';
 import { composeCapabilities } from './recipes.js';
+import { usesD1 } from './catalog.js';
 import { composeSourceProvenance, newerSourceMessage } from './composition.js';
 import { GENERATOR_VERSION } from '../version.js';
 import { runStagedTransaction } from '../transactions/transaction.js';
+import { planDependencyUpdate, type UpdateDependencies } from './update-lockfiles.js';
+import type { DependencyPin } from '../scaffold/resolve-dependencies.js';
 import { put } from '../scaffold/files.js';
 
 const MAX_UPDATE_BYTES = 256 * 1024;
@@ -182,7 +186,11 @@ function updateRootStylesheet(e: CapabilityEditor) {
   e.writes.set(file, updated);
 }
 
-export function planStackUpdate(root: string, artifact?: PublishedCliArtifact) {
+export async function planStackUpdate(
+  root: string,
+  artifact?: PublishedCliArtifact,
+  dependencies?: UpdateDependencies,
+) {
   if (
     artifact !== undefined &&
     (!isPublishedCliArtifact(artifact) || artifact.version !== GENERATOR_VERSION)
@@ -221,54 +229,63 @@ export function planStackUpdate(root: string, artifact?: PublishedCliArtifact) {
   });
   attempt(() => updatePnpmPolicy(e));
   let artifactRequired = true;
-  attempt(() => {
-    const source = e.read('deployment.json');
-    const composition = composeSourceProvenance(configuration.composition, state.installed, []);
-    if (source !== null) {
-      const manifest = deploymentManifestSchema.parse(e.json('deployment.json'));
-      if (
-        manifest.foundation !== composition.foundation ||
-        manifest.identity !== composition.identity ||
-        JSON.stringify([...manifest.capabilities].sort()) !==
-          JSON.stringify([...state.installed].sort())
-      )
-        throw Error(
-          'Deployment identity or capabilities disagree with installed source; preserve and reconcile deployment.json.',
-        );
-      if (artifact) {
-        artifactRequired = false;
-        if (JSON.stringify(manifest.cliArtifact) !== JSON.stringify(artifact))
-          e.set('deployment.json', ['cliArtifact'], artifact);
+  const legacy = configuration.composition?.contractVersion === 2;
+  const hostedIds = state.installed.filter((id) => id !== 'db' && id !== 'web');
+  if (legacy)
+    attempt(() => {
+      const source = e.read('deployment.json');
+      const composition = composeSourceProvenance(configuration.composition, state.installed, []);
+      if (source !== null) {
+        const manifest = deploymentManifestSchema.parse(e.json('deployment.json'));
         if (
-          JSON.stringify(deploymentManifestSchema.parse(e.json('deployment.json')).cliArtifact) !==
-          JSON.stringify(artifact)
+          manifest.foundation !== 'tanstack-start' ||
+          manifest.identity !== composition.identity ||
+          JSON.stringify([...manifest.capabilities].sort()) !==
+            JSON.stringify([...hostedIds].sort())
         )
           throw Error(
-            'Deployment artifact has ambiguous source keys; preserve and reconcile deployment.json.',
+            'Deployment identity or capabilities disagree with installed source; preserve and reconcile deployment.json.',
           );
-      }
-    } else if (artifact) {
-      const manifest = deploymentManifestSchema.parse({
-        contractVersion: 1,
-        foundation: composition.foundation,
-        capabilities: state.installed,
-        identity: composition.identity,
-        cliArtifact: artifact,
-        intent: {
+        if (artifact) {
+          artifactRequired = false;
+          if (JSON.stringify(manifest.cliArtifact) !== JSON.stringify(artifact))
+            e.set('deployment.json', ['cliArtifact'], artifact);
+          if (
+            JSON.stringify(
+              deploymentManifestSchema.parse(e.json('deployment.json')).cliArtifact,
+            ) !== JSON.stringify(artifact)
+          )
+            throw Error(
+              'Deployment artifact has ambiguous source keys; preserve and reconcile deployment.json.',
+            );
+        }
+      } else if (artifact) {
+        const manifest = deploymentManifestSchema.parse({
           contractVersion: 1,
-          runtimeProfile: 'anhedral-stack',
-          environment: 'preview',
-          visibility: 'protected',
-        },
-      });
-      e.create('deployment.json', JSON.stringify(manifest, null, 2) + '\n');
-      artifactRequired = false;
-    }
-  });
+          foundation: 'tanstack-start',
+          capabilities: hostedIds,
+          identity: composition.identity,
+          cliArtifact: artifact,
+          intent: {
+            contractVersion: 1,
+            runtimeProfile: 'anhedral-stack',
+            environment: 'preview',
+            visibility: 'protected',
+          },
+        });
+        e.create('deployment.json', JSON.stringify(manifest, null, 2) + '\n');
+        artifactRequired = false;
+      }
+    });
 
   if (!conflicts.length)
     attempt(() => {
-      const composition = composeSourceProvenance(configuration.composition, state.installed, []);
+      const composition = composeSourceProvenance(
+        configuration.composition,
+        legacy ? hostedIds : state.installed,
+        [],
+        usesD1(e),
+      );
       if (configuration.setup.cliVersion !== GENERATOR_VERSION)
         e.set('anhedral.json', ['setup', 'cliVersion'], GENERATOR_VERSION);
       if (JSON.stringify(composition) !== JSON.stringify(configuration.composition))
@@ -285,14 +302,31 @@ export function planStackUpdate(root: string, artifact?: PublishedCliArtifact) {
           'Ambiguous source provenance keys; preserve and reconcile anhedral.json before updating.',
         );
     });
+  const sourceWrites = new Map(e.writes);
+  let pins: DependencyPin[] = [];
+  let verifyInputs = () => {};
+  let dependencyInputsDigest: string | undefined;
+  if (dependencies && !conflicts.length) {
+    const update = await planDependencyUpdate(e, state.installed, dependencies);
+    pins = update.pins;
+    verifyInputs = update.verify;
+    dependencyInputsDigest = update.inputDigest;
+  }
+  const pinFiles = new Set(
+    pins.filter((pin) => pin.proposed !== pin.current).map((pin) => pin.file),
+  );
+  const isLock = (file: string) =>
+    file === 'pnpm-lock.yaml' || path.basename(file) === 'Cargo.lock';
   const entries = [...e.writes]
     .filter(([file, after]) => e.before.get(file) !== after)
     .sort(([a], [b]) => a.localeCompare(b));
-  const total = entries.reduce(
-    (bytes, [file, after]) =>
-      bytes + Buffer.byteLength(e.before.get(file) ?? '') + Buffer.byteLength(after),
-    0,
-  );
+  const total = entries
+    .filter(([file]) => !isLock(file))
+    .reduce(
+      (bytes, [file, after]) =>
+        bytes + Buffer.byteLength(e.before.get(file) ?? '') + Buffer.byteLength(after),
+      0,
+    );
   if (entries.length > MAX_UPDATE_FILES || total > MAX_UPDATE_BYTES)
     conflicts.push({
       code: 'PREVIEW_LIMIT',
@@ -305,13 +339,20 @@ export function planStackUpdate(root: string, artifact?: PublishedCliArtifact) {
           path: file,
           beforeDigest: e.before.get(file) === null ? null : fingerprint(e.before.get(file)!),
           afterDigest: fingerprint(after),
-          diff: updateDiff(file, e.before.get(file) ?? null, after),
+          diff: isLock(file)
+            ? ''
+            : pinFiles.has(file)
+              ? sourceWrites.has(file) && sourceWrites.get(file) !== e.before.get(file)
+                ? updateDiff(file, e.before.get(file) ?? null, sourceWrites.get(file)!)
+                : ''
+              : updateDiff(file, e.before.get(file) ?? null, after),
         }));
   if (
-    changes.some((change) =>
-      /["']?[A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|PRIVATE_KEY|API_KEY|AUTHORIZATION)[A-Z0-9_]*["']?\s*[:=]/i.test(
-        change.diff,
-      ),
+    changes.some(
+      (change) =>
+        /["']?[A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|PRIVATE_KEY|API_KEY|AUTHORIZATION)[A-Z0-9_]*["']?\s*[:=]/i.test(
+          change.diff,
+        ) || /postgres(?:ql)?:\/\/[^\s"'/]+@/i.test(change.diff),
     )
   ) {
     conflicts.push({
@@ -327,6 +368,21 @@ export function planStackUpdate(root: string, artifact?: PublishedCliArtifact) {
     fromVersion: previousVersion,
     toVersion: GENERATOR_VERSION,
     changes,
+    pins,
+    lockfiles: [...e.before]
+      .filter(([file]) => isLock(file) && (e.writes.has(file) || e.before.get(file) !== null))
+      .map(([file, before]) => {
+        const after = e.read(file)!;
+        return {
+          path: file,
+          beforeDigest: before === null ? null : fingerprint(before),
+          afterDigest: fingerprint(after),
+          status: before === null ? 'created' : before === after ? 'unchanged' : 'updated',
+        };
+      })
+      .sort((a, b) => a.path.localeCompare(b.path)),
+    dependencyInputsDigest,
+    dependencyResolution: dependencies ? 'registry' : 'offline',
     conflicts,
     sourceOnly: true,
     dependenciesInstalled: false,
@@ -335,20 +391,27 @@ export function planStackUpdate(root: string, artifact?: PublishedCliArtifact) {
       provenanceReady: !artifactRequired && conflicts.length === 0,
       artifactRequired,
       artifact: artifact ?? null,
-      message: artifactRequired
-        ? 'Resolve the published CLI artifact before refreshing deployment provenance. Rerun without --offline when online.'
-        : 'CLI artifact verified against official release metadata and npm. Hosting and build admission remain server-owned.',
+      message: !legacy
+        ? 'Progressive workspaces require separate hosted runtime admission.'
+        : artifactRequired
+          ? 'Resolve the published CLI artifact before refreshing deployment provenance. Rerun without --offline when online.'
+          : 'CLI artifact verified against official release metadata and npm. Hosting and build admission remain server-owned.',
     },
     nextAction:
       'Review the diff, apply with --expect-plan, then install dependencies and validate the application separately.',
   };
-  return { editor: e, entries, plan: { ...plan, planId: fingerprint(JSON.stringify(plan)) } };
+  return {
+    editor: e,
+    entries,
+    verifyInputs,
+    plan: { ...plan, planId: fingerprint(JSON.stringify(plan)) },
+  };
 }
 
 export async function runStackUpdate(
   args: string[],
   output: OutputOptions,
-  dependencies: { resolveArtifact?: typeof resolvePublishedCliArtifact } = {},
+  dependencies: UpdateDependencies & { resolveArtifact?: typeof resolvePublishedCliArtifact } = {},
 ) {
   const parsed = commandArguments('stack', args);
   const expected = parsed.value('--expect-plan');
@@ -357,7 +420,10 @@ export async function runStackUpdate(
   const root = projectRoot(process.cwd());
   assertPublicWorkspace(root, false, 'stack');
   let artifact: PublishedCliArtifact | undefined;
-  if (!parsed.has('--offline')) {
+  if (
+    !parsed.has('--offline') &&
+    new CapabilityEditor(root, {}).json('anhedral.json').composition?.contractVersion === 2
+  ) {
     try {
       artifact = await (dependencies.resolveArtifact ?? resolvePublishedCliArtifact)();
     } catch (error) {
@@ -372,7 +438,15 @@ export async function runStackUpdate(
       throw error;
     }
   }
-  const { editor, entries, plan } = planStackUpdate(root, artifact);
+  const { editor, entries, verifyInputs, plan } = await planStackUpdate(
+    root,
+    artifact,
+    parsed.has('--offline') ? undefined : dependencies,
+  );
+  const verify = () => {
+    editor.verify();
+    verifyInputs();
+  };
   if (expected !== undefined && expected !== plan.planId)
     throw new CliFailure(
       'The source update plan changed. Review a fresh --dry-run before applying.',
@@ -387,32 +461,57 @@ export async function runStackUpdate(
       await runStagedTransaction(root, {
         commitPaths: entries.map(([file]) => file),
         recover: false,
-        prepare: () => editor.verify(),
+        prepare: verify,
         build: async (stage) => {
           for (const [file, source] of entries) {
             put(stage, file, source);
             if (editor.before.get(file) !== null)
               chmodSync(path.join(stage, file), statSync(path.join(root, file)).mode & 0o777);
           }
-          editor.verify();
+          verify();
         },
       });
-    else editor.verify();
+    else verify();
     applied = true;
   }
   if (plan.conflicts.length) process.exitCode = 1;
   const terminalSafe = (value: string) =>
     stripVTControlCharacters(value.replace(/\r\n/g, '\n')).replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '');
+  const quote = (s: string) =>
+    "'" + s.replaceAll("'", process.platform === 'win32' ? "''" : "'\\''") + "'";
+  const executable = existsSync(new URL('../../.git', import.meta.url))
+    ? 'node ' + quote(fileURLToPath(new URL('../bin.js', import.meta.url)))
+    : 'pnpm dlx anhedral@' + GENERATOR_VERSION;
   const nextAction = plan.conflicts.length
     ? 'Resolve the listed conflicts, then preview the update again.'
     : !entries.length
       ? 'Your generated stack files are up to date.'
       : applied
-        ? 'Run pnpm install and pnpm check in the project directory.'
-        : `Apply this preview with pnpm dlx anhedral@${GENERATOR_VERSION} stack update${parsed.has('--offline') ? ' --offline' : ''} --expect-plan ${plan.planId}`;
-  createReporter(output, () =>
-    terminalSafe(
-      `${applied ? 'Applied' : 'Preview'} source update ${plan.fromVersion ?? 'unknown'} → ${plan.toVersion}\nPlan: ${plan.planId}\n${plan.changes.map((change) => change.diff).join('\n')}${plan.conflicts.map((conflict) => conflict.message).join('\n')}\n${nextAction}`,
-    ),
-  ).result({ ...plan, nextAction, dryRun: parsed.has('--dry-run'), applied });
+        ? parsed.has('--offline')
+          ? 'Run pnpm install and pnpm check in the project directory.'
+          : 'Run pnpm install --frozen-lockfile and pnpm check in the project directory.'
+        : `Apply this preview with ${executable} --cwd ${quote(root)} stack update${parsed.has('--offline') ? ' --offline' : ''} --expect-plan ${plan.planId}`;
+  const changed = plan.pins.filter((p) => p.current !== p.proposed);
+  const lines = [
+    (applied ? 'Applied' : 'Preview') +
+      ' stack update ' +
+      (plan.fromVersion ?? 'unknown') +
+      ' → ' +
+      plan.toVersion,
+    'Plan: ' + plan.planId,
+    ...changed.map((p) => p.file + '  ' + p.name + '  ' + p.current + ' → ' + p.proposed),
+    ...(plan.pins.length > changed.length
+      ? [plan.pins.length - changed.length + ' pins already current.']
+      : []),
+    ...plan.lockfiles.map((file) => file.path + '  ' + file.status),
+    ...plan.changes.map((change) => change.diff).filter(Boolean),
+    ...plan.conflicts.map((conflict) => conflict.message),
+    nextAction,
+  ];
+  createReporter(output, () => terminalSafe(lines.join('\n'))).result({
+    ...plan,
+    nextAction,
+    dryRun: parsed.has('--dry-run'),
+    applied,
+  });
 }

@@ -163,6 +163,11 @@ function collectArguments(command: string, input: readonly string[]) {
   return { positional, options };
 }
 
+export function selectsFullWorkspace(args: readonly string[]) {
+  const end = args.indexOf('--');
+  return (end < 0 ? args : args.slice(0, end)).find((arg) => !arg.startsWith('-')) === 'all';
+}
+
 export function validateCommand(command: string | undefined, args: readonly string[]): void {
   if (!command || ['--help', '-h', '--version', '-v', 'help'].includes(command)) return;
   const definition = definitionFor(command);
@@ -171,6 +176,7 @@ export function validateCommand(command: string | undefined, args: readonly stri
     selected = definition,
     positional = parsed.positional;
   while (selected.children) {
+    if (command === 'init' && !selectsFullWorkspace(args)) break;
     const child = positional[0];
     if (!child || !Object.hasOwn(selected.children, child)) {
       const choices = Object.keys(selected.children),

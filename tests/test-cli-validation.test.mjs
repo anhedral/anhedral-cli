@@ -3,6 +3,13 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { packageNameFromText, resourceName } from '../dist/render.js';
+
+assert.equal(packageNameFromText('._-'.repeat(5000)), 'anhedral-app');
+assert.equal(packageNameFromText('---A._B--C___'), 'a._b--c');
+assert.equal(resourceName('alpha', '--B__C--'), 'alpha-b-c');
+assert.equal(resourceName('alpha', '...'), 'alpha-app');
+
 const root = mkdtempSync(path.join(tmpdir(), 'anhedral-cli-validation-'));
 const cli = path.resolve('dist/bin.js');
 const run = (...args) =>
@@ -61,7 +68,7 @@ try {
   const target = path.join(root, 'planned');
   const result = run('init', target, '--dry-run', '--json');
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).products, ['tanstack-start']);
+  assert.deepEqual(JSON.parse(result.stdout).products, []);
   assert.equal(existsSync(target), false);
   assert.match(run('--help').stdout, /Anhedral Stack/);
   assert.doesNotMatch(run('--help').stdout, /--legacy|setup-vps|Fastify|anhedral cloud/);

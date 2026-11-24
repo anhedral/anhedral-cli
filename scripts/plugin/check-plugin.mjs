@@ -1,3 +1,4 @@
+import { validStackCatalog } from './plugin-package-policy.mjs';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -18,15 +19,13 @@ if (
   stack.id !== 'anhedral-stack' ||
   stack.name !== 'Anhedral Stack' ||
   stack.items ||
-  Object.keys(stack.additions ?? {})
-    .sort()
-    .join(',') !== 'backend,payment,storage'
+  !validStackCatalog(stack)
 )
   throw Error('Plugin must describe the single Anhedral Stack and its supported additions.');
 buildPluginArchive(root);
 // Claude Code's own validator is authoritative for its manifests and skill frontmatter.
 // It is optional locally; an unavailable CLI is reported, never treated as a pass.
-for (const target of ['plugin', '.']) {
+for (const target of ['plugin', '.', 'assets/handoffs/claude']) {
   const result = spawnSync(
     process.env.ANHEDRAL_CLAUDE_BIN || 'claude',
     ['plugin', 'validate', '--strict', target],

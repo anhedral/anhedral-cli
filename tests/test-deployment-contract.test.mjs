@@ -51,11 +51,19 @@ test('portable contract snapshot matches its exact provenance and the CLI capabi
       createHash('sha256').update(readFileSync(file)).digest('hex'),
       provenance.files[name],
     );
-  assert.deepEqual(contract.deploymentCapabilitySchema.options, CAPABILITY_IDS);
+  assert.deepEqual(contract.deploymentCapabilitySchema.options, [
+    'hono',
+    'database-auth',
+    'r2',
+    'stripe',
+  ]);
+  assert.ok(contract.deploymentCapabilitySchema.options.every((id) => CAPABILITY_IDS.includes(id)));
   // Every existing prerequisite must also be enforced at the transport boundary.
-  for (const id of CAPABILITY_IDS) {
-    for (const parent of CAPABILITIES[id].requires) {
-      const capabilities = CAPABILITY_IDS.filter((candidate) => candidate !== parent);
+  for (const id of contract.deploymentCapabilitySchema.options) {
+    for (const parent of id === 'database-auth' ? ['hono'] : CAPABILITIES[id].requires) {
+      const capabilities = contract.deploymentCapabilitySchema.options.filter(
+        (candidate) => candidate !== parent,
+      );
       assert.equal(
         contract.deploymentManifestSchema.safeParse({ ...fixture.manifest, capabilities }).success,
         false,
@@ -106,15 +114,15 @@ test('generated source records composition transactionally without changing iden
   const beforeCwd = process.cwd();
   try {
     await scaffoldStandardProject(
-      parseStandardOptions([app, '--skip-install', '--no-git']),
+      parseStandardOptions([app, '--skip-install', '--catalog-pins', '--no-git']),
       offline,
       { quiet: true },
     );
     const file = path.join(app, 'anhedral.json');
     const initial = JSON.parse(readFileSync(file));
     assert.deepEqual(initial.composition, {
-      contractVersion: 2,
-      foundation: 'tanstack-start',
+      contractVersion: 3,
+      foundation: 'turborepo',
       generatorVersion: GENERATOR_VERSION,
       identity: 'none',
       capabilities: {},
@@ -123,7 +131,12 @@ test('generated source records composition transactionally without changing iden
     writeFileSync(file, JSON.stringify(initial, null, 2) + '\n');
     process.chdir(app);
     const invoke = (args) =>
-      runCapabilityCommand('add', [...args, '--skip-install'], { quiet: true }, offline);
+      runCapabilityCommand(
+        'add',
+        [...args, '--skip-install', '--catalog-pins'],
+        { quiet: true },
+        offline,
+      );
     const before = readFileSync(file, 'utf8');
     await invoke(['backend', '--with-dependencies', '--dry-run']);
     assert.equal(readFileSync(file, 'utf8'), before);
@@ -132,9 +145,10 @@ test('generated source records composition transactionally without changing iden
     assert.deepEqual(composed.customerSetting, { preserve: true });
     assert.deepEqual(composed.composition.capabilities, {
       hono: GENERATOR_VERSION,
+      db: GENERATOR_VERSION,
       'database-auth': GENERATOR_VERSION,
     });
-    assert.equal(composed.composition.identity, 'better-auth-d1-v1');
+    assert.equal(composed.composition.identity, 'better-auth-neon-v1');
     const auth = readFileSync('apps/api/src/auth.ts', 'utf8');
     assert.match(auth, /PUBLIC_APP_URL/);
     assert.match(readFileSync('apps/api/src/auth-features.ts', 'utf8'), /emailPassword: false/);

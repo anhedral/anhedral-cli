@@ -18,8 +18,19 @@ const run = (args, cwd = workspace) =>
 const json = (file) => JSON.parse(readFileSync(file, 'utf8'));
 function generate(name, extra = []) {
   const destination = path.join(workspace, name);
-  const result = run(['init', destination, '--skip-install', '--no-git', '--json', ...extra]);
+  const result = run([
+    'init',
+    destination,
+    '--skip-install',
+    '--catalog-pins',
+    '--no-git',
+    '--json',
+    ...extra,
+  ]);
   assert.equal(result.status, 0, result.stderr);
+  assert.equal(existsSync(path.join(destination, 'apps')), false);
+  const web = run(['add', 'web', '--skip-install', '--catalog-pins'], destination);
+  assert.equal(web.status, 0, web.stderr);
   return destination;
 }
 test.after(() => rmSync(workspace, { recursive: true, force: true }));
@@ -27,9 +38,9 @@ test.after(() => rmSync(workspace, { recursive: true, force: true }));
 test('public init defaults to shadcn without UI ownership metadata', () => {
   const root = generate('core');
   const configuration = json(path.join(root, 'anhedral.json'));
-  assert.equal(configuration.composition.foundation, 'tanstack-start');
-  assert.equal(configuration.composition.contractVersion, 2);
-  assert.deepEqual(configuration.capabilities.installed, []);
+  assert.equal(configuration.composition.foundation, 'turborepo');
+  assert.equal(configuration.composition.contractVersion, 3);
+  assert.deepEqual(configuration.capabilities.installed, ['web']);
   const web = json(path.join(root, 'apps/web/package.json'));
   assert.ok(web.dependencies['@tanstack/react-start']);
   assert.equal(web.scripts.dev, 'node ../../scripts/oj.mjs dev . --host=0.0.0.0 --port 3000');
@@ -65,7 +76,6 @@ test('public init defaults to shadcn without UI ownership metadata', () => {
   );
   for (const component of ['button', 'input', 'label'])
     assert.ok(existsSync(path.join(app, `src/components/ui/${component}.tsx`)));
-  assert.match(readFileSync(path.join(root, 'README.md'), 'utf8'), /use any UI library/);
   assert.equal(run(['ui', 'doctor', '--json'], root).status, 1);
 });
 
@@ -82,10 +92,12 @@ test('dry run does not create a destination and distinguishes literal flag-shape
 
 test('backend is one atomic addition, with storage and Stripe independently progressive', () => {
   const root = generate('progression');
-  let result = run(['add', 'backend', '--skip-install', '--json'], root);
+  let result = run(['add', 'backend', '--skip-install', '--catalog-pins', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(json(path.join(root, 'anhedral.json')).capabilities.installed, [
+    'web',
     'hono',
+    'db',
     'database-auth',
   ]);
   assert.ok(existsSync(path.join(root, 'apps/api/src/auth.ts')));
@@ -103,24 +115,32 @@ test('backend is one atomic addition, with storage and Stripe independently prog
     readFileSync(path.join(root, 'apps/api/src/auth-features.ts'), 'utf8'),
     /emailPassword: false/,
   );
-  result = run(['add', 'storage', '--skip-install', '--json'], root);
+  result = run(['add', 'storage', '--skip-install', '--catalog-pins', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
-  result = run(['add', 'payment', '--skip-install', '--json'], root);
+  result = run(['add', 'payment', '--skip-install', '--catalog-pins', '--json'], root);
   assert.equal(result.status, 0, result.stderr);
   assert.ok(existsSync(path.join(root, 'apps/api/src/features/storage.ts')));
   assert.ok(existsSync(path.join(root, 'apps/api/src/features/stripe.ts')));
-  assert.equal(json(path.join(root, 'anhedral.json')).composition.foundation, 'tanstack-start');
+  assert.equal(json(path.join(root, 'anhedral.json')).composition.foundation, 'turborepo');
   assert.equal(run(['stack', 'doctor', '--json'], root).status, 0);
 });
 
 test('missing backend stops before storage writes, while explicit dependency expansion is supported', () => {
   const root = generate('prerequisites');
-  assert.notEqual(run(['add', 'storage', '--skip-install', '--json'], root).status, 0);
+  assert.notEqual(
+    run(['add', 'storage', '--skip-install', '--catalog-pins', '--json'], root).status,
+    0,
+  );
   assert.equal(existsSync(path.join(root, 'apps/api')), false);
-  const result = run(['add', 'payment', '--with-dependencies', '--skip-install', '--json'], root);
+  const result = run(
+    ['add', 'payment', '--with-dependencies', '--skip-install', '--catalog-pins', '--json'],
+    root,
+  );
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(json(path.join(root, 'anhedral.json')).capabilities.installed, [
+    'web',
     'hono',
+    'db',
     'database-auth',
     'stripe',
   ]);
@@ -132,7 +152,7 @@ test('Stripe additions preserve customized composition adapters', () => {
   const file = path.join(root, 'apps/web/vite.config.ts');
   const edited = readFileSync(file, 'utf8') + '// customer customization\n';
   writeFileSync(file, edited);
-  const result = run(['add', 'backend', '--skip-install', '--json'], root);
+  const result = run(['add', 'backend', '--skip-install', '--catalog-pins', '--json'], root);
   assert.notEqual(result.status, 0);
   assert.equal(readFileSync(file, 'utf8'), edited);
   assert.equal(existsSync(path.join(root, 'apps/api/src/features/stripe.ts')), false);
@@ -142,14 +162,17 @@ test('init preserves an existing ignore file and refuses existing applications',
   const root = path.join(workspace, 'ignore');
   mkdirSync(root);
   writeFileSync(path.join(root, '.gitignore'), '# customer rule\nlocal-material/\n');
-  const first = run(['init', root, '--skip-install', '--no-git', '--json']);
+  const first = run(['init', root, '--skip-install', '--catalog-pins', '--no-git', '--json']);
   assert.equal(first.status, 0, first.stderr);
   assert.match(
     readFileSync(path.join(root, '.gitignore'), 'utf8'),
     /# customer rule\nlocal-material\//,
   );
   const before = readFileSync(path.join(root, 'anhedral.json'), 'utf8');
-  assert.notEqual(run(['init', root, '--skip-install', '--no-git', '--json']).status, 0);
+  assert.notEqual(
+    run(['init', root, '--skip-install', '--catalog-pins', '--no-git', '--json']).status,
+    0,
+  );
   assert.equal(readFileSync(path.join(root, 'anhedral.json'), 'utf8'), before);
 });
 

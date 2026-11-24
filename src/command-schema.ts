@@ -82,6 +82,19 @@ const PLATFORM_OPTIONS: readonly CommandOption[] = [
     description: 'Explicit owner-only credential file instead of the OS secret store.',
   },
 ];
+const messageOption = (flag: string, description: string): CommandOption => ({
+  flag,
+  description,
+  value: 'uuid',
+  arity: 'required',
+});
+const channelOption = messageOption('--channel', 'Project channel UUID.');
+const threadOption = messageOption('--thread', 'Parent message UUID.');
+const beforeOption = messageOption('--before', 'Read the page before this message UUID.');
+const receiptOption = messageOption(
+  '--request-id',
+  'Stable UUID for this contribution and any retries.',
+);
 const ENVIRONMENT_OPTIONS: readonly CommandOption[] = [
   ...PLATFORM_OPTIONS,
   {
@@ -181,6 +194,89 @@ const PROJECT_OPTIONS: readonly CommandOption[] = [
     description: 'Start a new creation request instead of retrying the saved request.',
   },
 ];
+const catalogPins = {
+  flag: '--catalog-pins',
+  description: 'Use the CLI release’s exact baseline pins without registry lookup.',
+};
+const INIT_OPTIONS: readonly CommandOption[] = [
+  catalogPins,
+  { flag: '--skip-install', description: 'Write source without installing dependencies.' },
+  { flag: '--git', description: 'Initialize a local Git repository.' },
+  { flag: '--no-git', description: 'Skip Git initialization.' },
+  { flag: '--dry-run', description: 'Preview the foundation without writes or network.' },
+];
+
+export const runPermissions = [
+  {
+    flag: '--task-claims',
+    scope: 'tasks:manage',
+    tool: 'create_thread_task',
+    additionalTools: [
+      'claim_thread_task',
+      'renew_task_claim',
+      'release_task_claim',
+      'complete_thread_task',
+    ],
+    description: 'Manage claimable Tracking tasks in this project.',
+  },
+  {
+    flag: '--message-watch',
+    scope: 'messages:watch',
+    tool: 'subscribe_message_watcher',
+    additionalTools: ['list_message_watchers', 'revoke_message_watcher'],
+    description: 'Manage agent wake-ups for visible project channels and threads.',
+  },
+  {
+    flag: '--run-start',
+    scope: 'runs:start',
+    tool: 'start_agent_run',
+    description: 'Start agent runs in the linked project.',
+  },
+  {
+    flag: '--run-cancel',
+    scope: 'runs:cancel',
+    tool: 'cancel_agent_run',
+    description: 'Cancel your agent runs in the linked project.',
+  },
+  {
+    flag: '--workflow-start',
+    scope: 'workflows:start',
+    tool: 'start_workflow_run',
+    description: 'Start a published project workflow.',
+  },
+  {
+    flag: '--workflow-status',
+    scope: 'workflows:status',
+    tool: 'get_workflow_run_status',
+    description: 'Read project workflow run status.',
+  },
+  {
+    flag: '--workflow-result',
+    scope: 'workflows:result',
+    tool: 'get_workflow_run_result',
+    description: 'Read project workflow run output.',
+  },
+  {
+    flag: '--workflow-cancel',
+    scope: 'workflows:cancel',
+    tool: 'cancel_workflow_run',
+    description: 'Cancel a project workflow run.',
+  },
+] as const;
+
+const WORKSPACE_CONNECTION_OPTIONS: readonly CommandOption[] = [
+  ...PLATFORM_OPTIONS,
+  ...runPermissions.map(({ flag, description }) => ({ flag, description })),
+  {
+    flag: '--workspace-actions',
+    description: 'Include posting project messages and creating work items in the MCP connection.',
+  },
+  {
+    flag: '--workspace',
+    description: 'Enable project meeting imports and workspace discovery with reports connect.',
+  },
+];
+
 export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   completion: {
     description: 'Print an offline shell completion script.',
@@ -223,6 +319,89 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       },
     ],
     examples: ['whoami --json', 'whoami --context --human'],
+  },
+  workspace: {
+    owner: 'platform',
+    description: 'Discover and use authorized tools in the linked project.',
+    usage: 'workspace <tools|call>',
+    options: PLATFORM_OPTIONS,
+    examples: ['workspace tools --json'],
+    children: {
+      tools: {
+        description: 'List project tools and their input schemas.',
+        usage: 'workspace tools',
+        options: PLATFORM_OPTIONS,
+        examples: [],
+      },
+      call: {
+        description: 'Call one project tool with a JSON object on stdin.',
+        usage: 'workspace call <tool>',
+        options: PLATFORM_OPTIONS,
+        positional: { name: 'tool', min: 1, max: 1 },
+        examples: ['workspace call import_meeting_transcript < meeting.json'],
+      },
+    },
+  },
+  reports: {
+    owner: 'platform',
+    description: 'Read project handoffs, submit a structured report or deliver a pending event.',
+    usage: 'reports <brief|submit|connect|dispatch>',
+    options: WORKSPACE_CONNECTION_OPTIONS,
+    examples: ['reports brief --json'],
+    children: {
+      connect: {
+        description: 'Save a project-scoped MCP credential in your private user directory.',
+        usage:
+          'reports connect [--workspace | --workspace-actions | --run-start | --run-cancel | --workflow-start | --workflow-status | --workflow-result | --workflow-cancel | --message-watch | --task-claims]',
+        options: WORKSPACE_CONNECTION_OPTIONS,
+        examples: [],
+      },
+      brief: {
+        description: 'Read recent project reports.',
+        usage: 'reports brief',
+        options: PLATFORM_OPTIONS,
+        examples: [],
+      },
+      submit: {
+        description: 'Publish a report supplied as JSON on stdin.',
+        usage: 'reports submit',
+        options: PLATFORM_OPTIONS,
+        examples: [],
+      },
+      dispatch: {
+        description: 'Deliver one queued decision event for the signed-in subscription owner.',
+        usage: 'reports dispatch',
+        options: PLATFORM_OPTIONS,
+        examples: [],
+      },
+    },
+  },
+  messages: {
+    owner: 'platform',
+    description: 'Read linked project channels and contribute agent handoffs.',
+    usage: 'messages <list|read|post>',
+    options: [...PLATFORM_OPTIONS, channelOption, threadOption, beforeOption, receiptOption],
+    examples: ['messages list --json'],
+    children: {
+      list: {
+        description: 'List visible project channels.',
+        usage: 'messages list',
+        options: PLATFORM_OPTIONS,
+        examples: [],
+      },
+      read: {
+        description: 'Read a channel or thread.',
+        usage: 'messages read --channel <uuid> [--thread <uuid>] [--before <uuid>]',
+        options: [...PLATFORM_OPTIONS, channelOption, threadOption, beforeOption],
+        examples: [],
+      },
+      post: {
+        description: 'Post an agent contribution from stdin.',
+        usage: 'messages post --channel <uuid> --request-id <uuid> [--thread <uuid>]',
+        options: [...PLATFORM_OPTIONS, channelOption, threadOption, receiptOption],
+        examples: [],
+      },
+    },
   },
   projects: {
     owner: 'platform',
@@ -504,10 +683,11 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
   },
 
   add: {
-    description: 'Add backend, private storage or payments to the Anhedral Stack.',
+    description: 'Add clients, API, database, authentication or cloud services to the workspace.',
     usage: 'add <capabilities...> [options]',
     options: [
       { flag: '--with-dependencies', description: 'Explicitly include missing prerequisites.' },
+      catalogPins,
       { flag: '--skip-install', description: 'Write source without installing dependencies.' },
       {
         flag: '--dry-run',
@@ -516,6 +696,8 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     ],
     positional: { name: 'capabilities', min: 1, max: 50, kind: 'capability' },
     examples: [
+      'add web api db auth',
+      'add mobile desktop web-extension cli',
       'add backend',
       'add storage',
       'add storage payment --with-dependencies --dry-run --json',
@@ -523,13 +705,18 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Adds source and local configuration only. Existing edits are preserved. No provisioning, credential installation, migration or deployment.',
   },
   stack: {
-    description: 'Inspect the Anhedral Stack and its three optional additions.',
+    description: 'Inspect the workspace and its selected additions.',
     usage: 'stack <list|status|doctor|update>',
     options: [
-      { flag: '--dry-run', description: 'Preview bounded source updates without writes.' },
+      {
+        flag: '--dry-run',
+        description:
+          'Preview source changes, dependency pins and lockfiles without writing project files.',
+      },
       {
         flag: '--offline',
-        description: 'Update source without resolving a published deployment artifact.',
+        description:
+          'Update source only. Skip registry, lockfile and deployment artifact resolution.',
       },
       {
         flag: '--expect-plan',
@@ -540,16 +727,17 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     ],
     children: {
       update: {
-        description: 'Preview or apply bounded source updates without executing project scripts.',
-        usage: 'stack update [--dry-run] [--expect-plan <sha256>]',
+        description: 'Preview or apply managed source, dependency pins and lockfiles.',
+        usage: 'stack update [--dry-run] [--expect-plan <sha256>] [--offline]',
         options: [
           {
             flag: '--dry-run',
-            description: 'Show exact source changes and conflicts without writes.',
+            description:
+              'Show current and proposed dependency pins, lockfile digests, source changes and conflicts.',
           },
           {
             flag: '--offline',
-            description: 'Skip published artifact resolution; leave deployment provenance pending.',
+            description: 'Update source only, keeping dependency pins and lockfiles as they are.',
           },
           {
             flag: '--expect-plan',
@@ -558,7 +746,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
             description: 'Apply only if the reviewed update plan still matches.',
           },
         ],
-        examples: ['stack update --dry-run --json', 'stack update --json'],
+        examples: ['stack update --dry-run --human', 'stack update --expect-plan <sha256> --json'],
       },
       list: {
         description: 'Show the Anhedral Stack foundation and optional additions.',
@@ -583,14 +771,18 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
     note: 'Installed source is not proof of live provider activation.',
   },
   init: {
-    description: 'Create the Anhedral Stack: web UI first, then add backend, storage and payments.',
-    usage: 'init [directory] [options]',
-    options: [
-      { flag: '--skip-install', description: 'Write source without installing dependencies.' },
-      { flag: '--git', description: 'Initialize a local Git repository.' },
-      { flag: '--no-git', description: 'Skip Git initialization.' },
-      { flag: '--dry-run', description: 'Preview the foundation without writes or network.' },
-    ],
+    description: 'Create a blank pnpm and Turborepo workspace.',
+    usage: 'init [all] [directory] [options]',
+    options: INIT_OPTIONS,
+    children: {
+      all: {
+        description: 'Create a full Turborepo with every client and service.',
+        usage: 'init all [directory] [options]',
+        options: INIT_OPTIONS,
+        positional: { name: 'directory', min: 0, max: 1, kind: 'directory' },
+        examples: ['init all my-app --dry-run --json', 'init all my-app'],
+      },
+    },
     positional: { name: 'directory', min: 0, max: 1, kind: 'directory' },
     conflicts: [['--git', '--no-git']],
     examples: [

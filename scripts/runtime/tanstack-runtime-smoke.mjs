@@ -2,13 +2,14 @@
 // No configured database is migrated, no provider is contacted, and no deployment occurs.
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
+import { once } from 'node:events';
 import { randomBytes } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 import { measureConfiguredWorker, measureWorker } from './measure-worker.mjs';
 
@@ -31,7 +32,9 @@ const env = {
   ...Object.fromEntries(
     Object.entries(process.env).filter(
       ([key]) =>
-        !/^(?:CLOUDFLARE_|CF_|ANHEDRAL_|BETTER_AUTH_|PUBLIC_APP_URL|STRIPE_|REVENUECAT_)/.test(key),
+        !/^(?:CLOUDFLARE_|CF_|ANHEDRAL_|BETTER_AUTH_|PUBLIC_APP_URL|STRIPE_|REVENUECAT_|DATABASE_URL|PG)/.test(
+          key,
+        ),
     ),
   ),
   CI: '1',
@@ -42,6 +45,7 @@ const env = {
 };
 let phase = 'generation-install';
 let preview;
+let database;
 let failure;
 const interrupt = () => controller.abort(new Error('Runtime proof interrupted.'));
 process.once('SIGINT', interrupt);
@@ -164,6 +168,7 @@ try {
     [path.join(repository, 'dist/bin.js'), 'init', app, '--no-git', '--json'],
     scratch,
   );
+  await run(process.execPath, [path.join(repository, 'dist/bin.js'), 'add', 'web'], app);
   const localPort = await port();
   const origin = `http://localhost:${localPort}`;
   const web = path.join(app, 'apps/web');
@@ -221,9 +226,12 @@ try {
       '--json',
     ]);
   }
+  const fixture = await import(pathToFileURL(path.join(app, 'apps/api/tests/postgres.mjs')).href);
+  database = await fixture.startPostgres();
+  env.DATABASE_URL_UNPOOLED = database.url;
   await writeFile(
     path.join(app, 'apps/api/.dev.vars'),
-    `PUBLIC_APP_URL=${origin}\nBETTER_AUTH_SECRET=${secret}\n`,
+    `PUBLIC_APP_URL=${origin}\nBETTER_AUTH_SECRET=${secret}\nDATABASE_URL=${database.url}\nSYNC_API_ORIGIN=${origin}\n`,
     { mode: 0o600 },
   );
   const features = path.join(app, 'apps/api/src/auth-features.ts');
@@ -236,7 +244,7 @@ try {
   await writeFile(features, featureSource.replace(/emailPassword:\s*false/, 'emailPassword: true'));
 
   phase = 'local-migration';
-  console.log('TanStack proof: migrate only the disposable local D1 database.');
+  console.log('TanStack proof: migrate only the disposable local PostgreSQL database.');
   await run('pnpm', ['db:migrate', '--local']);
   phase = 'compile';
   console.log('TanStack proof: lint, typecheck and build web/API artifacts.');
@@ -409,6 +417,99 @@ try {
     measurements.web.passed && measurements.api.passed,
     'Compiled Worker exceeds the reviewed 4MiB gzip budget.',
   );
+  phase = 'account-websockets';
+  console.log('TanStack proof: deliver one R2 event to two devices and isolate another account.');
+  await run(process.execPath, [
+    path.join(repository, 'dist/bin.js'),
+    'add',
+    'client-sync',
+    '--cwd',
+    app,
+    '--json',
+  ]);
+  const apiRoot = path.join(app, 'apps/api');
+  preview = start(
+    process.execPath,
+    [
+      path.join(apiRoot, 'node_modules/wrangler/bin/wrangler.js'),
+      'dev',
+      '--local',
+      '--ip',
+      '127.0.0.1',
+      '--port',
+      String(localPort),
+      '--inspector-port',
+      '0',
+    ],
+    apiRoot,
+    120000,
+  );
+  let healthy = false;
+  for (let attempt = 0; attempt < 200 && !preview.finished; attempt++) {
+    healthy = await request('/api/health')
+      .then((response) => response.ok)
+      .catch(() => false);
+    if (healthy) break;
+    await delay(100);
+  }
+  assert.ok(healthy, 'Standalone sync Worker must be reachable');
+  const third = await signUp('third@example.com');
+  const issue = (cookie) =>
+    request('/api/sync/ticket', { method: 'POST', headers: { cookie, origin } });
+  assert.equal((await issue(first)).status, 401, 'Revoked session cannot subscribe');
+  const tickets = await Promise.all(
+    [second, second, third].map(async (cookie) => {
+      const issued = await issue(cookie);
+      assert.equal(issued.status, 200);
+      return issued.json();
+    }),
+  );
+  assert.equal(tickets[0].url, tickets[1].url);
+  assert.notEqual(tickets[0].url, tickets[2].url);
+  const sockets = new Set();
+  async function connect({ url, ticket }) {
+    assert.equal(new URL(url).host, new URL(origin).host);
+    const socket = new WebSocket(url, ['anhedral.sync.v1', ticket]);
+    sockets.add(socket);
+    await new Promise((resolve, reject) => {
+      const signal = AbortSignal.timeout(5000);
+      signal.addEventListener('abort', () => reject(Error('Socket handshake timeout')), {
+        once: true,
+      });
+      socket.addEventListener('open', resolve, { once: true, signal });
+      socket.addEventListener('error', () => reject(Error('Socket upgrade refused')), {
+        once: true,
+        signal,
+      });
+    });
+    return socket;
+  }
+  try {
+    await assert.rejects(connect({ ...tickets[0], url: tickets[2].url }), /upgrade refused/);
+    const [mobile, desktop, unrelated] = await Promise.all(tickets.map(connect));
+    await assert.rejects(connect(tickets[0]), /upgrade refused/);
+    const otherEvents = [];
+    unrelated.addEventListener('message', (event) => otherEvents.push(event.data));
+    // Leave the connections idle across the hibernation eligibility interval.
+    await delay(12000, undefined, { signal: controller.signal });
+    const received = Promise.all(
+      [mobile, desktop].map((socket) =>
+        once(socket, 'message', { signal: AbortSignal.timeout(10000) }),
+      ),
+    );
+    const stored = await request('/api/files/synced.txt', {
+      method: 'PUT',
+      headers: { cookie: second, origin },
+      body: 'connected',
+    });
+    assert.equal(stored.status, 201);
+    for (const [message] of await received)
+      assert.deepEqual(JSON.parse(message.data), { type: 'file.stored', id: 'synced.txt' });
+    await delay(150);
+    assert.deepEqual(otherEvents, []);
+  } finally {
+    for (const socket of sockets) if (socket.readyState === WebSocket.OPEN) socket.close();
+  }
   const summary = {
     schemaVersion: 1,
     stack: 'anhedral-stack',
@@ -433,6 +534,7 @@ try {
     cookieSession: true,
     privateR2: true,
     accountIsolation: true,
+    accountWebSockets: true,
     signOutRevocation: true,
     stripeCompiled: true,
     stripeMigrationGenerated: true,
@@ -453,6 +555,7 @@ try {
       failure ??= new Error(`TanStack runtime proof failed [cleanup]: ${redact(error.message)}`);
     }
   }
+  await database?.close();
   process.removeListener('SIGINT', interrupt);
   process.removeListener('SIGTERM', interrupt);
   controller.signal.removeEventListener('abort', abortChildren);

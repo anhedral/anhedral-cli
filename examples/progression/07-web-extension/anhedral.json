@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "schemaVersion": 1,
+    "id": "dbc7ed9e-9166-4efc-b9b3-31c7d019930f"
+  },
+  "setup": {
+    "schemaVersion": 1,
+    "cliVersion": "0.25.0",
+    "stack": "anhedral-stack",
+    "resourcesProvisioned": false
+  },
+  "standard": {
+    "schemaVersion": 1,
+    "standard": "anhedral-stack",
+    "hosting": "cloudflare",
+    "resourcesProvisioned": false
+  },
+  "capabilities": {
+    "schemaVersion": 1,
+    "installed": [
+      "web",
+      "hono",
+      "db",
+      "database-auth",
+      "web-extension",
+      "desktop",
+      "mobile"
+    ],
+    "managedFiles": {
+      "scripts/oj.mjs": "c502246346857a32bf9d94377d1dcd9bec731379836187bbb2c6e9775f50b9e6",
+      "scripts/oj-runtime.json": "0c13ec9404f87ca8c6b825bb9d65760f5a47f130e9b2c984ecfde9aba9350045",
+      "scripts/OJ.LICENSE": "3cc3fc954c836676b3e485b8af1f9870b8d50b3e3ec4b94b81f5f2ef012cf535",
+      "apps/web/vite.config.ts": "c0d0e1bd991bc9d660ae0cc99a42e5e7ff35b9e1d3e7543e1fd328b9352eb995",
+      "apps/web/src/server.ts": "01f22866283c9f89682a1bda8b93350cbef2928a3056e3caa50767520cb93f92",
+      "apps/web/src/lib/application.server.ts": "cd1d1d8a3c230d5b4568530b7bb57eeb133aa7944b969d81e5b6050082367f80",
+      "apps/api/src/capabilities.ts": "2ae7570c9ff8f45b4b7a05ea3cd3167f5ac9401494f84020c865def05be1e1fb",
+      "apps/api/src/environment.ts": "a0aaa689919a85554ac1f278e1b5fabbe5e643c637462325dd93bb2c40492da2",
+      "apps/api/src/auth-platform.ts": "775f399c49f5d1227775d6feb1cc4bafea95ef2c7b38e207b5bdce628c26dc16"
+    },
+    "resourcesProvisionedByCli": false
+  },
+  "composition": {
+    "contractVersion": 3,
+    "foundation": "turborepo",
+    "generatorVersion": "0.25.0",
+    "identity": "better-auth-neon-v1",
+    "capabilities": {
+      "web": "0.25.0",
+      "hono": "0.25.0",
+      "db": "0.25.0",
+      "database-auth": "0.25.0",
+      "web-extension": "0.25.0",
+      "desktop": "0.25.0",
+      "mobile": "0.25.0"
+    }
+  }
+}

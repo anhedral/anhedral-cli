@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono';
 
-import { createAuth, authConfiguration } from './auth';
+import { withAuth, authConfiguration } from './auth';
 import type { AppEnv } from './environment';
 
 const bearer = (headers: Headers) => (headers.get('authorization') ?? '').startsWith('Bearer ');
@@ -25,7 +25,9 @@ function trustedMutation(request: Request, env: AppEnv['Bindings']) {
 export const requireSession: MiddlewareHandler<AppEnv> = async (c, next) => {
   if (!authConfiguration.safeParse(c.env).success)
     return c.json({ error: 'Authentication needs configuration' }, 503);
-  const session = await createAuth(c.env).api.getSession({ headers: sessionHeaders(c.req.raw) });
+  const session = await withAuth(c.env, (auth) =>
+    auth.api.getSession({ headers: sessionHeaders(c.req.raw) }),
+  );
   if (!session) return c.json({ error: 'Unauthorized' }, 401);
   if (!trustedMutation(c.req.raw, c.env)) return c.json({ error: 'Origin rejected' }, 403);
   c.set('userId', session.user.id);

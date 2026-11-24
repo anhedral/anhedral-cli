@@ -14,4 +14,4 @@ Inspect the consuming project's instructions and existing source first. Review u
 
 The shipped starter components remain MIT-licensed shadcn source. Init preserves their notice in `apps/web/LICENSE.shadcn` and provenance in `apps/web/UPSTREAM.json`; customization and rebranding do not remove those notices. This is upstream attribution, not an Anhedral UI license. Preserve applicable licenses for any replacement dependencies too. Existing projects may retain `.anhedral-ui.json` or `ANHEDRAL_UI_LICENSES/`; do not delete authored source or required notices during migration. New initialization does not create those legacy paths.
 
-UI selection does not activate backend services or hosting. See [stack additions](capabilities.md). The MVP is web-only. If Expo returns after MVP, React Native Reusables is the intended native default; it is not a current CLI capability.
+UI selection does not activate backend services or hosting. See [stack additions](capabilities.md). Web components belong to the web client. The optional Expo client starts with React Native primitives.

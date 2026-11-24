@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "schemaVersion": 1,
+    "id": "dbc7ed9e-9166-4efc-b9b3-31c7d019930f"
+  },
+  "setup": {
+    "schemaVersion": 1,
+    "cliVersion": "0.25.0",
+    "stack": "anhedral-stack",
+    "resourcesProvisioned": false
+  },
+  "standard": {
+    "schemaVersion": 1,
+    "standard": "anhedral-stack",
+    "hosting": "cloudflare",
+    "resourcesProvisioned": false
+  },
+  "capabilities": {
+    "schemaVersion": 1,
+    "installed": [
+      "web",
+      "hono"
+    ],
+    "managedFiles": {
+      "scripts/oj.mjs": "c502246346857a32bf9d94377d1dcd9bec731379836187bbb2c6e9775f50b9e6",
+      "scripts/oj-runtime.json": "0c13ec9404f87ca8c6b825bb9d65760f5a47f130e9b2c984ecfde9aba9350045",
+      "scripts/OJ.LICENSE": "3cc3fc954c836676b3e485b8af1f9870b8d50b3e3ec4b94b81f5f2ef012cf535",
+      "apps/web/vite.config.ts": "c0d0e1bd991bc9d660ae0cc99a42e5e7ff35b9e1d3e7543e1fd328b9352eb995",
+      "apps/web/src/server.ts": "01f22866283c9f89682a1bda8b93350cbef2928a3056e3caa50767520cb93f92",
+      "apps/web/src/lib/application.server.ts": "3c0fc759a317b1c20eaced3d94eb0c3ba461973b07130de60cc1f03a96bbcf46",
+      "apps/api/src/capabilities.ts": "2aaf3c995b1a4d7fbf6d9203190221f5d62fd499359aef763d685bd826b5c5a9",
+      "apps/api/src/environment.ts": "49c33673ce8be245b561fe5276c648595badeb49ae5f9c4ba89170ced34951f2"
+    },
+    "resourcesProvisionedByCli": false
+  },
+  "composition": {
+    "contractVersion": 3,
+    "foundation": "turborepo",
+    "generatorVersion": "0.25.0",
+    "identity": "none",
+    "capabilities": {
+      "web": "0.25.0",
+      "hono": "0.25.0"
+    }
+  }
+}

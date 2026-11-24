@@ -4,7 +4,7 @@ export type AppEnv = {
     PUBLIC_APP_URL?: string;
     BETTER_AUTH_SECRET?: string;
     AUTH_TRUSTED_ORIGINS?: string;
-    DB: D1Database;
+    DATABASE_URL: string;
     FILES: R2Bucket;
     STRIPE_SECRET_KEY?: string;
     STRIPE_WEBHOOK_SECRET?: string;

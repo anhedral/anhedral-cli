@@ -1,0 +1,23 @@
+{
+  "name": "@workspace/mobile",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "expo start",
+    "build": "expo export --platform ios --platform android",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "58.0.26",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "@workspace/api-client": "workspace:*",
+    "expo-secure-store": "58.0.3"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/react": "19.3.0"
+  }
+}

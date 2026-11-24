@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "example-app-api",
+  "main": "src/sync-worker.ts",
+  "compatibility_date": "2026-10-05",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "example-app-files"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CLIENT_SYNC",
+        "class_name": "ClientSync"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "anhedral-client-sync-v1",
+      "new_sqlite_classes": [
+        "ClientSync"
+      ]
+    }
+  ]
+}

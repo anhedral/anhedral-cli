@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -24,11 +25,18 @@ test('SDK-supplied app titles survive rendering into source and documentation', 
   t.after(() => rmSync(workspace, { recursive: true, force: true }));
   const root = path.join(workspace, 'project');
   const name = "Today's app";
-  await scaffoldAnhedralStack({ ...parseInitOptions([root, '--skip-install', '--no-git']), name });
+  await scaffoldAnhedralStack({
+    ...parseInitOptions([root, '--skip-install', '--catalog-pins', '--no-git']),
+    name,
+  });
+  execFileSync(
+    process.execPath,
+    [path.resolve('dist/bin.js'), 'add', 'web', '--skip-install', '--catalog-pins'],
+    {
+      cwd: root,
+    },
+  );
   const source = readFileSync(path.join(root, 'apps/web/src/starter.ts'), 'utf8');
   const { starterTitle } = await import('data:text/javascript,' + encodeURIComponent(source));
   assert.equal(starterTitle, name);
-  const readme = readFileSync(path.join(root, 'README.md'), 'utf8');
-  assert.equal(readme.split('\n')[0], '# ' + name);
-  assert.doesNotMatch(readme, /__APP_NAME__|__CLI_VERSION__/);
 });

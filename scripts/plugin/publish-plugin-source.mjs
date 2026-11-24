@@ -1,4 +1,4 @@
-import { assertPluginPackageFiles } from './plugin-package-policy.mjs';
+import { validStackCatalog, assertPluginPackageFiles } from './plugin-package-policy.mjs';
 import { validateClaudePluginManifest, validateCliPluginManifest } from './plugin-manifest.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -161,9 +161,7 @@ export function loadPluginRelease(metadataPath) {
     stack.id !== 'anhedral-stack' ||
     stack.name !== 'Anhedral Stack' ||
     stack.items !== undefined ||
-    Object.keys(stack.additions ?? {})
-      .sort()
-      .join(',') !== 'backend,payment,storage'
+    !validStackCatalog(stack, { legacy: true })
   )
     throw new Error('Plugin archive release identity mismatch.');
   if (files.some((file) => file.name.startsWith('runtime/')))

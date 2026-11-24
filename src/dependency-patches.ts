@@ -15,6 +15,10 @@ const reviewedPatches: readonly ReviewedPatch[] = [
   { coordinate: 'braces@3.0.3', packageName: 'braces', license: 'LICENSE.braces' },
   { coordinate: 'node-forge@1.4.0', packageName: 'node-forge', license: 'LICENSE.node-forge' },
 ];
+export const reviewedPatchFiles = reviewedPatches.flatMap(({ coordinate, license }) => [
+  'patches/' + coordinate + '.patch',
+  'patches/' + license,
+]);
 const lockMaximum = 16 * 1024 * 1024;
 const policyMaximum = 2 * 1024 * 1024;
 const patchMaximum = 256 * 1024;

@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "example-app",
+    "slug": "example-app",
+    "scheme": "example-app-app",
+    "plugins": [
+      "@cloudflare/realtimekit-react-native",
+      "@cloudflare/react-native-webrtc"
+    ]
+  }
+}

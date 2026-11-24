@@ -44,7 +44,10 @@ function printHelp(): void {
         if (option?.arity && values[index + 1] && !values[index + 1].startsWith('-')) index++;
         continue;
       }
-      if (!definition?.children) {
+      if (
+        !definition?.children ||
+        (command === 'init' && !Object.hasOwn(definition.children, value))
+      ) {
         leafArguments++;
         if (leafArguments > (definition?.positional?.max ?? 0))
           throw new CliArgumentError(

@@ -238,7 +238,7 @@ test('init resolves again with the exact patch before frozen install before inst
     const events = [];
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions([root, '--no-git', '--json']),
+        parseStandardOptions([root, '--no-git', '--catalog-pins', '--json']),
         resolutionRunner(events),
       ),
     );
@@ -258,7 +258,7 @@ test('init installs both reviewed dependency patch assets before frozen installa
     const events = [];
     await quietly(() =>
       scaffoldStandardProject(
-        parseStandardOptions([root, '--no-git', '--json']),
+        parseStandardOptions([root, '--no-git', '--catalog-pins', '--json']),
         resolutionRunner(
           events,
           () => true,

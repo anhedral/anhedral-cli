@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.turbo/
+.wrangler/
+.tanstack/
+.oj-cache/
+*.tsbuildinfo
+worker-configuration.d.ts
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+.anhedral/

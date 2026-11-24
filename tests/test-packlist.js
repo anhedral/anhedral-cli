@@ -12,6 +12,59 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const npmCache = mkdtempSync(path.join(tmpdir(), 'anhedral-packlist-'));
 const stackFiles = [
+  'assets/stack/access.js.txt',
+  'assets/stack/api-client.js.txt',
+  'assets/stack/call.tsx.txt',
+  'assets/stack/cli-api.ts.txt',
+  'assets/stack/cli-session.ts.txt',
+  'assets/stack/client-origins.ts.txt',
+  'assets/stack/client-sync.ts.txt',
+  'assets/stack/browser-sync.js.txt',
+  'assets/stack/api-access.d.ts.txt',
+  'assets/stack/api-files.d.ts.txt',
+  'assets/stack/api-index.d.ts.txt',
+  'assets/stack/api-rtc.d.ts.txt',
+  'assets/stack/api-session.d.ts.txt',
+  'assets/stack/mobile-app.tsx.txt',
+  'assets/stack/file-events.ts.txt',
+  'assets/stack/mobile-sync.js.txt',
+  'assets/stack/pg-auth-journal.json.txt',
+  'assets/stack/pg-auth-migration.sql.txt',
+  'assets/stack/pg-auth-routes.ts.txt',
+  'assets/stack/pg-auth-schema.ts.txt',
+  'assets/stack/pg-auth-snapshot.json.txt',
+  'assets/stack/pg-auth.ts.txt',
+  'assets/stack/pg-billing-schema.ts.txt',
+  'assets/stack/pg-db-index.ts.txt',
+  'assets/stack/pg-db-migrate.mjs.txt',
+  'assets/stack/pg-drizzle.config.ts.txt',
+  'assets/stack/pg-payment.test.mjs.txt',
+  'assets/stack/pg-rtc-schema.ts.txt',
+  'assets/stack/pg-security.ts.txt',
+  'assets/stack/pg-storage.test.mjs.txt',
+  'assets/stack/postgres-fixture.mjs.txt',
+  'assets/stack/receipt-d1.ts.txt',
+  'assets/stack/receipt-pg.ts.txt',
+  'assets/stack/room-store-d1.ts.txt',
+  'assets/stack/room-store-pg.ts.txt',
+  'assets/stack/sync.d.ts.txt',
+  'assets/stack/commander.ts.txt',
+  'assets/stack/electron-main.ts.txt',
+  'assets/stack/electron-package.js.txt',
+  'assets/stack/electron-renderer.html.txt',
+  'assets/stack/electron-renderer.tsx.txt',
+  'assets/stack/electron-vite.js.txt',
+  'assets/stack/files-client.js.txt',
+  'assets/stack/native-call.tsx.txt',
+  'assets/stack/purchases.ts.txt',
+  'assets/stack/revenuecat.ts.txt',
+  'assets/stack/rtc-client.js.txt',
+  'assets/stack/rtc.ts.txt',
+  'assets/stack/session.js.txt',
+  'assets/stack/mobile-session.js.txt',
+  'assets/stack/sync-client.js.txt',
+  'assets/stack/sync-worker.ts.txt',
+
   'assets/stack/base-eslint.js.txt',
   'assets/stack/shared-eslint.config.mjs.txt',
   'assets/stack/api-proxy.ts.txt',
@@ -49,7 +102,20 @@ const publicContractAssets = [
   'assets/contracts/LICENSE.environment',
   'assets/contracts/LICENSE.operations',
 ];
+const handoffFiles = [
+  'assets/handoffs/handoff.mjs',
+  'assets/handoffs/mcp.mjs',
+  'assets/handoffs/codex/.mcp.json',
+  'assets/handoffs/claude/.mcp.json',
+  'assets/handoffs/pi/index.ts',
+  'assets/handoffs/.agents/plugins/marketplace.json',
+  'assets/handoffs/codex/.codex-plugin/plugin.json',
+  'assets/handoffs/codex/hooks/hooks.json',
+  'assets/handoffs/claude/.claude-plugin/plugin.json',
+  'assets/handoffs/claude/hooks/hooks.json',
+];
 const requiredFiles = new Set([
+  ...handoffFiles,
   ...publicContractAssets,
   'assets/security/credential-patterns.mjs',
   'assets/security/credential-patterns.d.mts',
@@ -211,13 +277,6 @@ try {
   assert.match(readme, /Apache-2\.0/);
   assert.match(readme, /Generated applications are editable source/);
   assert.doesNotMatch(readme, /does not grant permission to install|separate written agreement/i);
-  for (const diagram of ['anhedral-stack.png', 'anhedral-stack-light.png']) {
-    assert.ok(
-      readme.includes(
-        `https://raw.githubusercontent.com/anhedral/anhedral-cli/v${packageJson.version}/docs/assets/${diagram}`,
-      ),
-    );
-  }
   assert.ok(
     readme.includes(
       `https://github.com/anhedral/anhedral-cli/tree/v${packageJson.version}/examples`,
@@ -249,6 +308,8 @@ try {
     const allowedDocumentation =
       file.path === 'docs/ui.md' ||
       file.path === 'docs/capabilities.md' ||
+      file.path === 'docs/assets/anhedral-stack.svg' ||
+      file.path === 'docs/assets/anhedral-stack-light.svg' ||
       file.path === 'docs/stack-standard.md' ||
       file.path === 'docs/software-factory.md' ||
       file.path === 'docs/verification.md';
@@ -262,6 +323,7 @@ try {
     const allowed =
       allowedRootFiles.has(file.path) ||
       publicContractAssets.includes(file.path) ||
+      handoffFiles.includes(file.path) ||
       [
         'assets/security/credential-patterns.mjs',
         'assets/security/credential-patterns.d.mts',

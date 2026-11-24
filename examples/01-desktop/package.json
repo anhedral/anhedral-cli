@@ -1,0 +1,20 @@
+{
+  "name": "example-app",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  },
+  "scripts": {
+    "build": "turbo build --concurrency=1",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "audit:deps": "node scripts/audit-deps.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "dev:desktop": "pnpm --dir apps/desktop dev"
+  },
+  "devDependencies": {
+    "turbo": "2.11.7"
+  }
+}

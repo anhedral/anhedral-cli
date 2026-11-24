@@ -1,5 +1,5 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
-import { createDatabase } from '@workspace/db';
+import { withDatabase, type Database } from '@workspace/db';
 import * as schema from '@workspace/db/schema';
 import { betterAuth } from 'better-auth/minimal';
 import { bearer } from 'better-auth/plugins/bearer';
@@ -10,17 +10,18 @@ import { platformAuthPlugins } from './auth-platform';
 import type { AppEnv } from './environment';
 
 export const authConfiguration = z.object({
+  DATABASE_URL: z.string().min(1),
   PUBLIC_APP_URL: z.url().regex(/^https?:\/\//),
   BETTER_AUTH_SECRET: z.string().min(32),
 });
-export function createAuth(env: AppEnv['Bindings']) {
+export function createAuth(env: AppEnv['Bindings'], db: Database) {
   const configuration = authConfiguration.parse(env);
   const origin = new URL(configuration.PUBLIC_APP_URL).origin;
   return betterAuth({
     secret: configuration.BETTER_AUTH_SECRET,
     baseURL: origin,
     basePath: '/api/auth',
-    database: drizzleAdapter(createDatabase(env.DB), { provider: 'sqlite', schema }),
+    database: drizzleAdapter(db, { provider: 'pg', schema }),
     emailAndPassword: { enabled: authFeatures.emailPassword },
     trustedOrigins: [
       origin,
@@ -30,4 +31,11 @@ export function createAuth(env: AppEnv['Bindings']) {
     ],
     plugins: [bearer(), ...platformAuthPlugins()],
   });
+}
+
+export function withAuth<T>(
+  env: AppEnv['Bindings'],
+  run: (auth: ReturnType<typeof createAuth>) => Promise<T>,
+) {
+  return withDatabase(env.DATABASE_URL, (db) => run(createAuth(env, db)));
 }

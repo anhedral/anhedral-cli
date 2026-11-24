@@ -12,10 +12,16 @@ function generated(t) {
   const root = path.join(base, 'app');
   const result = spawnSync(
     process.execPath,
-    ['dist/bin.js', 'init', root, '--skip-install', '--no-git', '--json'],
+    ['dist/bin.js', 'init', root, '--skip-install', '--catalog-pins', '--no-git', '--json'],
     { encoding: 'utf8' },
   );
   assert.equal(result.status, 0, result.stderr);
+  const web = spawnSync(
+    process.execPath,
+    [path.resolve('dist/bin.js'), 'add', 'web', '--skip-install', '--catalog-pins'],
+    { cwd: root, encoding: 'utf8' },
+  );
+  assert.equal(web.status, 0, web.stderr);
   return root;
 }
 test('the SDK exposes one foundation and removes the legacy scaffold API', () => {
