@@ -25,7 +25,7 @@ Add clients before or after the backend. Once both sides are present, the CLI wi
 
 Use `add cli` for a TypeScript Commander executable, `add payment` for Stripe, `add in-app-purchases` for RevenueCat, or `add rtc` for RealtimeKit calls. To generate everything at once, run `anhedral init all my-app`. Preview either path with `--dry-run --json`.
 
-The local checkout includes 14 cumulative snapshots under `examples/progression/`, from blank init through all 13 individual additions. For each command’s prerequisites, integrations and official documentation, see the [stack guide](docs/capabilities.md). Browse the [released examples](https://github.com/anhedral/anhedral-cli/tree/v0.24.1/examples).
+The local checkout includes 14 cumulative snapshots under `examples/progression/`, from blank init through all 13 individual additions. For each command’s prerequisites, integrations and official documentation, see the [stack guide](docs/capabilities.md). Browse the [released examples](https://github.com/anhedral/anhedral-cli/tree/v0.25.0/examples).
 
 Init and add resolve compatible stable dependencies at generation time and write exact pins. Use `--catalog-pins` to reproduce the catalog baseline.
 
