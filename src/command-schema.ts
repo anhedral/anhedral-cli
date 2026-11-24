@@ -208,6 +208,25 @@ const INIT_OPTIONS: readonly CommandOption[] = [
 
 export const runPermissions = [
   {
+    flag: '--task-claims',
+    scope: 'tasks:manage',
+    tool: 'create_thread_task',
+    additionalTools: [
+      'claim_thread_task',
+      'renew_task_claim',
+      'release_task_claim',
+      'complete_thread_task',
+    ],
+    description: 'Manage claimable Tracking tasks in this project.',
+  },
+  {
+    flag: '--message-watch',
+    scope: 'messages:watch',
+    tool: 'subscribe_message_watcher',
+    additionalTools: ['list_message_watchers', 'revoke_message_watcher'],
+    description: 'Manage agent wake-ups for visible project channels and threads.',
+  },
+  {
     flag: '--run-start',
     scope: 'runs:start',
     tool: 'start_agent_run',
@@ -333,7 +352,7 @@ export const COMMANDS: Readonly<Record<string, CommandDefinition>> = {
       connect: {
         description: 'Save a project-scoped MCP credential in your private user directory.',
         usage:
-          'reports connect [--workspace | --workspace-actions | --run-start | --run-cancel | --workflow-start | --workflow-status | --workflow-result | --workflow-cancel]',
+          'reports connect [--workspace | --workspace-actions | --run-start | --run-cancel | --workflow-start | --workflow-status | --workflow-result | --workflow-cancel | --message-watch | --task-claims]',
         options: WORKSPACE_CONNECTION_OPTIONS,
         examples: [],
       },

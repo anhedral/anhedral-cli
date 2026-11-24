@@ -487,6 +487,8 @@ test('reports connect keeps the scoped token private and submit authenticates be
         },
       );
     for (const [flag, scope, name] of [
+      ['--task-claims', 'tasks:manage', 'create_thread_task'],
+      ['--message-watch', 'messages:watch', 'subscribe_message_watcher'],
       ['--run-start', 'runs:start', 'start_agent_run'],
       ['--run-cancel', 'runs:cancel', 'cancel_agent_run'],
       ['--workflow-start', 'workflows:start', 'start_workflow_run'],
@@ -500,6 +502,15 @@ test('reports connect keeps the scoped token private and submit authenticates be
       assert.deepEqual(connectBodies.at(-1), { runScope: scope });
       assert.deepEqual(await capture(() => callRun(name)), [{ runId: otherId }]);
     }
+    for (const name of [
+      'list_message_watchers',
+      'revoke_message_watcher',
+      'claim_thread_task',
+      'renew_task_claim',
+      'release_task_claim',
+      'complete_thread_task',
+    ])
+      assert.deepEqual(await capture(() => callRun(name)), [{ runId: otherId }]);
     assert.ok(!JSON.stringify(connection).includes(token));
     assert.equal((await readPrivate(connection.credentialPath)).token, token);
     assert.equal((await stat(connection.credentialPath)).mode & 0o077, 0);

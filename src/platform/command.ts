@@ -404,7 +404,11 @@ async function runPlatformOperation(
         if (!/^[a-z_]{1,64}$/.test(name))
           throw commandArgumentError(command, 'Choose a tool listed by workspace tools.');
         let toolToken = token;
-        const permission = runPermissions.find((p) => p.tool === name);
+        const permission = runPermissions.find(
+          (p) =>
+            p.tool === name ||
+            ('additionalTools' in p && p.additionalTools?.some((tool) => tool === name)),
+        );
         if (permission) {
           const saved = z
             .object({

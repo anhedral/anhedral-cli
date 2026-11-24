@@ -1,5 +1,7 @@
 # Development notes
 
+2026-11-23 — Added a dedicated message watcher connection for the linked project. See the [CLI workflow](../software-factory.md) for subscription, receiver and revocation semantics.
+
 2026-11-22 — Workspace tools support private meeting transcript imports and project reads after sign-in. The CLI and MCP use the same Platform tool handlers. See [workspace access](../software-factory.md#authenticated-reports-and-handoffs).
 
 2026-11-22 — Project reports use a scoped MCP connection and opt-in Codex, Claude Code and Pi handoff adapters. See [authenticated handoffs](../software-factory.md#authenticated-reports-and-handoffs).
